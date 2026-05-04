@@ -104,6 +104,25 @@ body {
   color: var(--text);
 }
 .note-panel[hidden] { display: none !important; }
+.two-map-wrap {
+  margin-top: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.two-map-wrap[hidden] { display: none !important; }
+.share-two-map-canvas {
+  width: 100%;
+  height: min(45vh, 320px);
+  min-height: 200px;
+}
+.leaflet-tooltip.two-tip {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
 .map-section {
   margin-top: 1.25rem;
   background: var(--card);
@@ -141,27 +160,36 @@ body {
 <main>
 <article class="card" data-card-index="0">
   <div class="card-head">
-    <h2 class="card-title">西千股8N2～8N3</h2>
+    <h2 class="card-title">西千股8N2~8N3</h2>
     
     <div class="card-actions">
-      <a class="btn btn-map" href="https://www.google.com/maps?q=34.40758,135.85685" target="_blank" rel="noopener noreferrer">地図を開く</a><a class="btn btn-map" href="https://www.google.com/maps/dir/34.40738,135.8569/34.40778,135.8568/" target="_blank" rel="noopener noreferrer">2点地図を開く</a>
+      <a class="btn btn-map" href="https://www.google.com/maps?q=34.40758,135.85685" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-0" data-note-toggle>現場指示</button>
     </div>
   </div>
-  <div class="note-panel" id="note-0" hidden>てすとお</div>
+  <script type="application/json" id="two-geo-0">{"a":{"name":"西千股8N2","lat":34.40738,"lng":135.8569},"b":{"name":"8N3","lat":34.40778,"lng":135.8568}}</script>
+  
+  <div class="two-map-wrap" id="two-wrap-0" hidden>
+    <div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
+  </div>
+  <div class="note-panel" id="note-0" hidden>集積 道東へ 広枝10</div>
 </article>
 <article class="card" data-card-index="1">
   <div class="card-head">
-    <h2 class="card-title">item label: 小附4K1</h2>
+    <h2 class="card-title">小附4K1</h2>
     
     <div class="card-actions">
-      <a class="btn btn-map" href="" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <a class="btn btn-map" href="https://www.google.com/maps?q=34.49379,135.92871" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-1" data-note-toggle>現場指示</button>
     </div>
   </div>
-  <div class="note-panel" id="note-1" hidden></div>
+  
+  
+  <div class="note-panel" id="note-1" hidden>持出 ハシゴ注意</div>
 </article>
   <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
@@ -173,7 +201,7 @@ body {
   crossorigin=""></script>
 <script>
 (function() {
-  var POINTS = [{"name":"西千股8N2～8N3","lat":34.40758,"lng":135.85685}];
+  var POINTS = [{"name":"西千股8N2~8N3","lat":34.40758,"lng":135.85685},{"name":"小附4K1","lat":34.49379,"lng":135.92871}];
   document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
     var id = btn.getAttribute("aria-controls");
     var panel = id && document.getElementById(id);
@@ -206,6 +234,72 @@ body {
   } else {
     map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
   }
+})();
+(function() {
+  if (!window.L) return;
+  var twoMaps = {};
+  function gmaps(lat, lng) {
+    return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
+  }
+  document.querySelectorAll("[data-two-open]").forEach(function(btn) {
+    var wrapId = btn.getAttribute("data-two-wrap");
+    var mapId = btn.getAttribute("data-two-map");
+    var jsonId = btn.getAttribute("data-two-json");
+    btn.addEventListener("click", function() {
+      var wrap = wrapId && document.getElementById(wrapId);
+      if (!wrap) return;
+      var nowOpen = !wrap.hidden;
+      wrap.hidden = nowOpen;
+      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
+      btn.textContent = nowOpen ? "2点地図を開く" : "2点地図を閉じる";
+      if (wrap.hidden) return;
+      var el = document.getElementById(jsonId);
+      if (!el) return;
+      var geo;
+      try {
+        geo = JSON.parse(el.textContent);
+      } catch (e) {
+        return;
+      }
+      var key = mapId;
+      if (!twoMaps[key]) {
+        var mmap = L.map(mapId, { scrollWheelZoom: false });
+        twoMaps[key] = mmap;
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap"
+        }).addTo(mmap);
+        function placeMarker(lat, lng, name) {
+          var m = L.marker([lat, lng]).addTo(mmap);
+          var label = name == null ? "" : String(name);
+          if (label) {
+            m.bindTooltip(label, {
+              permanent: true,
+              direction: "top",
+              className: "two-tip",
+              offset: [0, -4],
+              interactive: true
+            });
+          }
+          m.on("click", function() {
+            window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer");
+          });
+          return [lat, lng];
+        }
+        var b = [];
+        if (geo.a) b.push(placeMarker(geo.a.lat, geo.a.lng, geo.a.name));
+        if (geo.b) b.push(placeMarker(geo.b.lat, geo.b.lng, geo.b.name));
+        if (b.length === 1) {
+          mmap.setView(b[0], 15);
+        } else if (b.length > 1) {
+          mmap.fitBounds(b, { padding: [24, 24], maxZoom: 16 });
+        }
+      }
+      setTimeout(function() {
+        if (twoMaps[key]) twoMaps[key].invalidateSize();
+      }, 50);
+    });
+  });
 })();
 </script>
 </body>
