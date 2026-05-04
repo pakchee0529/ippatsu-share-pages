@@ -42,6 +42,50 @@ body {
   margin-bottom: 0.75rem;
   box-shadow: 0 1px 2px rgba(0,0,0,.04);
 }
+.card-done {
+  opacity: 0.78;
+}
+.item-mgmt {
+  margin: -0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.instr-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.instr-table {
+  width: 100%;
+  min-width: min(100%, 320px);
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-bottom: 0.65rem;
+}
+.instr-table th,
+.instr-table td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+.instr-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.instr-cut-caption {
+  margin: 0.5rem 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.instr-note {
+  margin-top: 0.65rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+  font-size: 0.92rem;
+}
 .card-head {
   display: flex;
   flex-direction: column;
@@ -162,6 +206,7 @@ body {
   <div class="card-head">
     <h2 class="card-title">西千股8N2~8N3</h2>
     
+    
     <div class="card-actions">
       <a class="btn btn-map" href="https://www.google.com/maps?q=34.40758,135.85685" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button>
@@ -174,11 +219,12 @@ body {
   <div class="two-map-wrap" id="two-wrap-0" hidden>
     <div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-0" hidden>集積 道東へ 広枝10</div>
+  <div class="note-panel" id="note-0" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>—</td></tr><tr><th>作業区分</th><td>—</td></tr><tr><th>バケット車使用可否</th><td>未設定</td></tr><tr><th>道幅</th><td>未設定</td></tr><tr><th>傾斜</th><td>—</td></tr><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>集積 道東へ 広枝10</div></div>
 </article>
 <article class="card" data-card-index="1">
   <div class="card-head">
     <h2 class="card-title">小附4K1</h2>
+    
     
     <div class="card-actions">
       <a class="btn btn-map" href="https://www.google.com/maps?q=34.49379,135.92871" target="_blank" rel="noopener noreferrer">地図を開く</a>
@@ -189,7 +235,7 @@ body {
   </div>
   
   
-  <div class="note-panel" id="note-1" hidden>持出 ハシゴ注意</div>
+  <div class="note-panel" id="note-1" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>—</td></tr><tr><th>作業区分</th><td>—</td></tr><tr><th>バケット車使用可否</th><td>未設定</td></tr><tr><th>道幅</th><td>未設定</td></tr><tr><th>傾斜</th><td>—</td></tr><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>持出 ハシゴ注意</div></div>
 </article>
   <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
