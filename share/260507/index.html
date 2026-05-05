@@ -280,18 +280,21 @@ body {
 </article>
 <article class="card" data-card-index="4">
   <div class="card-head">
-    <h2 class="card-title">千股23～25</h2>
+    <h2 class="card-title">千股21～22</h2>
     <p class="item-mgmt">514 00000</p>
-    <p class="card-warning" role="note">2点地図を生成できませんでした</p>
+    
     <div class="card-actions">
-      
-      
+      <a class="btn btn-map" href="https://www.google.com/maps?q=34.40975,135.87089" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-4" data-note-toggle>現場指示</button>
     </div>
   </div>
+  <script type="application/json" id="two-geo-4">{"a":{"name":"千股21","lat":34.40961,"lng":135.87107},"b":{"name":"22","lat":34.40989,"lng":135.87071}}</script>
   
-  
+  <div class="two-map-wrap" id="two-wrap-4" hidden>
+    <div id="share-two-map-4" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
+  </div>
   <div class="note-panel" id="note-4" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00000</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>未設定</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
 </article>
   <section class="map-section" aria-labelledby="map-heading">
@@ -304,7 +307,7 @@ body {
   crossorigin=""></script>
 <script>
 (function() {
-  var POINTS = [{"name":"西千股8N2～8N3","lat":34.40758,"lng":135.85685},{"name":"千股20～21","lat":34.40942,"lng":135.871115},{"name":"西千股19S3～19S4","lat":34.405145000000005,"lng":135.85442999999998},{"name":"西千股1～2","lat":34.40636,"lng":135.859465}];
+  var POINTS = [{"name":"西千股8N2～8N3","lat":34.40758,"lng":135.85685},{"name":"千股20～21","lat":34.40942,"lng":135.871115},{"name":"西千股19S3～19S4","lat":34.405145000000005,"lng":135.85442999999998},{"name":"西千股1～2","lat":34.40636,"lng":135.859465},{"name":"千股21～22","lat":34.40975,"lng":135.87089}];
   document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
     var id = btn.getAttribute("aria-controls");
     var panel = id && document.getElementById(id);
