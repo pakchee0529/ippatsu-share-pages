@@ -401,6 +401,8 @@ def main() -> int:
     for sub in sorted(share_dir.iterdir(), key=lambda p: p.name):
         if not sub.is_dir():
             continue
+        if sub.name.lower() == "sample":
+            continue
         idx = sub / "index.html"
         if not idx.is_file():
             continue
