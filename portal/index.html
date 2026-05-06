@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>現場共有ポータル</title>
+<style>
+:root {
+  --bg-b: #f0f4f8;
+  --card-b: #fff;
+  --text-b: #142033;
+  --muted-b: #5a6578;
+  --border-b: #cfd8e3;
+  --accent-b: #1565c0;
+  --accent-b-hover: #0d47a1;
+  --warn-bg: #fff8e6;
+  --warn-border: #ffc107;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
+    "Noto Sans JP", sans-serif;
+  background: var(--bg-b);
+  color: var(--text-b);
+  line-height: 1.55;
+  padding: 1rem 1rem 2rem;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+h1 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  line-height: 1.3;
+}
+.intro {
+  font-size: 0.95rem;
+  color: var(--muted-b);
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1rem;
+  background: var(--card-b);
+  border-radius: 10px;
+  border: 1px solid var(--border-b);
+}
+.lead {
+  font-weight: 600;
+  color: var(--text-b);
+  margin-bottom: 0.35rem;
+}
+.notice {
+  margin: 1.25rem 0;
+  padding: 0.85rem 1rem;
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: var(--text-b);
+}
+.notice strong { display: block; margin-bottom: 0.35rem; }
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.card {
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 12px;
+  padding: 1rem 1rem 1rem;
+  box-shadow: 0 1px 3px rgba(20, 32, 51, 0.06);
+}
+.card-date {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted-b);
+  letter-spacing: 0.02em;
+  margin-bottom: 0.2rem;
+}
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 0.85rem;
+  line-height: 1.35;
+}
+.card a.btn {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+  background: var(--accent-b);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  min-height: 48px;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card a.btn:active,
+.card a.btn:hover {
+  background: var(--accent-b-hover);
+}
+.footer-note {
+  margin-top: 1.5rem;
+  font-size: 0.82rem;
+  color: var(--muted-b);
+  text-align: center;
+}
+</style>
+</head>
+<body>
+  <h1>現場共有ポータル</h1>
+
+  <div class="intro">
+    <p class="lead">このページは現場共有ページへの入口です。</p>
+    <p style="margin:0">今日・今週の作業内容は、次のリンクから日付ごとの共有ページを開いて確認してください。スマホのブックマークに登録して使えます。</p>
+  </div>
+
+  <div class="notice">
+    <strong>ご注意</strong>
+    個人情報・地主情報・住所・電話・承諾内容は、このポータルには掲載していません。詳細は各共有ページ内の指示に従ってください。
+  </div>
+
+  <div class="card-list" role="list">
+    <article class="card" role="listitem">
+      <div class="card-date">date: 260507</div>
+      <h2 class="card-title">2026年05月07日</h2>
+      <a class="btn" href="../share/260507/">共有ページを開く</a>
+    </article>
+    <article class="card" role="listitem">
+      <div class="card-date">date: 260508</div>
+      <h2 class="card-title">2026年05月08日</h2>
+      <a class="btn" href="../share/260508/">共有ページを開く</a>
+    </article>
+    <article class="card" role="listitem">
+      <div class="card-date">date: 260509</div>
+      <h2 class="card-title">2026年05月09日</h2>
+      <a class="btn" href="../share/260509/">共有ページを開く</a>
+    </article>
+    <article class="card" role="listitem">
+      <div class="card-date">date: 260511</div>
+      <h2 class="card-title">2026年05月11日</h2>
+      <a class="btn" href="../share/260511/">共有ページを開く</a>
+    </article>
+    <article class="card" role="listitem">
+      <div class="card-date">date: 260512</div>
+      <h2 class="card-title">2026年05月12日</h2>
+      <a class="btn" href="../share/260512/">共有ページを開く</a>
+    </article>
+    <article class="card" role="listitem">
+      <div class="card-date">date: 260513</div>
+      <h2 class="card-title">2026年05月13日</h2>
+      <a class="btn" href="../share/260513/">共有ページを開く</a>
+    </article>
+    <article class="card" role="listitem">
+      <div class="card-date">date: sample</div>
+      <h2 class="card-title">サンプル（参考表示）</h2>
+      <a class="btn" href="../share/sample/">共有ページを開く</a>
+    </article>
+  </div>
+
+  <p class="footer-note">手編集のリンク集です。追加入力は <code>portal/index.html</code> を更新してください。</p>
+</body>
+</html>
