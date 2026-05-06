@@ -13,8 +13,6 @@
   --border-b: #cfd8e3;
   --accent-b: #1565c0;
   --accent-b-hover: #0d47a1;
-  --warn-bg: #fff8e6;
-  --warn-border: #ffc107;
 }
 * { box-sizing: border-box; }
 body {
@@ -49,16 +47,6 @@ h1 {
   color: var(--text-b);
   margin-bottom: 0.35rem;
 }
-.notice {
-  margin: 1.25rem 0;
-  padding: 0.85rem 1rem;
-  background: var(--warn-bg);
-  border: 1px solid var(--warn-border);
-  border-radius: 10px;
-  font-size: 0.88rem;
-  color: var(--text-b);
-}
-.notice strong { display: block; margin-bottom: 0.35rem; }
 .card-list {
   display: flex;
   flex-direction: column;
@@ -70,13 +58,6 @@ h1 {
   border-radius: 12px;
   padding: 1rem 1rem 1rem;
   box-shadow: 0 1px 3px rgba(20, 32, 51, 0.06);
-}
-.card-date {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--muted-b);
-  letter-spacing: 0.02em;
-  margin-bottom: 0.2rem;
 }
 .card-title {
   font-size: 1.05rem;
@@ -120,44 +101,32 @@ h1 {
     <p style="margin:0">今日・今週の作業内容は、次のリンクから日付ごとの共有ページを開いて確認してください。スマホのブックマークに登録して使えます。</p>
   </div>
 
-  <div class="notice">
-    <strong>ご注意</strong>
-    個人情報・地主情報・住所・電話・承諾内容は、このポータルには掲載していません。詳細は各共有ページ内の指示に従ってください。
-  </div>
-
   <div class="card-list" role="list">
     <article class="card" role="listitem">
-      <div class="card-date">date: 260507</div>
       <h2 class="card-title">2026年05月07日</h2>
       <a class="btn" href="../share/260507/">共有ページを開く</a>
     </article>
     <article class="card" role="listitem">
-      <div class="card-date">date: 260508</div>
       <h2 class="card-title">2026年05月08日</h2>
       <a class="btn" href="../share/260508/">共有ページを開く</a>
     </article>
     <article class="card" role="listitem">
-      <div class="card-date">date: 260509</div>
       <h2 class="card-title">2026年05月09日</h2>
       <a class="btn" href="../share/260509/">共有ページを開く</a>
     </article>
     <article class="card" role="listitem">
-      <div class="card-date">date: 260511</div>
       <h2 class="card-title">2026年05月11日</h2>
       <a class="btn" href="../share/260511/">共有ページを開く</a>
     </article>
     <article class="card" role="listitem">
-      <div class="card-date">date: 260512</div>
       <h2 class="card-title">2026年05月12日</h2>
       <a class="btn" href="../share/260512/">共有ページを開く</a>
     </article>
     <article class="card" role="listitem">
-      <div class="card-date">date: 260513</div>
       <h2 class="card-title">2026年05月13日</h2>
       <a class="btn" href="../share/260513/">共有ページを開く</a>
     </article>
     <article class="card" role="listitem">
-      <div class="card-date">date: sample</div>
       <h2 class="card-title">サンプル（参考表示）</h2>
       <a class="btn" href="../share/sample/">共有ページを開く</a>
     </article>
