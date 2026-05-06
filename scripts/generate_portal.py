@@ -120,6 +120,10 @@ def sort_key(date_folder: str) -> tuple:
 def card_heading(date_folder: str, index_path: Path) -> str:
     if date_folder.lower() == "sample":
         return "サンプル（参考表示）"
+    # 6桁日付キー: <title>/h1 に display_suffix が含まれることがあるため、
+    # ポータル先頭の日付はフォルダ名からのみ生成する（補足は meta のみで後段に付与）。
+    if re.fullmatch(r"\d{6}", date_folder):
+        return fallback_heading(date_folder)
     t = extract_title(index_path)
     if t:
         return t
