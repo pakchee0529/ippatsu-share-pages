@@ -47,6 +47,40 @@ class TitleExtractor(HTMLParser):
             self._buf.append(data)
 
 
+class _ShareDisplaySuffixExtractor(HTMLParser):
+    """``<meta name="share-display-suffix" content="...">`` の content のみ取得（先頭1件）。"""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.suffix: str | None = None
+
+    def handle_starttag(self, tag: str, attrs) -> None:
+        if self.suffix is not None:
+            return
+        if tag.lower() != "meta":
+            return
+        ad = {k.lower(): (v or "") for k, v in attrs}
+        if (ad.get("name") or "").strip().lower() != "share-display-suffix":
+            return
+        content = ad.get("content")
+        if content is None:
+            return
+        raw = html_lib.unescape(str(content)).strip()
+        if raw:
+            self.suffix = raw
+
+
+def extract_share_display_suffix(html: str) -> str:
+    """共有HTMLのメタから表示補足のみ取得（本文は見ない）。"""
+    parser = _ShareDisplaySuffixExtractor()
+    try:
+        parser.feed(html)
+    except Exception:
+        return ""
+    s = parser.suffix
+    return s.strip() if s else ""
+
+
 def extract_title(index_path: Path) -> str | None:
     try:
         text = index_path.read_text(encoding="utf-8", errors="replace")
@@ -150,12 +184,15 @@ class ShareSummary:
     item_count: int
     crown_names: tuple[str, ...]
     is_sample: bool
+    display_suffix: str = ""
 
 
 def summarize_share_html(html: str, date_folder: str) -> ShareSummary:
     if date_folder.lower() == "sample":
         n = count_article_cards(html)
         return ShareSummary(item_count=n, crown_names=(), is_sample=True)
+
+    suffix_meta = extract_share_display_suffix(html)
 
     n_cards = count_article_cards(html)
     points = extract_points_array(html)
@@ -187,6 +224,7 @@ def summarize_share_html(html: str, date_folder: str) -> ShareSummary:
         item_count=item_count,
         crown_names=tuple(crowns_ordered),
         is_sample=False,
+        display_suffix=suffix_meta,
     )
 
 
@@ -211,6 +249,9 @@ def build_portal_heading(
         if sm:
             parts.append(sm)
     parts.append(f"{summary.item_count}件")
+    sfx = (summary.display_suffix or "").strip()
+    if sfx:
+        parts.append(sfx)
     return "　".join(parts)
 
 
