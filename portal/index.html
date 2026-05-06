@@ -66,7 +66,9 @@ h1 {
   line-height: 1.35;
 }
 .card a.btn {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   text-decoration: none;
   font-weight: 600;
@@ -77,9 +79,6 @@ h1 {
   padding: 0.75rem 1rem;
   min-height: 48px;
   line-height: 1.2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 .card a.btn:active,
 .card a.btn:hover {
@@ -132,6 +131,6 @@ h1 {
     </article>
   </div>
 
-  <p class="footer-note">手編集のリンク集です。追加入力は <code>portal/index.html</code> を更新してください。</p>
+  <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
 </body>
 </html>
