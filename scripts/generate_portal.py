@@ -306,11 +306,96 @@ body {{
   margin-left: auto;
   margin-right: auto;
 }}
-h1 {{
+h1, .portal-title {{
   font-size: 1.35rem;
   font-weight: 700;
-  margin: 0 0 0.75rem;
+  margin: 0;
   line-height: 1.3;
+}}
+.portal-header {{
+  margin-bottom: 0.75rem;
+}}
+.portal-header-row {{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}}
+.portal-title {{
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}}
+.portal-menu-wrap {{
+  position: relative;
+  flex-shrink: 0;
+}}
+.portal-menu-btn {{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-b);
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.06);
+}}
+.portal-menu-btn:hover,
+.portal-menu-btn:focus-visible {{
+  border-color: var(--accent-b);
+  outline: none;
+}}
+.portal-menu-icon {{
+  font-size: 1.15rem;
+  line-height: 1;
+}}
+.portal-menu-label {{
+  white-space: nowrap;
+}}
+.portal-menu-panel {{
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  min-width: 12.5rem;
+  padding: 0.35rem 0;
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(20, 32, 51, 0.12);
+}}
+.portal-menu-panel[hidden] {{
+  display: none !important;
+}}
+.portal-menu-item {{
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text-b);
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}}
+a.portal-menu-item:hover,
+a.portal-menu-item:focus-visible {{
+  background: var(--bg-b);
+  outline: none;
+}}
+.portal-menu-soon {{
+  color: var(--muted-b);
+  cursor: default;
 }}
 .intro {{
   font-size: 0.95rem;
@@ -373,7 +458,22 @@ h1 {{
 </style>
 </head>
 <body>
-  <h1>現場共有ポータル</h1>
+  <header class="portal-header">
+    <div class="portal-header-row">
+      <h1 class="portal-title">現場共有ポータル</h1>
+      <div class="portal-menu-wrap">
+        <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel">
+          <span class="portal-menu-icon" aria-hidden="true">☰</span>
+          <span class="portal-menu-label">メニュー</span>
+        </button>
+        <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
+          <a class="portal-menu-item" role="menuitem" href="./">ポータルTOP</a>
+          <a class="portal-menu-item" role="menuitem" href="./ui_samples/">UIサンプル</a>
+          <span class="portal-menu-item portal-menu-soon" role="menuitem" aria-disabled="true">アーカイブ（準備中）</span>
+        </nav>
+      </div>
+    </div>
+  </header>
 
   <div class="intro">
     <p class="lead">このページは現場共有ページへの入口です。</p>
@@ -385,6 +485,30 @@ h1 {{
   </div>
 
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+  <script>
+(function () {{
+  var btn = document.getElementById("portal-menu-btn");
+  var panel = document.getElementById("portal-menu-panel");
+  if (!btn || !panel) return;
+  function setOpen(open) {{
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }}
+  btn.addEventListener("click", function (ev) {{
+    ev.stopPropagation();
+    setOpen(panel.hidden);
+  }});
+  document.addEventListener("click", function () {{
+    setOpen(false);
+  }});
+  panel.addEventListener("click", function (ev) {{
+    ev.stopPropagation();
+  }});
+  document.addEventListener("keydown", function (ev) {{
+    if (ev.key === "Escape") setOpen(false);
+  }});
+}})();
+  </script>
 </body>
 </html>
 """
