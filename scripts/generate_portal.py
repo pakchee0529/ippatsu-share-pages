@@ -605,7 +605,7 @@ a.btn-archive:hover, a.btn-archive:active {{
 <body>
   <nav class="top-bar" aria-label="サイト内リンク">
     <a href="../">ポータルTOP</a>
-    <a href="../ui_samples/">UIサンプル</a>
+    <a href="./">アーカイブ</a>
   </nav>
   <h1>現場共有アーカイブ</h1>
   <p class="disclaimer-note">このページは公開済み共有ページの一覧です。完了済みのみとは限りません。</p>
@@ -892,7 +892,6 @@ a.portal-menu-item:focus-visible {{
         </button>
         <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
           <a class="portal-menu-item" role="menuitem" href="./">ポータルTOP</a>
-          <a class="portal-menu-item" role="menuitem" href="./ui_samples/">UIサンプル</a>
           <a class="portal-menu-item" role="menuitem" href="./archive/">アーカイブ</a>
         </nav>
       </div>
