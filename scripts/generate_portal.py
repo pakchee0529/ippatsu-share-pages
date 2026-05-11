@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Scan share/<date>/index.html and regenerate portal/index.html and portal/archive/index.html (stdlib only)."""
+"""Scan share/<date>/index.html and regenerate portal/index.html and portal/archive/index.html (stdlib only).
+
+ポータルTOPのカードは share 配下の従来どおり。アーカイブは portal/archive_manifest.json の entries
+に登録された6桁日付のみ（share に該当フォルダと index.html があるものだけ反映）。
+"""
 
 from __future__ import annotations
 
@@ -294,6 +298,42 @@ def group_archive_sections(
         label = month_label_from_key(y, m)
         items = sorted(buckets[(y, m)], key=lambda t: sort_key(t[0]), reverse=True)
         out.append(((y, m), label, items))
+    return out
+
+
+def load_archive_manifest_dates(repo_root: Path) -> list[str]:
+    """portal/archive_manifest.json の entries から6桁日付キーを返す（重複除く・新しい日付順）。"""
+    path = repo_root / "portal" / "archive_manifest.json"
+    if not path.is_file():
+        return []
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"Warning: could not read archive_manifest.json: {e}", file=sys.stderr)
+        return []
+    if not isinstance(raw, dict):
+        print("Warning: archive_manifest.json root must be an object", file=sys.stderr)
+        return []
+    entries = raw.get("entries")
+    if entries is None:
+        return []
+    if not isinstance(entries, list):
+        print("Warning: archive_manifest.json 'entries' must be an array", file=sys.stderr)
+        return []
+    seen: set[str] = set()
+    out: list[str] = []
+    for ent in entries:
+        d: str | None = None
+        if isinstance(ent, str) and re.fullmatch(r"\d{6}", ent.strip()):
+            d = ent.strip()
+        elif isinstance(ent, dict):
+            v = ent.get("date")
+            if isinstance(v, str) and re.fullmatch(r"\d{6}", v.strip()):
+                d = v.strip()
+        if d and d not in seen:
+            seen.add(d)
+            out.append(d)
+    out.sort(key=lambda x: int(x), reverse=True)
     return out
 
 
@@ -608,8 +648,8 @@ a.btn-archive:hover, a.btn-archive:active {{
     <a href="./">アーカイブ</a>
   </nav>
   <h1>現場共有アーカイブ</h1>
-  <p class="disclaimer-note">このページは公開済み共有ページの一覧です。完了済みのみとは限りません。</p>
-  <p class="lead">直近7日分は「最近1週間」に、それ以外は下の月別アーカイブ（折りたたみ）にあります。検索で日付・冠称名・件数・補足から絞り込めます。</p>
+  <p class="disclaimer-note">表示対象は <code>portal/archive_manifest.json</code> の <code>entries</code> に登録した6桁日付のみです。個人情報・次回確認メモ・地主情報などはマニフェストに書き込まないでください。</p>
+  <p class="lead">直近7日分は「最近1週間」に、それ以前の登録分は月別アーカイブ（折りたたみ）にあります。検索で日付・冠称名・件数・補足から絞り込めます。</p>
   <div class="search-wrap">
     <label for="archive-search" class="visually-hidden">検索</label>
     <input type="search" id="archive-search" placeholder="日付・冠称名・件数・補足で検索" autocomplete="off">
@@ -957,22 +997,41 @@ def main() -> int:
 
     rows.sort(key=lambda x: sort_key(x[0]))
 
+    manifest_dates = load_archive_manifest_dates(repo_root)
+    archived = set(manifest_dates)
+
     entries: list[tuple[str, str]] = []
-    archive_parts: list[tuple[str, ShareSummary]] = []
     for folder, path in rows:
+        if folder in archived:
+            continue
         html_text = path.read_text(encoding="utf-8", errors="replace")
         date_line = card_heading(folder, path)
         summary = summarize_share_html(html_text, folder)
         heading = build_portal_heading(date_line, summary)
         entries.append((folder, heading))
-        if re.fullmatch(r"\d{6}", folder):
-            archive_parts.append((folder, summary))
+
+    share_by_folder: dict[str, Path] = {f: p for f, p in rows}
+    archive_parts: list[tuple[str, ShareSummary]] = []
+    for folder in manifest_dates:
+        path = share_by_folder.get(folder)
+        if path is None:
+            print(
+                f"Warning: archive manifest lists '{folder}' but share/{folder}/ is missing or has no index.html; skipped",
+                file=sys.stderr,
+            )
+            continue
+        html_text = path.read_text(encoding="utf-8", errors="replace")
+        summary = summarize_share_html(html_text, folder)
+        archive_parts.append((folder, summary))
 
     out = build_html(entries)
     out_path = repo_root / "portal" / "index.html"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(out, encoding="utf-8", newline="\n")
-    print(f"Wrote {out_path} ({len(entries)} cards)")
+    print(
+        f"Wrote {out_path} ({len(entries)} cards, "
+        f"{len(archived)} date(s) hidden on top per manifest)"
+    )
 
     today = date.today()
     recent_parts: list[tuple[str, ShareSummary]] = []
@@ -989,8 +1048,8 @@ def main() -> int:
     arch_path.parent.mkdir(parents=True, exist_ok=True)
     arch_path.write_text(arch_html, encoding="utf-8", newline="\n")
     print(
-        f"Wrote {arch_path} ({len(archive_parts)} dates, "
-        f"recent={len(recent_parts)}, months={len(sections)})"
+        f"Wrote {arch_path} (manifest={len(manifest_dates)}, "
+        f"archive_rows={len(archive_parts)}, recent={len(recent_parts)}, months={len(sections)})"
     )
     return 0
 

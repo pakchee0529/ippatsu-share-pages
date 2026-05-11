@@ -217,8 +217,8 @@ a.btn-archive:hover, a.btn-archive:active {
     <a href="./">アーカイブ</a>
   </nav>
   <h1>現場共有アーカイブ</h1>
-  <p class="disclaimer-note">このページは公開済み共有ページの一覧です。完了済みのみとは限りません。</p>
-  <p class="lead">直近7日分は「最近1週間」に、それ以外は下の月別アーカイブ（折りたたみ）にあります。検索で日付・冠称名・件数・補足から絞り込めます。</p>
+  <p class="disclaimer-note">表示対象は <code>portal/archive_manifest.json</code> の <code>entries</code> に登録した6桁日付のみです。個人情報・次回確認メモ・地主情報などはマニフェストに書き込まないでください。</p>
+  <p class="lead">直近7日分は「最近1週間」に、それ以前の登録分は月別アーカイブ（折りたたみ）にあります。検索で日付・冠称名・件数・補足から絞り込めます。</p>
   <div class="search-wrap">
     <label for="archive-search" class="visually-hidden">検索</label>
     <input type="search" id="archive-search" placeholder="日付・冠称名・件数・補足で検索" autocomplete="off">
@@ -226,96 +226,16 @@ a.btn-archive:hover, a.btn-archive:active {
   <section class="recent-block" id="archive-recent" aria-labelledby="recent-h">
     <h2 class="section-title" id="recent-h">最近1週間</h2>
     <div id="recent-rows" class="archive-list" role="list">
-    <article class="archive-row" data-search="260511 2026年05月11日 小川 5件">
-      <div class="archive-row-top">
-        <div class="archive-date">2026年05月11日 <span class="archive-dkey">(260511)</span></div>
-        <div class="archive-count">5件</div>
-      </div>
-      <div class="archive-crown">小川</div>
-      <a class="btn btn-archive" href="../share/260511/">共有ページを開く</a>
-    </article>
-    <article class="archive-row" data-search="260509 2026年05月09日 南千股 7件">
-      <div class="archive-row-top">
-        <div class="archive-date">2026年05月09日 <span class="archive-dkey">(260509)</span></div>
-        <div class="archive-count">7件</div>
-      </div>
-      <div class="archive-crown">南千股</div>
-      <a class="btn btn-archive" href="../share/260509/">共有ページを開く</a>
-    </article>
-    <article class="archive-row" data-search="260508 2026年05月08日 百谷・北宇智 5件">
-      <div class="archive-row-top">
-        <div class="archive-date">2026年05月08日 <span class="archive-dkey">(260508)</span></div>
-        <div class="archive-count">5件</div>
-      </div>
-      <div class="archive-crown">百谷・北宇智</div>
-      <a class="btn btn-archive" href="../share/260508/">共有ページを開く</a>
-    </article>
+
     </div>
-    <p id="recent-empty-build" class="empty-note" hidden>最近1週間の現場はありません。</p>
+    <p id="recent-empty-build" class="empty-note">最近1週間の現場はありません。</p>
     <p id="recent-search-empty" class="empty-note" hidden>最近1週間の範囲に、検索に一致する現場はありません。</p>
   </section>
   <section class="monthly-block" id="archive-monthly-wrap" aria-labelledby="monthly-h">
     <h2 class="section-title" id="monthly-h">月別アーカイブ</h2>
     <div id="archive-months">
-    <details class="month-archive" id="m-2026-12">
-      <summary class="month-summary">2026年12月</summary>
-      <div class="archive-list" role="list">
-    <article class="archive-row" data-search="261231 2026年12月31日 赤松・大畑・柴ヶ谷・白銀　ほか8件 45件">
-      <div class="archive-row-top">
-        <div class="archive-date">2026年12月31日 <span class="archive-dkey">(261231)</span></div>
-        <div class="archive-count">45件</div>
-      </div>
-      <div class="archive-crown">赤松・大畑・柴ヶ谷・白銀　ほか8件</div>
-      <a class="btn btn-archive" href="../share/261231/">共有ページを開く</a>
-    </article>
-      </div>
-    </details>
-    <details class="month-archive" id="m-2026-05">
-      <summary class="month-summary">2026年05月</summary>
-      <div class="archive-list" role="list">
-    <article class="archive-row" data-search="260518 2026年05月18日 葛川 4件 人力感謝デー">
-      <div class="archive-row-top">
-        <div class="archive-date">2026年05月18日 <span class="archive-dkey">(260518)</span></div>
-        <div class="archive-count">4件</div>
-      </div>
-      <div class="archive-crown">葛川</div>
-    <div class="archive-suffix">人力感謝デー</div>
-      <a class="btn btn-archive" href="../share/260518/">共有ページを開く</a>
-    </article>
-    <article class="archive-row" data-search="260515 2026年05月15日 小川 4件">
-      <div class="archive-row-top">
-        <div class="archive-date">2026年05月15日 <span class="archive-dkey">(260515)</span></div>
-        <div class="archive-count">4件</div>
-      </div>
-      <div class="archive-crown">小川</div>
-      <a class="btn btn-archive" href="../share/260515/">共有ページを開く</a>
-    </article>
-    <article class="archive-row" data-search="260514 2026年05月14日 小川・古ル野 6件">
-      <div class="archive-row-top">
-        <div class="archive-date">2026年05月14日 <span class="archive-dkey">(260514)</span></div>
-        <div class="archive-count">6件</div>
-      </div>
-      <div class="archive-crown">小川・古ル野</div>
-      <a class="btn btn-archive" href="../share/260514/">共有ページを開く</a>
-    </article>
-    <article class="archive-row" data-search="260513 2026年05月13日 古ル野 6件">
-      <div class="archive-row-top">
-        <div class="archive-date">2026年05月13日 <span class="archive-dkey">(260513)</span></div>
-        <div class="archive-count">6件</div>
-      </div>
-      <div class="archive-crown">古ル野</div>
-      <a class="btn btn-archive" href="../share/260513/">共有ページを開く</a>
-    </article>
-    <article class="archive-row" data-search="260512 2026年05月12日 小川 6件">
-      <div class="archive-row-top">
-        <div class="archive-date">2026年05月12日 <span class="archive-dkey">(260512)</span></div>
-        <div class="archive-count">6件</div>
-      </div>
-      <div class="archive-crown">小川</div>
-      <a class="btn btn-archive" href="../share/260512/">共有ページを開く</a>
-    </article>
-      </div>
-    </details>
+
+    <p class="empty-note" id="monthly-empty-build">月別アーカイブに表示する現場はありません。</p>
     <p id="monthly-search-empty" class="empty-note" hidden>月別アーカイブに、検索に一致する現場はありません。</p>
     </div>
   </section>
