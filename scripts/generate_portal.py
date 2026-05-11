@@ -9,6 +9,7 @@ import json
 import re
 import sys
 from dataclasses import dataclass
+from datetime import date, timedelta
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -296,6 +297,28 @@ def group_archive_sections(
     return out
 
 
+def folder_to_calendar_date(folder: str) -> date | None:
+    """6桁 YYMMDD を 20YY-MM-DD の暦日として解釈。無効日付は None。"""
+    if not re.fullmatch(r"\d{6}", folder):
+        return None
+    yy, mm, dd = int(folder[0:2]), int(folder[2:4]), int(folder[4:6])
+    y = 2000 + yy
+    try:
+        return date(y, mm, dd)
+    except ValueError:
+        return None
+
+
+def is_in_last_seven_days(folder: str, today: date) -> bool:
+    """今日を含み、今日以前7日以内（6日より前は除外）。"""
+    d = folder_to_calendar_date(folder)
+    if d is None:
+        return False
+    if d > today:
+        return False
+    return (today - d) <= timedelta(days=6)
+
+
 def archive_row_search_blob(
     folder: str, date_jp: str, crown_sm: str, item_n: int, suffix: str
 ) -> str:
@@ -310,32 +333,22 @@ def archive_row_search_blob(
     return " ".join(b for b in bits if str(b).strip())
 
 
-def build_archive_html(
-    sections: list[tuple[tuple[int, int], str, list[tuple[str, ShareSummary]]]],
-) -> str:
-    """月ごとのアーカイブ一覧（検索付き）。"""
-    month_blocks: list[str] = []
-    for (y, m), month_label, items in sections:
-        mid = f"m-{y:04d}-{m:02d}"
-        rows_html: list[str] = []
-        for folder, summary in items:
-            date_jp = fallback_heading(folder)
-            crown_sm = format_crown_summary(summary.crown_names)
-            if not crown_sm.strip():
-                crown_sm = "—"
-            sfx = (summary.display_suffix or "").strip()
-            sfx_html = ""
-            if sfx:
-                sfx_html = (
-                    f'    <div class="archive-suffix">{escape_html(sfx)}</div>\n'
-                )
-            blob = archive_row_search_blob(
-                folder, date_jp, crown_sm, summary.item_count, sfx
-            )
-            search_attr = escape_html(blob)
-            href = f"../share/{folder}/"
-            rows_html.append(
-                f"""    <article class="archive-row" data-search="{search_attr}">
+def format_archive_row_article(folder: str, summary: ShareSummary) -> str:
+    """1行分のアーカイブカード（data-search 付き）。"""
+    date_jp = fallback_heading(folder)
+    crown_sm = format_crown_summary(summary.crown_names)
+    if not crown_sm.strip():
+        crown_sm = "—"
+    sfx = (summary.display_suffix or "").strip()
+    sfx_html = ""
+    if sfx:
+        sfx_html = f'    <div class="archive-suffix">{escape_html(sfx)}</div>\n'
+    blob = archive_row_search_blob(
+        folder, date_jp, crown_sm, summary.item_count, sfx
+    )
+    search_attr = escape_html(blob)
+    href = f"../share/{folder}/"
+    return f"""    <article class="archive-row" data-search="{search_attr}">
       <div class="archive-row-top">
         <div class="archive-date">{escape_html(date_jp)} <span class="archive-dkey">({escape_html(folder)})</span></div>
         <div class="archive-count">{summary.item_count}件</div>
@@ -343,22 +356,38 @@ def build_archive_html(
       <div class="archive-crown">{escape_html(crown_sm)}</div>
 {sfx_html}      <a class="btn btn-archive" href="{escape_html(href)}">共有ページを開く</a>
     </article>"""
-            )
-        rows_str = "\n".join(rows_html)
+
+
+def build_archive_html(
+    recent_parts: list[tuple[str, ShareSummary]],
+    sections: list[tuple[tuple[int, int], str, list[tuple[str, ShareSummary]]]],
+) -> str:
+    """直近7日 + 月別 details（検索付き）。recent と月別で同一現場は重複しない。"""
+    recent_rows_str = "\n".join(
+        format_archive_row_article(f, s) for f, s in recent_parts
+    )
+    recent_empty_hidden = " hidden" if recent_parts else ""
+    month_blocks: list[str] = []
+    for (y, m), month_label, items in sections:
+        mid = f"m-{y:04d}-{m:02d}"
+        rows_str = "\n".join(
+            format_archive_row_article(folder, summary) for folder, summary in items
+        )
         month_blocks.append(
-            f"""  <section class="month-block" aria-labelledby="{mid}">
-    <h2 class="month-title" id="{mid}">{escape_html(month_label)}</h2>
-    <div class="archive-list" role="list">
+            f"""    <details class="month-archive" id="{escape_html(mid)}">
+      <summary class="month-summary">{escape_html(month_label)}</summary>
+      <div class="archive-list" role="list">
 {rows_str}
-    </div>
-  </section>"""
+      </div>
+    </details>"""
         )
     months_str = "\n".join(month_blocks) if month_blocks else ""
-    empty_note = (
-        '  <p class="empty-note">該当する公開ページ（6桁日付の share/&lt;date&gt;/）がありません。</p>\n'
-        if not months_str
-        else ""
-    )
+    monthly_empty_note = ""
+    if not months_str:
+        monthly_empty_note = (
+            '    <p class="empty-note" id="monthly-empty-build">'
+            "月別アーカイブに表示する現場はありません。</p>\n"
+        )
 
     return f"""<!DOCTYPE html>
 <html lang="ja">
@@ -430,16 +459,63 @@ h1 {{
   border-radius: 10px;
   font-family: inherit;
 }}
-.month-block {{
-  margin-bottom: 1.25rem;
+.disclaimer-note {{
+  font-size: 0.8rem;
+  color: var(--muted-b);
+  margin: 0 0 0.5rem;
+  line-height: 1.45;
 }}
-.month-title {{
+.section-title {{
   font-size: 1.05rem;
   font-weight: 700;
-  margin: 0 0 0.5rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 2px solid var(--border-b);
+  margin: 0 0 0.45rem;
   color: var(--text-b);
+}}
+.recent-block {{
+  margin-bottom: 1.15rem;
+}}
+.monthly-block {{
+  margin-bottom: 0.5rem;
+}}
+.monthly-block > .section-title {{
+  margin-bottom: 0.5rem;
+}}
+#archive-months {{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}}
+.month-archive {{
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
+}}
+.month-summary {{
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+}}
+.month-summary::-webkit-details-marker {{
+  display: none;
+}}
+.month-archive .archive-list {{
+  padding: 0 0.65rem 0.65rem;
+  gap: 0.5rem;
+}}
+.recent-block .archive-row {{
+  padding: 0.55rem 0.65rem;
+}}
+.recent-block a.btn-archive {{
+  padding: 0.5rem 0.65rem;
+  font-size: 0.92rem;
 }}
 .archive-list {{
   display: flex;
@@ -532,14 +608,27 @@ a.btn-archive:hover, a.btn-archive:active {{
     <a href="../ui_samples/">UIサンプル</a>
   </nav>
   <h1>現場共有アーカイブ</h1>
-  <p class="lead">公開中の過去現場（share/&lt;日付&gt;/）を月ごとに並べています。検索で日付・径間名・件数・補足から絞り込めます。</p>
+  <p class="disclaimer-note">このページは公開済み共有ページの一覧です。完了済みのみとは限りません。</p>
+  <p class="lead">直近7日分は「最近1週間」に、それ以外は下の月別アーカイブ（折りたたみ）にあります。検索で日付・冠称名・件数・補足から絞り込めます。</p>
   <div class="search-wrap">
     <label for="archive-search" class="visually-hidden">検索</label>
     <input type="search" id="archive-search" placeholder="日付・冠称名・件数・補足で検索" autocomplete="off">
   </div>
-  <div id="archive-months">
+  <section class="recent-block" id="archive-recent" aria-labelledby="recent-h">
+    <h2 class="section-title" id="recent-h">最近1週間</h2>
+    <div id="recent-rows" class="archive-list" role="list">
+{recent_rows_str}
+    </div>
+    <p id="recent-empty-build" class="empty-note"{recent_empty_hidden}>最近1週間の現場はありません。</p>
+    <p id="recent-search-empty" class="empty-note" hidden>最近1週間の範囲に、検索に一致する現場はありません。</p>
+  </section>
+  <section class="monthly-block" id="archive-monthly-wrap" aria-labelledby="monthly-h">
+    <h2 class="section-title" id="monthly-h">月別アーカイブ</h2>
+    <div id="archive-months">
 {months_str}
-{empty_note}  </div>
+{monthly_empty_note}    <p id="monthly-search-empty" class="empty-note" hidden>月別アーカイブに、検索に一致する現場はありません。</p>
+    </div>
+  </section>
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
   <script>
 (function () {{
@@ -551,19 +640,43 @@ a.btn-archive:hover, a.btn-archive:active {{
   function apply() {{
     var q = norm(input.value).trim();
     var rows = document.querySelectorAll(".archive-row");
-    var months = document.querySelectorAll(".month-block");
     rows.forEach(function (row) {{
       var hay = norm(row.getAttribute("data-search") || "");
       var show = !q || hay.indexOf(q) >= 0;
       row.style.display = show ? "" : "none";
     }});
-    months.forEach(function (sec) {{
+    var recentBlock = document.getElementById("archive-recent");
+    var recentSearchEmpty = document.getElementById("recent-search-empty");
+    if (recentBlock && recentSearchEmpty) {{
+      var recentRows = recentBlock.querySelectorAll(".archive-row");
+      var recentVis = 0;
+      recentRows.forEach(function (r) {{
+        if (r.style.display !== "none") recentVis++;
+      }});
+      var showRecentSearchEmpty = q && recentRows.length > 0 && recentVis === 0;
+      recentSearchEmpty.hidden = !showRecentSearchEmpty;
+    }}
+    var monthDetails = document.querySelectorAll("details.month-archive");
+    monthDetails.forEach(function (det) {{
       var vis = false;
-      sec.querySelectorAll(".archive-row").forEach(function (r) {{
+      det.querySelectorAll(".archive-row").forEach(function (r) {{
         if (r.style.display !== "none") vis = true;
       }});
-      sec.style.display = vis ? "" : "none";
+      det.style.display = vis ? "" : "none";
+      if (q) {{
+        if (vis) det.open = true;
+      }} else {{
+        det.open = false;
+      }}
     }});
+    var mSearchEmpty = document.getElementById("monthly-search-empty");
+    if (mSearchEmpty && monthDetails.length) {{
+      var anyMonthOpen = false;
+      monthDetails.forEach(function (d) {{
+        if (d.style.display !== "none") anyMonthOpen = true;
+      }});
+      mSearchEmpty.hidden = !(q && !anyMonthOpen);
+    }}
   }}
   input.addEventListener("input", apply);
   input.addEventListener("search", apply);
@@ -862,13 +975,23 @@ def main() -> int:
     out_path.write_text(out, encoding="utf-8", newline="\n")
     print(f"Wrote {out_path} ({len(entries)} cards)")
 
-    sections = group_archive_sections(archive_parts)
-    arch_html = build_archive_html(sections)
+    today = date.today()
+    recent_parts: list[tuple[str, ShareSummary]] = []
+    monthly_parts: list[tuple[str, ShareSummary]] = []
+    for folder, summary in archive_parts:
+        if is_in_last_seven_days(folder, today):
+            recent_parts.append((folder, summary))
+        else:
+            monthly_parts.append((folder, summary))
+    recent_parts.sort(key=lambda t: sort_key(t[0]), reverse=True)
+    sections = group_archive_sections(monthly_parts)
+    arch_html = build_archive_html(recent_parts, sections)
     arch_path = repo_root / "portal" / "archive" / "index.html"
     arch_path.parent.mkdir(parents=True, exist_ok=True)
     arch_path.write_text(arch_html, encoding="utf-8", newline="\n")
     print(
-        f"Wrote {arch_path} ({len(archive_parts)} dates, {len(sections)} months)"
+        f"Wrote {arch_path} ({len(archive_parts)} dates, "
+        f"recent={len(recent_parts)}, months={len(sections)})"
     )
     return 0
 
