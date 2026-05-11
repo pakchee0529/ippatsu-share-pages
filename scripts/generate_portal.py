@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Scan share/<date>/index.html and regenerate portal/index.html (stdlib only)."""
+"""Scan share/<date>/index.html and regenerate portal/index.html and portal/archive/index.html (stdlib only)."""
 
 from __future__ import annotations
 
@@ -263,6 +263,317 @@ def escape_html(s: str) -> str:
     return html_lib.escape(s, quote=True)
 
 
+def month_heading_key(folder: str) -> tuple[int, int] | None:
+    """6桁 YYMMDD から (西暦年, 月)。"""
+    if not re.fullmatch(r"\d{6}", folder):
+        return None
+    yy, mm = int(folder[0:2]), int(folder[2:4])
+    return (2000 + yy, mm)
+
+
+def month_label_from_key(year: int, month: int) -> str:
+    return f"{year}年{month:02d}月"
+
+
+def group_archive_sections(
+    parts: list[tuple[str, ShareSummary]],
+) -> list[tuple[tuple[int, int], str, list[tuple[str, ShareSummary]]]]:
+    """月新しい順。各月内は日付キー新しい順。"""
+    from collections import defaultdict
+
+    buckets: dict[tuple[int, int], list[tuple[str, ShareSummary]]] = defaultdict(list)
+    for folder, summary in parts:
+        mk = month_heading_key(folder)
+        if mk is None:
+            continue
+        buckets[mk].append((folder, summary))
+    keys = sorted(buckets.keys(), reverse=True)
+    out: list[tuple[tuple[int, int], str, list[tuple[str, ShareSummary]]]] = []
+    for y, m in keys:
+        label = month_label_from_key(y, m)
+        items = sorted(buckets[(y, m)], key=lambda t: sort_key(t[0]), reverse=True)
+        out.append(((y, m), label, items))
+    return out
+
+
+def archive_row_search_blob(
+    folder: str, date_jp: str, crown_sm: str, item_n: int, suffix: str
+) -> str:
+    """検索用のプレーンテキスト（小文字化前提で連結）。"""
+    bits = [
+        folder,
+        date_jp,
+        crown_sm or "",
+        f"{item_n}件",
+        suffix or "",
+    ]
+    return " ".join(b for b in bits if str(b).strip())
+
+
+def build_archive_html(
+    sections: list[tuple[tuple[int, int], str, list[tuple[str, ShareSummary]]]],
+) -> str:
+    """月ごとのアーカイブ一覧（検索付き）。"""
+    month_blocks: list[str] = []
+    for (y, m), month_label, items in sections:
+        mid = f"m-{y:04d}-{m:02d}"
+        rows_html: list[str] = []
+        for folder, summary in items:
+            date_jp = fallback_heading(folder)
+            crown_sm = format_crown_summary(summary.crown_names)
+            if not crown_sm.strip():
+                crown_sm = "—"
+            sfx = (summary.display_suffix or "").strip()
+            sfx_html = ""
+            if sfx:
+                sfx_html = (
+                    f'    <div class="archive-suffix">{escape_html(sfx)}</div>\n'
+                )
+            blob = archive_row_search_blob(
+                folder, date_jp, crown_sm, summary.item_count, sfx
+            )
+            search_attr = escape_html(blob)
+            href = f"../share/{folder}/"
+            rows_html.append(
+                f"""    <article class="archive-row" data-search="{search_attr}">
+      <div class="archive-row-top">
+        <div class="archive-date">{escape_html(date_jp)} <span class="archive-dkey">({escape_html(folder)})</span></div>
+        <div class="archive-count">{summary.item_count}件</div>
+      </div>
+      <div class="archive-crown">{escape_html(crown_sm)}</div>
+{sfx_html}      <a class="btn btn-archive" href="{escape_html(href)}">共有ページを開く</a>
+    </article>"""
+            )
+        rows_str = "\n".join(rows_html)
+        month_blocks.append(
+            f"""  <section class="month-block" aria-labelledby="{mid}">
+    <h2 class="month-title" id="{mid}">{escape_html(month_label)}</h2>
+    <div class="archive-list" role="list">
+{rows_str}
+    </div>
+  </section>"""
+        )
+    months_str = "\n".join(month_blocks) if month_blocks else ""
+    empty_note = (
+        '  <p class="empty-note">該当する公開ページ（6桁日付の share/&lt;date&gt;/）がありません。</p>\n'
+        if not months_str
+        else ""
+    )
+
+    return f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>現場共有アーカイブ</title>
+<style>
+:root {{
+  --bg-b: #eef2f7;
+  --card-b: #fff;
+  --text-b: #142033;
+  --muted-b: #5a6578;
+  --border-b: #cfd8e3;
+  --accent-b: #1565c0;
+  --accent-b-hover: #0d47a1;
+}}
+* {{ box-sizing: border-box; }}
+body {{
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
+    "Noto Sans JP", sans-serif;
+  background: var(--bg-b);
+  color: var(--text-b);
+  line-height: 1.5;
+  padding: 0.85rem 0.85rem 1.5rem;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}}
+.top-bar {{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}}
+.top-bar a {{
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent-b);
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}}
+.top-bar a:hover, .top-bar a:focus-visible {{
+  text-decoration: underline;
+  outline: none;
+}}
+h1 {{
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}}
+.lead {{
+  font-size: 0.92rem;
+  color: var(--muted-b);
+  margin: 0 0 0.75rem;
+}}
+.search-wrap {{
+  margin-bottom: 1rem;
+}}
+#archive-search {{
+  width: 100%;
+  min-height: 48px;
+  font-size: 1rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  font-family: inherit;
+}}
+.month-block {{
+  margin-bottom: 1.25rem;
+}}
+.month-title {{
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--border-b);
+  color: var(--text-b);
+}}
+.archive-list {{
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}}
+.archive-row {{
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
+}}
+.archive-row-top {{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}}
+.archive-date {{
+  font-weight: 700;
+  font-size: 0.95rem;
+}}
+.archive-dkey {{
+  font-weight: 600;
+  color: var(--muted-b);
+  font-size: 0.82rem;
+}}
+.archive-count {{
+  font-size: 0.88rem;
+  color: var(--muted-b);
+  font-weight: 600;
+  white-space: nowrap;
+}}
+.archive-crown {{
+  font-size: 0.88rem;
+  color: var(--text-b);
+  margin-bottom: 0.35rem;
+  word-break: break-word;
+}}
+.archive-suffix {{
+  font-size: 0.82rem;
+  color: var(--muted-b);
+  margin-bottom: 0.45rem;
+}}
+a.btn-archive {{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #fff;
+  background: var(--accent-b);
+  border-radius: 9px;
+  padding: 0.55rem 0.75rem;
+  min-height: 44px;
+}}
+a.btn-archive:hover, a.btn-archive:active {{
+  background: var(--accent-b-hover);
+}}
+.empty-note {{
+  color: var(--muted-b);
+  font-size: 0.95rem;
+}}
+.footer-note {{
+  margin-top: 1.25rem;
+  font-size: 0.8rem;
+  color: var(--muted-b);
+  text-align: center;
+}}
+.visually-hidden {{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}}
+</style>
+</head>
+<body>
+  <nav class="top-bar" aria-label="サイト内リンク">
+    <a href="../">ポータルTOP</a>
+    <a href="../ui_samples/">UIサンプル</a>
+  </nav>
+  <h1>現場共有アーカイブ</h1>
+  <p class="lead">公開中の過去現場（share/&lt;日付&gt;/）を月ごとに並べています。検索で日付・径間名・件数・補足から絞り込めます。</p>
+  <div class="search-wrap">
+    <label for="archive-search" class="visually-hidden">検索</label>
+    <input type="search" id="archive-search" placeholder="日付・冠称名・件数・補足で検索" autocomplete="off">
+  </div>
+  <div id="archive-months">
+{months_str}
+{empty_note}  </div>
+  <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+  <script>
+(function () {{
+  var input = document.getElementById("archive-search");
+  if (!input) return;
+  function norm(s) {{
+    return (s || "").toLowerCase();
+  }}
+  function apply() {{
+    var q = norm(input.value).trim();
+    var rows = document.querySelectorAll(".archive-row");
+    var months = document.querySelectorAll(".month-block");
+    rows.forEach(function (row) {{
+      var hay = norm(row.getAttribute("data-search") || "");
+      var show = !q || hay.indexOf(q) >= 0;
+      row.style.display = show ? "" : "none";
+    }});
+    months.forEach(function (sec) {{
+      var vis = false;
+      sec.querySelectorAll(".archive-row").forEach(function (r) {{
+        if (r.style.display !== "none") vis = true;
+      }});
+      sec.style.display = vis ? "" : "none";
+    }});
+  }}
+  input.addEventListener("input", apply);
+  input.addEventListener("search", apply);
+}})();
+  </script>
+</body>
+</html>
+"""
+
+
 def build_html(
     entries: list[tuple[str, str]],
 ) -> str:
@@ -469,7 +780,7 @@ a.portal-menu-item:focus-visible {{
         <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
           <a class="portal-menu-item" role="menuitem" href="./">ポータルTOP</a>
           <a class="portal-menu-item" role="menuitem" href="./ui_samples/">UIサンプル</a>
-          <span class="portal-menu-item portal-menu-soon" role="menuitem" aria-disabled="true">アーカイブ（準備中）</span>
+          <a class="portal-menu-item" role="menuitem" href="./archive/">アーカイブ</a>
         </nav>
       </div>
     </div>
@@ -535,18 +846,30 @@ def main() -> int:
     rows.sort(key=lambda x: sort_key(x[0]))
 
     entries: list[tuple[str, str]] = []
+    archive_parts: list[tuple[str, ShareSummary]] = []
     for folder, path in rows:
         html_text = path.read_text(encoding="utf-8", errors="replace")
         date_line = card_heading(folder, path)
         summary = summarize_share_html(html_text, folder)
         heading = build_portal_heading(date_line, summary)
         entries.append((folder, heading))
+        if re.fullmatch(r"\d{6}", folder):
+            archive_parts.append((folder, summary))
 
     out = build_html(entries)
     out_path = repo_root / "portal" / "index.html"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(out, encoding="utf-8", newline="\n")
     print(f"Wrote {out_path} ({len(entries)} cards)")
+
+    sections = group_archive_sections(archive_parts)
+    arch_html = build_archive_html(sections)
+    arch_path = repo_root / "portal" / "archive" / "index.html"
+    arch_path.parent.mkdir(parents=True, exist_ok=True)
+    arch_path.write_text(arch_html, encoding="utf-8", newline="\n")
+    print(
+        f"Wrote {arch_path} ({len(archive_parts)} dates, {len(sections)} months)"
+    )
     return 0
 
 
