@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UI Sample 04 - Calendar Like</title>
+  <style>
+    :root { --bg:#f4f7fc; --card:#fff; --line:#d7e0ee; --text:#15243d; --muted:#5a6a81; --btn:#1a66d8; }
+    *{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif;}
+    .wrap{max-width:780px;margin:0 auto;padding:14px;}
+    .tag{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;background:#ffedc4;border:1px solid #f2cf84;color:#7a4400;}
+    h1{margin:10px 0;font-size:22px;}
+    .cal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+    .day{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;gap:8px;}
+    .top{display:flex;align-items:baseline;gap:6px;} .d{font-size:24px;font-weight:800;line-height:1;} .ym{font-size:12px;color:var(--muted);}
+    .place{font-weight:700;line-height:1.35;} .count{font-size:13px;color:var(--muted);}
+    .btn{display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:10px;background:var(--btn);color:#fff;text-decoration:none;font-weight:700;}
+    @media(max-width:560px){.cal{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="tag">UIサンプル / 本番ではありません</div>
+    <h1>現場共有ポータル（Calendar Like）</h1>
+    <section class="cal">
+      <article class="day"><div class="top"><div class="d">08</div><div class="ym">2026 / 05</div></div><div class="place">百谷・北宇智</div><div class="count">5件</div><a class="btn" href="../share/260508/">共有ページを開く</a></article>
+      <article class="day"><div class="top"><div class="d">09</div><div class="ym">2026 / 05</div></div><div class="place">南千股</div><div class="count">7件</div><a class="btn" href="../share/260509/">共有ページを開く</a></article>
+      <article class="day"><div class="top"><div class="d">11</div><div class="ym">2026 / 05</div></div><div class="place">小川</div><div class="count">5件</div><a class="btn" href="../share/260511/">共有ページを開く</a></article>
+      <article class="day"><div class="top"><div class="d">12</div><div class="ym">2026 / 05</div></div><div class="place">小川</div><div class="count">6件</div><a class="btn" href="../share/260512/">共有ページを開く</a></article>
+      <article class="day"><div class="top"><div class="d">13</div><div class="ym">2026 / 05</div></div><div class="place">古ル野</div><div class="count">6件</div><a class="btn" href="../share/260513/">共有ページを開く</a></article>
+      <article class="day"><div class="top"><div class="d">14</div><div class="ym">2026 / 05</div></div><div class="place">小川・古ル野</div><div class="count">6件</div><a class="btn" href="../share/260514/">共有ページを開く</a></article>
+      <article class="day"><div class="top"><div class="d">15</div><div class="ym">2026 / 05</div></div><div class="place">小川</div><div class="count">4件</div><a class="btn" href="../share/260515/">共有ページを開く</a></article>
+      <article class="day"><div class="top"><div class="d">18</div><div class="ym">2026 / 05</div></div><div class="place">葛川</div><div class="count">4件 / 人力感謝デー</div><a class="btn" href="../share/260518/">共有ページを開く</a></article>
+      <article class="day"><div class="top"><div class="d">31</div><div class="ym">2026 / 12</div></div><div class="place">赤松・大畑・柴ヶ谷・白銀 ほか8件</div><div class="count">45件</div><a class="btn" href="../share/261231/">共有ページを開く</a></article>
+    </section>
+  </div>
+</body>
+</html>

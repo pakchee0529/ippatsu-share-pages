@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UI Sample 05 - Minimal Business</title>
+  <style>
+    :root { --bg:#fbfcfe; --text:#1a1f2b; --muted:#5b6475; --line:#cfd5e0; --head:#eef2f7; --btn:#1a5ec8; }
+    * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--text); font-family: "Segoe UI", "Meiryo UI", "Noto Sans JP", sans-serif; }
+    .wrap { max-width:900px; margin:0 auto; padding:12px; }
+    .note { display:inline-block; font-size:12px; font-weight:700; background:#fff2c8; border:1px solid #efd58d; color:#744400; border-radius:999px; padding:4px 10px; margin-bottom:8px; }
+    h1 { margin:6px 0 12px; font-size:22px; }
+    table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); }
+    th, td { border:1px solid var(--line); padding:10px 8px; text-align:left; font-size:14px; vertical-align:middle; }
+    th { background:var(--head); font-weight:700; }
+    .muted { color:var(--muted); }
+    .btn { display:inline-flex; align-items:center; justify-content:center; min-height:44px; min-width:92px; background:var(--btn); color:#fff; text-decoration:none; border-radius:8px; font-weight:700; }
+    @media (max-width:640px){
+      th:nth-child(3), td:nth-child(3) { display:none; }
+      th, td { font-size:13px; padding:8px 6px; }
+      .btn { width:100%; min-width:0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="note">UIサンプル / 本番ではありません</div>
+    <h1>現場共有ポータル（Minimal Business）</h1>
+    <table>
+      <thead><tr><th>日付</th><th>冠称名</th><th>補足</th><th>件数</th><th>操作</th></tr></thead>
+      <tbody>
+        <tr><td>2026/05/08</td><td>百谷・北宇智</td><td class="muted">-</td><td>5件</td><td><a class="btn" href="../share/260508/">開く</a></td></tr>
+        <tr><td>2026/05/09</td><td>南千股</td><td class="muted">-</td><td>7件</td><td><a class="btn" href="../share/260509/">開く</a></td></tr>
+        <tr><td>2026/05/11</td><td>小川</td><td class="muted">-</td><td>5件</td><td><a class="btn" href="../share/260511/">開く</a></td></tr>
+        <tr><td>2026/05/12</td><td>小川</td><td class="muted">-</td><td>6件</td><td><a class="btn" href="../share/260512/">開く</a></td></tr>
+        <tr><td>2026/05/13</td><td>古ル野</td><td class="muted">-</td><td>6件</td><td><a class="btn" href="../share/260513/">開く</a></td></tr>
+        <tr><td>2026/05/14</td><td>小川・古ル野</td><td class="muted">-</td><td>6件</td><td><a class="btn" href="../share/260514/">開く</a></td></tr>
+        <tr><td>2026/05/15</td><td>小川</td><td class="muted">-</td><td>4件</td><td><a class="btn" href="../share/260515/">開く</a></td></tr>
+        <tr><td>2026/05/18</td><td>葛川</td><td>人力感謝デー</td><td>4件</td><td><a class="btn" href="../share/260518/">開く</a></td></tr>
+        <tr><td>2026/12/31</td><td>赤松・大畑・柴ヶ谷・白銀 ほか8件</td><td class="muted">-</td><td>45件</td><td><a class="btn" href="../share/261231/">開く</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

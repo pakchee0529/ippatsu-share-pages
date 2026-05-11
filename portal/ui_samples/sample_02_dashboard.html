@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UI Sample 02 - Dashboard</title>
+  <style>
+    :root { --bg:#f3f6fb; --panel:#ffffff; --line:#d8e1ef; --text:#12233c; --muted:#56657b; --cta:#0d63d6; }
+    * { box-sizing:border-box; } body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans JP", sans-serif; background:var(--bg); color:var(--text);}
+    .wrap { max-width:800px; margin:0 auto; padding:12px; }
+    .warn { font-size:12px; font-weight:700; background:#ffeec2; border:1px solid #f4cf81; color:#7a4600; padding:4px 10px; border-radius:999px; display:inline-block; }
+    .head { margin:10px 0; }
+    h1 { margin:8px 0; font-size:22px; }
+    .summary { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:10px 0 14px; }
+    .kpi { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:10px; min-height:70px; }
+    .kpi .k { font-size:12px; color:var(--muted); } .kpi .v { font-size:20px; font-weight:800; margin-top:4px; }
+    .list { display:grid; gap:8px; }
+    .item { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:10px; display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; }
+    .date { font-size:13px; color:var(--muted);} .name { font-weight:700; } .count { font-size:13px; color:var(--muted);}
+    .btn { min-height:46px; min-width:86px; border-radius:10px; background:var(--cta); color:#fff; text-decoration:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+    @media (max-width:560px){ .summary{grid-template-columns:1fr;} .item{grid-template-columns:1fr;} .btn{width:100%;} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="warn">UIサンプル / 本番ではありません</div>
+    <div class="head"><h1>現場共有ポータル（Dashboard）</h1></div>
+    <section class="summary">
+      <div class="kpi"><div class="k">本日の現場</div><div class="v">9日程</div></div>
+      <div class="kpi"><div class="k">総件数</div><div class="v">89件</div></div>
+      <div class="kpi"><div class="k">更新日</div><div class="v" style="font-size:16px">2026-05-11</div></div>
+    </section>
+    <section class="list">
+      <article class="item"><div><div class="date">2026年05月08日</div><div class="name">百谷・北宇智</div><div class="count">5件</div></div><a class="btn" href="../share/260508/">開く</a></article>
+      <article class="item"><div><div class="date">2026年05月09日</div><div class="name">南千股</div><div class="count">7件</div></div><a class="btn" href="../share/260509/">開く</a></article>
+      <article class="item"><div><div class="date">2026年05月11日</div><div class="name">小川</div><div class="count">5件</div></div><a class="btn" href="../share/260511/">開く</a></article>
+      <article class="item"><div><div class="date">2026年05月12日</div><div class="name">小川</div><div class="count">6件</div></div><a class="btn" href="../share/260512/">開く</a></article>
+      <article class="item"><div><div class="date">2026年05月13日</div><div class="name">古ル野</div><div class="count">6件</div></div><a class="btn" href="../share/260513/">開く</a></article>
+      <article class="item"><div><div class="date">2026年05月14日</div><div class="name">小川・古ル野</div><div class="count">6件</div></div><a class="btn" href="../share/260514/">開く</a></article>
+      <article class="item"><div><div class="date">2026年05月15日</div><div class="name">小川</div><div class="count">4件</div></div><a class="btn" href="../share/260515/">開く</a></article>
+      <article class="item"><div><div class="date">2026年05月18日</div><div class="name">葛川</div><div class="count">4件 / 人力感謝デー</div></div><a class="btn" href="../share/260518/">開く</a></article>
+      <article class="item"><div><div class="date">2026年12月31日</div><div class="name">赤松・大畑・柴ヶ谷・白銀 ほか8件</div><div class="count">45件</div></div><a class="btn" href="../share/261231/">開く</a></article>
+    </section>
+  </div>
+</body>
+</html>

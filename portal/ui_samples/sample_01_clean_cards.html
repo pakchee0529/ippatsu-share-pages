@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UI Sample 01 - Clean Cards</title>
+  <style>
+    :root { color-scheme: light; --bg:#eef3f9; --card:#fff; --text:#132033; --muted:#516075; --line:#d2dcea; --btn:#125ec6; --btn2:#0f4fa7; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans JP", sans-serif; background:var(--bg); color:var(--text); }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 14px; }
+    .badge { display:inline-block; font-size:12px; font-weight:700; color:#7a3e00; background:#ffefc9; border:1px solid #f3d28c; border-radius:999px; padding:4px 10px; }
+    h1 { margin:10px 0 8px; font-size:24px; }
+    .sub { margin:0 0 12px; color:var(--muted); font-size:14px; }
+    .grid { display:grid; gap:10px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+    .meta { color:var(--muted); font-size:13px; margin-bottom:6px; }
+    .title { margin:0 0 8px; font-size:18px; line-height:1.35; word-break:break-word; }
+    .open { display:flex; align-items:center; justify-content:center; text-decoration:none; background:var(--btn); color:#fff; border-radius:12px; min-height:50px; font-weight:700; }
+    .open:hover, .open:active { background:var(--btn2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="badge">UIサンプル / 本番ではありません</div>
+    <h1>現場共有ポータル（Clean Cards）</h1>
+    <p class="sub">本番のリンク内容はそのまま、余白と可読性を強化した無難案です。</p>
+    <section class="grid">
+      <article class="card"><div class="meta">2026年05月08日 / 5件</div><h2 class="title">百谷・北宇智</h2><a class="open" href="../share/260508/">共有ページを開く</a></article>
+      <article class="card"><div class="meta">2026年05月09日 / 7件</div><h2 class="title">南千股</h2><a class="open" href="../share/260509/">共有ページを開く</a></article>
+      <article class="card"><div class="meta">2026年05月11日 / 5件</div><h2 class="title">小川</h2><a class="open" href="../share/260511/">共有ページを開く</a></article>
+      <article class="card"><div class="meta">2026年05月12日 / 6件</div><h2 class="title">小川</h2><a class="open" href="../share/260512/">共有ページを開く</a></article>
+      <article class="card"><div class="meta">2026年05月13日 / 6件</div><h2 class="title">古ル野</h2><a class="open" href="../share/260513/">共有ページを開く</a></article>
+      <article class="card"><div class="meta">2026年05月14日 / 6件</div><h2 class="title">小川・古ル野</h2><a class="open" href="../share/260514/">共有ページを開く</a></article>
+      <article class="card"><div class="meta">2026年05月15日 / 4件</div><h2 class="title">小川</h2><a class="open" href="../share/260515/">共有ページを開く</a></article>
+      <article class="card"><div class="meta">2026年05月18日 / 4件</div><h2 class="title">葛川（人力感謝デー）</h2><a class="open" href="../share/260518/">共有ページを開く</a></article>
+      <article class="card"><div class="meta">2026年12月31日 / 45件</div><h2 class="title">赤松・大畑・柴ヶ谷・白銀 ほか8件</h2><a class="open" href="../share/261231/">共有ページを開く</a></article>
+    </section>
+  </div>
+</body>
+</html>

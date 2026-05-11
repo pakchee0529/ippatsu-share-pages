@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>共有ポータルUIサンプル一覧</title>
+  <style>
+    :root { --bg:#f3f6fb; --card:#fff; --line:#d6dfec; --text:#13243d; --muted:#5a6a82; --link:#0f60d5; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans JP", sans-serif; }
+    .wrap { max-width:900px; margin:0 auto; padding:14px; }
+    h1 { margin:8px 0 10px; font-size:24px; }
+    .notice { font-size:14px; color:#6a4300; background:#ffefc6; border:1px solid #f3d289; border-radius:10px; padding:10px; margin-bottom:12px; }
+    .list { display:grid; gap:10px; }
+    .item { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; }
+    .title { margin:0 0 4px; font-size:18px; }
+    .desc { margin:0 0 10px; color:var(--muted); font-size:14px; }
+    a { color:var(--link); font-weight:700; text-decoration:none; min-height:44px; display:inline-flex; align-items:center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>共有ポータルUIサンプル一覧</h1>
+    <p class="notice">比較用サンプルです。<strong>本番ページではありません</strong>。本番 `portal/index.html` は変更せず、同じリンク先を使って見た目だけを比較できるようにしています。</p>
+    <section class="list">
+      <article class="item"><h2 class="title">sample_01_clean_cards</h2><p class="desc">現行に近いカード型。余白・視認性を改善した採用しやすい案。</p><a href="./sample_01_clean_cards.html">サンプルを開く</a></article>
+      <article class="item"><h2 class="title">sample_02_dashboard</h2><p class="desc">KPIサマリー付きの業務ダッシュボード風レイアウト。</p><a href="./sample_02_dashboard.html">サンプルを開く</a></article>
+      <article class="item"><h2 class="title">sample_03_mobile_list</h2><p class="desc">スマホ一覧重視。1行1案件に近い構成と簡易検索付き。</p><a href="./sample_03_mobile_list.html">サンプルを開く</a></article>
+      <article class="item"><h2 class="title">sample_04_calendar_like</h2><p class="desc">日付を大きく見せるカレンダー風カード配置。</p><a href="./sample_04_calendar_like.html">サンプルを開く</a></article>
+      <article class="item"><h2 class="title">sample_05_minimal_business</h2><p class="desc">台帳/業務アプリ寄りの最小装飾テーブル案。</p><a href="./sample_05_minimal_business.html">サンプルを開く</a></article>
+      <article class="item"><h2 class="title">sample_06_rich_cards</h2><p class="desc">タグ・バッジを使った少しリッチなカード案。</p><a href="./sample_06_rich_cards.html">サンプルを開く</a></article>
+      <article class="item"><h2 class="title">sample_07_field_mode</h2><p class="desc">屋外操作を重視した大文字・大ボタンの現場特化案。</p><a href="./sample_07_field_mode.html">サンプルを開く</a></article>
+    </section>
+  </div>
+</body>
+</html>
