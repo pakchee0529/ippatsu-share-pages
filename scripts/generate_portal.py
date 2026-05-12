@@ -286,32 +286,32 @@ def month_label_from_key(year: int, month: int) -> str:
 
 
 def group_archive_sections(
-    parts: list[tuple[ManifestEntry, ShareSummary | None]],
+    parts: list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
 ) -> list[
     tuple[
         tuple[int, int],
         str,
-        list[tuple[ManifestEntry, ShareSummary | None]],
+        list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
     ]
 ]:
     """月新しい順。各月内は日付キー新しい順。"""
     from collections import defaultdict
 
     buckets: dict[
-        tuple[int, int], list[tuple[ManifestEntry, ShareSummary | None]]
+        tuple[int, int], list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]]
     ] = defaultdict(list)
-    for entry, summary in parts:
+    for entry, summary, public_items in parts:
         folder = entry.date
         mk = month_heading_key(folder)
         if mk is None:
             continue
-        buckets[mk].append((entry, summary))
+        buckets[mk].append((entry, summary, public_items))
     keys = sorted(buckets.keys(), reverse=True)
     out: list[
         tuple[
             tuple[int, int],
             str,
-            list[tuple[ManifestEntry, ShareSummary | None]],
+            list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
         ]
     ] = []
     for y, m in keys:
@@ -388,6 +388,14 @@ class ArchivePublicItem:
     crane_required: str
     warning: str
     note: str
+
+
+@dataclass(frozen=True)
+class ArchiveRowContext:
+    span_summary: str
+    status_summary: str
+    search_blob: str
+    item_count: int
 
 
 def _manifest_entry_from_dict(d: dict) -> ManifestEntry | None:
@@ -469,91 +477,140 @@ def is_in_last_seven_days(folder: str, today: date) -> bool:
 def archive_row_search_blob(
     folder: str,
     date_jp: str,
-    title: str,
-    item_n: int,
-    suffix: str,
-    entry: ManifestEntry,
+    span_summary: str,
+    status_summary: str,
+    search_tokens: list[str],
 ) -> str:
-    """検索用のプレーンテキスト（小文字化前提で連結）。日付・タイトル・件数・補足・件数内訳。"""
-    bits = [
-        folder,
-        date_jp,
-        title or "",
-        f"{item_n}件",
-        suffix or "",
-    ]
-    if entry.completed_count is not None:
-        bits.append(f"完了{entry.completed_count}")
-    if entry.incomplete_count is not None:
-        bits.append(f"未完了{entry.incomplete_count}")
-    ra = (entry.reported_at or "").strip()
-    if ra:
-        bits.append(ra)
+    """検索用文字列。冠称名/径間名/管理番号/状態/理由を優先。"""
+    bits = [folder, date_jp, span_summary, status_summary]
+    bits.extend(search_tokens)
     return " ".join(b for b in bits if str(b).strip())
 
 
+def _norm_for_search(s: str) -> str:
+    t = (s or "").strip()
+    if not t:
+        return ""
+    t = t.replace("～", "-").replace("〜", "-").replace("ー", "-")
+    t = t.replace("　", " ").replace("\t", " ")
+    return t
+
+
+def build_archive_row_context(
+    entry: ManifestEntry,
+    share_summary: ShareSummary | None,
+    public_items: list[ArchivePublicItem] | None,
+) -> ArchiveRowContext:
+    labels: list[str] = []
+    tokens: list[str] = []
+    completed = 0
+    incomplete = 0
+    if public_items:
+        for it in public_items:
+            lb = (it.label or "").strip()
+            if lb:
+                labels.append(lb)
+                tokens.append(lb)
+                n = _norm_for_search(lb)
+                if n and n != lb:
+                    tokens.append(n)
+            mno = (it.management_no or "").strip()
+            if mno:
+                tokens.append(mno)
+                tokens.append(mno.replace(" ", ""))
+            st = (it.completion_status or "").strip()
+            if st:
+                if st == "completed":
+                    completed += 1
+                    tokens.append("完了")
+                elif st == "incomplete":
+                    incomplete += 1
+                    tokens.append("未完了")
+            rs = (it.incomplete_reason or "").strip()
+            if rs and rs != "—":
+                tokens.append(rs)
+    uniq_labels: list[str] = []
+    seen = set()
+    for lb in labels:
+        if lb in seen:
+            continue
+        seen.add(lb)
+        uniq_labels.append(lb)
+    span_summary = "—"
+    if uniq_labels:
+        show_n = 4
+        head = ", ".join(uniq_labels[:show_n])
+        rest = len(uniq_labels) - show_n
+        span_summary = f"{head} ほか{rest}件" if rest > 0 else head
+    elif share_summary and share_summary.crown_names:
+        span_summary = format_crown_summary(share_summary.crown_names)
+    item_n = (
+        entry.item_count
+        if entry.item_count is not None
+        else (len(public_items) if public_items else (share_summary.item_count if share_summary else 0))
+    )
+    if entry.completed_count is not None:
+        completed = entry.completed_count
+    if entry.incomplete_count is not None:
+        incomplete = entry.incomplete_count
+    status_summary = f"完了{completed} / 未完了{incomplete}"
+    return ArchiveRowContext(
+        span_summary=span_summary,
+        status_summary=status_summary,
+        search_blob=archive_row_search_blob(
+            entry.date,
+            fallback_heading(entry.date),
+            span_summary,
+            status_summary,
+            tokens,
+        ),
+        item_count=item_n,
+    )
+
+
 def format_archive_row_article(
-    entry: ManifestEntry, share_summary: ShareSummary | None
+    entry: ManifestEntry,
+    share_summary: ShareSummary | None,
+    public_items: list[ArchivePublicItem] | None,
 ) -> str:
     """1行分のアーカイブカード（data-search 付き）。主リンクはアーカイブ詳細 ./<date>/ 。"""
     folder = entry.date
     date_jp = fallback_heading(folder)
-    title = (entry.title or "").strip()
-    crown_sm = ""
-    if share_summary and share_summary.crown_names:
-        crown_sm = format_crown_summary(share_summary.crown_names)
-    if not crown_sm.strip():
-        crown_sm = "—"
-    item_n = (
-        entry.item_count
-        if entry.item_count is not None
-        else (share_summary.item_count if share_summary else 0)
-    )
-    sfx = (entry.display_suffix or "").strip()
-    if not sfx and share_summary:
-        sfx = (share_summary.display_suffix or "").strip()
-    sfx_html = ""
-    if sfx:
-        sfx_html = f'    <div class="archive-suffix">{escape_html(sfx)}</div>\n'
-    blob = archive_row_search_blob(folder, date_jp, title, item_n, sfx, entry)
-    search_attr = escape_html(blob)
+    ctx = build_archive_row_context(entry, share_summary, public_items)
+    search_attr = escape_html(ctx.search_blob)
     href = f"./{folder}/"
-    title_row = ""
-    if title:
-        title_row = (
-            f'    <div class="archive-title">{escape_html(title)}</div>\n'
-        )
     return f"""    <article class="archive-row" data-search="{search_attr}">
       <div class="archive-row-top">
-        <div class="archive-date">{escape_html(date_jp)} <span class="archive-dkey">({escape_html(folder)})</span></div>
-        <div class="archive-count">{item_n}件</div>
+        <div class="archive-main">{escape_html(ctx.span_summary)}</div>
+        <div class="archive-count">{ctx.item_count}件</div>
       </div>
-{title_row}      <div class="archive-crown">{escape_html(crown_sm)}</div>
-{sfx_html}      <a class="btn btn-archive" href="{escape_html(href)}">アーカイブ詳細を開く</a>
+      <div class="archive-meta">{escape_html(date_jp)} <span class="archive-dkey">({escape_html(folder)})</span></div>
+      <div class="archive-status">{escape_html(ctx.status_summary)}</div>
+      <a class="btn btn-archive" href="{escape_html(href)}">アーカイブ詳細を開く</a>
     </article>"""
 
 
 def build_archive_html(
-    recent_parts: list[tuple[ManifestEntry, ShareSummary | None]],
+    recent_parts: list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
     sections: list[
         tuple[
             tuple[int, int],
             str,
-            list[tuple[ManifestEntry, ShareSummary | None]],
+            list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
         ]
     ],
 ) -> str:
     """直近7日 + 月別 details（検索付き）。recent と月別で同一現場は重複しない。"""
     recent_rows_str = "\n".join(
-        format_archive_row_article(e, s) for e, s in recent_parts
+        format_archive_row_article(e, s, p) for e, s, p in recent_parts
     )
     recent_empty_hidden = " hidden" if recent_parts else ""
     month_blocks: list[str] = []
     for (y, m), month_label, items in sections:
         mid = f"m-{y:04d}-{m:02d}"
         rows_str = "\n".join(
-            format_archive_row_article(entry, summary)
-            for entry, summary in items
+            format_archive_row_article(entry, summary, public_items)
+            for entry, summary, public_items in items
         )
         month_blocks.append(
             f"""    <details class="month-archive" id="{escape_html(mid)}">
@@ -718,15 +775,12 @@ h1 {{
   gap: 0.5rem;
   margin-bottom: 0.35rem;
 }}
-.archive-date {{
+.archive-main {{
+  font-size: 0.96rem;
   font-weight: 700;
-  font-size: 0.95rem;
-}}
-.archive-title {{
-  font-size: 0.88rem;
-  font-weight: 600;
   color: var(--text-b);
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.2rem;
+  line-height: 1.35;
   word-break: break-word;
 }}
 .archive-dkey {{
@@ -740,16 +794,17 @@ h1 {{
   font-weight: 600;
   white-space: nowrap;
 }}
-.archive-crown {{
+.archive-meta {{
   font-size: 0.88rem;
-  color: var(--text-b);
+  color: var(--muted-b);
   margin-bottom: 0.35rem;
   word-break: break-word;
 }}
-.archive-suffix {{
-  font-size: 0.82rem;
-  color: var(--muted-b);
+.archive-status {{
+  font-size: 0.84rem;
+  color: var(--text-b);
   margin-bottom: 0.45rem;
+  font-weight: 600;
 }}
 a.btn-archive {{
   display: flex;
@@ -798,10 +853,10 @@ a.btn-archive:hover, a.btn-archive:active {{
   </nav>
   <h1>現場共有アーカイブ</h1>
   <p class="disclaimer-note">表示対象は <code>portal/archive_manifest.json</code> の <code>entries</code> に登録した6桁日付のみです。個人情報・次回確認メモ・地主情報などはマニフェストに書き込まないでください。</p>
-  <p class="lead">直近7日分は「最近1週間」に、それ以前の登録分は月別アーカイブ（折りたたみ）にあります。検索で日付・タイトル・件数・補足から絞り込めます。</p>
+  <p class="lead">冠称名・径間名・管理番号で過去現場を検索できます。直近7日分は「最近1週間」、それ以前は月別に表示します。</p>
   <div class="search-wrap">
     <label for="archive-search" class="visually-hidden">検索</label>
-    <input type="search" id="archive-search" placeholder="日付・タイトル・件数・補足で検索" autocomplete="off">
+    <input type="search" id="archive-search" placeholder="冠称名・径間名・管理番号で検索（例: 小川 / 百谷 / 51401376）" autocomplete="off">
   </div>
   <section class="recent-block" id="archive-recent" aria-labelledby="recent-h">
     <h2 class="section-title" id="recent-h">最近1週間</h2>
@@ -1843,7 +1898,9 @@ def main() -> int:
         entries.append((folder, heading))
 
     share_by_folder: dict[str, Path] = {f: p for f, p in rows}
-    archive_parts: list[tuple[ManifestEntry, ShareSummary | None]] = []
+    archive_parts: list[
+        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
+    ] = []
     for ment in manifest_entries:
         path = share_by_folder.get(ment.date)
         summary: ShareSummary | None = None
@@ -1856,7 +1913,8 @@ def main() -> int:
                 "has no index.html; archive list/detail use manifest fields only",
                 file=sys.stderr,
             )
-        archive_parts.append((ment, summary))
+        public_items, _ = load_archive_public_items(repo_root, ment.date)
+        archive_parts.append((ment, summary, public_items))
 
     out = build_html(entries)
     out_path = repo_root / "portal" / "index.html"
@@ -1868,13 +1926,17 @@ def main() -> int:
     )
 
     today = date.today()
-    recent_parts: list[tuple[ManifestEntry, ShareSummary | None]] = []
-    monthly_parts: list[tuple[ManifestEntry, ShareSummary | None]] = []
-    for ment, summary in archive_parts:
+    recent_parts: list[
+        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
+    ] = []
+    monthly_parts: list[
+        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
+    ] = []
+    for ment, summary, public_items in archive_parts:
         if is_in_last_seven_days(ment.date, today):
-            recent_parts.append((ment, summary))
+            recent_parts.append((ment, summary, public_items))
         else:
-            monthly_parts.append((ment, summary))
+            monthly_parts.append((ment, summary, public_items))
     recent_parts.sort(key=lambda t: sort_key(t[0].date), reverse=True)
     sections = group_archive_sections(monthly_parts)
     arch_html = build_archive_html(recent_parts, sections)

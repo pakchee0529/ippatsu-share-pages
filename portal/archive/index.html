@@ -145,15 +145,12 @@ h1 {
   gap: 0.5rem;
   margin-bottom: 0.35rem;
 }
-.archive-date {
+.archive-main {
+  font-size: 0.96rem;
   font-weight: 700;
-  font-size: 0.95rem;
-}
-.archive-title {
-  font-size: 0.88rem;
-  font-weight: 600;
   color: var(--text-b);
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.2rem;
+  line-height: 1.35;
   word-break: break-word;
 }
 .archive-dkey {
@@ -167,16 +164,17 @@ h1 {
   font-weight: 600;
   white-space: nowrap;
 }
-.archive-crown {
+.archive-meta {
   font-size: 0.88rem;
-  color: var(--text-b);
+  color: var(--muted-b);
   margin-bottom: 0.35rem;
   word-break: break-word;
 }
-.archive-suffix {
-  font-size: 0.82rem;
-  color: var(--muted-b);
+.archive-status {
+  font-size: 0.84rem;
+  color: var(--text-b);
   margin-bottom: 0.45rem;
+  font-weight: 600;
 }
 a.btn-archive {
   display: flex;
@@ -225,57 +223,57 @@ a.btn-archive:hover, a.btn-archive:active {
   </nav>
   <h1>現場共有アーカイブ</h1>
   <p class="disclaimer-note">表示対象は <code>portal/archive_manifest.json</code> の <code>entries</code> に登録した6桁日付のみです。個人情報・次回確認メモ・地主情報などはマニフェストに書き込まないでください。</p>
-  <p class="lead">直近7日分は「最近1週間」に、それ以前の登録分は月別アーカイブ（折りたたみ）にあります。検索で日付・タイトル・件数・補足から絞り込めます。</p>
+  <p class="lead">冠称名・径間名・管理番号で過去現場を検索できます。直近7日分は「最近1週間」、それ以前は月別に表示します。</p>
   <div class="search-wrap">
     <label for="archive-search" class="visually-hidden">検索</label>
-    <input type="search" id="archive-search" placeholder="日付・タイトル・件数・補足で検索" autocomplete="off">
+    <input type="search" id="archive-search" placeholder="冠称名・径間名・管理番号で検索（例: 小川 / 百谷 / 51401376）" autocomplete="off">
   </div>
   <section class="recent-block" id="archive-recent" aria-labelledby="recent-h">
     <h2 class="section-title" id="recent-h">最近1週間</h2>
     <div id="recent-rows" class="archive-list" role="list">
-    <article class="archive-row" data-search="260512 2026年05月12日 2026年05月12日 6件 6件 完了5 未完了1 2026-05-12T17:09:03">
+    <article class="archive-row" data-search="260512 2026年05月12日 小川155～156, 小川151～152, 小川137～138, 小川124～125 ほか2件 完了5 / 未完了1 小川155～156 小川155-156 514 01376 51401376 完了 小川151～152 小川151-152 514 01372 51401372 完了 小川137～138 小川137-138 514 01359 51401359 完了 小川124～125 小川124-125 514 01354 51401354 未完了 車両入れず 小川123～124 小川123-124 514 01353 51401353 完了 小川79～80 小川79-80 514 01324 51401324 完了">
       <div class="archive-row-top">
-        <div class="archive-date">2026年05月12日 <span class="archive-dkey">(260512)</span></div>
+        <div class="archive-main">小川155～156, 小川151～152, 小川137～138, 小川124～125 ほか2件</div>
         <div class="archive-count">6件</div>
       </div>
-    <div class="archive-title">2026年05月12日 6件</div>
-      <div class="archive-crown">—</div>
+      <div class="archive-meta">2026年05月12日 <span class="archive-dkey">(260512)</span></div>
+      <div class="archive-status">完了5 / 未完了1</div>
       <a class="btn btn-archive" href="./260512/">アーカイブ詳細を開く</a>
     </article>
-    <article class="archive-row" data-search="260511 2026年05月11日 2026年05月11日 5件 5件 完了4 未完了1 2026-05-11T21:05:18">
+    <article class="archive-row" data-search="260511 2026年05月11日 小川2～3, 小川71～72, 小川74～75, 小川77～78 ほか1件 完了4 / 未完了1 小川2～3 小川2-3 514 01269 51401269 完了 小川71～72 小川71-72 514 01320 51401320 完了 小川74～75 小川74-75 514 01321 51401321 完了 小川77～78 小川77-78 514 01323 51401323 完了 小川79～80 小川79-80 514 01324 51401324 未完了 その他">
       <div class="archive-row-top">
-        <div class="archive-date">2026年05月11日 <span class="archive-dkey">(260511)</span></div>
+        <div class="archive-main">小川2～3, 小川71～72, 小川74～75, 小川77～78 ほか1件</div>
         <div class="archive-count">5件</div>
       </div>
-    <div class="archive-title">2026年05月11日 5件</div>
-      <div class="archive-crown">—</div>
+      <div class="archive-meta">2026年05月11日 <span class="archive-dkey">(260511)</span></div>
+      <div class="archive-status">完了4 / 未完了1</div>
       <a class="btn btn-archive" href="./260511/">アーカイブ詳細を開く</a>
     </article>
-    <article class="archive-row" data-search="260509 2026年05月09日 2026年05月09日 7件 7件 完了6 未完了1 2026-05-11T21:07:42">
+    <article class="archive-row" data-search="260509 2026年05月09日 南千股29～30, 南千股26～27, 南千股16～17, 南千股15～16 ほか3件 完了6 / 未完了1 南千股29～30 南千股29-30 515 09321 51509321 完了 南千股26～27 南千股26-27 515 11916 51511916 完了 南千股16～17 南千股16-17 515 11915 51511915 完了 南千股15～16 南千股15-16 515 09312 51509312 完了 南千股10～11 南千股10-11 515 09307 51509307 完了 南千股6～7 南千股6-7 515 09303 51509303 未完了 時間切れ 南千股13～14 南千股13-14 515 09310 51509310 完了">
       <div class="archive-row-top">
-        <div class="archive-date">2026年05月09日 <span class="archive-dkey">(260509)</span></div>
+        <div class="archive-main">南千股29～30, 南千股26～27, 南千股16～17, 南千股15～16 ほか3件</div>
         <div class="archive-count">7件</div>
       </div>
-    <div class="archive-title">2026年05月09日 7件</div>
-      <div class="archive-crown">—</div>
+      <div class="archive-meta">2026年05月09日 <span class="archive-dkey">(260509)</span></div>
+      <div class="archive-status">完了6 / 未完了1</div>
       <a class="btn btn-archive" href="./260509/">アーカイブ詳細を開く</a>
     </article>
-    <article class="archive-row" data-search="260508 2026年05月08日 2026年05月08日 5件 5件 完了4 未完了1 2026-05-11T21:12:16">
+    <article class="archive-row" data-search="260508 2026年05月08日 百谷16～17, 百谷9～10, 百谷6～7, 北宇智146N7N2E5～146N7N2E6 ほか1件 完了4 / 未完了1 百谷16～17 百谷16-17 514 07811 51407811 完了 百谷9～10 百谷9-10 514 09570 51409570 完了 百谷6～7 百谷6-7 514 07802 51407802 完了 北宇智146N7N2E5～146N7N2E6 北宇智146N7N2E5-146N7N2E6 514 09631 51409631 完了 北宇智146N7N2E4～146N7N2E5 北宇智146N7N2E4-146N7N2E5 514 10041 51410041 未完了 その他">
       <div class="archive-row-top">
-        <div class="archive-date">2026年05月08日 <span class="archive-dkey">(260508)</span></div>
+        <div class="archive-main">百谷16～17, 百谷9～10, 百谷6～7, 北宇智146N7N2E5～146N7N2E6 ほか1件</div>
         <div class="archive-count">5件</div>
       </div>
-    <div class="archive-title">2026年05月08日 5件</div>
-      <div class="archive-crown">—</div>
+      <div class="archive-meta">2026年05月08日 <span class="archive-dkey">(260508)</span></div>
+      <div class="archive-status">完了4 / 未完了1</div>
       <a class="btn btn-archive" href="./260508/">アーカイブ詳細を開く</a>
     </article>
-    <article class="archive-row" data-search="260507 2026年05月07日 2026年05月07日 3件 3件 完了3 未完了0 2026-05-11T21:06:49">
+    <article class="archive-row" data-search="260507 2026年05月07日 西千股8N2～8N3, 千股20～20S1, 西千股19S3～19S4 完了3 / 未完了0 西千股8N2～8N3 西千股8N2-8N3 515 12911 51512911 完了 千股20～20S1 千股20-20S1 515 11890 51511890 完了 西千股19S3～19S4 西千股19S3-19S4 515 10917 51510917 完了">
       <div class="archive-row-top">
-        <div class="archive-date">2026年05月07日 <span class="archive-dkey">(260507)</span></div>
+        <div class="archive-main">西千股8N2～8N3, 千股20～20S1, 西千股19S3～19S4</div>
         <div class="archive-count">3件</div>
       </div>
-    <div class="archive-title">2026年05月07日 3件</div>
-      <div class="archive-crown">—</div>
+      <div class="archive-meta">2026年05月07日 <span class="archive-dkey">(260507)</span></div>
+      <div class="archive-status">完了3 / 未完了0</div>
       <a class="btn btn-archive" href="./260507/">アーカイブ詳細を開く</a>
     </article>
     </div>
