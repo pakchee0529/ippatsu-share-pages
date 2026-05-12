@@ -16,6 +16,7 @@ import html as html_lib
 import json
 import re
 import sys
+from urllib.parse import parse_qs, urlparse
 from dataclasses import dataclass
 from datetime import date, timedelta
 from html.parser import HTMLParser
@@ -372,6 +373,10 @@ class ArchivePublicItem:
     completion_status: str
     incomplete_reason: str
     map_url: str
+    start_lat: str
+    start_lng: str
+    end_lat: str
+    end_lng: str
     method: str
     branch_cut_total: int
     root_cut_total: int
@@ -952,16 +957,66 @@ def _method_text(src: dict) -> str:
     carry = bool(src.get("carry_out"))
     collect = bool(src.get("collect"))
     if carry and collect:
-        return "持出・収集"
+        return "持出・集積"
     if carry:
         return "持出"
     if collect:
-        return "収集"
+        return "集積"
     return "—"
 
 
 def _completion_reports_root(repo_root: Path) -> Path:
     return repo_root.parent / "ippatsu-pc" / "data" / "completion_reports"
+
+
+def _parse_latlng_from_map_url(url: str) -> tuple[str, str]:
+    u = urlparse(url)
+    q = parse_qs(u.query or "")
+    loc = ""
+    if "q" in q and q["q"]:
+        loc = q["q"][0]
+    if not loc:
+        return "", ""
+    parts = [p.strip() for p in loc.split(",", 1)]
+    if len(parts) != 2:
+        return "", ""
+    return parts[0], parts[1]
+
+
+def _pick_item_latlng(item: ArchivePublicItem) -> tuple[str, str]:
+    if item.start_lat and item.start_lng:
+        return item.start_lat, item.start_lng
+    if item.end_lat and item.end_lng:
+        return item.end_lat, item.end_lng
+    if item.map_url:
+        a, b = _parse_latlng_from_map_url(item.map_url)
+        if a and b:
+            return a, b
+    return "", ""
+
+
+def build_multi_pin_map_url(items: list[ArchivePublicItem]) -> str:
+    pts: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for it in items:
+        a, b = _pick_item_latlng(it)
+        if not a or not b:
+            continue
+        k = f"{a},{b}"
+        if k in seen:
+            continue
+        seen.add(k)
+        pts.append((a, b))
+    if len(pts) < 2:
+        return ""
+    # Google Maps directions (multi pin approximation). destination + up to 9 waypoints.
+    use = pts[:10]
+    destination = f"{use[-1][0]},{use[-1][1]}"
+    waypoints = "|".join(f"{a},{b}" for a, b in use[:-1])
+    return (
+        "https://www.google.com/maps/dir/?api=1"
+        f"&destination={destination}&waypoints={waypoints}"
+    )
 
 
 def load_archive_public_items(
@@ -999,6 +1054,10 @@ def load_archive_public_items(
                 completion_status=status,
                 incomplete_reason=_to_str(it.get("incomplete_reason")) or "—",
                 map_url=_to_str(src.get("map_url")),
+                start_lat=_to_str(src.get("start_lat")),
+                start_lng=_to_str(src.get("start_lng")),
+                end_lat=_to_str(src.get("end_lat")),
+                end_lng=_to_str(src.get("end_lng")),
                 method=_method_text(src),
                 branch_cut_total=b_total,
                 root_cut_total=r_total,
@@ -1033,28 +1092,41 @@ def build_archive_detail_html(
         else "—"
     )
     items_html = ""
+    multi_map_html = ""
     if public_items is None:
         items_html = f'<p class="muted-tiny">{escape_html(detail_note)}</p>'
     elif not public_items:
         items_html = '<p class="muted-tiny">この日の現場一覧はありません。</p>'
     else:
+        multi_url = build_multi_pin_map_url(public_items)
+        if multi_url:
+            multi_map_html = f"""  <section class="multi-map-wrap" aria-label="地図導線">
+    <p class="muted-tiny" style="margin-bottom:0.45rem">この日の現場を地図でまとめて見る</p>
+    <a class="multi-map-btn" href="{escape_html(multi_url)}" target="_blank" rel="noopener">マルチピン地図を開く</a>
+  </section>
+"""
         cards: list[str] = []
-        for idx, it in enumerate(public_items, start=1):
+        for it in public_items:
             map_line = "—"
             if it.map_url and it.map_url.startswith(("http://", "https://")):
                 map_line = (
                     f'<a class="item-map-link" href="{escape_html(it.map_url)}" '
                     'target="_blank" rel="noopener">Googleマップを開く</a>'
                 )
+            status_jp = "完了" if it.completion_status == "completed" else "未完了" if it.completion_status == "incomplete" else it.completion_status
+            reason_html = ""
+            if it.completion_status == "incomplete" and it.incomplete_reason != "—":
+                reason_html = f'<p class="item-subline">未完了理由: {escape_html(it.incomplete_reason)}</p>'
             cards.append(
                 f"""    <article class="item-card">
-      <h3 class="item-head">現場 {idx}</h3>
-      <dl class="item-dl">
+      <h3 class="item-head">{escape_html(it.label)}</h3>
+      <p class="item-state">状態: {escape_html(status_jp)}</p>
+      {reason_html}
+      <p class="item-map">{map_line}</p>
+      <details class="item-detail">
+        <summary>詳細を表示</summary>
+        <dl class="item-dl">
         {_item_row_html("管理番号", it.management_no)}
-        {_item_row_html("径間名", it.label)}
-        {_item_row_html("完了状態", it.completion_status)}
-        {_item_row_html("未完了理由", it.incomplete_reason)}
-        <div class="item-row"><dt>Googleマップ</dt><dd>{map_line}</dd></div>
         {_item_row_html("処理方法", it.method)}
         {_item_row_html("枝切り本数", str(it.branch_cut_total))}
         {_item_row_html("根切り本数", str(it.root_cut_total))}
@@ -1066,7 +1138,8 @@ def build_archive_detail_html(
         {_item_row_html("クレーン要否", it.crane_required)}
         {_item_row_html("警告", it.warning)}
         {_item_row_html("備考", it.note)}
-      </dl>
+        </dl>
+      </details>
     </article>"""
             )
         items_html = "\n".join(cards)
@@ -1176,6 +1249,28 @@ h1 {{
   margin: 0 0 0.75rem;
   line-height: 1.45;
 }}
+.multi-map-wrap {{
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  margin: 0 0 0.9rem;
+}}
+.multi-map-btn {{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 9px;
+  color: #fff;
+  background: var(--accent-b);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+}}
+.multi-map-btn:hover, .multi-map-btn:active {{
+  background: var(--accent-b-hover);
+}}
 .item-list {{
   display: flex;
   flex-direction: column;
@@ -1190,8 +1285,47 @@ h1 {{
   box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
 }}
 .item-head {{
-  margin: 0 0 0.45rem;
-  font-size: 0.98rem;
+  margin: 0 0 0.3rem;
+  font-size: 1.03rem;
+  line-height: 1.35;
+  word-break: break-word;
+}}
+.item-state {{
+  margin: 0 0 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}}
+.item-subline {{
+  margin: 0 0 0.35rem;
+  font-size: 0.86rem;
+  color: var(--text-b);
+}}
+.item-map {{
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+}}
+.item-detail {{
+  margin-top: 0.2rem;
+}}
+.item-detail > summary {{
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent-b);
+  padding: 0.35rem 0.1rem;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}}
+.item-detail[open] > summary {{
+  color: var(--accent-b-hover);
+}}
+.item-detail[open] > summary::after {{
+  content: "（詳細を閉じる）";
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--muted-b);
+  margin-left: 0.35rem;
 }}
 .item-dl {{
   margin: 0;
@@ -1262,6 +1396,7 @@ h1 {{
       <div class="dl-row"><dt>報告日時</dt><dd>{reported}</dd></div>
     </dl>
   </section>
+{multi_map_html}
   <section aria-labelledby="items-h">
     <h2 class="section-title" id="items-h">現場一覧</h2>
     <div class="item-list">

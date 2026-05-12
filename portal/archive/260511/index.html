@@ -104,6 +104,28 @@ h1 {
   margin: 0 0 0.75rem;
   line-height: 1.45;
 }
+.multi-map-wrap {
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  margin: 0 0 0.9rem;
+}
+.multi-map-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 9px;
+  color: #fff;
+  background: var(--accent-b);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.multi-map-btn:hover, .multi-map-btn:active {
+  background: var(--accent-b-hover);
+}
 .item-list {
   display: flex;
   flex-direction: column;
@@ -118,8 +140,47 @@ h1 {
   box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
 }
 .item-head {
-  margin: 0 0 0.45rem;
-  font-size: 0.98rem;
+  margin: 0 0 0.3rem;
+  font-size: 1.03rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+.item-state {
+  margin: 0 0 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.item-subline {
+  margin: 0 0 0.35rem;
+  font-size: 0.86rem;
+  color: var(--text-b);
+}
+.item-map {
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+}
+.item-detail {
+  margin-top: 0.2rem;
+}
+.item-detail > summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent-b);
+  padding: 0.35rem 0.1rem;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+.item-detail[open] > summary {
+  color: var(--accent-b-hover);
+}
+.item-detail[open] > summary::after {
+  content: "（詳細を閉じる）";
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--muted-b);
+  margin-left: 0.35rem;
 }
 .item-dl {
   margin: 0;
@@ -190,18 +251,24 @@ h1 {
       <div class="dl-row"><dt>報告日時</dt><dd>2026-05-11T21:05:18</dd></div>
     </dl>
   </section>
+  <section class="multi-map-wrap" aria-label="地図導線">
+    <p class="muted-tiny" style="margin-bottom:0.45rem">この日の現場を地図でまとめて見る</p>
+    <a class="multi-map-btn" href="https://www.google.com/maps/dir/?api=1&amp;destination=33.96398,135.83358&amp;waypoints=33.97088,135.80861|33.96527,135.83253|33.96396,135.83262|33.96319,135.83348" target="_blank" rel="noopener">マルチピン地図を開く</a>
+  </section>
+
   <section aria-labelledby="items-h">
     <h2 class="section-title" id="items-h">現場一覧</h2>
     <div class="item-list">
     <article class="item-card">
-      <h3 class="item-head">現場 1</h3>
-      <dl class="item-dl">
+      <h3 class="item-head">小川2～3</h3>
+      <p class="item-state">状態: 完了</p>
+      
+      <p class="item-map"><a class="item-map-link" href="https://www.google.com/maps?q=33.970785,135.808955" target="_blank" rel="noopener">Googleマップを開く</a></p>
+      <details class="item-detail">
+        <summary>詳細を表示</summary>
+        <dl class="item-dl">
         <div class="item-row"><dt>管理番号</dt><dd>514 01269</dd></div>
-        <div class="item-row"><dt>径間名</dt><dd>小川2～3</dd></div>
-        <div class="item-row"><dt>完了状態</dt><dd>completed</dd></div>
-        <div class="item-row"><dt>未完了理由</dt><dd>—</dd></div>
-        <div class="item-row"><dt>Googleマップ</dt><dd><a class="item-map-link" href="https://www.google.com/maps?q=33.970785,135.808955" target="_blank" rel="noopener">Googleマップを開く</a></dd></div>
-        <div class="item-row"><dt>処理方法</dt><dd>収集</dd></div>
+        <div class="item-row"><dt>処理方法</dt><dd>集積</dd></div>
         <div class="item-row"><dt>枝切り本数</dt><dd>1</dd></div>
         <div class="item-row"><dt>根切り本数</dt><dd>11</dd></div>
         <div class="item-row"><dt>柴面積</dt><dd>54</dd></div>
@@ -212,17 +279,19 @@ h1 {
         <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
         <div class="item-row"><dt>警告</dt><dd>—</dd></div>
         <div class="item-row"><dt>備考</dt><dd>道裏へ</dd></div>
-      </dl>
+        </dl>
+      </details>
     </article>
     <article class="item-card">
-      <h3 class="item-head">現場 2</h3>
-      <dl class="item-dl">
+      <h3 class="item-head">小川71～72</h3>
+      <p class="item-state">状態: 完了</p>
+      
+      <p class="item-map"><a class="item-map-link" href="https://www.google.com/maps?q=33.965055,135.832575" target="_blank" rel="noopener">Googleマップを開く</a></p>
+      <details class="item-detail">
+        <summary>詳細を表示</summary>
+        <dl class="item-dl">
         <div class="item-row"><dt>管理番号</dt><dd>514 01320</dd></div>
-        <div class="item-row"><dt>径間名</dt><dd>小川71～72</dd></div>
-        <div class="item-row"><dt>完了状態</dt><dd>completed</dd></div>
-        <div class="item-row"><dt>未完了理由</dt><dd>—</dd></div>
-        <div class="item-row"><dt>Googleマップ</dt><dd><a class="item-map-link" href="https://www.google.com/maps?q=33.965055,135.832575" target="_blank" rel="noopener">Googleマップを開く</a></dd></div>
-        <div class="item-row"><dt>処理方法</dt><dd>収集</dd></div>
+        <div class="item-row"><dt>処理方法</dt><dd>集積</dd></div>
         <div class="item-row"><dt>枝切り本数</dt><dd>11</dd></div>
         <div class="item-row"><dt>根切り本数</dt><dd>13</dd></div>
         <div class="item-row"><dt>柴面積</dt><dd>0</dd></div>
@@ -233,17 +302,19 @@ h1 {
         <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
         <div class="item-row"><dt>警告</dt><dd>—</dd></div>
         <div class="item-row"><dt>備考</dt><dd>その場</dd></div>
-      </dl>
+        </dl>
+      </details>
     </article>
     <article class="item-card">
-      <h3 class="item-head">現場 3</h3>
-      <dl class="item-dl">
+      <h3 class="item-head">小川74～75</h3>
+      <p class="item-state">状態: 完了</p>
+      
+      <p class="item-map"><a class="item-map-link" href="https://www.google.com/maps?q=33.963764999999995,135.832645" target="_blank" rel="noopener">Googleマップを開く</a></p>
+      <details class="item-detail">
+        <summary>詳細を表示</summary>
+        <dl class="item-dl">
         <div class="item-row"><dt>管理番号</dt><dd>514 01321</dd></div>
-        <div class="item-row"><dt>径間名</dt><dd>小川74～75</dd></div>
-        <div class="item-row"><dt>完了状態</dt><dd>completed</dd></div>
-        <div class="item-row"><dt>未完了理由</dt><dd>—</dd></div>
-        <div class="item-row"><dt>Googleマップ</dt><dd><a class="item-map-link" href="https://www.google.com/maps?q=33.963764999999995,135.832645" target="_blank" rel="noopener">Googleマップを開く</a></dd></div>
-        <div class="item-row"><dt>処理方法</dt><dd>収集</dd></div>
+        <div class="item-row"><dt>処理方法</dt><dd>集積</dd></div>
         <div class="item-row"><dt>枝切り本数</dt><dd>12</dd></div>
         <div class="item-row"><dt>根切り本数</dt><dd>1</dd></div>
         <div class="item-row"><dt>柴面積</dt><dd>6</dd></div>
@@ -254,17 +325,19 @@ h1 {
         <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
         <div class="item-row"><dt>警告</dt><dd>—</dd></div>
         <div class="item-row"><dt>備考</dt><dd>めっちゃ増えます。ネット終わったところ上か下どちらでも。</dd></div>
-      </dl>
+        </dl>
+      </details>
     </article>
     <article class="item-card">
-      <h3 class="item-head">現場 4</h3>
-      <dl class="item-dl">
+      <h3 class="item-head">小川77～78</h3>
+      <p class="item-state">状態: 完了</p>
+      
+      <p class="item-map"><a class="item-map-link" href="https://www.google.com/maps?q=33.963375,135.833495" target="_blank" rel="noopener">Googleマップを開く</a></p>
+      <details class="item-detail">
+        <summary>詳細を表示</summary>
+        <dl class="item-dl">
         <div class="item-row"><dt>管理番号</dt><dd>514 01323</dd></div>
-        <div class="item-row"><dt>径間名</dt><dd>小川77～78</dd></div>
-        <div class="item-row"><dt>完了状態</dt><dd>completed</dd></div>
-        <div class="item-row"><dt>未完了理由</dt><dd>—</dd></div>
-        <div class="item-row"><dt>Googleマップ</dt><dd><a class="item-map-link" href="https://www.google.com/maps?q=33.963375,135.833495" target="_blank" rel="noopener">Googleマップを開く</a></dd></div>
-        <div class="item-row"><dt>処理方法</dt><dd>収集</dd></div>
+        <div class="item-row"><dt>処理方法</dt><dd>集積</dd></div>
         <div class="item-row"><dt>枝切り本数</dt><dd>3</dd></div>
         <div class="item-row"><dt>根切り本数</dt><dd>21</dd></div>
         <div class="item-row"><dt>柴面積</dt><dd>36</dd></div>
@@ -275,17 +348,19 @@ h1 {
         <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
         <div class="item-row"><dt>警告</dt><dd>—</dd></div>
         <div class="item-row"><dt>備考</dt><dd>その場へ</dd></div>
-      </dl>
+        </dl>
+      </details>
     </article>
     <article class="item-card">
-      <h3 class="item-head">現場 5</h3>
-      <dl class="item-dl">
+      <h3 class="item-head">小川79～80</h3>
+      <p class="item-state">状態: 未完了</p>
+      <p class="item-subline">未完了理由: その他</p>
+      <p class="item-map"><a class="item-map-link" href="https://www.google.com/maps?q=33.96413,135.83368000000002" target="_blank" rel="noopener">Googleマップを開く</a></p>
+      <details class="item-detail">
+        <summary>詳細を表示</summary>
+        <dl class="item-dl">
         <div class="item-row"><dt>管理番号</dt><dd>514 01324</dd></div>
-        <div class="item-row"><dt>径間名</dt><dd>小川79～80</dd></div>
-        <div class="item-row"><dt>完了状態</dt><dd>incomplete</dd></div>
-        <div class="item-row"><dt>未完了理由</dt><dd>その他</dd></div>
-        <div class="item-row"><dt>Googleマップ</dt><dd><a class="item-map-link" href="https://www.google.com/maps?q=33.96413,135.83368000000002" target="_blank" rel="noopener">Googleマップを開く</a></dd></div>
-        <div class="item-row"><dt>処理方法</dt><dd>収集</dd></div>
+        <div class="item-row"><dt>処理方法</dt><dd>集積</dd></div>
         <div class="item-row"><dt>枝切り本数</dt><dd>21</dd></div>
         <div class="item-row"><dt>根切り本数</dt><dd>0</dd></div>
         <div class="item-row"><dt>柴面積</dt><dd>0</dd></div>
@@ -296,7 +371,8 @@ h1 {
         <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
         <div class="item-row"><dt>警告</dt><dd>—</dd></div>
         <div class="item-row"><dt>備考</dt><dd>その場へ</dd></div>
-      </dl>
+        </dl>
+      </details>
     </article>
     </div>
   </section>
