@@ -3,7 +3,11 @@
 """Scan share/<date>/index.html and regenerate portal/index.html and portal/archive/index.html (stdlib only).
 
 ポータルTOPのカードは share 配下の従来どおり。アーカイブは portal/archive_manifest.json の entries
-に登録された6桁日付のみ（share に該当フォルダと index.html があるものだけ反映）。
+に登録された6桁日付のみ。アーカイブ一覧・各日付の詳細ページは manifest を正本とし、share が無い日付も
+一覧・詳細に出せる（共有ページ削除後もアーカイブ詳細でサマリを残すため）。
+
+portal/archive/<YYMMDD>/ は generate 時に manifest 済み分へ上書き生成する。manifest から date が消えた
+古い YYMMDD ディレクトリは自動では削除しない（孤立が残る）。必要なら生成前に 6 桁名フォルダだけ手で整理する。
 """
 
 from __future__ import annotations
@@ -281,28 +285,105 @@ def month_label_from_key(year: int, month: int) -> str:
 
 
 def group_archive_sections(
-    parts: list[tuple[str, ShareSummary]],
-) -> list[tuple[tuple[int, int], str, list[tuple[str, ShareSummary]]]]:
+    parts: list[tuple[ManifestEntry, ShareSummary | None]],
+) -> list[
+    tuple[
+        tuple[int, int],
+        str,
+        list[tuple[ManifestEntry, ShareSummary | None]],
+    ]
+]:
     """月新しい順。各月内は日付キー新しい順。"""
     from collections import defaultdict
 
-    buckets: dict[tuple[int, int], list[tuple[str, ShareSummary]]] = defaultdict(list)
-    for folder, summary in parts:
+    buckets: dict[
+        tuple[int, int], list[tuple[ManifestEntry, ShareSummary | None]]
+    ] = defaultdict(list)
+    for entry, summary in parts:
+        folder = entry.date
         mk = month_heading_key(folder)
         if mk is None:
             continue
-        buckets[mk].append((folder, summary))
+        buckets[mk].append((entry, summary))
     keys = sorted(buckets.keys(), reverse=True)
-    out: list[tuple[tuple[int, int], str, list[tuple[str, ShareSummary]]]] = []
+    out: list[
+        tuple[
+            tuple[int, int],
+            str,
+            list[tuple[ManifestEntry, ShareSummary | None]],
+        ]
+    ] = []
     for y, m in keys:
         label = month_label_from_key(y, m)
-        items = sorted(buckets[(y, m)], key=lambda t: sort_key(t[0]), reverse=True)
+        items = sorted(buckets[(y, m)], key=lambda t: sort_key(t[0].date), reverse=True)
         out.append(((y, m), label, items))
     return out
 
 
-def load_archive_manifest_dates(repo_root: Path) -> list[str]:
-    """portal/archive_manifest.json の entries から6桁日付キーを返す（重複除く・新しい日付順）。"""
+def _coerce_manifest_int(val: object) -> int | None:
+    if val is None:
+        return None
+    if isinstance(val, bool):
+        return None
+    if isinstance(val, int):
+        return val
+    if isinstance(val, float) and val == int(val):
+        return int(val)
+    if isinstance(val, str):
+        s = val.strip()
+        if s.isdigit() or (s.startswith("-") and s[1:].isdigit()):
+            try:
+                return int(s)
+            except ValueError:
+                return None
+    return None
+
+
+def _strip_opt_str(val: object) -> str | None:
+    if val is None:
+        return None
+    if not isinstance(val, str):
+        return None
+    s = val.strip()
+    return s or None
+
+
+@dataclass(frozen=True)
+class ManifestEntry:
+    """アーカイブ manifest の1件。
+
+    entries に ``items`` があっても詳細ページでは列挙しない（公開サマリのみ）。
+    """
+
+    date: str
+    title: str | None = None
+    item_count: int | None = None
+    completed_count: int | None = None
+    incomplete_count: int | None = None
+    reported_at: str | None = None
+    href: str | None = None
+    display_suffix: str | None = None
+
+
+def _manifest_entry_from_dict(d: dict) -> ManifestEntry | None:
+    raw_date = d.get("date")
+    if not isinstance(raw_date, str) or not re.fullmatch(r"\d{6}", raw_date.strip()):
+        return None
+    date = raw_date.strip()
+    return ManifestEntry(
+        date=date,
+        title=_strip_opt_str(d.get("title")),
+        item_count=_coerce_manifest_int(d.get("item_count")),
+        completed_count=_coerce_manifest_int(d.get("completed_count")),
+        incomplete_count=_coerce_manifest_int(d.get("incomplete_count")),
+        reported_at=_strip_opt_str(d.get("reported_at")),
+        href=_strip_opt_str(d.get("href")),
+        display_suffix=_strip_opt_str(d.get("display_suffix")),
+    )
+
+
+def load_archive_manifest_entries(repo_root: Path) -> list[ManifestEntry]:
+    """portal/archive_manifest.json の entries を ManifestEntry として返す（重複 date は先頭優先）。"""
     path = repo_root / "portal" / "archive_manifest.json"
     if not path.is_file():
         return []
@@ -321,19 +402,20 @@ def load_archive_manifest_dates(repo_root: Path) -> list[str]:
         print("Warning: archive_manifest.json 'entries' must be an array", file=sys.stderr)
         return []
     seen: set[str] = set()
-    out: list[str] = []
+    out: list[ManifestEntry] = []
     for ent in entries:
-        d: str | None = None
+        me: ManifestEntry | None = None
         if isinstance(ent, str) and re.fullmatch(r"\d{6}", ent.strip()):
-            d = ent.strip()
+            me = ManifestEntry(date=ent.strip())
         elif isinstance(ent, dict):
-            v = ent.get("date")
-            if isinstance(v, str) and re.fullmatch(r"\d{6}", v.strip()):
-                d = v.strip()
-        if d and d not in seen:
-            seen.add(d)
-            out.append(d)
-    out.sort(key=lambda x: int(x), reverse=True)
+            me = _manifest_entry_from_dict(ent)
+        if me is None:
+            continue
+        if me.date in seen:
+            continue
+        seen.add(me.date)
+        out.append(me)
+    out.sort(key=lambda e: int(e.date), reverse=True)
     return out
 
 
@@ -360,58 +442,93 @@ def is_in_last_seven_days(folder: str, today: date) -> bool:
 
 
 def archive_row_search_blob(
-    folder: str, date_jp: str, crown_sm: str, item_n: int, suffix: str
+    folder: str,
+    date_jp: str,
+    title: str,
+    item_n: int,
+    suffix: str,
+    entry: ManifestEntry,
 ) -> str:
-    """検索用のプレーンテキスト（小文字化前提で連結）。"""
+    """検索用のプレーンテキスト（小文字化前提で連結）。日付・タイトル・件数・補足・件数内訳。"""
     bits = [
         folder,
         date_jp,
-        crown_sm or "",
+        title or "",
         f"{item_n}件",
         suffix or "",
     ]
+    if entry.completed_count is not None:
+        bits.append(f"完了{entry.completed_count}")
+    if entry.incomplete_count is not None:
+        bits.append(f"未完了{entry.incomplete_count}")
+    ra = (entry.reported_at or "").strip()
+    if ra:
+        bits.append(ra)
     return " ".join(b for b in bits if str(b).strip())
 
 
-def format_archive_row_article(folder: str, summary: ShareSummary) -> str:
-    """1行分のアーカイブカード（data-search 付き）。"""
+def format_archive_row_article(
+    entry: ManifestEntry, share_summary: ShareSummary | None
+) -> str:
+    """1行分のアーカイブカード（data-search 付き）。主リンクはアーカイブ詳細 ./<date>/ 。"""
+    folder = entry.date
     date_jp = fallback_heading(folder)
-    crown_sm = format_crown_summary(summary.crown_names)
+    title = (entry.title or "").strip()
+    crown_sm = ""
+    if share_summary and share_summary.crown_names:
+        crown_sm = format_crown_summary(share_summary.crown_names)
     if not crown_sm.strip():
         crown_sm = "—"
-    sfx = (summary.display_suffix or "").strip()
+    item_n = (
+        entry.item_count
+        if entry.item_count is not None
+        else (share_summary.item_count if share_summary else 0)
+    )
+    sfx = (entry.display_suffix or "").strip()
+    if not sfx and share_summary:
+        sfx = (share_summary.display_suffix or "").strip()
     sfx_html = ""
     if sfx:
         sfx_html = f'    <div class="archive-suffix">{escape_html(sfx)}</div>\n'
-    blob = archive_row_search_blob(
-        folder, date_jp, crown_sm, summary.item_count, sfx
-    )
+    blob = archive_row_search_blob(folder, date_jp, title, item_n, sfx, entry)
     search_attr = escape_html(blob)
-    href = f"../share/{folder}/"
+    href = f"./{folder}/"
+    title_row = ""
+    if title:
+        title_row = (
+            f'    <div class="archive-title">{escape_html(title)}</div>\n'
+        )
     return f"""    <article class="archive-row" data-search="{search_attr}">
       <div class="archive-row-top">
         <div class="archive-date">{escape_html(date_jp)} <span class="archive-dkey">({escape_html(folder)})</span></div>
-        <div class="archive-count">{summary.item_count}件</div>
+        <div class="archive-count">{item_n}件</div>
       </div>
-      <div class="archive-crown">{escape_html(crown_sm)}</div>
-{sfx_html}      <a class="btn btn-archive" href="{escape_html(href)}">共有ページを開く</a>
+{title_row}      <div class="archive-crown">{escape_html(crown_sm)}</div>
+{sfx_html}      <a class="btn btn-archive" href="{escape_html(href)}">アーカイブ詳細を開く</a>
     </article>"""
 
 
 def build_archive_html(
-    recent_parts: list[tuple[str, ShareSummary]],
-    sections: list[tuple[tuple[int, int], str, list[tuple[str, ShareSummary]]]],
+    recent_parts: list[tuple[ManifestEntry, ShareSummary | None]],
+    sections: list[
+        tuple[
+            tuple[int, int],
+            str,
+            list[tuple[ManifestEntry, ShareSummary | None]],
+        ]
+    ],
 ) -> str:
     """直近7日 + 月別 details（検索付き）。recent と月別で同一現場は重複しない。"""
     recent_rows_str = "\n".join(
-        format_archive_row_article(f, s) for f, s in recent_parts
+        format_archive_row_article(e, s) for e, s in recent_parts
     )
     recent_empty_hidden = " hidden" if recent_parts else ""
     month_blocks: list[str] = []
     for (y, m), month_label, items in sections:
         mid = f"m-{y:04d}-{m:02d}"
         rows_str = "\n".join(
-            format_archive_row_article(folder, summary) for folder, summary in items
+            format_archive_row_article(entry, summary)
+            for entry, summary in items
         )
         month_blocks.append(
             f"""    <details class="month-archive" id="{escape_html(mid)}">
@@ -580,6 +697,13 @@ h1 {{
   font-weight: 700;
   font-size: 0.95rem;
 }}
+.archive-title {{
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-b);
+  margin: 0 0 0.35rem;
+  word-break: break-word;
+}}
 .archive-dkey {{
   font-weight: 600;
   color: var(--muted-b);
@@ -649,10 +773,10 @@ a.btn-archive:hover, a.btn-archive:active {{
   </nav>
   <h1>現場共有アーカイブ</h1>
   <p class="disclaimer-note">表示対象は <code>portal/archive_manifest.json</code> の <code>entries</code> に登録した6桁日付のみです。個人情報・次回確認メモ・地主情報などはマニフェストに書き込まないでください。</p>
-  <p class="lead">直近7日分は「最近1週間」に、それ以前の登録分は月別アーカイブ（折りたたみ）にあります。検索で日付・冠称名・件数・補足から絞り込めます。</p>
+  <p class="lead">直近7日分は「最近1週間」に、それ以前の登録分は月別アーカイブ（折りたたみ）にあります。検索で日付・タイトル・件数・補足から絞り込めます。</p>
   <div class="search-wrap">
     <label for="archive-search" class="visually-hidden">検索</label>
-    <input type="search" id="archive-search" placeholder="日付・冠称名・件数・補足で検索" autocomplete="off">
+    <input type="search" id="archive-search" placeholder="日付・タイトル・件数・補足で検索" autocomplete="off">
   </div>
   <section class="recent-block" id="archive-recent" aria-labelledby="recent-h">
     <h2 class="section-title" id="recent-h">最近1週間</h2>
@@ -725,6 +849,244 @@ a.btn-archive:hover, a.btn-archive:active {{
 </body>
 </html>
 """
+
+
+def sanitize_manifest_href(href: str | None) -> str | None:
+    """詳細ページに埋め込む href の最低限の検証（スクリプト系・改行を拒否）。"""
+    if href is None:
+        return None
+    h = href.strip()
+    if not h:
+        return None
+    low = h.lower()
+    if low.startswith(("javascript:", "data:", "vbscript:")):
+        return None
+    if re.search(r"[\n\r<>\x00]", h):
+        return None
+    return h
+
+
+def _fmt_count_cell(val: int | None) -> str:
+    if val is None:
+        return f'<span class="missing">—</span>'
+    return escape_html(str(val))
+
+
+def build_archive_detail_html(entry: ManifestEntry) -> str:
+    """アーカイブ詳細（manifest の公開可能フィールドのみ。items / source_item は出さない）。"""
+    folder = entry.date
+    date_jp = fallback_heading(folder)
+    title_disp = entry.title.strip() if entry.title else ""
+    title_html = escape_html(title_disp) if title_disp else "—"
+    reported = (
+        escape_html(entry.reported_at.strip())
+        if entry.reported_at and entry.reported_at.strip()
+        else "—"
+    )
+    href_ok = sanitize_manifest_href(entry.href)
+    share_block = ""
+    if href_ok:
+        share_block = f"""    <section class="share-section" aria-labelledby="share-h">
+      <h2 class="section-title" id="share-h">元の共有ページ</h2>
+      <p class="muted-tiny">元の共有ページは削除されている場合があります。</p>
+      <p class="share-link-wrap">
+        <a class="btn btn-secondary" href="{escape_html(href_ok)}">元の共有ページを開く</a>
+      </p>
+    </section>
+"""
+    return f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{escape_html(folder)} · アーカイブ詳細</title>
+<style>
+:root {{
+  --bg-b: #eef2f7;
+  --card-b: #fff;
+  --text-b: #142033;
+  --muted-b: #5a6578;
+  --border-b: #cfd8e3;
+  --accent-b: #1565c0;
+  --accent-b-hover: #0d47a1;
+}}
+* {{ box-sizing: border-box; }}
+body {{
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
+    "Noto Sans JP", sans-serif;
+  background: var(--bg-b);
+  color: var(--text-b);
+  line-height: 1.5;
+  padding: 0.85rem 0.85rem 1.5rem;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}}
+.top-bar {{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}}
+.top-bar a {{
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent-b);
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}}
+.top-bar a:hover, .top-bar a:focus-visible {{
+  text-decoration: underline;
+  outline: none;
+}}
+h1 {{
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}}
+.disclaimer-note {{
+  font-size: 0.8rem;
+  color: var(--muted-b);
+  margin: 0 0 0.45rem;
+  line-height: 1.45;
+}}
+.summary-card {{
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
+  margin-bottom: 1rem;
+}}
+.summary-dl {{
+  margin: 0;
+}}
+.dl-row {{
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 0.35rem 0.65rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #e8edf4;
+  font-size: 0.95rem;
+}}
+.dl-row:last-child {{
+  border-bottom: 0;
+}}
+.summary-dl dt {{
+  margin: 0;
+  font-weight: 700;
+  color: var(--muted-b);
+}}
+.summary-dl dd {{
+  margin: 0;
+  font-weight: 600;
+  word-break: break-word;
+}}
+.missing {{
+  color: var(--muted-b);
+  font-weight: 600;
+}}
+.section-title {{
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 0.45rem;
+}}
+.share-section {{
+  margin-bottom: 0.75rem;
+}}
+.muted-tiny {{
+  font-size: 0.8rem;
+  color: var(--muted-b);
+  margin: 0 0 0.5rem;
+  line-height: 1.45;
+}}
+.share-link-wrap {{
+  margin: 0;
+}}
+a.btn {{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 9px;
+  padding: 0.55rem 0.75rem;
+  min-height: 44px;
+}}
+a.btn-secondary {{
+  color: var(--accent-b);
+  background: #fff;
+  border: 1px solid var(--border-b);
+}}
+a.btn-secondary:hover, a.btn-secondary:active {{
+  border-color: var(--accent-b);
+  background: var(--bg-b);
+}}
+.footer-note {{
+  margin-top: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--muted-b);
+  text-align: center;
+}}
+.visually-hidden {{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}}
+</style>
+</head>
+<body>
+  <nav class="top-bar" aria-label="サイト内リンク">
+    <a href="../../">ポータルTOP</a>
+    <a href="../">アーカイブ</a>
+  </nav>
+  <h1>アーカイブ詳細</h1>
+  <p class="disclaimer-note">このページは完了報告に基づく公開用アーカイブです。個人情報や内部メモは表示していません。</p>
+  <section class="summary-card" aria-labelledby="sum-h">
+    <h2 class="visually-hidden" id="sum-h">サマリ</h2>
+    <dl class="summary-dl">
+      <div class="dl-row"><dt>日付</dt><dd>{escape_html(folder)}（{escape_html(date_jp)}）</dd></div>
+      <div class="dl-row"><dt>タイトル</dt><dd>{title_html}</dd></div>
+      <div class="dl-row"><dt>件数</dt><dd>{_fmt_count_cell(entry.item_count)}</dd></div>
+      <div class="dl-row"><dt>完了件数</dt><dd>{_fmt_count_cell(entry.completed_count)}</dd></div>
+      <div class="dl-row"><dt>未完了件数</dt><dd>{_fmt_count_cell(entry.incomplete_count)}</dd></div>
+      <div class="dl-row"><dt>報告日時</dt><dd>{reported}</dd></div>
+    </dl>
+  </section>
+{share_block}  <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+</body>
+</html>
+"""
+
+
+def write_archive_detail_pages(
+    repo_root: Path, entries: list[ManifestEntry]
+) -> list[Path]:
+    """manifest entries に応じて portal/archive/<date>/index.html を上書き生成。entries が空なら何もしない。"""
+    if not entries:
+        return []
+    arch_root = repo_root / "portal" / "archive"
+    written: list[Path] = []
+    for ent in entries:
+        day_dir = arch_root / ent.date
+        day_dir.mkdir(parents=True, exist_ok=True)
+        out_path = day_dir / "index.html"
+        out_path.write_text(
+            build_archive_detail_html(ent), encoding="utf-8", newline="\n"
+        )
+        written.append(out_path)
+    return written
 
 
 def build_html(
@@ -997,7 +1359,8 @@ def main() -> int:
 
     rows.sort(key=lambda x: sort_key(x[0]))
 
-    manifest_dates = load_archive_manifest_dates(repo_root)
+    manifest_entries = load_archive_manifest_entries(repo_root)
+    manifest_dates = [e.date for e in manifest_entries]
     archived = set(manifest_dates)
 
     entries: list[tuple[str, str]] = []
@@ -1011,18 +1374,20 @@ def main() -> int:
         entries.append((folder, heading))
 
     share_by_folder: dict[str, Path] = {f: p for f, p in rows}
-    archive_parts: list[tuple[str, ShareSummary]] = []
-    for folder in manifest_dates:
-        path = share_by_folder.get(folder)
-        if path is None:
+    archive_parts: list[tuple[ManifestEntry, ShareSummary | None]] = []
+    for ment in manifest_entries:
+        path = share_by_folder.get(ment.date)
+        summary: ShareSummary | None = None
+        if path is not None:
+            html_text = path.read_text(encoding="utf-8", errors="replace")
+            summary = summarize_share_html(html_text, ment.date)
+        else:
             print(
-                f"Warning: archive manifest lists '{folder}' but share/{folder}/ is missing or has no index.html; skipped",
+                f"Warning: archive manifest lists '{ment.date}' but share/{ment.date}/ "
+                "has no index.html; archive list/detail use manifest fields only",
                 file=sys.stderr,
             )
-            continue
-        html_text = path.read_text(encoding="utf-8", errors="replace")
-        summary = summarize_share_html(html_text, folder)
-        archive_parts.append((folder, summary))
+        archive_parts.append((ment, summary))
 
     out = build_html(entries)
     out_path = repo_root / "portal" / "index.html"
@@ -1034,22 +1399,26 @@ def main() -> int:
     )
 
     today = date.today()
-    recent_parts: list[tuple[str, ShareSummary]] = []
-    monthly_parts: list[tuple[str, ShareSummary]] = []
-    for folder, summary in archive_parts:
-        if is_in_last_seven_days(folder, today):
-            recent_parts.append((folder, summary))
+    recent_parts: list[tuple[ManifestEntry, ShareSummary | None]] = []
+    monthly_parts: list[tuple[ManifestEntry, ShareSummary | None]] = []
+    for ment, summary in archive_parts:
+        if is_in_last_seven_days(ment.date, today):
+            recent_parts.append((ment, summary))
         else:
-            monthly_parts.append((folder, summary))
-    recent_parts.sort(key=lambda t: sort_key(t[0]), reverse=True)
+            monthly_parts.append((ment, summary))
+    recent_parts.sort(key=lambda t: sort_key(t[0].date), reverse=True)
     sections = group_archive_sections(monthly_parts)
     arch_html = build_archive_html(recent_parts, sections)
     arch_path = repo_root / "portal" / "archive" / "index.html"
     arch_path.parent.mkdir(parents=True, exist_ok=True)
     arch_path.write_text(arch_html, encoding="utf-8", newline="\n")
+    detail_paths = write_archive_detail_pages(repo_root, manifest_entries)
+    for dp in detail_paths:
+        print(f"Wrote {dp}")
     print(
-        f"Wrote {arch_path} (manifest={len(manifest_dates)}, "
-        f"archive_rows={len(archive_parts)}, recent={len(recent_parts)}, months={len(sections)})"
+        f"Wrote {arch_path} (manifest={len(manifest_entries)}, "
+        f"archive_rows={len(archive_parts)}, recent={len(recent_parts)}, months={len(sections)}, "
+        f"archive_details={len(detail_paths)})"
     )
     return 0
 

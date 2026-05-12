@@ -149,6 +149,13 @@ h1 {
   font-weight: 700;
   font-size: 0.95rem;
 }
+.archive-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-b);
+  margin: 0 0 0.35rem;
+  word-break: break-word;
+}
 .archive-dkey {
   font-weight: 600;
   color: var(--muted-b);
@@ -218,10 +225,10 @@ a.btn-archive:hover, a.btn-archive:active {
   </nav>
   <h1>現場共有アーカイブ</h1>
   <p class="disclaimer-note">表示対象は <code>portal/archive_manifest.json</code> の <code>entries</code> に登録した6桁日付のみです。個人情報・次回確認メモ・地主情報などはマニフェストに書き込まないでください。</p>
-  <p class="lead">直近7日分は「最近1週間」に、それ以前の登録分は月別アーカイブ（折りたたみ）にあります。検索で日付・冠称名・件数・補足から絞り込めます。</p>
+  <p class="lead">直近7日分は「最近1週間」に、それ以前の登録分は月別アーカイブ（折りたたみ）にあります。検索で日付・タイトル・件数・補足から絞り込めます。</p>
   <div class="search-wrap">
     <label for="archive-search" class="visually-hidden">検索</label>
-    <input type="search" id="archive-search" placeholder="日付・冠称名・件数・補足で検索" autocomplete="off">
+    <input type="search" id="archive-search" placeholder="日付・タイトル・件数・補足で検索" autocomplete="off">
   </div>
   <section class="recent-block" id="archive-recent" aria-labelledby="recent-h">
     <h2 class="section-title" id="recent-h">最近1週間</h2>
