@@ -365,6 +365,26 @@ class ManifestEntry:
     display_suffix: str | None = None
 
 
+@dataclass(frozen=True)
+class ArchivePublicItem:
+    management_no: str
+    label: str
+    completion_status: str
+    incomplete_reason: str
+    map_url: str
+    method: str
+    branch_cut_total: int
+    root_cut_total: int
+    brush_area_m2: str
+    bamboo_count: str
+    vine_locations: str
+    road_width_m: str
+    bucket_available: str
+    crane_required: str
+    warning: str
+    note: str
+
+
 def _manifest_entry_from_dict(d: dict) -> ManifestEntry | None:
     raw_date = d.get("date")
     if not isinstance(raw_date, str) or not re.fullmatch(r"\d{6}", raw_date.strip()):
@@ -872,8 +892,137 @@ def _fmt_count_cell(val: int | None) -> str:
     return escape_html(str(val))
 
 
-def build_archive_detail_html(entry: ManifestEntry) -> str:
-    """アーカイブ詳細（manifest の公開可能フィールドのみ。items / source_item は出さない）。"""
+def _as_num(v: object) -> int:
+    if isinstance(v, bool):
+        return 0
+    if isinstance(v, int):
+        return v
+    if isinstance(v, float):
+        return int(v)
+    if isinstance(v, str):
+        s = v.strip()
+        if s.isdigit() or (s.startswith("-") and s[1:].isdigit()):
+            try:
+                return int(s)
+            except ValueError:
+                return 0
+    return 0
+
+
+def _to_str(v: object) -> str:
+    if v is None:
+        return ""
+    return str(v).strip()
+
+
+def _yes_no_jp(v: object) -> str:
+    if isinstance(v, bool):
+        return "可" if v else "不可"
+    s = _to_str(v).lower()
+    if s in {"true", "1", "yes", "y"}:
+        return "可"
+    if s in {"false", "0", "no", "n"}:
+        return "不可"
+    return "—"
+
+
+def _cut_totals(src: dict) -> tuple[int, int]:
+    branch_keys = [
+        "branch_cut_under_10",
+        "branch_cut_10_20",
+        "branch_cut_20_30",
+        "branch_cut_30_40",
+        "branch_cut_40_50",
+        "branch_cut_over_50",
+    ]
+    root_keys = [
+        "root_cut_under_10",
+        "root_cut_10_20",
+        "root_cut_20_30",
+        "root_cut_30_40",
+        "root_cut_40_50",
+        "root_cut_over_50",
+    ]
+    b = sum(_as_num(src.get(k)) for k in branch_keys)
+    r = sum(_as_num(src.get(k)) for k in root_keys)
+    return b, r
+
+
+def _method_text(src: dict) -> str:
+    carry = bool(src.get("carry_out"))
+    collect = bool(src.get("collect"))
+    if carry and collect:
+        return "持出・収集"
+    if carry:
+        return "持出"
+    if collect:
+        return "収集"
+    return "—"
+
+
+def _completion_reports_root(repo_root: Path) -> Path:
+    return repo_root.parent / "ippatsu-pc" / "data" / "completion_reports"
+
+
+def load_archive_public_items(
+    repo_root: Path, date_key: str
+) -> tuple[list[ArchivePublicItem] | None, str]:
+    """ippatsu-pc 側 completion_reports から公開可能項目のみ抽出する。"""
+    base = _completion_reports_root(repo_root)
+    path = base / f"{date_key}.json"
+    if not path.is_file():
+        return None, "詳細な現場一覧は未生成です（completion_reports が見つかりません）。"
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None, "詳細な現場一覧は未生成です（completion_reports の読み込みに失敗）。"
+    if not isinstance(raw, dict):
+        return None, "詳細な現場一覧は未生成です（completion_reports 形式不正）。"
+    items = raw.get("items")
+    if not isinstance(items, list):
+        return None, "詳細な現場一覧は未生成です（items 配列なし）。"
+    out: list[ArchivePublicItem] = []
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        src = it.get("source_item")
+        if not isinstance(src, dict):
+            src = {}
+        b_total, r_total = _cut_totals(src)
+        status = _to_str(it.get("completion_status")).lower()
+        if status not in {"completed", "incomplete"}:
+            status = "—"
+        out.append(
+            ArchivePublicItem(
+                management_no=_to_str(src.get("management_no") or it.get("management_no")) or "—",
+                label=_to_str(src.get("label") or it.get("label")) or "—",
+                completion_status=status,
+                incomplete_reason=_to_str(it.get("incomplete_reason")) or "—",
+                map_url=_to_str(src.get("map_url")),
+                method=_method_text(src),
+                branch_cut_total=b_total,
+                root_cut_total=r_total,
+                brush_area_m2=_to_str(src.get("brush_area_m2")) or "—",
+                bamboo_count=_to_str(src.get("bamboo_count")) or "—",
+                vine_locations=_to_str(src.get("vine_locations")) or "—",
+                road_width_m=_to_str(src.get("road_width_m")) or "—",
+                bucket_available=_yes_no_jp(src.get("bucket_available")),
+                crane_required=_yes_no_jp(src.get("crane_required")),
+                warning=_to_str(src.get("warning")) or "—",
+                note=_to_str(src.get("note")) or "—",
+            )
+        )
+    return out, ""
+
+
+def _item_row_html(label: str, value: str) -> str:
+    return f'<div class="item-row"><dt>{escape_html(label)}</dt><dd>{escape_html(value)}</dd></div>'
+
+
+def build_archive_detail_html(
+    entry: ManifestEntry, public_items: list[ArchivePublicItem] | None, detail_note: str
+) -> str:
+    """アーカイブ詳細（manifest サマリ + completion_reports 由来の公開可能項目）。"""
     folder = entry.date
     date_jp = fallback_heading(folder)
     title_disp = entry.title.strip() if entry.title else ""
@@ -883,17 +1032,44 @@ def build_archive_detail_html(entry: ManifestEntry) -> str:
         if entry.reported_at and entry.reported_at.strip()
         else "—"
     )
-    href_ok = sanitize_manifest_href(entry.href)
-    share_block = ""
-    if href_ok:
-        share_block = f"""    <section class="share-section" aria-labelledby="share-h">
-      <h2 class="section-title" id="share-h">元の共有ページ</h2>
-      <p class="muted-tiny">元の共有ページは削除されている場合があります。</p>
-      <p class="share-link-wrap">
-        <a class="btn btn-secondary" href="{escape_html(href_ok)}">元の共有ページを開く</a>
-      </p>
-    </section>
-"""
+    items_html = ""
+    if public_items is None:
+        items_html = f'<p class="muted-tiny">{escape_html(detail_note)}</p>'
+    elif not public_items:
+        items_html = '<p class="muted-tiny">この日の現場一覧はありません。</p>'
+    else:
+        cards: list[str] = []
+        for idx, it in enumerate(public_items, start=1):
+            map_line = "—"
+            if it.map_url and it.map_url.startswith(("http://", "https://")):
+                map_line = (
+                    f'<a class="item-map-link" href="{escape_html(it.map_url)}" '
+                    'target="_blank" rel="noopener">Googleマップを開く</a>'
+                )
+            cards.append(
+                f"""    <article class="item-card">
+      <h3 class="item-head">現場 {idx}</h3>
+      <dl class="item-dl">
+        {_item_row_html("管理番号", it.management_no)}
+        {_item_row_html("径間名", it.label)}
+        {_item_row_html("完了状態", it.completion_status)}
+        {_item_row_html("未完了理由", it.incomplete_reason)}
+        <div class="item-row"><dt>Googleマップ</dt><dd>{map_line}</dd></div>
+        {_item_row_html("処理方法", it.method)}
+        {_item_row_html("枝切り本数", str(it.branch_cut_total))}
+        {_item_row_html("根切り本数", str(it.root_cut_total))}
+        {_item_row_html("柴面積", it.brush_area_m2)}
+        {_item_row_html("竹本数", it.bamboo_count)}
+        {_item_row_html("つる情報", it.vine_locations)}
+        {_item_row_html("道幅", it.road_width_m)}
+        {_item_row_html("高所作業車", it.bucket_available)}
+        {_item_row_html("クレーン要否", it.crane_required)}
+        {_item_row_html("警告", it.warning)}
+        {_item_row_html("備考", it.note)}
+      </dl>
+    </article>"""
+            )
+        items_html = "\n".join(cards)
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -994,38 +1170,60 @@ h1 {{
   font-weight: 700;
   margin: 0 0 0.45rem;
 }}
-.share-section {{
-  margin-bottom: 0.75rem;
-}}
 .muted-tiny {{
   font-size: 0.8rem;
   color: var(--muted-b);
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.75rem;
   line-height: 1.45;
 }}
-.share-link-wrap {{
+.item-list {{
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
   margin: 0;
 }}
-a.btn {{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.95rem;
-  border-radius: 9px;
-  padding: 0.55rem 0.75rem;
-  min-height: 44px;
-}}
-a.btn-secondary {{
-  color: var(--accent-b);
-  background: #fff;
+.item-card {{
+  background: var(--card-b);
   border: 1px solid var(--border-b);
+  border-radius: 10px;
+  padding: 0.7rem 0.75rem;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
 }}
-a.btn-secondary:hover, a.btn-secondary:active {{
-  border-color: var(--accent-b);
-  background: var(--bg-b);
+.item-head {{
+  margin: 0 0 0.45rem;
+  font-size: 0.98rem;
+}}
+.item-dl {{
+  margin: 0;
+}}
+.item-row {{
+  display: grid;
+  grid-template-columns: 6.2rem 1fr;
+  gap: 0.3rem 0.6rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid #eef2f7;
+  font-size: 0.88rem;
+}}
+.item-row:last-child {{
+  border-bottom: 0;
+}}
+.item-row dt {{
+  margin: 0;
+  color: var(--muted-b);
+  font-weight: 700;
+}}
+.item-row dd {{
+  margin: 0;
+  font-weight: 600;
+  word-break: break-word;
+}}
+.item-map-link {{
+  color: var(--accent-b);
+  text-decoration: none;
+  font-weight: 700;
+}}
+.item-map-link:hover, .item-map-link:focus-visible {{
+  text-decoration: underline;
 }}
 .footer-note {{
   margin-top: 1.1rem;
@@ -1064,7 +1262,13 @@ a.btn-secondary:hover, a.btn-secondary:active {{
       <div class="dl-row"><dt>報告日時</dt><dd>{reported}</dd></div>
     </dl>
   </section>
-{share_block}  <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+  <section aria-labelledby="items-h">
+    <h2 class="section-title" id="items-h">現場一覧</h2>
+    <div class="item-list">
+{items_html}
+    </div>
+  </section>
+  <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
 </body>
 </html>
 """
@@ -1082,8 +1286,11 @@ def write_archive_detail_pages(
         day_dir = arch_root / ent.date
         day_dir.mkdir(parents=True, exist_ok=True)
         out_path = day_dir / "index.html"
+        pub_items, note = load_archive_public_items(repo_root, ent.date)
         out_path.write_text(
-            build_archive_detail_html(ent), encoding="utf-8", newline="\n"
+            build_archive_detail_html(ent, pub_items, note),
+            encoding="utf-8",
+            newline="\n",
         )
         written.append(out_path)
     return written

@@ -98,38 +98,60 @@ h1 {
   font-weight: 700;
   margin: 0 0 0.45rem;
 }
-.share-section {
-  margin-bottom: 0.75rem;
-}
 .muted-tiny {
   font-size: 0.8rem;
   color: var(--muted-b);
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.75rem;
   line-height: 1.45;
 }
-.share-link-wrap {
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
   margin: 0;
 }
-a.btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.95rem;
-  border-radius: 9px;
-  padding: 0.55rem 0.75rem;
-  min-height: 44px;
-}
-a.btn-secondary {
-  color: var(--accent-b);
-  background: #fff;
+.item-card {
+  background: var(--card-b);
   border: 1px solid var(--border-b);
+  border-radius: 10px;
+  padding: 0.7rem 0.75rem;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
 }
-a.btn-secondary:hover, a.btn-secondary:active {
-  border-color: var(--accent-b);
-  background: var(--bg-b);
+.item-head {
+  margin: 0 0 0.45rem;
+  font-size: 0.98rem;
+}
+.item-dl {
+  margin: 0;
+}
+.item-row {
+  display: grid;
+  grid-template-columns: 6.2rem 1fr;
+  gap: 0.3rem 0.6rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid #eef2f7;
+  font-size: 0.88rem;
+}
+.item-row:last-child {
+  border-bottom: 0;
+}
+.item-row dt {
+  margin: 0;
+  color: var(--muted-b);
+  font-weight: 700;
+}
+.item-row dd {
+  margin: 0;
+  font-weight: 600;
+  word-break: break-word;
+}
+.item-map-link {
+  color: var(--accent-b);
+  text-decoration: none;
+  font-weight: 700;
+}
+.item-map-link:hover, .item-map-link:focus-visible {
+  text-decoration: underline;
 }
 .footer-note {
   margin-top: 1.1rem;
@@ -168,13 +190,116 @@ a.btn-secondary:hover, a.btn-secondary:active {
       <div class="dl-row"><dt>報告日時</dt><dd>2026-05-11T21:12:16</dd></div>
     </dl>
   </section>
-    <section class="share-section" aria-labelledby="share-h">
-      <h2 class="section-title" id="share-h">元の共有ページ</h2>
-      <p class="muted-tiny">元の共有ページは削除されている場合があります。</p>
-      <p class="share-link-wrap">
-        <a class="btn btn-secondary" href="../../share/260508/">元の共有ページを開く</a>
-      </p>
-    </section>
+  <section aria-labelledby="items-h">
+    <h2 class="section-title" id="items-h">現場一覧</h2>
+    <div class="item-list">
+    <article class="item-card">
+      <h3 class="item-head">現場 1</h3>
+      <dl class="item-dl">
+        <div class="item-row"><dt>管理番号</dt><dd>514 07811</dd></div>
+        <div class="item-row"><dt>径間名</dt><dd>百谷16～17</dd></div>
+        <div class="item-row"><dt>完了状態</dt><dd>completed</dd></div>
+        <div class="item-row"><dt>未完了理由</dt><dd>—</dd></div>
+        <div class="item-row"><dt>Googleマップ</dt><dd><a class="item-map-link" href="https://www.google.com/maps?q=34.34965,135.74348" target="_blank" rel="noopener">Googleマップを開く</a></dd></div>
+        <div class="item-row"><dt>処理方法</dt><dd>収集</dd></div>
+        <div class="item-row"><dt>枝切り本数</dt><dd>4</dd></div>
+        <div class="item-row"><dt>根切り本数</dt><dd>0</dd></div>
+        <div class="item-row"><dt>柴面積</dt><dd>0</dd></div>
+        <div class="item-row"><dt>竹本数</dt><dd>0</dd></div>
+        <div class="item-row"><dt>つる情報</dt><dd>0</dd></div>
+        <div class="item-row"><dt>道幅</dt><dd>3.0</dd></div>
+        <div class="item-row"><dt>高所作業車</dt><dd>可</dd></div>
+        <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
+        <div class="item-row"><dt>警告</dt><dd>—</dd></div>
+        <div class="item-row"><dt>備考</dt><dd>16側前回集積した場所に集積 地蔵さんにブルーシート被せてあげてください</dd></div>
+      </dl>
+    </article>
+    <article class="item-card">
+      <h3 class="item-head">現場 2</h3>
+      <dl class="item-dl">
+        <div class="item-row"><dt>管理番号</dt><dd>514 09570</dd></div>
+        <div class="item-row"><dt>径間名</dt><dd>百谷9～10</dd></div>
+        <div class="item-row"><dt>完了状態</dt><dd>completed</dd></div>
+        <div class="item-row"><dt>未完了理由</dt><dd>—</dd></div>
+        <div class="item-row"><dt>Googleマップ</dt><dd><a class="item-map-link" href="https://www.google.com/maps?q=34.350235,135.74061" target="_blank" rel="noopener">Googleマップを開く</a></dd></div>
+        <div class="item-row"><dt>処理方法</dt><dd>持出</dd></div>
+        <div class="item-row"><dt>枝切り本数</dt><dd>0</dd></div>
+        <div class="item-row"><dt>根切り本数</dt><dd>6</dd></div>
+        <div class="item-row"><dt>柴面積</dt><dd>4</dd></div>
+        <div class="item-row"><dt>竹本数</dt><dd>18</dd></div>
+        <div class="item-row"><dt>つる情報</dt><dd>0</dd></div>
+        <div class="item-row"><dt>道幅</dt><dd>3.0</dd></div>
+        <div class="item-row"><dt>高所作業車</dt><dd>可</dd></div>
+        <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
+        <div class="item-row"><dt>警告</dt><dd>—</dd></div>
+        <div class="item-row"><dt>備考</dt><dd>—</dd></div>
+      </dl>
+    </article>
+    <article class="item-card">
+      <h3 class="item-head">現場 3</h3>
+      <dl class="item-dl">
+        <div class="item-row"><dt>管理番号</dt><dd>514 07802</dd></div>
+        <div class="item-row"><dt>径間名</dt><dd>百谷6～7</dd></div>
+        <div class="item-row"><dt>完了状態</dt><dd>completed</dd></div>
+        <div class="item-row"><dt>未完了理由</dt><dd>—</dd></div>
+        <div class="item-row"><dt>Googleマップ</dt><dd><a class="item-map-link" href="https://www.google.com/maps?q=34.350215,135.739475" target="_blank" rel="noopener">Googleマップを開く</a></dd></div>
+        <div class="item-row"><dt>処理方法</dt><dd>持出・収集</dd></div>
+        <div class="item-row"><dt>枝切り本数</dt><dd>0</dd></div>
+        <div class="item-row"><dt>根切り本数</dt><dd>0</dd></div>
+        <div class="item-row"><dt>柴面積</dt><dd>0</dd></div>
+        <div class="item-row"><dt>竹本数</dt><dd>49</dd></div>
+        <div class="item-row"><dt>つる情報</dt><dd>0</dd></div>
+        <div class="item-row"><dt>道幅</dt><dd>3.0</dd></div>
+        <div class="item-row"><dt>高所作業車</dt><dd>可</dd></div>
+        <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
+        <div class="item-row"><dt>警告</dt><dd>—</dd></div>
+        <div class="item-row"><dt>備考</dt><dd>集積が困難な場合持出</dd></div>
+      </dl>
+    </article>
+    <article class="item-card">
+      <h3 class="item-head">現場 4</h3>
+      <dl class="item-dl">
+        <div class="item-row"><dt>管理番号</dt><dd>514 09631</dd></div>
+        <div class="item-row"><dt>径間名</dt><dd>北宇智146N7N2E5～146N7N2E6</dd></div>
+        <div class="item-row"><dt>完了状態</dt><dd>completed</dd></div>
+        <div class="item-row"><dt>未完了理由</dt><dd>—</dd></div>
+        <div class="item-row"><dt>Googleマップ</dt><dd><a class="item-map-link" href="https://www.google.com/maps?q=34.385850000000005,135.69462" target="_blank" rel="noopener">Googleマップを開く</a></dd></div>
+        <div class="item-row"><dt>処理方法</dt><dd>持出</dd></div>
+        <div class="item-row"><dt>枝切り本数</dt><dd>7</dd></div>
+        <div class="item-row"><dt>根切り本数</dt><dd>0</dd></div>
+        <div class="item-row"><dt>柴面積</dt><dd>0</dd></div>
+        <div class="item-row"><dt>竹本数</dt><dd>0</dd></div>
+        <div class="item-row"><dt>つる情報</dt><dd>0</dd></div>
+        <div class="item-row"><dt>道幅</dt><dd>2.5</dd></div>
+        <div class="item-row"><dt>高所作業車</dt><dd>可</dd></div>
+        <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
+        <div class="item-row"><dt>警告</dt><dd>—</dd></div>
+        <div class="item-row"><dt>備考</dt><dd>—</dd></div>
+      </dl>
+    </article>
+    <article class="item-card">
+      <h3 class="item-head">現場 5</h3>
+      <dl class="item-dl">
+        <div class="item-row"><dt>管理番号</dt><dd>514 10041</dd></div>
+        <div class="item-row"><dt>径間名</dt><dd>北宇智146N7N2E4～146N7N2E5</dd></div>
+        <div class="item-row"><dt>完了状態</dt><dd>incomplete</dd></div>
+        <div class="item-row"><dt>未完了理由</dt><dd>その他</dd></div>
+        <div class="item-row"><dt>Googleマップ</dt><dd><a class="item-map-link" href="https://www.google.com/maps?q=34.386055,135.69454000000002" target="_blank" rel="noopener">Googleマップを開く</a></dd></div>
+        <div class="item-row"><dt>処理方法</dt><dd>持出</dd></div>
+        <div class="item-row"><dt>枝切り本数</dt><dd>11</dd></div>
+        <div class="item-row"><dt>根切り本数</dt><dd>0</dd></div>
+        <div class="item-row"><dt>柴面積</dt><dd>0</dd></div>
+        <div class="item-row"><dt>竹本数</dt><dd>0</dd></div>
+        <div class="item-row"><dt>つる情報</dt><dd>0</dd></div>
+        <div class="item-row"><dt>道幅</dt><dd>2.5</dd></div>
+        <div class="item-row"><dt>高所作業車</dt><dd>可</dd></div>
+        <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
+        <div class="item-row"><dt>警告</dt><dd>—</dd></div>
+        <div class="item-row"><dt>備考</dt><dd>E4側写真要？</dd></div>
+      </dl>
+    </article>
+    </div>
+  </section>
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
 </body>
 </html>
