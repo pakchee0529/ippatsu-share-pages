@@ -6,13 +6,13 @@
 <title>260508 · アーカイブ詳細</title>
 <style>
 :root {
-  --bg-b: #eef2f7;
+  --bg-b: #f4f5f7;
   --card-b: #fff;
-  --text-b: #142033;
-  --muted-b: #5a6578;
-  --border-b: #cfd8e3;
-  --accent-b: #1565c0;
-  --accent-b-hover: #0d47a1;
+  --text-b: #1a1a1a;
+  --muted-b: #5c6370;
+  --border-b: #e1e4e8;
+  --accent-b: #2563eb;
+  --accent-b-hover: #1d4ed8;
 }
 * { box-sizing: border-box; }
 body {
@@ -22,7 +22,7 @@ body {
   background: var(--bg-b);
   color: var(--text-b);
   line-height: 1.5;
-  padding: 0.85rem 0.85rem 1.5rem;
+  padding: 0.75rem 0.75rem 1.25rem;
   max-width: 40rem;
   margin-left: auto;
   margin-right: auto;
@@ -42,43 +42,35 @@ body {
   padding: 0.35rem 0.5rem;
   border-radius: 6px;
 }
-.top-bar a:hover, .top-bar a:focus-visible {
-  text-decoration: underline;
-  outline: none;
-}
 h1 {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.35rem;
 }
 .disclaimer-note {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--muted-b);
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.8rem;
   line-height: 1.45;
 }
 .summary-card {
   background: var(--card-b);
-  border: 1px solid var(--border-b);
   border-radius: 10px;
-  padding: 0.75rem 0.85rem;
-  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
-  margin-bottom: 1rem;
+  border: 1px solid var(--border-b);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
 }
-.summary-dl {
-  margin: 0;
-}
+.summary-dl { margin: 0; }
 .dl-row {
   display: grid;
   grid-template-columns: 7.5rem 1fr;
   gap: 0.35rem 0.65rem;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid #e8edf4;
-  font-size: 0.95rem;
+  padding: 0.32rem 0;
+  border-bottom: 1px solid #edf0f2;
+  font-size: 0.92rem;
 }
-.dl-row:last-child {
-  border-bottom: 0;
-}
+.dl-row:last-child { border-bottom: 0; }
 .summary-dl dt {
   margin: 0;
   font-weight: 700;
@@ -89,40 +81,24 @@ h1 {
   font-weight: 600;
   word-break: break-word;
 }
-.missing {
-  color: var(--muted-b);
-  font-weight: 600;
-}
-.section-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin: 0 0 0.45rem;
-}
-.muted-tiny {
-  font-size: 0.8rem;
-  color: var(--muted-b);
-  margin: 0 0 0.75rem;
-  line-height: 1.45;
-}
 .map-section {
+  margin-top: 1.0rem;
   background: var(--card-b);
-  border: 1px solid var(--border-b);
   border-radius: 10px;
-  padding: 0.75rem 0.85rem;
-  margin: 0 0 0.9rem;
-  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
+  border: 1px solid var(--border-b);
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 0.85rem;
 }
 .map-title {
-  font-size: 1.03rem;
-  margin: 0 0 0.35rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
 }
 .map-lead {
-  margin: 0 0 0.65rem;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--muted-b);
+  margin: 0 0 0.55rem;
 }
-.map-actions {
+.card-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -131,133 +107,120 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.95rem;
-  font-weight: 700;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   border-radius: 8px;
+  min-height: 40px;
   text-decoration: none;
-  min-height: 44px;
-  touch-action: manipulation;
-  line-height: 1.25;
 }
 .btn-map {
-  color: #fff;
   background: var(--accent-b);
-}
-.btn-map:hover, .btn-map:active {
-  background: var(--accent-b-hover);
-}
-.map-section-empty {
-  padding: 0.65rem 0.75rem;
-}
-.map-section-empty .map-lead {
-  margin-bottom: 0;
-  font-size: 0.86rem;
+  color: #fff;
 }
 .item-list {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  margin: 0;
+  gap: 0.75rem;
 }
 .item-card {
   background: var(--card-b);
-  border: 1px solid var(--border-b);
   border-radius: 10px;
-  padding: 0.7rem 0.75rem;
-  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
+  border: 1px solid var(--border-b);
+  padding: 0.85rem 1rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
 }
-.item-head {
-  margin: 0 0 0.3rem;
-  font-size: 1.03rem;
-  line-height: 1.35;
-  word-break: break-word;
-}
-.item-state {
-  margin: 0 0 0.3rem;
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-.item-subline {
-  margin: 0 0 0.35rem;
-  font-size: 0.86rem;
-  color: var(--text-b);
-}
-.item-map {
-  margin: 0 0 0.25rem;
-  font-size: 0.9rem;
-}
-.item-detail {
-  margin-top: 0.2rem;
-}
-.item-detail > summary {
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--accent-b);
-  padding: 0.35rem 0.1rem;
-  min-height: 40px;
+.card-head {
   display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.card-title-wrap {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  gap: 0.5rem;
 }
-.item-detail[open] > summary {
-  color: var(--accent-b-hover);
-}
-.item-detail[open] > summary::after {
-  content: "（詳細を閉じる）";
+.card-title {
+  font-size: 1.05rem;
   font-weight: 600;
+  margin: 0;
+}
+.status-pill {
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+}
+.status-done { color: #0f766e; background: #ecfeff; border: 1px solid #99f6e4; }
+.status-pending { color: #b45309; background: #fffbeb; border: 1px solid #fde68a; }
+.item-mgmt {
+  margin: -0.15rem 0 0;
   font-size: 0.82rem;
   color: var(--muted-b);
-  margin-left: 0.35rem;
-}
-.item-dl {
-  margin: 0;
-}
-.item-row {
-  display: grid;
-  grid-template-columns: 6.2rem 1fr;
-  gap: 0.3rem 0.6rem;
-  padding: 0.2rem 0;
-  border-bottom: 1px solid #eef2f7;
-  font-size: 0.88rem;
-}
-.item-row:last-child {
-  border-bottom: 0;
-}
-.item-row dt {
-  margin: 0;
-  color: var(--muted-b);
-  font-weight: 700;
-}
-.item-row dd {
-  margin: 0;
   font-weight: 600;
-  word-break: break-word;
+}
+.card-warning {
+  margin: 0.25rem 0 0;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.82rem;
+  color: var(--muted-b);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
 }
 .item-map-link {
-  color: var(--accent-b);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  min-height: 40px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  color: #fff;
   text-decoration: none;
-  font-weight: 700;
+  background: var(--accent-b);
 }
-.item-map-link:hover, .item-map-link:focus-visible {
-  text-decoration: underline;
+.instr-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 0.65rem;
 }
+.instr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-bottom: 0.55rem;
+}
+.instr-table th, .instr-table td {
+  border: 1px solid var(--border-b);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+.instr-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+.instr-cut-caption {
+  margin: 0.35rem 0 0.28rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted-b);
+}
+.instr-note {
+  margin-top: 0.58rem;
+  padding-top: 0.52rem;
+  border-top: 1px dashed var(--border-b);
+  font-size: 0.92rem;
+}
+.muted-tiny { font-size: 0.86rem; color: var(--muted-b); }
 .footer-note {
   margin-top: 1.1rem;
   font-size: 0.8rem;
   color: var(--muted-b);
   text-align: center;
-}
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 </style>
 </head>
@@ -266,12 +229,11 @@ h1 {
     <a href="../../">ポータルTOP</a>
     <a href="../">アーカイブ</a>
   </nav>
-  <h1>アーカイブ詳細</h1>
-  <p class="disclaimer-note">このページは完了報告に基づく公開用アーカイブです。個人情報や内部メモは表示していません。</p>
-  <section class="summary-card" aria-labelledby="sum-h">
-    <h2 class="visually-hidden" id="sum-h">サマリ</h2>
+  <h1>2026年05月08日</h1>
+  <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
+  <section class="summary-card" aria-label="概要">
     <dl class="summary-dl">
-      <div class="dl-row"><dt>日付</dt><dd>260508（2026年05月08日）</dd></div>
+      <div class="dl-row"><dt>日付</dt><dd>260508</dd></div>
       <div class="dl-row"><dt>タイトル</dt><dd>2026年05月08日 5件</dd></div>
       <div class="dl-row"><dt>件数</dt><dd>5</dd></div>
       <div class="dl-row"><dt>完了件数</dt><dd>4</dd></div>
@@ -280,130 +242,200 @@ h1 {
     </dl>
   </section>
   <section class="map-section" aria-labelledby="map-heading">
-    <h2 class="map-title" id="map-heading">現場位置まとめ</h2>
-    <p class="map-lead">この日に報告された現場をまとめて地図で確認できます。</p>
-    <div class="map-actions">
+    <h2 class="map-title" id="map-heading">全体地図</h2>
+    <p class="map-lead">この日に報告された現場をまとめて確認できます。</p>
+    <div class="card-actions">
       <a class="btn btn-map" href="https://www.google.com/maps/dir/?api=1&amp;destination=34.38611,135.69458&amp;waypoints=34.34982,135.74347|34.35023,135.74041|34.35024,135.7393|34.386,135.6945" target="_blank" rel="noopener">まとめて地図を開く</a>
     </div>
   </section>
 
   <section aria-labelledby="items-h">
-    <h2 class="section-title" id="items-h">現場一覧</h2>
+    <h2 class="map-title" id="items-h">現場一覧</h2>
     <div class="item-list">
     <article class="item-card">
-      <h3 class="item-head">百谷16～17</h3>
-      <p class="item-state">状態: 完了</p>
+      <div class="card-head">
+        <div class="card-title-wrap">
+          <h3 class="card-title">百谷16～17</h3>
+          <span class="status-pill status-done">完了</span>
+        </div>
+        <p class="item-mgmt">514 07811</p>
+        <div class="card-actions"><span class="map-action"><a class="item-map-link" href="https://www.google.com/maps?q=34.34965,135.74348" target="_blank" rel="noopener">地図を開く</a></span></div>
+      </div>
       
-      <p class="item-map"><a class="item-map-link" href="https://www.google.com/maps?q=34.34965,135.74348" target="_blank" rel="noopener">Googleマップを開く</a></p>
-      <details class="item-detail">
-        <summary>詳細を表示</summary>
-        <dl class="item-dl">
-        <div class="item-row"><dt>管理番号</dt><dd>514 07811</dd></div>
-        <div class="item-row"><dt>処理方法</dt><dd>集積</dd></div>
-        <div class="item-row"><dt>枝切り本数</dt><dd>4</dd></div>
-        <div class="item-row"><dt>根切り本数</dt><dd>0</dd></div>
-        <div class="item-row"><dt>柴面積</dt><dd>0</dd></div>
-        <div class="item-row"><dt>竹本数</dt><dd>0</dd></div>
-        <div class="item-row"><dt>つる情報</dt><dd>0</dd></div>
-        <div class="item-row"><dt>道幅</dt><dd>3.0</dd></div>
-        <div class="item-row"><dt>高所作業車</dt><dd>可</dd></div>
-        <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
-        <div class="item-row"><dt>警告</dt><dd>—</dd></div>
-        <div class="item-row"><dt>備考</dt><dd>16側前回集積した場所に集積 地蔵さんにブルーシート被せてあげてください</dd></div>
-        </dl>
-      </details>
+      <div class="instr-scroll">
+        <table class="instr-table instr-summary">
+          <tbody>
+            <tr><th>管理番号</th><td>514 07811</td></tr>
+            <tr><th>処理方法</th><td>集積</td></tr>
+            <tr><th>B車</th><td>可</td></tr>
+            <tr><th>道幅</th><td>3.0</td></tr>
+            <tr><th>警告</th><td>—</td></tr>
+            <tr><th>クレーン</th><td>—</td></tr>
+          </tbody>
+        </table>
+        <p class="instr-cut-caption">枝切り・根切り（本数）</p>
+        <table class="instr-table instr-cut">
+          <thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead>
+          <tbody><tr><th>合計</th><td>4</td><td>0</td></tr></tbody>
+        </table>
+        <p class="instr-cut-caption">その他伐採</p>
+        <table class="instr-table instr-other">
+          <tbody>
+            <tr><th>柴伐採面積</th><td>0</td></tr>
+            <tr><th>竹伐採本数</th><td>0</td></tr>
+            <tr><th>つる伐採箇所数</th><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="instr-note"><strong>備考</strong><br>16側前回集積した場所に集積 地蔵さんにブルーシート被せてあげてください</div>
     </article>
     <article class="item-card">
-      <h3 class="item-head">百谷9～10</h3>
-      <p class="item-state">状態: 完了</p>
+      <div class="card-head">
+        <div class="card-title-wrap">
+          <h3 class="card-title">百谷9～10</h3>
+          <span class="status-pill status-done">完了</span>
+        </div>
+        <p class="item-mgmt">514 09570</p>
+        <div class="card-actions"><span class="map-action"><a class="item-map-link" href="https://www.google.com/maps?q=34.350235,135.74061" target="_blank" rel="noopener">地図を開く</a></span></div>
+      </div>
       
-      <p class="item-map"><a class="item-map-link" href="https://www.google.com/maps?q=34.350235,135.74061" target="_blank" rel="noopener">Googleマップを開く</a></p>
-      <details class="item-detail">
-        <summary>詳細を表示</summary>
-        <dl class="item-dl">
-        <div class="item-row"><dt>管理番号</dt><dd>514 09570</dd></div>
-        <div class="item-row"><dt>処理方法</dt><dd>持出</dd></div>
-        <div class="item-row"><dt>枝切り本数</dt><dd>0</dd></div>
-        <div class="item-row"><dt>根切り本数</dt><dd>6</dd></div>
-        <div class="item-row"><dt>柴面積</dt><dd>4</dd></div>
-        <div class="item-row"><dt>竹本数</dt><dd>18</dd></div>
-        <div class="item-row"><dt>つる情報</dt><dd>0</dd></div>
-        <div class="item-row"><dt>道幅</dt><dd>3.0</dd></div>
-        <div class="item-row"><dt>高所作業車</dt><dd>可</dd></div>
-        <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
-        <div class="item-row"><dt>警告</dt><dd>—</dd></div>
-        <div class="item-row"><dt>備考</dt><dd>—</dd></div>
-        </dl>
-      </details>
+      <div class="instr-scroll">
+        <table class="instr-table instr-summary">
+          <tbody>
+            <tr><th>管理番号</th><td>514 09570</td></tr>
+            <tr><th>処理方法</th><td>持出</td></tr>
+            <tr><th>B車</th><td>可</td></tr>
+            <tr><th>道幅</th><td>3.0</td></tr>
+            <tr><th>警告</th><td>—</td></tr>
+            <tr><th>クレーン</th><td>—</td></tr>
+          </tbody>
+        </table>
+        <p class="instr-cut-caption">枝切り・根切り（本数）</p>
+        <table class="instr-table instr-cut">
+          <thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead>
+          <tbody><tr><th>合計</th><td>0</td><td>6</td></tr></tbody>
+        </table>
+        <p class="instr-cut-caption">その他伐採</p>
+        <table class="instr-table instr-other">
+          <tbody>
+            <tr><th>柴伐採面積</th><td>4</td></tr>
+            <tr><th>竹伐採本数</th><td>18</td></tr>
+            <tr><th>つる伐採箇所数</th><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="instr-note"><strong>備考</strong><br>—</div>
     </article>
     <article class="item-card">
-      <h3 class="item-head">百谷6～7</h3>
-      <p class="item-state">状態: 完了</p>
+      <div class="card-head">
+        <div class="card-title-wrap">
+          <h3 class="card-title">百谷6～7</h3>
+          <span class="status-pill status-done">完了</span>
+        </div>
+        <p class="item-mgmt">514 07802</p>
+        <div class="card-actions"><span class="map-action"><a class="item-map-link" href="https://www.google.com/maps?q=34.350215,135.739475" target="_blank" rel="noopener">地図を開く</a></span></div>
+      </div>
       
-      <p class="item-map"><a class="item-map-link" href="https://www.google.com/maps?q=34.350215,135.739475" target="_blank" rel="noopener">Googleマップを開く</a></p>
-      <details class="item-detail">
-        <summary>詳細を表示</summary>
-        <dl class="item-dl">
-        <div class="item-row"><dt>管理番号</dt><dd>514 07802</dd></div>
-        <div class="item-row"><dt>処理方法</dt><dd>持出・集積</dd></div>
-        <div class="item-row"><dt>枝切り本数</dt><dd>0</dd></div>
-        <div class="item-row"><dt>根切り本数</dt><dd>0</dd></div>
-        <div class="item-row"><dt>柴面積</dt><dd>0</dd></div>
-        <div class="item-row"><dt>竹本数</dt><dd>49</dd></div>
-        <div class="item-row"><dt>つる情報</dt><dd>0</dd></div>
-        <div class="item-row"><dt>道幅</dt><dd>3.0</dd></div>
-        <div class="item-row"><dt>高所作業車</dt><dd>可</dd></div>
-        <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
-        <div class="item-row"><dt>警告</dt><dd>—</dd></div>
-        <div class="item-row"><dt>備考</dt><dd>集積が困難な場合持出</dd></div>
-        </dl>
-      </details>
+      <div class="instr-scroll">
+        <table class="instr-table instr-summary">
+          <tbody>
+            <tr><th>管理番号</th><td>514 07802</td></tr>
+            <tr><th>処理方法</th><td>持出・集積</td></tr>
+            <tr><th>B車</th><td>可</td></tr>
+            <tr><th>道幅</th><td>3.0</td></tr>
+            <tr><th>警告</th><td>—</td></tr>
+            <tr><th>クレーン</th><td>—</td></tr>
+          </tbody>
+        </table>
+        <p class="instr-cut-caption">枝切り・根切り（本数）</p>
+        <table class="instr-table instr-cut">
+          <thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead>
+          <tbody><tr><th>合計</th><td>0</td><td>0</td></tr></tbody>
+        </table>
+        <p class="instr-cut-caption">その他伐採</p>
+        <table class="instr-table instr-other">
+          <tbody>
+            <tr><th>柴伐採面積</th><td>0</td></tr>
+            <tr><th>竹伐採本数</th><td>49</td></tr>
+            <tr><th>つる伐採箇所数</th><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="instr-note"><strong>備考</strong><br>集積が困難な場合持出</div>
     </article>
     <article class="item-card">
-      <h3 class="item-head">北宇智146N7N2E5～146N7N2E6</h3>
-      <p class="item-state">状態: 完了</p>
+      <div class="card-head">
+        <div class="card-title-wrap">
+          <h3 class="card-title">北宇智146N7N2E5～146N7N2E6</h3>
+          <span class="status-pill status-done">完了</span>
+        </div>
+        <p class="item-mgmt">514 09631</p>
+        <div class="card-actions"><span class="map-action"><a class="item-map-link" href="https://www.google.com/maps?q=34.385850000000005,135.69462" target="_blank" rel="noopener">地図を開く</a></span></div>
+      </div>
       
-      <p class="item-map"><a class="item-map-link" href="https://www.google.com/maps?q=34.385850000000005,135.69462" target="_blank" rel="noopener">Googleマップを開く</a></p>
-      <details class="item-detail">
-        <summary>詳細を表示</summary>
-        <dl class="item-dl">
-        <div class="item-row"><dt>管理番号</dt><dd>514 09631</dd></div>
-        <div class="item-row"><dt>処理方法</dt><dd>持出</dd></div>
-        <div class="item-row"><dt>枝切り本数</dt><dd>7</dd></div>
-        <div class="item-row"><dt>根切り本数</dt><dd>0</dd></div>
-        <div class="item-row"><dt>柴面積</dt><dd>0</dd></div>
-        <div class="item-row"><dt>竹本数</dt><dd>0</dd></div>
-        <div class="item-row"><dt>つる情報</dt><dd>0</dd></div>
-        <div class="item-row"><dt>道幅</dt><dd>2.5</dd></div>
-        <div class="item-row"><dt>高所作業車</dt><dd>可</dd></div>
-        <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
-        <div class="item-row"><dt>警告</dt><dd>—</dd></div>
-        <div class="item-row"><dt>備考</dt><dd>—</dd></div>
-        </dl>
-      </details>
+      <div class="instr-scroll">
+        <table class="instr-table instr-summary">
+          <tbody>
+            <tr><th>管理番号</th><td>514 09631</td></tr>
+            <tr><th>処理方法</th><td>持出</td></tr>
+            <tr><th>B車</th><td>可</td></tr>
+            <tr><th>道幅</th><td>2.5</td></tr>
+            <tr><th>警告</th><td>—</td></tr>
+            <tr><th>クレーン</th><td>—</td></tr>
+          </tbody>
+        </table>
+        <p class="instr-cut-caption">枝切り・根切り（本数）</p>
+        <table class="instr-table instr-cut">
+          <thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead>
+          <tbody><tr><th>合計</th><td>7</td><td>0</td></tr></tbody>
+        </table>
+        <p class="instr-cut-caption">その他伐採</p>
+        <table class="instr-table instr-other">
+          <tbody>
+            <tr><th>柴伐採面積</th><td>0</td></tr>
+            <tr><th>竹伐採本数</th><td>0</td></tr>
+            <tr><th>つる伐採箇所数</th><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="instr-note"><strong>備考</strong><br>—</div>
     </article>
     <article class="item-card">
-      <h3 class="item-head">北宇智146N7N2E4～146N7N2E5</h3>
-      <p class="item-state">状態: 未完了</p>
-      <p class="item-subline">未完了理由: その他</p>
-      <p class="item-map"><a class="item-map-link" href="https://www.google.com/maps?q=34.386055,135.69454000000002" target="_blank" rel="noopener">Googleマップを開く</a></p>
-      <details class="item-detail">
-        <summary>詳細を表示</summary>
-        <dl class="item-dl">
-        <div class="item-row"><dt>管理番号</dt><dd>514 10041</dd></div>
-        <div class="item-row"><dt>処理方法</dt><dd>持出</dd></div>
-        <div class="item-row"><dt>枝切り本数</dt><dd>11</dd></div>
-        <div class="item-row"><dt>根切り本数</dt><dd>0</dd></div>
-        <div class="item-row"><dt>柴面積</dt><dd>0</dd></div>
-        <div class="item-row"><dt>竹本数</dt><dd>0</dd></div>
-        <div class="item-row"><dt>つる情報</dt><dd>0</dd></div>
-        <div class="item-row"><dt>道幅</dt><dd>2.5</dd></div>
-        <div class="item-row"><dt>高所作業車</dt><dd>可</dd></div>
-        <div class="item-row"><dt>クレーン要否</dt><dd>—</dd></div>
-        <div class="item-row"><dt>警告</dt><dd>—</dd></div>
-        <div class="item-row"><dt>備考</dt><dd>E4側写真要？</dd></div>
-        </dl>
-      </details>
+      <div class="card-head">
+        <div class="card-title-wrap">
+          <h3 class="card-title">北宇智146N7N2E4～146N7N2E5</h3>
+          <span class="status-pill status-pending">未完了</span>
+        </div>
+        <p class="item-mgmt">514 10041</p>
+        <div class="card-actions"><span class="map-action"><a class="item-map-link" href="https://www.google.com/maps?q=34.386055,135.69454000000002" target="_blank" rel="noopener">地図を開く</a></span></div>
+      </div>
+      <p class="card-warning">未完了理由: その他</p>
+      <div class="instr-scroll">
+        <table class="instr-table instr-summary">
+          <tbody>
+            <tr><th>管理番号</th><td>514 10041</td></tr>
+            <tr><th>処理方法</th><td>持出</td></tr>
+            <tr><th>B車</th><td>可</td></tr>
+            <tr><th>道幅</th><td>2.5</td></tr>
+            <tr><th>警告</th><td>—</td></tr>
+            <tr><th>クレーン</th><td>—</td></tr>
+          </tbody>
+        </table>
+        <p class="instr-cut-caption">枝切り・根切り（本数）</p>
+        <table class="instr-table instr-cut">
+          <thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead>
+          <tbody><tr><th>合計</th><td>11</td><td>0</td></tr></tbody>
+        </table>
+        <p class="instr-cut-caption">その他伐採</p>
+        <table class="instr-table instr-other">
+          <tbody>
+            <tr><th>柴伐採面積</th><td>0</td></tr>
+            <tr><th>竹伐採本数</th><td>0</td></tr>
+            <tr><th>つる伐採箇所数</th><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="instr-note"><strong>備考</strong><br>E4側写真要？</div>
     </article>
     </div>
   </section>

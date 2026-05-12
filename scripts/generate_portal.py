@@ -1081,7 +1081,7 @@ def _item_row_html(label: str, value: str) -> str:
 def build_archive_detail_html(
     entry: ManifestEntry, public_items: list[ArchivePublicItem] | None, detail_note: str
 ) -> str:
-    """アーカイブ詳細（manifest サマリ + completion_reports 由来の公開可能項目）。"""
+    """アーカイブ詳細（公開可能項目のみ）。共有ページのUIトーンに寄せる。"""
     folder = entry.date
     date_jp = fallback_heading(folder)
     title_disp = entry.title.strip() if entry.title else ""
@@ -1101,57 +1101,84 @@ def build_archive_detail_html(
         multi_url = build_multi_pin_map_url(public_items)
         if multi_url:
             multi_map_html = f"""  <section class="map-section" aria-labelledby="map-heading">
-    <h2 class="map-title" id="map-heading">現場位置まとめ</h2>
-    <p class="map-lead">この日に報告された現場をまとめて地図で確認できます。</p>
-    <div class="map-actions">
+    <h2 class="map-title" id="map-heading">全体地図</h2>
+    <p class="map-lead">この日に報告された現場をまとめて確認できます。</p>
+    <div class="card-actions">
       <a class="btn btn-map" href="{escape_html(multi_url)}" target="_blank" rel="noopener">まとめて地図を開く</a>
     </div>
   </section>
 """
         else:
             multi_map_html = """  <section class="map-section map-section-empty" aria-label="地図導線">
-    <h2 class="map-title">現場位置まとめ</h2>
+    <h2 class="map-title">全体地図</h2>
     <p class="map-lead">まとめて表示できる位置情報がありません。</p>
   </section>
 """
+
         cards: list[str] = []
         for it in public_items:
             map_line = "—"
             if it.map_url and it.map_url.startswith(("http://", "https://")):
                 map_line = (
                     f'<a class="item-map-link" href="{escape_html(it.map_url)}" '
-                    'target="_blank" rel="noopener">Googleマップを開く</a>'
+                    'target="_blank" rel="noopener">地図を開く</a>'
                 )
-            status_jp = "完了" if it.completion_status == "completed" else "未完了" if it.completion_status == "incomplete" else it.completion_status
+            status_jp = (
+                "完了"
+                if it.completion_status == "completed"
+                else "未完了"
+                if it.completion_status == "incomplete"
+                else it.completion_status
+            )
+            status_cls = (
+                "status-done" if it.completion_status == "completed" else "status-pending"
+            )
             reason_html = ""
             if it.completion_status == "incomplete" and it.incomplete_reason != "—":
-                reason_html = f'<p class="item-subline">未完了理由: {escape_html(it.incomplete_reason)}</p>'
+                reason_html = (
+                    f'<p class="card-warning">未完了理由: {escape_html(it.incomplete_reason)}</p>'
+                )
             cards.append(
                 f"""    <article class="item-card">
-      <h3 class="item-head">{escape_html(it.label)}</h3>
-      <p class="item-state">状態: {escape_html(status_jp)}</p>
+      <div class="card-head">
+        <div class="card-title-wrap">
+          <h3 class="card-title">{escape_html(it.label)}</h3>
+          <span class="status-pill {status_cls}">{escape_html(status_jp)}</span>
+        </div>
+        <p class="item-mgmt">{escape_html(it.management_no)}</p>
+        <div class="card-actions"><span class="map-action">{map_line}</span></div>
+      </div>
       {reason_html}
-      <p class="item-map">{map_line}</p>
-      <details class="item-detail">
-        <summary>詳細を表示</summary>
-        <dl class="item-dl">
-        {_item_row_html("管理番号", it.management_no)}
-        {_item_row_html("処理方法", it.method)}
-        {_item_row_html("枝切り本数", str(it.branch_cut_total))}
-        {_item_row_html("根切り本数", str(it.root_cut_total))}
-        {_item_row_html("柴面積", it.brush_area_m2)}
-        {_item_row_html("竹本数", it.bamboo_count)}
-        {_item_row_html("つる情報", it.vine_locations)}
-        {_item_row_html("道幅", it.road_width_m)}
-        {_item_row_html("高所作業車", it.bucket_available)}
-        {_item_row_html("クレーン要否", it.crane_required)}
-        {_item_row_html("警告", it.warning)}
-        {_item_row_html("備考", it.note)}
-        </dl>
-      </details>
+      <div class="instr-scroll">
+        <table class="instr-table instr-summary">
+          <tbody>
+            <tr><th>管理番号</th><td>{escape_html(it.management_no)}</td></tr>
+            <tr><th>処理方法</th><td>{escape_html(it.method)}</td></tr>
+            <tr><th>B車</th><td>{escape_html(it.bucket_available)}</td></tr>
+            <tr><th>道幅</th><td>{escape_html(it.road_width_m)}</td></tr>
+            <tr><th>警告</th><td>{escape_html(it.warning)}</td></tr>
+            <tr><th>クレーン</th><td>{escape_html(it.crane_required)}</td></tr>
+          </tbody>
+        </table>
+        <p class="instr-cut-caption">枝切り・根切り（本数）</p>
+        <table class="instr-table instr-cut">
+          <thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead>
+          <tbody><tr><th>合計</th><td>{escape_html(str(it.branch_cut_total))}</td><td>{escape_html(str(it.root_cut_total))}</td></tr></tbody>
+        </table>
+        <p class="instr-cut-caption">その他伐採</p>
+        <table class="instr-table instr-other">
+          <tbody>
+            <tr><th>柴伐採面積</th><td>{escape_html(it.brush_area_m2)}</td></tr>
+            <tr><th>竹伐採本数</th><td>{escape_html(it.bamboo_count)}</td></tr>
+            <tr><th>つる伐採箇所数</th><td>{escape_html(it.vine_locations)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="instr-note"><strong>備考</strong><br>{escape_html(it.note)}</div>
     </article>"""
             )
         items_html = "\n".join(cards)
+
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1160,13 +1187,13 @@ def build_archive_detail_html(
 <title>{escape_html(folder)} · アーカイブ詳細</title>
 <style>
 :root {{
-  --bg-b: #eef2f7;
+  --bg-b: #f4f5f7;
   --card-b: #fff;
-  --text-b: #142033;
-  --muted-b: #5a6578;
-  --border-b: #cfd8e3;
-  --accent-b: #1565c0;
-  --accent-b-hover: #0d47a1;
+  --text-b: #1a1a1a;
+  --muted-b: #5c6370;
+  --border-b: #e1e4e8;
+  --accent-b: #2563eb;
+  --accent-b-hover: #1d4ed8;
 }}
 * {{ box-sizing: border-box; }}
 body {{
@@ -1176,7 +1203,7 @@ body {{
   background: var(--bg-b);
   color: var(--text-b);
   line-height: 1.5;
-  padding: 0.85rem 0.85rem 1.5rem;
+  padding: 0.75rem 0.75rem 1.25rem;
   max-width: 40rem;
   margin-left: auto;
   margin-right: auto;
@@ -1196,43 +1223,35 @@ body {{
   padding: 0.35rem 0.5rem;
   border-radius: 6px;
 }}
-.top-bar a:hover, .top-bar a:focus-visible {{
-  text-decoration: underline;
-  outline: none;
-}}
 h1 {{
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.35rem;
 }}
 .disclaimer-note {{
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--muted-b);
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.8rem;
   line-height: 1.45;
 }}
 .summary-card {{
   background: var(--card-b);
-  border: 1px solid var(--border-b);
   border-radius: 10px;
-  padding: 0.75rem 0.85rem;
-  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
-  margin-bottom: 1rem;
+  border: 1px solid var(--border-b);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
 }}
-.summary-dl {{
-  margin: 0;
-}}
+.summary-dl {{ margin: 0; }}
 .dl-row {{
   display: grid;
   grid-template-columns: 7.5rem 1fr;
   gap: 0.35rem 0.65rem;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid #e8edf4;
-  font-size: 0.95rem;
+  padding: 0.32rem 0;
+  border-bottom: 1px solid #edf0f2;
+  font-size: 0.92rem;
 }}
-.dl-row:last-child {{
-  border-bottom: 0;
-}}
+.dl-row:last-child {{ border-bottom: 0; }}
 .summary-dl dt {{
   margin: 0;
   font-weight: 700;
@@ -1243,40 +1262,24 @@ h1 {{
   font-weight: 600;
   word-break: break-word;
 }}
-.missing {{
-  color: var(--muted-b);
-  font-weight: 600;
-}}
-.section-title {{
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin: 0 0 0.45rem;
-}}
-.muted-tiny {{
-  font-size: 0.8rem;
-  color: var(--muted-b);
-  margin: 0 0 0.75rem;
-  line-height: 1.45;
-}}
 .map-section {{
+  margin-top: 1.0rem;
   background: var(--card-b);
-  border: 1px solid var(--border-b);
   border-radius: 10px;
-  padding: 0.75rem 0.85rem;
-  margin: 0 0 0.9rem;
-  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
+  border: 1px solid var(--border-b);
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 0.85rem;
 }}
 .map-title {{
-  font-size: 1.03rem;
-  margin: 0 0 0.35rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
 }}
 .map-lead {{
-  margin: 0 0 0.65rem;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--muted-b);
+  margin: 0 0 0.55rem;
 }}
-.map-actions {{
+.card-actions {{
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -1285,133 +1288,120 @@ h1 {{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.95rem;
-  font-weight: 700;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   border-radius: 8px;
+  min-height: 40px;
   text-decoration: none;
-  min-height: 44px;
-  touch-action: manipulation;
-  line-height: 1.25;
 }}
 .btn-map {{
-  color: #fff;
   background: var(--accent-b);
-}}
-.btn-map:hover, .btn-map:active {{
-  background: var(--accent-b-hover);
-}}
-.map-section-empty {{
-  padding: 0.65rem 0.75rem;
-}}
-.map-section-empty .map-lead {{
-  margin-bottom: 0;
-  font-size: 0.86rem;
+  color: #fff;
 }}
 .item-list {{
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  margin: 0;
+  gap: 0.75rem;
 }}
 .item-card {{
   background: var(--card-b);
-  border: 1px solid var(--border-b);
   border-radius: 10px;
-  padding: 0.7rem 0.75rem;
-  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
+  border: 1px solid var(--border-b);
+  padding: 0.85rem 1rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
 }}
-.item-head {{
-  margin: 0 0 0.3rem;
-  font-size: 1.03rem;
-  line-height: 1.35;
-  word-break: break-word;
-}}
-.item-state {{
-  margin: 0 0 0.3rem;
-  font-size: 0.9rem;
-  font-weight: 700;
-}}
-.item-subline {{
-  margin: 0 0 0.35rem;
-  font-size: 0.86rem;
-  color: var(--text-b);
-}}
-.item-map {{
-  margin: 0 0 0.25rem;
-  font-size: 0.9rem;
-}}
-.item-detail {{
-  margin-top: 0.2rem;
-}}
-.item-detail > summary {{
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--accent-b);
-  padding: 0.35rem 0.1rem;
-  min-height: 40px;
+.card-head {{
   display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}}
+.card-title-wrap {{
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  gap: 0.5rem;
 }}
-.item-detail[open] > summary {{
-  color: var(--accent-b-hover);
-}}
-.item-detail[open] > summary::after {{
-  content: "（詳細を閉じる）";
+.card-title {{
+  font-size: 1.05rem;
   font-weight: 600;
+  margin: 0;
+}}
+.status-pill {{
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+}}
+.status-done {{ color: #0f766e; background: #ecfeff; border: 1px solid #99f6e4; }}
+.status-pending {{ color: #b45309; background: #fffbeb; border: 1px solid #fde68a; }}
+.item-mgmt {{
+  margin: -0.15rem 0 0;
   font-size: 0.82rem;
   color: var(--muted-b);
-  margin-left: 0.35rem;
-}}
-.item-dl {{
-  margin: 0;
-}}
-.item-row {{
-  display: grid;
-  grid-template-columns: 6.2rem 1fr;
-  gap: 0.3rem 0.6rem;
-  padding: 0.2rem 0;
-  border-bottom: 1px solid #eef2f7;
-  font-size: 0.88rem;
-}}
-.item-row:last-child {{
-  border-bottom: 0;
-}}
-.item-row dt {{
-  margin: 0;
-  color: var(--muted-b);
-  font-weight: 700;
-}}
-.item-row dd {{
-  margin: 0;
   font-weight: 600;
-  word-break: break-word;
+}}
+.card-warning {{
+  margin: 0.25rem 0 0;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.82rem;
+  color: var(--muted-b);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
 }}
 .item-map-link {{
-  color: var(--accent-b);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  min-height: 40px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  color: #fff;
   text-decoration: none;
-  font-weight: 700;
+  background: var(--accent-b);
 }}
-.item-map-link:hover, .item-map-link:focus-visible {{
-  text-decoration: underline;
+.instr-scroll {{
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 0.65rem;
 }}
+.instr-table {{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-bottom: 0.55rem;
+}}
+.instr-table th, .instr-table td {{
+  border: 1px solid var(--border-b);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}}
+.instr-table th {{
+  background: #f1f5f9;
+  font-weight: 600;
+}}
+.instr-cut-caption {{
+  margin: 0.35rem 0 0.28rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted-b);
+}}
+.instr-note {{
+  margin-top: 0.58rem;
+  padding-top: 0.52rem;
+  border-top: 1px dashed var(--border-b);
+  font-size: 0.92rem;
+}}
+.muted-tiny {{ font-size: 0.86rem; color: var(--muted-b); }}
 .footer-note {{
   margin-top: 1.1rem;
   font-size: 0.8rem;
   color: var(--muted-b);
   text-align: center;
-}}
-.visually-hidden {{
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }}
 </style>
 </head>
@@ -1420,12 +1410,11 @@ h1 {{
     <a href="../../">ポータルTOP</a>
     <a href="../">アーカイブ</a>
   </nav>
-  <h1>アーカイブ詳細</h1>
-  <p class="disclaimer-note">このページは完了報告に基づく公開用アーカイブです。個人情報や内部メモは表示していません。</p>
-  <section class="summary-card" aria-labelledby="sum-h">
-    <h2 class="visually-hidden" id="sum-h">サマリ</h2>
+  <h1>{escape_html(date_jp)}</h1>
+  <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
+  <section class="summary-card" aria-label="概要">
     <dl class="summary-dl">
-      <div class="dl-row"><dt>日付</dt><dd>{escape_html(folder)}（{escape_html(date_jp)}）</dd></div>
+      <div class="dl-row"><dt>日付</dt><dd>{escape_html(folder)}</dd></div>
       <div class="dl-row"><dt>タイトル</dt><dd>{title_html}</dd></div>
       <div class="dl-row"><dt>件数</dt><dd>{_fmt_count_cell(entry.item_count)}</dd></div>
       <div class="dl-row"><dt>完了件数</dt><dd>{_fmt_count_cell(entry.completed_count)}</dd></div>
@@ -1435,7 +1424,7 @@ h1 {{
   </section>
 {multi_map_html}
   <section aria-labelledby="items-h">
-    <h2 class="section-title" id="items-h">現場一覧</h2>
+    <h2 class="map-title" id="items-h">現場一覧</h2>
     <div class="item-list">
 {items_html}
     </div>
