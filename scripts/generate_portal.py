@@ -1100,9 +1100,18 @@ def build_archive_detail_html(
     else:
         multi_url = build_multi_pin_map_url(public_items)
         if multi_url:
-            multi_map_html = f"""  <section class="multi-map-wrap" aria-label="地図導線">
-    <p class="muted-tiny" style="margin-bottom:0.45rem">この日の現場を地図でまとめて見る</p>
-    <a class="multi-map-btn" href="{escape_html(multi_url)}" target="_blank" rel="noopener">マルチピン地図を開く</a>
+            multi_map_html = f"""  <section class="map-section" aria-labelledby="map-heading">
+    <h2 class="map-title" id="map-heading">現場位置まとめ</h2>
+    <p class="map-lead">この日に報告された現場をまとめて地図で確認できます。</p>
+    <div class="map-actions">
+      <a class="btn btn-map" href="{escape_html(multi_url)}" target="_blank" rel="noopener">まとめて地図を開く</a>
+    </div>
+  </section>
+"""
+        else:
+            multi_map_html = """  <section class="map-section map-section-empty" aria-label="地図導線">
+    <h2 class="map-title">現場位置まとめ</h2>
+    <p class="map-lead">まとめて表示できる位置情報がありません。</p>
   </section>
 """
         cards: list[str] = []
@@ -1249,27 +1258,55 @@ h1 {{
   margin: 0 0 0.75rem;
   line-height: 1.45;
 }}
-.multi-map-wrap {{
+.map-section {{
   background: var(--card-b);
   border: 1px solid var(--border-b);
   border-radius: 10px;
-  padding: 0.65rem 0.75rem;
+  padding: 0.75rem 0.85rem;
   margin: 0 0 0.9rem;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.05);
 }}
-.multi-map-btn {{
+.map-title {{
+  font-size: 1.03rem;
+  margin: 0 0 0.35rem;
+  font-weight: 700;
+}}
+.map-lead {{
+  margin: 0 0 0.65rem;
+  font-size: 0.9rem;
+  color: var(--muted-b);
+}}
+.map-actions {{
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}}
+.btn {{
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
   min-height: 44px;
-  border-radius: 9px;
+  touch-action: manipulation;
+  line-height: 1.25;
+}}
+.btn-map {{
   color: #fff;
   background: var(--accent-b);
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.95rem;
 }}
-.multi-map-btn:hover, .multi-map-btn:active {{
+.btn-map:hover, .btn-map:active {{
   background: var(--accent-b-hover);
+}}
+.map-section-empty {{
+  padding: 0.65rem 0.75rem;
+}}
+.map-section-empty .map-lead {{
+  margin-bottom: 0;
+  font-size: 0.86rem;
 }}
 .item-list {{
   display: flex;
