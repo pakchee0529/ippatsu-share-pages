@@ -4,23 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>260507 · アーカイブ詳細</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin="">
 <style>
 :root {
-  --bg-b: #f4f5f7;
-  --card-b: #fff;
-  --text-b: #1a1a1a;
-  --muted-b: #5c6370;
-  --border-b: #e1e4e8;
-  --accent-b: #2563eb;
-  --accent-b-hover: #1d4ed8;
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+  --accent2: #0d9488;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
     "Noto Sans JP", sans-serif;
-  background: var(--bg-b);
-  color: var(--text-b);
+  background: var(--bg);
+  color: var(--text);
   line-height: 1.5;
   padding: 0.75rem 0.75rem 1.25rem;
   max-width: 40rem;
@@ -37,66 +40,68 @@ body {
 .top-bar a {
   font-size: 0.92rem;
   font-weight: 600;
-  color: var(--accent-b);
+  color: var(--accent);
   text-decoration: none;
   padding: 0.35rem 0.5rem;
   border-radius: 6px;
 }
-h1 {
+.page-title {
   font-size: 1.35rem;
   font-weight: 700;
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.8rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
 }
 .disclaimer-note {
-  font-size: 0.78rem;
-  color: var(--muted-b);
-  margin: 0 0 0.8rem;
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin: -0.35rem 0 0.85rem;
   line-height: 1.45;
 }
-.summary-card {
-  background: var(--card-b);
+.card {
+  background: var(--card);
   border-radius: 10px;
-  border: 1px solid var(--border-b);
+  border: 1px solid var(--border);
   padding: 0.85rem 1rem;
   margin-bottom: 0.75rem;
   box-shadow: 0 1px 2px rgba(0,0,0,.04);
 }
-.summary-dl { margin: 0; }
-.dl-row {
-  display: grid;
-  grid-template-columns: 7.5rem 1fr;
-  gap: 0.35rem 0.65rem;
-  padding: 0.32rem 0;
-  border-bottom: 1px solid #edf0f2;
-  font-size: 0.92rem;
+.card-done {
+  opacity: 0.78;
 }
-.dl-row:last-child { border-bottom: 0; }
-.summary-dl dt {
-  margin: 0;
-  font-weight: 700;
-  color: var(--muted-b);
-}
-.summary-dl dd {
-  margin: 0;
+.item-mgmt {
+  margin: -0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
   font-weight: 600;
-  word-break: break-word;
 }
-.map-section {
-  margin-top: 1.0rem;
-  background: var(--card-b);
-  border-radius: 10px;
-  border: 1px solid var(--border-b);
-  padding: 0.75rem 1rem 1rem;
-  margin-bottom: 0.85rem;
+.card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
 }
-.map-title {
+.card-title {
   font-size: 1.05rem;
-  margin: 0 0 0.5rem;
+  font-weight: 600;
+  margin: 0;
 }
-.map-lead {
-  font-size: 0.88rem;
-  color: var(--muted-b);
-  margin: 0 0 0.55rem;
+.status-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  margin-left: 0.35rem;
+  vertical-align: baseline;
+}
+.status-done {
+  color: #0f766e;
+  background: #ecfeff;
+  border: 1px solid #99f6e4;
+}
+.status-pending {
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
 }
 .card-actions {
   display: flex;
@@ -111,116 +116,94 @@ h1 {
   font-size: 0.9rem;
   font-weight: 600;
   border-radius: 8px;
-  min-height: 40px;
+  border: none;
+  cursor: pointer;
   text-decoration: none;
+  min-height: 40px;
+  touch-action: manipulation;
 }
 .btn-map {
-  background: var(--accent-b);
+  background: var(--accent);
   color: #fff;
 }
-.item-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.btn-map:hover, .btn-map:focus { filter: brightness(1.05); }
+.btn-note {
+  background: #fff;
+  color: var(--accent2);
+  border: 2px solid var(--accent2);
 }
-.item-card {
-  background: var(--card-b);
-  border-radius: 10px;
-  border: 1px solid var(--border-b);
-  padding: 0.85rem 1rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
-}
-.card-head {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-}
-.card-title-wrap {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
-}
-.card-title {
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin: 0;
-}
-.status-pill {
-  font-size: 0.78rem;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: 0.15rem 0.5rem;
-}
-.status-done { color: #0f766e; background: #ecfeff; border: 1px solid #99f6e4; }
-.status-pending { color: #b45309; background: #fffbeb; border: 1px solid #fde68a; }
-.item-mgmt {
-  margin: -0.15rem 0 0;
-  font-size: 0.82rem;
-  color: var(--muted-b);
-  font-weight: 600;
-}
-.card-warning {
-  margin: 0.25rem 0 0;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.82rem;
-  color: var(--muted-b);
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 6px;
-}
-.item-map-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.45rem 0.75rem;
-  min-height: 40px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 8px;
+.btn-note[aria-expanded="true"] {
+  background: var(--accent2);
   color: #fff;
-  text-decoration: none;
-  background: var(--accent-b);
 }
-.instr-scroll {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+.note-panel {
   margin-top: 0.65rem;
-}
-.instr-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.88rem;
-  margin-bottom: 0.55rem;
-}
-.instr-table th, .instr-table td {
-  border: 1px solid var(--border-b);
-  padding: 0.45rem 0.55rem;
-  text-align: left;
-  vertical-align: top;
-}
-.instr-table th {
-  background: #f1f5f9;
-  font-weight: 600;
-}
-.instr-cut-caption {
-  margin: 0.35rem 0 0.28rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--muted-b);
-}
-.instr-note {
-  margin-top: 0.58rem;
-  padding-top: 0.52rem;
-  border-top: 1px dashed var(--border-b);
+  padding: 0.65rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
   font-size: 0.92rem;
+  color: var(--text);
 }
-.muted-tiny { font-size: 0.86rem; color: var(--muted-b); }
+.note-panel[hidden] { display: none !important; }
+.two-map-wrap {
+  margin-top: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.two-map-wrap[hidden] { display: none !important; }
+.share-two-map-canvas {
+  width: 100%;
+  height: min(45vh, 320px);
+  min-height: 200px;
+}
+.leaflet-tooltip.two-tip {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.map-section {
+  margin-top: 1.0rem;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 0.85rem;
+}
+.map-section h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+#share-map {
+  width: 100%;
+  height: min(55vh, 420px);
+  min-height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.map-empty .muted-tiny {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.leaflet-container { font-family: inherit; }
 .footer-note {
   margin-top: 1.1rem;
   font-size: 0.8rem;
-  color: var(--muted-b);
+  color: var(--muted);
   text-align: center;
+}
+@media (min-width: 480px) {
+  .card-head {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .page-title { font-size: 1.4rem; }
 }
 </style>
 </head>
@@ -229,142 +212,141 @@ h1 {
     <a href="../../">ポータルTOP</a>
     <a href="../">アーカイブ</a>
   </nav>
-  <h1>2026年05月07日</h1>
+  <h1 class="page-title">2026年05月07日</h1>
   <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
-  <section class="summary-card" aria-label="概要">
-    <dl class="summary-dl">
-      <div class="dl-row"><dt>日付</dt><dd>260507</dd></div>
-      <div class="dl-row"><dt>タイトル</dt><dd>2026年05月07日 3件</dd></div>
-      <div class="dl-row"><dt>件数</dt><dd>3</dd></div>
-      <div class="dl-row"><dt>完了件数</dt><dd>3</dd></div>
-      <div class="dl-row"><dt>未完了件数</dt><dd>0</dd></div>
-      <div class="dl-row"><dt>報告日時</dt><dd>2026-05-11T21:06:49</dd></div>
-    </dl>
-  </section>
+  <main>
+<article class="card" data-card-index="0">
+      <div class="card-head">
+        <h2 class="card-title">西千股8N2～8N3 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">515 12911</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.40758,135.85685" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-0" data-note-toggle>現場指示</button></div>
+      </div>
+      <script type="application/json" id="two-geo-0">{&quot;a&quot;: {&quot;name&quot;: &quot;西千股8N2～8N3&quot;, &quot;lat&quot;: 34.40738, &quot;lng&quot;: 135.8569}, &quot;b&quot;: {&quot;name&quot;: &quot;西千股8N2～8N3&quot;, &quot;lat&quot;: 34.40778, &quot;lng&quot;: 135.8568}}</script>
+      <div class="two-map-wrap" id="two-wrap-0" hidden><div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-0" hidden>状態: 完了<br>処理方法: 持出<br>備考: 幹は4mにして2回目のユニックに載せる</div>
+</article>
+<article class="card" data-card-index="1">
+      <div class="card-head">
+        <h2 class="card-title">千股20～20S1 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">515 11890</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.409115,135.87128" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-1" data-note-toggle>現場指示</button></div>
+      </div>
+      <script type="application/json" id="two-geo-1">{&quot;a&quot;: {&quot;name&quot;: &quot;千股20～20S1&quot;, &quot;lat&quot;: 34.40923, &quot;lng&quot;: 135.87116}, &quot;b&quot;: {&quot;name&quot;: &quot;千股20～20S1&quot;, &quot;lat&quot;: 34.409, &quot;lng&quot;: 135.8714}}</script>
+      <div class="two-map-wrap" id="two-wrap-1" hidden><div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-1" hidden>状態: 完了<br>処理方法: 集積<br>備考: 井戸への道は塞がないように集積</div>
+</article>
+<article class="card" data-card-index="2">
+      <div class="card-head">
+        <h2 class="card-title">西千股19S3～19S4 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">515 10917</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.405145000000005,135.85442999999998" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-2" data-note-toggle>現場指示</button></div>
+      </div>
+      <script type="application/json" id="two-geo-2">{&quot;a&quot;: {&quot;name&quot;: &quot;西千股19S3～19S4&quot;, &quot;lat&quot;: 34.40524, &quot;lng&quot;: 135.85428}, &quot;b&quot;: {&quot;name&quot;: &quot;西千股19S3～19S4&quot;, &quot;lat&quot;: 34.40505, &quot;lng&quot;: 135.85458}}</script>
+      <div class="two-map-wrap" id="two-wrap-2" hidden><div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-2" hidden>状態: 完了<br>処理方法: 持出<br>備考: 50cmほど残して芯止め</div>
+</article>
   <section class="map-section" aria-labelledby="map-heading">
-    <h2 class="map-title" id="map-heading">全体地図</h2>
-    <p class="map-lead">この日に報告された現場をまとめて確認できます。</p>
-    <div class="card-actions">
-      <a class="btn btn-map" href="https://www.google.com/maps/dir/?api=1&amp;destination=34.40524,135.85428&amp;waypoints=34.40738,135.8569|34.40923,135.87116" target="_blank" rel="noopener">まとめて地図を開く</a>
-    </div>
+    <h2 id="map-heading">全体地図</h2>
+    <div id="share-map" role="application" aria-label="全径間の位置"></div>
   </section>
 
-  <section aria-labelledby="items-h">
-    <h2 class="map-title" id="items-h">現場一覧</h2>
-    <div class="item-list">
-    <article class="item-card">
-      <div class="card-head">
-        <div class="card-title-wrap">
-          <h3 class="card-title">西千股8N2～8N3</h3>
-          <span class="status-pill status-done">完了</span>
-        </div>
-        <p class="item-mgmt">515 12911</p>
-        <div class="card-actions"><span class="map-action"><a class="item-map-link" href="https://www.google.com/maps?q=34.40758,135.85685" target="_blank" rel="noopener">地図を開く</a></span></div>
-      </div>
-      
-      <div class="instr-scroll">
-        <table class="instr-table instr-summary">
-          <tbody>
-            <tr><th>管理番号</th><td>515 12911</td></tr>
-            <tr><th>処理方法</th><td>持出</td></tr>
-            <tr><th>B車</th><td>可</td></tr>
-            <tr><th>道幅</th><td>3.0</td></tr>
-            <tr><th>警告</th><td>—</td></tr>
-            <tr><th>クレーン</th><td>—</td></tr>
-          </tbody>
-        </table>
-        <p class="instr-cut-caption">枝切り・根切り（本数）</p>
-        <table class="instr-table instr-cut">
-          <thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead>
-          <tbody><tr><th>合計</th><td>0</td><td>13</td></tr></tbody>
-        </table>
-        <p class="instr-cut-caption">その他伐採</p>
-        <table class="instr-table instr-other">
-          <tbody>
-            <tr><th>柴伐採面積</th><td>0</td></tr>
-            <tr><th>竹伐採本数</th><td>0</td></tr>
-            <tr><th>つる伐採箇所数</th><td>0</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="instr-note"><strong>備考</strong><br>幹は4mにして2回目のユニックに載せる</div>
-    </article>
-    <article class="item-card">
-      <div class="card-head">
-        <div class="card-title-wrap">
-          <h3 class="card-title">千股20～20S1</h3>
-          <span class="status-pill status-done">完了</span>
-        </div>
-        <p class="item-mgmt">515 11890</p>
-        <div class="card-actions"><span class="map-action"><a class="item-map-link" href="https://www.google.com/maps?q=34.409115,135.87128" target="_blank" rel="noopener">地図を開く</a></span></div>
-      </div>
-      
-      <div class="instr-scroll">
-        <table class="instr-table instr-summary">
-          <tbody>
-            <tr><th>管理番号</th><td>515 11890</td></tr>
-            <tr><th>処理方法</th><td>集積</td></tr>
-            <tr><th>B車</th><td>不可</td></tr>
-            <tr><th>道幅</th><td>0.0</td></tr>
-            <tr><th>警告</th><td>—</td></tr>
-            <tr><th>クレーン</th><td>—</td></tr>
-          </tbody>
-        </table>
-        <p class="instr-cut-caption">枝切り・根切り（本数）</p>
-        <table class="instr-table instr-cut">
-          <thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead>
-          <tbody><tr><th>合計</th><td>2</td><td>5</td></tr></tbody>
-        </table>
-        <p class="instr-cut-caption">その他伐採</p>
-        <table class="instr-table instr-other">
-          <tbody>
-            <tr><th>柴伐採面積</th><td>0</td></tr>
-            <tr><th>竹伐採本数</th><td>0</td></tr>
-            <tr><th>つる伐採箇所数</th><td>0</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="instr-note"><strong>備考</strong><br>井戸への道は塞がないように集積</div>
-    </article>
-    <article class="item-card">
-      <div class="card-head">
-        <div class="card-title-wrap">
-          <h3 class="card-title">西千股19S3～19S4</h3>
-          <span class="status-pill status-done">完了</span>
-        </div>
-        <p class="item-mgmt">515 10917</p>
-        <div class="card-actions"><span class="map-action"><a class="item-map-link" href="https://www.google.com/maps?q=34.405145000000005,135.85442999999998" target="_blank" rel="noopener">地図を開く</a></span></div>
-      </div>
-      
-      <div class="instr-scroll">
-        <table class="instr-table instr-summary">
-          <tbody>
-            <tr><th>管理番号</th><td>515 10917</td></tr>
-            <tr><th>処理方法</th><td>持出</td></tr>
-            <tr><th>B車</th><td>可</td></tr>
-            <tr><th>道幅</th><td>3.0</td></tr>
-            <tr><th>警告</th><td>—</td></tr>
-            <tr><th>クレーン</th><td>—</td></tr>
-          </tbody>
-        </table>
-        <p class="instr-cut-caption">枝切り・根切り（本数）</p>
-        <table class="instr-table instr-cut">
-          <thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead>
-          <tbody><tr><th>合計</th><td>0</td><td>0</td></tr></tbody>
-        </table>
-        <p class="instr-cut-caption">その他伐採</p>
-        <table class="instr-table instr-other">
-          <tbody>
-            <tr><th>柴伐採面積</th><td>0</td></tr>
-            <tr><th>竹伐採本数</th><td>33</td></tr>
-            <tr><th>つる伐採箇所数</th><td>0</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="instr-note"><strong>備考</strong><br>50cmほど残して芯止め</div>
-    </article>
-    </div>
-  </section>
+  </main>
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+  <script>
+(function () {
+  document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
+    var id = btn.getAttribute("aria-controls");
+    var panel = id ? document.getElementById(id) : null;
+    if (!panel) return;
+    btn.addEventListener("click", function() {
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", open ? "false" : "true");
+      panel.hidden = open;
+    });
+  });
+
+  function gmaps(lat, lng) {
+    return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
+  }
+
+  var twoMaps = Object.create(null);
+  document.querySelectorAll("[data-two-open]").forEach(function(btn) {
+    var wrapId = btn.getAttribute("data-two-wrap");
+    var mapId = btn.getAttribute("data-two-map");
+    var jsonId = btn.getAttribute("data-two-json");
+    var wrap = wrapId ? document.getElementById(wrapId) : null;
+    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
+    if (!wrap || !jsonEl) return;
+    btn.addEventListener("click", function() {
+      var nowOpen = btn.getAttribute("aria-expanded") === "true";
+      wrap.hidden = nowOpen;
+      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
+      btn.textContent = nowOpen ? "2点地図を開く" : "2点地図を閉じる";
+      if (nowOpen) return;
+      var geo = null;
+      try {
+        geo = JSON.parse(jsonEl.textContent || "{}");
+      } catch (e) {
+        return;
+      }
+      if (!geo || !geo.a || !geo.b) return;
+      var key = mapId;
+      if (!twoMaps[key]) {
+        var mmap = L.map(mapId, { scrollWheelZoom: false });
+        twoMaps[key] = mmap;
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(mmap);
+      }
+      var mmap = twoMaps[key];
+      mmap.eachLayer(function(layer) {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline) mmap.removeLayer(layer);
+      });
+      function addPoint(p, cls) {
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.marker([lat, lng]).addTo(mmap);
+        if (p.name) m.bindTooltip(String(p.name), { permanent: true, direction: "top", className: cls });
+        m.on("click", function() { window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer"); });
+        return [lat, lng];
+      }
+      var a = addPoint(geo.a, "two-tip");
+      var b = addPoint(geo.b, "two-tip");
+      var pts = [];
+      if (a) pts.push(a);
+      if (b) pts.push(b);
+      if (pts.length === 2) L.polyline(pts, { weight: 3, opacity: 0.8 }).addTo(mmap);
+      if (pts.length === 1) mmap.setView(pts[0], 15);
+      else if (pts.length > 1) mmap.fitBounds(pts, { padding: [24, 24], maxZoom: 16 });
+      setTimeout(function() { mmap.invalidateSize(); }, 60);
+    });
+  });
+
+  var points = [{"name": "西千股8N2～8N3", "lat": 34.40738, "lng": 135.8569, "management_no": "515 12911"}, {"name": "千股20～20S1", "lat": 34.40923, "lng": 135.87116, "management_no": "515 11890"}, {"name": "西千股19S3～19S4", "lat": 34.40524, "lng": 135.85428, "management_no": "515 10917"}];
+  var mapEl = document.getElementById("share-map");
+  if (mapEl && Array.isArray(points) && points.length) {
+    var map = L.map("share-map", { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
+    var bounds = [];
+    points.forEach(function(p) {
+      var lat = Number(p.lat), lng = Number(p.lng);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      bounds.push([lat, lng]);
+      var m = L.marker([lat, lng]).addTo(map);
+      var label = (p.name || "現場") + (p.management_no ? (" (" + p.management_no + ")") : "");
+      m.bindTooltip(label, { permanent: false, direction: "top" });
+    });
+    if (bounds.length === 1) map.setView(bounds[0], 15);
+    else if (bounds.length > 1) map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
+  }
+})();
+  </script>
 </body>
 </html>

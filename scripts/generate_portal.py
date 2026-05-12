@@ -1074,55 +1074,91 @@ def load_archive_public_items(
     return out, ""
 
 
-def _item_row_html(label: str, value: str) -> str:
-    return f'<div class="item-row"><dt>{escape_html(label)}</dt><dd>{escape_html(value)}</dd></div>'
+def _to_float(v: str) -> float | None:
+    s = (v or "").strip()
+    if not s:
+        return None
+    try:
+        return float(s)
+    except ValueError:
+        return None
 
 
 def build_archive_detail_html(
     entry: ManifestEntry, public_items: list[ArchivePublicItem] | None, detail_note: str
 ) -> str:
-    """アーカイブ詳細（公開可能項目のみ）。共有ページのUIトーンに寄せる。"""
+    """アーカイブ詳細（公開可能項目のみ）。通常共有ページの構成へ合わせる。"""
     folder = entry.date
     date_jp = fallback_heading(folder)
-    title_disp = entry.title.strip() if entry.title else ""
-    title_html = escape_html(title_disp) if title_disp else "—"
-    reported = (
-        escape_html(entry.reported_at.strip())
-        if entry.reported_at and entry.reported_at.strip()
-        else "—"
-    )
+    title_disp = entry.title.strip() if entry.title else date_jp
     items_html = ""
-    multi_map_html = ""
+    points: list[dict] = []
     if public_items is None:
         items_html = f'<p class="muted-tiny">{escape_html(detail_note)}</p>'
     elif not public_items:
         items_html = '<p class="muted-tiny">この日の現場一覧はありません。</p>'
     else:
-        multi_url = build_multi_pin_map_url(public_items)
-        if multi_url:
-            multi_map_html = f"""  <section class="map-section" aria-labelledby="map-heading">
-    <h2 class="map-title" id="map-heading">全体地図</h2>
-    <p class="map-lead">この日に報告された現場をまとめて確認できます。</p>
-    <div class="card-actions">
-      <a class="btn btn-map" href="{escape_html(multi_url)}" target="_blank" rel="noopener">まとめて地図を開く</a>
-    </div>
-  </section>
-"""
-        else:
-            multi_map_html = """  <section class="map-section map-section-empty" aria-label="地図導線">
-    <h2 class="map-title">全体地図</h2>
-    <p class="map-lead">まとめて表示できる位置情報がありません。</p>
-  </section>
-"""
-
         cards: list[str] = []
-        for it in public_items:
-            map_line = "—"
+        for idx, it in enumerate(public_items):
+            map_btn = ""
             if it.map_url and it.map_url.startswith(("http://", "https://")):
-                map_line = (
-                    f'<a class="item-map-link" href="{escape_html(it.map_url)}" '
-                    'target="_blank" rel="noopener">地図を開く</a>'
+                map_btn = (
+                    f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
+                    'target="_blank" rel="noopener noreferrer">地図を開く</a>'
                 )
+            start_lat = _to_float(it.start_lat)
+            start_lng = _to_float(it.start_lng)
+            end_lat = _to_float(it.end_lat)
+            end_lng = _to_float(it.end_lng)
+            two_btn = ""
+            two_json = ""
+            two_wrap = ""
+            if (
+                start_lat is not None
+                and start_lng is not None
+                and end_lat is not None
+                and end_lng is not None
+            ):
+                two_json_id = f"two-geo-{idx}"
+                two_wrap_id = f"two-wrap-{idx}"
+                two_map_id = f"share-two-map-{idx}"
+                two_btn = (
+                    f'<button type="button" class="btn btn-map" data-two-open '
+                    f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
+                    f'data-two-json="{two_json_id}" aria-expanded="false" '
+                    f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
+                )
+                two_geo = {
+                    "a": {"name": it.label, "lat": start_lat, "lng": start_lng},
+                    "b": {"name": it.label, "lat": end_lat, "lng": end_lng},
+                }
+                two_json = (
+                    f'<script type="application/json" id="{two_json_id}">'
+                    f'{escape_html(json.dumps(two_geo, ensure_ascii=False))}</script>'
+                )
+                two_wrap = (
+                    f'<div class="two-map-wrap" id="{two_wrap_id}" hidden>'
+                    f'<div id="{two_map_id}" class="share-two-map-canvas" '
+                    'role="application" aria-label="2点地図"></div></div>'
+                )
+
+            note_id = f"note-{idx}"
+            status_jp = (
+                "完了"
+                if it.completion_status == "completed"
+                else "未完了"
+                if it.completion_status == "incomplete"
+                else "—"
+            )
+            reason_line = ""
+            if it.completion_status == "incomplete" and it.incomplete_reason != "—":
+                reason_line = f"<br>未完了理由: {escape_html(it.incomplete_reason)}"
+            warn_line = "" if it.warning == "—" else f"<br>警告: {escape_html(it.warning)}"
+            note_body = (
+                f"状態: {escape_html(status_jp)}{reason_line}<br>"
+                f"処理方法: {escape_html(it.method)}<br>"
+                f"備考: {escape_html(it.note)}{warn_line}"
+            )
             status_jp = (
                 "完了"
                 if it.completion_status == "completed"
@@ -1133,51 +1169,50 @@ def build_archive_detail_html(
             status_cls = (
                 "status-done" if it.completion_status == "completed" else "status-pending"
             )
-            reason_html = ""
-            if it.completion_status == "incomplete" and it.incomplete_reason != "—":
-                reason_html = (
-                    f'<p class="card-warning">未完了理由: {escape_html(it.incomplete_reason)}</p>'
-                )
-            cards.append(
-                f"""    <article class="item-card">
-      <div class="card-head">
-        <div class="card-title-wrap">
-          <h3 class="card-title">{escape_html(it.label)}</h3>
-          <span class="status-pill {status_cls}">{escape_html(status_jp)}</span>
-        </div>
-        <p class="item-mgmt">{escape_html(it.management_no)}</p>
-        <div class="card-actions"><span class="map-action">{map_line}</span></div>
-      </div>
-      {reason_html}
-      <div class="instr-scroll">
-        <table class="instr-table instr-summary">
-          <tbody>
-            <tr><th>管理番号</th><td>{escape_html(it.management_no)}</td></tr>
-            <tr><th>処理方法</th><td>{escape_html(it.method)}</td></tr>
-            <tr><th>B車</th><td>{escape_html(it.bucket_available)}</td></tr>
-            <tr><th>道幅</th><td>{escape_html(it.road_width_m)}</td></tr>
-            <tr><th>警告</th><td>{escape_html(it.warning)}</td></tr>
-            <tr><th>クレーン</th><td>{escape_html(it.crane_required)}</td></tr>
-          </tbody>
-        </table>
-        <p class="instr-cut-caption">枝切り・根切り（本数）</p>
-        <table class="instr-table instr-cut">
-          <thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead>
-          <tbody><tr><th>合計</th><td>{escape_html(str(it.branch_cut_total))}</td><td>{escape_html(str(it.root_cut_total))}</td></tr></tbody>
-        </table>
-        <p class="instr-cut-caption">その他伐採</p>
-        <table class="instr-table instr-other">
-          <tbody>
-            <tr><th>柴伐採面積</th><td>{escape_html(it.brush_area_m2)}</td></tr>
-            <tr><th>竹伐採本数</th><td>{escape_html(it.bamboo_count)}</td></tr>
-            <tr><th>つる伐採箇所数</th><td>{escape_html(it.vine_locations)}</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="instr-note"><strong>備考</strong><br>{escape_html(it.note)}</div>
-    </article>"""
+            note_btn = (
+                f'<button type="button" class="btn btn-note" aria-expanded="false" '
+                f'aria-controls="{note_id}" data-note-toggle>現場指示</button>'
             )
+            actions = "".join(x for x in [map_btn, two_btn, note_btn] if x)
+            cards.append(
+                f"""<article class="card" data-card-index="{idx}">
+      <div class="card-head">
+        <h2 class="card-title">{escape_html(it.label)} <span class="status-pill {status_cls}">{escape_html(status_jp)}</span></h2>
+        <p class="item-mgmt">{escape_html(it.management_no)}</p>
+        <div class="card-actions">{actions}</div>
+      </div>
+      {two_json}
+      {two_wrap}
+      <div class="note-panel" id="{note_id}" hidden>{note_body}</div>
+</article>"""
+            )
+            p_lat, p_lng = _pick_item_latlng(it)
+            f_lat = _to_float(p_lat)
+            f_lng = _to_float(p_lng)
+            if f_lat is not None and f_lng is not None:
+                points.append(
+                    {
+                        "name": it.label,
+                        "lat": f_lat,
+                        "lng": f_lng,
+                        "management_no": it.management_no,
+                    }
+                )
         items_html = "\n".join(cards)
+    map_block = ""
+    if points:
+        map_block = """  <section class="map-section" aria-labelledby="map-heading">
+    <h2 id="map-heading">全体地図</h2>
+    <div id="share-map" role="application" aria-label="全径間の位置"></div>
+  </section>
+"""
+    else:
+        map_block = """  <section class="map-section map-empty" aria-labelledby="map-heading">
+    <h2 id="map-heading">全体地図</h2>
+    <p class="muted-tiny">まとめて表示できる位置情報がありません。</p>
+  </section>
+"""
+    points_js = json.dumps(points, ensure_ascii=False)
 
     return f"""<!DOCTYPE html>
 <html lang="ja">
@@ -1185,23 +1220,26 @@ def build_archive_detail_html(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{escape_html(folder)} · アーカイブ詳細</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin="">
 <style>
 :root {{
-  --bg-b: #f4f5f7;
-  --card-b: #fff;
-  --text-b: #1a1a1a;
-  --muted-b: #5c6370;
-  --border-b: #e1e4e8;
-  --accent-b: #2563eb;
-  --accent-b-hover: #1d4ed8;
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+  --accent2: #0d9488;
 }}
 * {{ box-sizing: border-box; }}
 body {{
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
     "Noto Sans JP", sans-serif;
-  background: var(--bg-b);
-  color: var(--text-b);
+  background: var(--bg);
+  color: var(--text);
   line-height: 1.5;
   padding: 0.75rem 0.75rem 1.25rem;
   max-width: 40rem;
@@ -1218,66 +1256,68 @@ body {{
 .top-bar a {{
   font-size: 0.92rem;
   font-weight: 600;
-  color: var(--accent-b);
+  color: var(--accent);
   text-decoration: none;
   padding: 0.35rem 0.5rem;
   border-radius: 6px;
 }}
-h1 {{
+.page-title {{
   font-size: 1.35rem;
   font-weight: 700;
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.8rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
 }}
 .disclaimer-note {{
-  font-size: 0.78rem;
-  color: var(--muted-b);
-  margin: 0 0 0.8rem;
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin: -0.35rem 0 0.85rem;
   line-height: 1.45;
 }}
-.summary-card {{
-  background: var(--card-b);
+.card {{
+  background: var(--card);
   border-radius: 10px;
-  border: 1px solid var(--border-b);
+  border: 1px solid var(--border);
   padding: 0.85rem 1rem;
   margin-bottom: 0.75rem;
   box-shadow: 0 1px 2px rgba(0,0,0,.04);
 }}
-.summary-dl {{ margin: 0; }}
-.dl-row {{
-  display: grid;
-  grid-template-columns: 7.5rem 1fr;
-  gap: 0.35rem 0.65rem;
-  padding: 0.32rem 0;
-  border-bottom: 1px solid #edf0f2;
-  font-size: 0.92rem;
+.card-done {{
+  opacity: 0.78;
 }}
-.dl-row:last-child {{ border-bottom: 0; }}
-.summary-dl dt {{
-  margin: 0;
-  font-weight: 700;
-  color: var(--muted-b);
-}}
-.summary-dl dd {{
-  margin: 0;
+.item-mgmt {{
+  margin: -0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
   font-weight: 600;
-  word-break: break-word;
 }}
-.map-section {{
-  margin-top: 1.0rem;
-  background: var(--card-b);
-  border-radius: 10px;
-  border: 1px solid var(--border-b);
-  padding: 0.75rem 1rem 1rem;
-  margin-bottom: 0.85rem;
+.card-head {{
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
 }}
-.map-title {{
+.card-title {{
   font-size: 1.05rem;
-  margin: 0 0 0.5rem;
+  font-weight: 600;
+  margin: 0;
 }}
-.map-lead {{
-  font-size: 0.88rem;
-  color: var(--muted-b);
-  margin: 0 0 0.55rem;
+.status-pill {{
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  margin-left: 0.35rem;
+  vertical-align: baseline;
+}}
+.status-done {{
+  color: #0f766e;
+  background: #ecfeff;
+  border: 1px solid #99f6e4;
+}}
+.status-pending {{
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
 }}
 .card-actions {{
   display: flex;
@@ -1292,116 +1332,94 @@ h1 {{
   font-size: 0.9rem;
   font-weight: 600;
   border-radius: 8px;
-  min-height: 40px;
+  border: none;
+  cursor: pointer;
   text-decoration: none;
+  min-height: 40px;
+  touch-action: manipulation;
 }}
 .btn-map {{
-  background: var(--accent-b);
+  background: var(--accent);
   color: #fff;
 }}
-.item-list {{
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.btn-map:hover, .btn-map:focus {{ filter: brightness(1.05); }}
+.btn-note {{
+  background: #fff;
+  color: var(--accent2);
+  border: 2px solid var(--accent2);
 }}
-.item-card {{
-  background: var(--card-b);
-  border-radius: 10px;
-  border: 1px solid var(--border-b);
-  padding: 0.85rem 1rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
-}}
-.card-head {{
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-}}
-.card-title-wrap {{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
-}}
-.card-title {{
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin: 0;
-}}
-.status-pill {{
-  font-size: 0.78rem;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: 0.15rem 0.5rem;
-}}
-.status-done {{ color: #0f766e; background: #ecfeff; border: 1px solid #99f6e4; }}
-.status-pending {{ color: #b45309; background: #fffbeb; border: 1px solid #fde68a; }}
-.item-mgmt {{
-  margin: -0.15rem 0 0;
-  font-size: 0.82rem;
-  color: var(--muted-b);
-  font-weight: 600;
-}}
-.card-warning {{
-  margin: 0.25rem 0 0;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.82rem;
-  color: var(--muted-b);
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 6px;
-}}
-.item-map-link {{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.45rem 0.75rem;
-  min-height: 40px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 8px;
+.btn-note[aria-expanded="true"] {{
+  background: var(--accent2);
   color: #fff;
-  text-decoration: none;
-  background: var(--accent-b);
 }}
-.instr-scroll {{
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+.note-panel {{
   margin-top: 0.65rem;
-}}
-.instr-table {{
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.88rem;
-  margin-bottom: 0.55rem;
-}}
-.instr-table th, .instr-table td {{
-  border: 1px solid var(--border-b);
-  padding: 0.45rem 0.55rem;
-  text-align: left;
-  vertical-align: top;
-}}
-.instr-table th {{
-  background: #f1f5f9;
-  font-weight: 600;
-}}
-.instr-cut-caption {{
-  margin: 0.35rem 0 0.28rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--muted-b);
-}}
-.instr-note {{
-  margin-top: 0.58rem;
-  padding-top: 0.52rem;
-  border-top: 1px dashed var(--border-b);
+  padding: 0.65rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
   font-size: 0.92rem;
+  color: var(--text);
 }}
-.muted-tiny {{ font-size: 0.86rem; color: var(--muted-b); }}
+.note-panel[hidden] {{ display: none !important; }}
+.two-map-wrap {{
+  margin-top: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}}
+.two-map-wrap[hidden] {{ display: none !important; }}
+.share-two-map-canvas {{
+  width: 100%;
+  height: min(45vh, 320px);
+  min-height: 200px;
+}}
+.leaflet-tooltip.two-tip {{
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}}
+.map-section {{
+  margin-top: 1.0rem;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 0.85rem;
+}}
+.map-section h2 {{
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}}
+#share-map {{
+  width: 100%;
+  height: min(55vh, 420px);
+  min-height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}}
+.map-empty .muted-tiny {{
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}}
+.leaflet-container {{ font-family: inherit; }}
 .footer-note {{
   margin-top: 1.1rem;
   font-size: 0.8rem;
-  color: var(--muted-b);
+  color: var(--muted);
   text-align: center;
+}}
+@media (min-width: 480px) {{
+  .card-head {{
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+  }}
+  .page-title {{ font-size: 1.4rem; }}
 }}
 </style>
 </head>
@@ -1410,26 +1428,109 @@ h1 {{
     <a href="../../">ポータルTOP</a>
     <a href="../">アーカイブ</a>
   </nav>
-  <h1>{escape_html(date_jp)}</h1>
+  <h1 class="page-title">{escape_html(date_jp)}</h1>
   <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
-  <section class="summary-card" aria-label="概要">
-    <dl class="summary-dl">
-      <div class="dl-row"><dt>日付</dt><dd>{escape_html(folder)}</dd></div>
-      <div class="dl-row"><dt>タイトル</dt><dd>{title_html}</dd></div>
-      <div class="dl-row"><dt>件数</dt><dd>{_fmt_count_cell(entry.item_count)}</dd></div>
-      <div class="dl-row"><dt>完了件数</dt><dd>{_fmt_count_cell(entry.completed_count)}</dd></div>
-      <div class="dl-row"><dt>未完了件数</dt><dd>{_fmt_count_cell(entry.incomplete_count)}</dd></div>
-      <div class="dl-row"><dt>報告日時</dt><dd>{reported}</dd></div>
-    </dl>
-  </section>
-{multi_map_html}
-  <section aria-labelledby="items-h">
-    <h2 class="map-title" id="items-h">現場一覧</h2>
-    <div class="item-list">
+  <main>
 {items_html}
-    </div>
-  </section>
+{map_block}
+  </main>
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+  <script>
+(function () {{
+  document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {{
+    var id = btn.getAttribute("aria-controls");
+    var panel = id ? document.getElementById(id) : null;
+    if (!panel) return;
+    btn.addEventListener("click", function() {{
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", open ? "false" : "true");
+      panel.hidden = open;
+    }});
+  }});
+
+  function gmaps(lat, lng) {{
+    return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
+  }}
+
+  var twoMaps = Object.create(null);
+  document.querySelectorAll("[data-two-open]").forEach(function(btn) {{
+    var wrapId = btn.getAttribute("data-two-wrap");
+    var mapId = btn.getAttribute("data-two-map");
+    var jsonId = btn.getAttribute("data-two-json");
+    var wrap = wrapId ? document.getElementById(wrapId) : null;
+    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
+    if (!wrap || !jsonEl) return;
+    btn.addEventListener("click", function() {{
+      var nowOpen = btn.getAttribute("aria-expanded") === "true";
+      wrap.hidden = nowOpen;
+      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
+      btn.textContent = nowOpen ? "2点地図を開く" : "2点地図を閉じる";
+      if (nowOpen) return;
+      var geo = null;
+      try {{
+        geo = JSON.parse(jsonEl.textContent || "{{}}");
+      }} catch (e) {{
+        return;
+      }}
+      if (!geo || !geo.a || !geo.b) return;
+      var key = mapId;
+      if (!twoMaps[key]) {{
+        var mmap = L.map(mapId, {{ scrollWheelZoom: false }});
+        twoMaps[key] = mmap;
+        L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }}).addTo(mmap);
+      }}
+      var mmap = twoMaps[key];
+      mmap.eachLayer(function(layer) {{
+        if (layer instanceof L.Marker || layer instanceof L.Polyline) mmap.removeLayer(layer);
+      }});
+      function addPoint(p, cls) {{
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.marker([lat, lng]).addTo(mmap);
+        if (p.name) m.bindTooltip(String(p.name), {{ permanent: true, direction: "top", className: cls }});
+        m.on("click", function() {{ window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer"); }});
+        return [lat, lng];
+      }}
+      var a = addPoint(geo.a, "two-tip");
+      var b = addPoint(geo.b, "two-tip");
+      var pts = [];
+      if (a) pts.push(a);
+      if (b) pts.push(b);
+      if (pts.length === 2) L.polyline(pts, {{ weight: 3, opacity: 0.8 }}).addTo(mmap);
+      if (pts.length === 1) mmap.setView(pts[0], 15);
+      else if (pts.length > 1) mmap.fitBounds(pts, {{ padding: [24, 24], maxZoom: 16 }});
+      setTimeout(function() {{ mmap.invalidateSize(); }}, 60);
+    }});
+  }});
+
+  var points = {points_js};
+  var mapEl = document.getElementById("share-map");
+  if (mapEl && Array.isArray(points) && points.length) {{
+    var map = L.map("share-map", {{ scrollWheelZoom: false }});
+    L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }}).addTo(map);
+    var bounds = [];
+    points.forEach(function(p) {{
+      var lat = Number(p.lat), lng = Number(p.lng);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      bounds.push([lat, lng]);
+      var m = L.marker([lat, lng]).addTo(map);
+      var label = (p.name || "現場") + (p.management_no ? (" (" + p.management_no + ")") : "");
+      m.bindTooltip(label, {{ permanent: false, direction: "top" }});
+    }});
+    if (bounds.length === 1) map.setView(bounds[0], 15);
+    else if (bounds.length > 1) map.fitBounds(bounds, {{ padding: [28, 28], maxZoom: 16 }});
+  }}
+}})();
+  </script>
 </body>
 </html>
 """
