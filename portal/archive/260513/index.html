@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>260513 · アーカイブ詳細</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin="">
+<style>
+:root {
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+  --accent2: #0d9488;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
+    "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding: 0.75rem 0.75rem 1.25rem;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.top-bar a {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}
+.page-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 0.8rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
+}
+.disclaimer-note {
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin: -0.35rem 0 0.85rem;
+  line-height: 1.45;
+}
+.card {
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.card-done {
+  opacity: 0.78;
+}
+.item-mgmt {
+  margin: -0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+.status-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  margin-left: 0.35rem;
+  vertical-align: baseline;
+}
+.status-done {
+  color: #0f766e;
+  background: #ecfeff;
+  border: 1px solid #99f6e4;
+}
+.status-pending {
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 40px;
+  touch-action: manipulation;
+}
+.btn-map {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-map:hover, .btn-map:focus { filter: brightness(1.05); }
+.btn-note {
+  background: #fff;
+  color: var(--accent2);
+  border: 2px solid var(--accent2);
+}
+.btn-note[aria-expanded="true"] {
+  background: var(--accent2);
+  color: #fff;
+}
+.note-panel {
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  font-size: 0.92rem;
+  color: var(--text);
+}
+.note-panel[hidden] { display: none !important; }
+.two-map-wrap {
+  margin-top: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.two-map-wrap[hidden] { display: none !important; }
+.share-two-map-canvas {
+  width: 100%;
+  height: min(45vh, 320px);
+  min-height: 200px;
+}
+.leaflet-tooltip.two-tip {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.map-section {
+  margin-top: 1.0rem;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 0.85rem;
+}
+.map-section h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+#share-map {
+  width: 100%;
+  height: min(55vh, 420px);
+  min-height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.map-empty .muted-tiny {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.leaflet-container { font-family: inherit; }
+.footer-note {
+  margin-top: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+@media (min-width: 480px) {
+  .card-head {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .page-title { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+  <nav class="top-bar" aria-label="サイト内リンク">
+    <a href="../../">ポータルTOP</a>
+    <a href="../">アーカイブ</a>
+  </nav>
+  <h1 class="page-title">2026年05月13日</h1>
+  <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
+  <main>
+<article class="card" data-card-index="0">
+      <div class="card-head">
+        <h2 class="card-title">小川124～125 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">514 01354</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.96981,135.846665" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-0" data-note-toggle>現場指示</button></div>
+      </div>
+      <script type="application/json" id="two-geo-0">{&quot;a&quot;: {&quot;name&quot;: &quot;小川124～125&quot;, &quot;lat&quot;: 33.96954, &quot;lng&quot;: 135.84652}, &quot;b&quot;: {&quot;name&quot;: &quot;小川124～125&quot;, &quot;lat&quot;: 33.97008, &quot;lng&quot;: 135.84681}}</script>
+      <div class="two-map-wrap" id="two-wrap-0" hidden><div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-0" hidden>状態: 完了<br>処理方法: 集積<br>備考: 全てその場。125側太田建設B車侵入可</div>
+</article>
+<article class="card" data-card-index="1">
+      <div class="card-head">
+        <h2 class="card-title">古ル野18～19 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">514 07316</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.966465,135.854535" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-1" data-note-toggle>現場指示</button></div>
+      </div>
+      <script type="application/json" id="two-geo-1">{&quot;a&quot;: {&quot;name&quot;: &quot;古ル野18～19&quot;, &quot;lat&quot;: 33.96661, &quot;lng&quot;: 135.85436}, &quot;b&quot;: {&quot;name&quot;: &quot;古ル野18～19&quot;, &quot;lat&quot;: 33.96632, &quot;lng&quot;: 135.85471}}</script>
+      <div class="two-map-wrap" id="two-wrap-1" hidden><div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-1" hidden>状態: 完了<br>処理方法: 集積<br>備考: 19側の指定場所に集積</div>
+</article>
+<article class="card" data-card-index="2">
+      <div class="card-head">
+        <h2 class="card-title">古ル野19～20 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">514 07317</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.96634,135.85495500000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-2" data-note-toggle>現場指示</button></div>
+      </div>
+      <script type="application/json" id="two-geo-2">{&quot;a&quot;: {&quot;name&quot;: &quot;古ル野19～20&quot;, &quot;lat&quot;: 33.96632, &quot;lng&quot;: 135.85471}, &quot;b&quot;: {&quot;name&quot;: &quot;古ル野19～20&quot;, &quot;lat&quot;: 33.96636, &quot;lng&quot;: 135.8552}}</script>
+      <div class="two-map-wrap" id="two-wrap-2" hidden><div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-2" hidden>状態: 完了<br>処理方法: 集積<br>備考: 19側指定場所に集積</div>
+</article>
+<article class="card" data-card-index="3">
+      <div class="card-head">
+        <h2 class="card-title">古ル野20～21 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">514 07318</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.966499999999996,135.85547" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-3" data-note-toggle>現場指示</button></div>
+      </div>
+      <script type="application/json" id="two-geo-3">{&quot;a&quot;: {&quot;name&quot;: &quot;古ル野20～21&quot;, &quot;lat&quot;: 33.96636, &quot;lng&quot;: 135.8552}, &quot;b&quot;: {&quot;name&quot;: &quot;古ル野20～21&quot;, &quot;lat&quot;: 33.96664, &quot;lng&quot;: 135.85574}}</script>
+      <div class="two-map-wrap" id="two-wrap-3" hidden><div id="share-two-map-3" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-3" hidden>状態: 完了<br>処理方法: 集積<br>備考: やや21の谷側に集積</div>
+</article>
+<article class="card" data-card-index="4">
+      <div class="card-head">
+        <h2 class="card-title">古ル野21～22 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">514 07319</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.96662,135.85599000000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-4" data-note-toggle>現場指示</button></div>
+      </div>
+      <script type="application/json" id="two-geo-4">{&quot;a&quot;: {&quot;name&quot;: &quot;古ル野21～22&quot;, &quot;lat&quot;: 33.96664, &quot;lng&quot;: 135.85574}, &quot;b&quot;: {&quot;name&quot;: &quot;古ル野21～22&quot;, &quot;lat&quot;: 33.9666, &quot;lng&quot;: 135.85624}}</script>
+      <div class="two-map-wrap" id="two-wrap-4" hidden><div id="share-two-map-4" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-4" hidden>状態: 完了<br>処理方法: 集積<br>備考: 20～21の間へ</div>
+</article>
+<article class="card" data-card-index="5">
+      <div class="card-head">
+        <h2 class="card-title">古ル野27～28 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">514 07326</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.968,135.85634" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-5" data-two-map="share-two-map-5" data-two-json="two-geo-5" aria-expanded="false" aria-controls="two-wrap-5">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-5" data-note-toggle>現場指示</button></div>
+      </div>
+      <script type="application/json" id="two-geo-5">{&quot;a&quot;: {&quot;name&quot;: &quot;古ル野27～28&quot;, &quot;lat&quot;: 33.96789, &quot;lng&quot;: 135.85644}, &quot;b&quot;: {&quot;name&quot;: &quot;古ル野27～28&quot;, &quot;lat&quot;: 33.96811, &quot;lng&quot;: 135.85624}}</script>
+      <div class="two-map-wrap" id="two-wrap-5" hidden><div id="share-two-map-5" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-5" hidden>状態: 完了<br>処理方法: 集積<br>備考: 道の反対側のグラウンドより上へ</div>
+</article>
+<article class="card" data-card-index="6">
+      <div class="card-head">
+        <h2 class="card-title">古ル野24E2～24E3 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">514 07328</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.967785,135.857915" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-6" data-two-map="share-two-map-6" data-two-json="two-geo-6" aria-expanded="false" aria-controls="two-wrap-6">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-6" data-note-toggle>現場指示</button></div>
+      </div>
+      <script type="application/json" id="two-geo-6">{&quot;a&quot;: {&quot;name&quot;: &quot;古ル野24E2～24E3&quot;, &quot;lat&quot;: 33.96752, &quot;lng&quot;: 135.85786}, &quot;b&quot;: {&quot;name&quot;: &quot;古ル野24E2～24E3&quot;, &quot;lat&quot;: 33.96805, &quot;lng&quot;: 135.85797}}</script>
+      <div class="two-map-wrap" id="two-wrap-6" hidden><div id="share-two-map-6" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-6" hidden>状態: 完了<br>処理方法: 集積<br>備考: その場へ</div>
+</article>
+  <section class="map-section" aria-labelledby="map-heading">
+    <h2 id="map-heading">全体地図</h2>
+    <div id="share-map" role="application" aria-label="全径間の位置"></div>
+  </section>
+
+  </main>
+  <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+  <script>
+(function () {
+  document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
+    var id = btn.getAttribute("aria-controls");
+    var panel = id ? document.getElementById(id) : null;
+    if (!panel) return;
+    btn.addEventListener("click", function() {
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", open ? "false" : "true");
+      panel.hidden = open;
+    });
+  });
+
+  function gmaps(lat, lng) {
+    return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
+  }
+
+  var twoMaps = Object.create(null);
+  document.querySelectorAll("[data-two-open]").forEach(function(btn) {
+    var wrapId = btn.getAttribute("data-two-wrap");
+    var mapId = btn.getAttribute("data-two-map");
+    var jsonId = btn.getAttribute("data-two-json");
+    var wrap = wrapId ? document.getElementById(wrapId) : null;
+    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
+    if (!wrap || !jsonEl) return;
+    btn.addEventListener("click", function() {
+      var nowOpen = btn.getAttribute("aria-expanded") === "true";
+      wrap.hidden = nowOpen;
+      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
+      btn.textContent = nowOpen ? "2点地図を開く" : "2点地図を閉じる";
+      if (nowOpen) return;
+      var geo = null;
+      try {
+        geo = JSON.parse(jsonEl.textContent || "{}");
+      } catch (e) {
+        return;
+      }
+      if (!geo || !geo.a || !geo.b) return;
+      var key = mapId;
+      if (!twoMaps[key]) {
+        var mmap = L.map(mapId, { scrollWheelZoom: false });
+        twoMaps[key] = mmap;
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(mmap);
+      }
+      var mmap = twoMaps[key];
+      mmap.eachLayer(function(layer) {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline) mmap.removeLayer(layer);
+      });
+      function addPoint(p, cls) {
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.marker([lat, lng]).addTo(mmap);
+        if (p.name) m.bindTooltip(String(p.name), { permanent: true, direction: "top", className: cls });
+        m.on("click", function() { window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer"); });
+        return [lat, lng];
+      }
+      var a = addPoint(geo.a, "two-tip");
+      var b = addPoint(geo.b, "two-tip");
+      var pts = [];
+      if (a) pts.push(a);
+      if (b) pts.push(b);
+      if (pts.length === 2) L.polyline(pts, { weight: 3, opacity: 0.8 }).addTo(mmap);
+      if (pts.length === 1) mmap.setView(pts[0], 15);
+      else if (pts.length > 1) mmap.fitBounds(pts, { padding: [24, 24], maxZoom: 16 });
+      setTimeout(function() { mmap.invalidateSize(); }, 60);
+    });
+  });
+
+  var points = [{"name": "小川124～125", "lat": 33.96954, "lng": 135.84652, "management_no": "514 01354"}, {"name": "古ル野18～19", "lat": 33.96661, "lng": 135.85436, "management_no": "514 07316"}, {"name": "古ル野19～20", "lat": 33.96632, "lng": 135.85471, "management_no": "514 07317"}, {"name": "古ル野20～21", "lat": 33.96636, "lng": 135.8552, "management_no": "514 07318"}, {"name": "古ル野21～22", "lat": 33.96664, "lng": 135.85574, "management_no": "514 07319"}, {"name": "古ル野27～28", "lat": 33.96789, "lng": 135.85644, "management_no": "514 07326"}, {"name": "古ル野24E2～24E3", "lat": 33.96752, "lng": 135.85786, "management_no": "514 07328"}];
+  var mapEl = document.getElementById("share-map");
+  if (mapEl && Array.isArray(points) && points.length) {
+    var map = L.map("share-map", { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
+    var bounds = [];
+    points.forEach(function(p) {
+      var lat = Number(p.lat), lng = Number(p.lng);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      bounds.push([lat, lng]);
+      var m = L.marker([lat, lng]).addTo(map);
+      var label = (p.name || "現場") + (p.management_no ? (" (" + p.management_no + ")") : "");
+      m.bindTooltip(label, { permanent: false, direction: "top" });
+    });
+    if (bounds.length === 1) map.setView(bounds[0], 15);
+    else if (bounds.length > 1) map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
+  }
+})();
+  </script>
+</body>
+</html>
