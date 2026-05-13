@@ -391,6 +391,20 @@ class ArchivePublicItem:
 
 
 @dataclass(frozen=True)
+class SurveyPublicItem:
+    management_no: str
+    label: str
+    map_url: str
+    start_label: str
+    start_lat: str
+    start_lng: str
+    end_label: str
+    end_lat: str
+    end_lng: str
+    note: str
+
+
+@dataclass(frozen=True)
 class ArchiveRowContext:
     span_summary: str
     status_summary: str
@@ -849,6 +863,7 @@ a.btn-archive:hover, a.btn-archive:active {{
 <body>
   <nav class="top-bar" aria-label="サイト内リンク">
     <a href="../">ポータルTOP</a>
+    <a href="../survey/">現調待ち</a>
     <a href="./">アーカイブ</a>
   </nav>
   <h1>現場共有アーカイブ</h1>
@@ -1024,6 +1039,10 @@ def _completion_reports_root(repo_root: Path) -> Path:
     return repo_root.parent / "ippatsu-pc" / "data" / "completion_reports"
 
 
+def _survey_source_path(repo_root: Path) -> Path:
+    return repo_root.parent / "ippatsu-pc" / "data" / "share" / "261231.json"
+
+
 def _parse_latlng_from_map_url(url: str) -> tuple[str, str]:
     u = urlparse(url)
     q = parse_qs(u.query or "")
@@ -1039,6 +1058,18 @@ def _parse_latlng_from_map_url(url: str) -> tuple[str, str]:
 
 
 def _pick_item_latlng(item: ArchivePublicItem) -> tuple[str, str]:
+    if item.start_lat and item.start_lng:
+        return item.start_lat, item.start_lng
+    if item.end_lat and item.end_lng:
+        return item.end_lat, item.end_lng
+    if item.map_url:
+        a, b = _parse_latlng_from_map_url(item.map_url)
+        if a and b:
+            return a, b
+    return "", ""
+
+
+def _pick_survey_item_latlng(item: SurveyPublicItem) -> tuple[str, str]:
     if item.start_lat and item.start_lng:
         return item.start_lat, item.start_lng
     if item.end_lat and item.end_lng:
@@ -1137,6 +1168,439 @@ def _to_float(v: str) -> float | None:
         return float(s)
     except ValueError:
         return None
+
+
+def load_survey_public_items(repo_root: Path) -> tuple[list[SurveyPublicItem], str]:
+    """ippatsu-pc 側 share/261231.json を読み、公開可能項目だけ抽出する。"""
+    path = _survey_source_path(repo_root)
+    if not path.is_file():
+        return [], "現調待ちリストはまだありません。"
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return [], "現調待ちリストはまだありません。"
+    if not isinstance(raw, dict):
+        return [], "現調待ちリストはまだありません。"
+    items = raw.get("items")
+    if not isinstance(items, list):
+        return [], "現調待ちリストはまだありません。"
+    out: list[SurveyPublicItem] = []
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        out.append(
+            SurveyPublicItem(
+                management_no=_to_str(it.get("management_no")) or "—",
+                label=_to_str(it.get("label")) or "—",
+                map_url=_to_str(it.get("map_url")),
+                start_label=_to_str(it.get("start_label")),
+                start_lat=_to_str(it.get("start_lat")),
+                start_lng=_to_str(it.get("start_lng")),
+                end_label=_to_str(it.get("end_label")),
+                end_lat=_to_str(it.get("end_lat")),
+                end_lng=_to_str(it.get("end_lng")),
+                note=_to_str(it.get("note")) or "—",
+            )
+        )
+    return out, ""
+
+
+def build_survey_html(items: list[SurveyPublicItem], empty_note: str) -> str:
+    cards: list[str] = []
+    points: list[dict] = []
+    for idx, it in enumerate(items):
+        map_btn = ""
+        if it.map_url and it.map_url.startswith(("http://", "https://")):
+            map_btn = (
+                f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
+                'target="_blank" rel="noopener noreferrer">地図を開く</a>'
+            )
+        two_btn = ""
+        two_json = ""
+        two_wrap = ""
+        start_lat = _to_float(it.start_lat)
+        start_lng = _to_float(it.start_lng)
+        end_lat = _to_float(it.end_lat)
+        end_lng = _to_float(it.end_lng)
+        if (
+            start_lat is not None
+            and start_lng is not None
+            and end_lat is not None
+            and end_lng is not None
+        ):
+            two_json_id = f"two-geo-{idx}"
+            two_wrap_id = f"two-wrap-{idx}"
+            two_map_id = f"share-two-map-{idx}"
+            two_btn = (
+                f'<button type="button" class="btn btn-map" data-two-open '
+                f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
+                f'data-two-json="{two_json_id}" aria-expanded="false" '
+                f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
+            )
+            two_geo = {
+                "a": {"name": it.start_label or it.label, "lat": start_lat, "lng": start_lng},
+                "b": {"name": it.end_label or it.label, "lat": end_lat, "lng": end_lng},
+            }
+            two_json = (
+                f'<script type="application/json" id="{two_json_id}">'
+                f'{escape_html(json.dumps(two_geo, ensure_ascii=False))}</script>'
+            )
+            two_wrap = (
+                f'<div class="two-map-wrap" id="{two_wrap_id}" hidden>'
+                f'<div id="{two_map_id}" class="share-two-map-canvas" '
+                'role="application" aria-label="2点地図"></div></div>'
+            )
+        note_id = f"note-{idx}"
+        note_btn = (
+            f'<button type="button" class="btn btn-note" aria-expanded="false" '
+            f'aria-controls="{note_id}" data-note-toggle>現場指示</button>'
+        )
+        note_body = f"備考: {escape_html(it.note)}"
+        actions = "".join(x for x in [map_btn, two_btn, note_btn] if x)
+        cards.append(
+            f"""<article class="card" data-card-index="{idx}">
+  <div class="card-head">
+    <h2 class="card-title">{escape_html(it.label)}</h2>
+    <p class="item-mgmt">{escape_html(it.management_no)}</p>
+    <div class="card-actions">{actions}</div>
+  </div>
+  {two_json}
+  {two_wrap}
+  <div class="note-panel" id="{note_id}" hidden>{note_body}</div>
+</article>"""
+        )
+        p_lat, p_lng = _pick_survey_item_latlng(it)
+        f_lat = _to_float(p_lat)
+        f_lng = _to_float(p_lng)
+        if f_lat is not None and f_lng is not None:
+            points.append(
+                {
+                    "name": it.label,
+                    "lat": f_lat,
+                    "lng": f_lng,
+                    "management_no": it.management_no,
+                }
+            )
+    items_html = "\n".join(cards)
+    if not items_html:
+        items_html = f'<p class="muted-tiny">{escape_html(empty_note)}</p>'
+    if points:
+        map_block = """  <section class="map-section" aria-labelledby="map-heading">
+    <h2 id="map-heading">全体地図</h2>
+    <div id="share-map" role="application" aria-label="全径間の位置"></div>
+  </section>
+"""
+    else:
+        map_block = """  <section class="map-section map-empty" aria-labelledby="map-heading">
+    <h2 id="map-heading">全体地図</h2>
+    <p class="muted-tiny">まとめて表示できる位置情報がありません。</p>
+  </section>
+"""
+    points_js = json.dumps(points, ensure_ascii=False)
+    return f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>現調待ち一覧</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin="">
+<style>
+:root {{
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+  --accent2: #0d9488;
+}}
+* {{ box-sizing: border-box; }}
+body {{
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
+    "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding: 0.75rem 0.75rem 1.25rem;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}}
+.top-bar {{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}}
+.top-bar a {{
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}}
+.top-bar a:hover, .top-bar a:focus-visible {{
+  text-decoration: underline;
+  outline: none;
+}}
+.page-title {{
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
+}}
+.lead {{
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}}
+.card {{
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}}
+.item-mgmt {{
+  margin: -0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}}
+.card-head {{
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}}
+.card-title {{
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}}
+.card-actions {{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}}
+.btn {{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 40px;
+  touch-action: manipulation;
+}}
+.btn-map {{
+  background: var(--accent);
+  color: #fff;
+}}
+.btn-map:hover, .btn-map:focus {{ filter: brightness(1.05); }}
+.btn-note {{
+  background: #fff;
+  color: var(--accent2);
+  border: 2px solid var(--accent2);
+}}
+.btn-note[aria-expanded="true"] {{
+  background: var(--accent2);
+  color: #fff;
+}}
+.note-panel {{
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  font-size: 0.92rem;
+  color: var(--text);
+}}
+.note-panel[hidden] {{ display: none !important; }}
+.two-map-wrap {{
+  margin-top: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}}
+.two-map-wrap[hidden] {{ display: none !important; }}
+.share-two-map-canvas {{
+  width: 100%;
+  height: min(45vh, 320px);
+  min-height: 200px;
+}}
+.leaflet-tooltip.two-tip {{
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}}
+.map-section {{
+  margin-top: 1.0rem;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 0.85rem;
+}}
+.map-section h2 {{
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}}
+#share-map {{
+  width: 100%;
+  height: min(55vh, 420px);
+  min-height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}}
+.map-empty .muted-tiny {{
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}}
+.leaflet-container {{ font-family: inherit; }}
+.muted-tiny {{
+  font-size: 0.88rem;
+  color: var(--muted);
+}}
+.footer-note {{
+  margin-top: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}}
+@media (min-width: 480px) {{
+  .card-head {{
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+  }}
+  .page-title {{ font-size: 1.4rem; }}
+}}
+</style>
+</head>
+<body>
+  <nav class="top-bar" aria-label="サイト内リンク">
+    <a href="../">ポータルTOP</a>
+    <a href="./">現調待ち</a>
+    <a href="../archive/">アーカイブ</a>
+  </nav>
+  <h1 class="page-title">現調待ち一覧</h1>
+  <p class="lead">現調済み報告機能は準備中です。</p>
+  <main>
+{items_html}
+{map_block}
+  </main>
+  <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+  <script>
+(function () {{
+  document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {{
+    var id = btn.getAttribute("aria-controls");
+    var panel = id ? document.getElementById(id) : null;
+    if (!panel) return;
+    btn.addEventListener("click", function() {{
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", open ? "false" : "true");
+      panel.hidden = open;
+    }});
+  }});
+  function gmaps(lat, lng) {{
+    return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
+  }}
+  var twoMaps = Object.create(null);
+  document.querySelectorAll("[data-two-open]").forEach(function(btn) {{
+    var wrapId = btn.getAttribute("data-two-wrap");
+    var mapId = btn.getAttribute("data-two-map");
+    var jsonId = btn.getAttribute("data-two-json");
+    var wrap = wrapId ? document.getElementById(wrapId) : null;
+    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
+    if (!wrap || !jsonEl) return;
+    btn.addEventListener("click", function() {{
+      var nowOpen = btn.getAttribute("aria-expanded") === "true";
+      wrap.hidden = nowOpen;
+      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
+      btn.textContent = nowOpen ? "2点地図を開く" : "2点地図を閉じる";
+      if (nowOpen) return;
+      var geo = null;
+      try {{
+        geo = JSON.parse(jsonEl.textContent || "{{}}");
+      }} catch (e) {{
+        return;
+      }}
+      if (!geo || !geo.a || !geo.b) return;
+      var key = mapId;
+      if (!twoMaps[key]) {{
+        var mmap = L.map(mapId, {{ scrollWheelZoom: false }});
+        twoMaps[key] = mmap;
+        L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }}).addTo(mmap);
+      }}
+      var mmap = twoMaps[key];
+      mmap.eachLayer(function(layer) {{
+        if (layer instanceof L.Marker || layer instanceof L.Polyline) mmap.removeLayer(layer);
+      }});
+      function addPoint(p, cls) {{
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.marker([lat, lng]).addTo(mmap);
+        if (p.name) m.bindTooltip(String(p.name), {{ permanent: true, direction: "top", className: cls }});
+        m.on("click", function() {{ window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer"); }});
+        return [lat, lng];
+      }}
+      var a = addPoint(geo.a, "two-tip");
+      var b = addPoint(geo.b, "two-tip");
+      var pts = [];
+      if (a) pts.push(a);
+      if (b) pts.push(b);
+      if (pts.length === 2) L.polyline(pts, {{ weight: 3, opacity: 0.8 }}).addTo(mmap);
+      if (pts.length === 1) mmap.setView(pts[0], 15);
+      else if (pts.length > 1) mmap.fitBounds(pts, {{ padding: [24, 24], maxZoom: 16 }});
+      setTimeout(function() {{ mmap.invalidateSize(); }}, 60);
+    }});
+  }});
+  var points = {points_js};
+  var mapEl = document.getElementById("share-map");
+  if (mapEl && Array.isArray(points) && points.length) {{
+    var map = L.map("share-map", {{ scrollWheelZoom: false }});
+    L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }}).addTo(map);
+    var bounds = [];
+    points.forEach(function(p) {{
+      var lat = Number(p.lat), lng = Number(p.lng);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      bounds.push([lat, lng]);
+      var m = L.marker([lat, lng]).addTo(map);
+      var label = (p.name || "現場") + (p.management_no ? (" (" + p.management_no + ")") : "");
+      m.bindTooltip(label, {{ permanent: false, direction: "top" }});
+    }});
+    if (bounds.length === 1) map.setView(bounds[0], 15);
+    else if (bounds.length > 1) map.fitBounds(bounds, {{ padding: [28, 28], maxZoom: 16 }});
+  }}
+}})();
+  </script>
+</body>
+</html>
+"""
 
 
 def build_archive_detail_html(
@@ -1818,6 +2282,7 @@ a.portal-menu-item:focus-visible {{
         </button>
         <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
           <a class="portal-menu-item" role="menuitem" href="./">ポータルTOP</a>
+          <a class="portal-menu-item" role="menuitem" href="./survey/">現調待ち</a>
           <a class="portal-menu-item" role="menuitem" href="./archive/">アーカイブ</a>
         </nav>
       </div>
@@ -1951,6 +2416,12 @@ def main() -> int:
         f"archive_rows={len(archive_parts)}, recent={len(recent_parts)}, months={len(sections)}, "
         f"archive_details={len(detail_paths)})"
     )
+    survey_items, survey_empty_note = load_survey_public_items(repo_root)
+    survey_html = build_survey_html(survey_items, survey_empty_note)
+    survey_path = repo_root / "portal" / "survey" / "index.html"
+    survey_path.parent.mkdir(parents=True, exist_ok=True)
+    survey_path.write_text(survey_html, encoding="utf-8", newline="\n")
+    print(f"Wrote {survey_path} (survey_items={len(survey_items)})")
     return 0
 
 
