@@ -34,16 +34,19 @@ _H2_CARD_TITLE = re.compile(
 )
 
 # ---------------------------------------------------------------------------
-# 現調結果報告（Googleフォーム）— 正式URL・entry ID 確定後に差し替え
-# プレースホルダ: viewform まで含め、クエリは仮パラメータ（management_no / label /
-# report_type / report_date）。正式 prefill は entry.xxxxx= に置き換え可能。
+# 現調結果報告（Googleフォーム prefill）
+# 報告者 entry.1882173754 / メモ entry.1568902885 はフォーム側入力のため URL に含めない。
 # ---------------------------------------------------------------------------
 SURVEY_REPORT_FORM_URL = (
-    "https://docs.google.com/forms/d/e/FORM_ID_PLACEHOLDER/viewform"
+    "https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform"
 )
-# URL 上の報告種別（ボタン文言は別）。フォーム側マッピング用。
-SURVEY_REPORT_TYPE_COMPLETED = "survey_completed"
-SURVEY_REPORT_TYPE_RETURN_CANDIDATE = "return_candidate"
+SURVEY_REPORT_ENTRY_MANAGEMENT_NO = "entry.1264151869"
+SURVEY_REPORT_ENTRY_LABEL = "entry.1454610165"
+SURVEY_REPORT_ENTRY_TYPE = "entry.1400430047"
+SURVEY_REPORT_ENTRY_DATE = "entry.983859884"
+# フォームの選択肢に合わせた報告種別（日本語）
+SURVEY_REPORT_TYPE_JP_COMPLETED = "現調済み"
+SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE = "返却候補"
 
 
 class TitleExtractor(HTMLParser):
@@ -289,18 +292,18 @@ def build_survey_report_url(
     base_url: str,
     management_no: str,
     label: str,
-    report_type: str,
+    report_type_jp: str,
     report_date_iso: str,
 ) -> str:
-    """Googleフォームへ渡すクエリを付与（仮パラメータ。entry ID 確定後は URL 組み立てを差し替え）。"""
+    """Googleフォーム prefill 用クエリ（entry ID）。報告者・メモは URL に含めない。"""
     b = (base_url or "").strip() or SURVEY_REPORT_FORM_URL
-    params = {
-        "management_no": management_no,
-        "label": label,
-        "report_type": report_type,
+    params: dict[str, str] = {
+        SURVEY_REPORT_ENTRY_MANAGEMENT_NO: management_no,
+        SURVEY_REPORT_ENTRY_LABEL: label,
+        SURVEY_REPORT_ENTRY_TYPE: report_type_jp,
     }
     if report_date_iso:
-        params["report_date"] = report_date_iso
+        params[SURVEY_REPORT_ENTRY_DATE] = report_date_iso
     q = urlencode(params, quote_via=quote, safe="")
     joiner = "&" if "?" in b else "?"
     return f"{b.rstrip('?')}{joiner}{q}"
@@ -1300,14 +1303,14 @@ def build_survey_html(
             form_base_url,
             it.management_no,
             it.label,
-            SURVEY_REPORT_TYPE_COMPLETED,
+            SURVEY_REPORT_TYPE_JP_COMPLETED,
             report_date_iso,
         )
         url_return = build_survey_report_url(
             form_base_url,
             it.management_no,
             it.label,
-            SURVEY_REPORT_TYPE_RETURN_CANDIDATE,
+            SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE,
             report_date_iso,
         )
         report_btns = (
