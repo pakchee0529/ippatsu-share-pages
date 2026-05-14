@@ -16,7 +16,7 @@ import html as html_lib
 import json
 import re
 import sys
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, quote, urlencode, urlparse
 from dataclasses import dataclass
 from datetime import date, timedelta
 from html.parser import HTMLParser
@@ -32,6 +32,18 @@ _ARTICLE_CARD = re.compile(
 _H2_CARD_TITLE = re.compile(
     r'<h2\s+[^>]*\bclass\s*=\s*["\']card-title["\'][^>]*>([^<]*)</h2>', re.I
 )
+
+# ---------------------------------------------------------------------------
+# 現調結果報告（Googleフォーム）— 正式URL・entry ID 確定後に差し替え
+# プレースホルダ: viewform まで含め、クエリは仮パラメータ（management_no / label /
+# report_type / report_date）。正式 prefill は entry.xxxxx= に置き換え可能。
+# ---------------------------------------------------------------------------
+SURVEY_REPORT_FORM_URL = (
+    "https://docs.google.com/forms/d/e/FORM_ID_PLACEHOLDER/viewform"
+)
+# URL 上の報告種別（ボタン文言は別）。フォーム側マッピング用。
+SURVEY_REPORT_TYPE_COMPLETED = "survey_completed"
+SURVEY_REPORT_TYPE_RETURN_CANDIDATE = "return_candidate"
 
 
 class TitleExtractor(HTMLParser):
@@ -271,6 +283,27 @@ def build_portal_heading(
 
 def escape_html(s: str) -> str:
     return html_lib.escape(s, quote=True)
+
+
+def build_survey_report_url(
+    base_url: str,
+    management_no: str,
+    label: str,
+    report_type: str,
+    report_date_iso: str,
+) -> str:
+    """Googleフォームへ渡すクエリを付与（仮パラメータ。entry ID 確定後は URL 組み立てを差し替え）。"""
+    b = (base_url or "").strip() or SURVEY_REPORT_FORM_URL
+    params = {
+        "management_no": management_no,
+        "label": label,
+        "report_type": report_type,
+    }
+    if report_date_iso:
+        params["report_date"] = report_date_iso
+    q = urlencode(params, quote_via=quote, safe="")
+    joiner = "&" if "?" in b else "?"
+    return f"{b.rstrip('?')}{joiner}{q}"
 
 
 def month_heading_key(folder: str) -> tuple[int, int] | None:
@@ -1205,7 +1238,12 @@ def load_survey_public_items(repo_root: Path) -> tuple[list[SurveyPublicItem], s
     return out, ""
 
 
-def build_survey_html(items: list[SurveyPublicItem], empty_note: str) -> str:
+def build_survey_html(
+    items: list[SurveyPublicItem],
+    empty_note: str,
+    report_date_iso: str,
+    form_base_url: str = SURVEY_REPORT_FORM_URL,
+) -> str:
     cards: list[str] = []
     points: list[dict] = []
     for idx, it in enumerate(items):
@@ -1257,12 +1295,36 @@ def build_survey_html(items: list[SurveyPublicItem], empty_note: str) -> str:
         )
         note_body = f"備考: {escape_html(it.note)}"
         actions = "".join(x for x in [map_btn, two_btn, note_btn] if x)
+        url_done = build_survey_report_url(
+            form_base_url,
+            it.management_no,
+            it.label,
+            SURVEY_REPORT_TYPE_COMPLETED,
+            report_date_iso,
+        )
+        url_return = build_survey_report_url(
+            form_base_url,
+            it.management_no,
+            it.label,
+            SURVEY_REPORT_TYPE_RETURN_CANDIDATE,
+            report_date_iso,
+        )
+        report_btns = (
+            f'<div class="card-actions card-actions-report" role="group" '
+            f'aria-label="現調結果の報告">'
+            f'<a class="btn btn-report-done" href="{escape_html(url_done)}" '
+            f'target="_blank" rel="noopener noreferrer">現調済みを報告</a>'
+            f'<a class="btn btn-report-return" href="{escape_html(url_return)}" '
+            f'target="_blank" rel="noopener noreferrer">返却候補を報告</a>'
+            f"</div>"
+        )
         cards.append(
             f"""<article class="card" data-card-index="{idx}">
   <div class="card-head">
     <h2 class="card-title">{escape_html(it.label)}</h2>
     <p class="item-mgmt">{escape_html(it.management_no)}</p>
     <div class="card-actions">{actions}</div>
+    {report_btns}
   </div>
   {two_json}
   {two_wrap}
@@ -1356,9 +1418,19 @@ body {{
   border-bottom: 2px solid var(--border);
 }}
 .lead {{
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.5rem;
   font-size: 0.9rem;
   color: var(--muted);
+}}
+.report-disclaimer {{
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--muted);
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 8px;
 }}
 .card {{
   background: var(--card);
@@ -1490,6 +1562,39 @@ body {{
   }}
   .page-title {{ font-size: 1.4rem; }}
 }}
+.card-actions-report {{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex-basis: 100%;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+}}
+.card-actions-report .btn {{
+  flex: 1 1 calc(50% - 0.25rem);
+  min-width: 9.5rem;
+  min-height: 44px;
+  font-size: 0.88rem;
+}}
+.btn-report-done {{
+  background: var(--accent);
+  color: #fff;
+}}
+.btn-report-done:hover, .btn-report-done:focus-visible {{
+  filter: brightness(1.05);
+  outline: none;
+}}
+.btn-report-return {{
+  background: #fffbeb;
+  color: #92400e;
+  border: 2px solid #f59e0b;
+}}
+.btn-report-return:hover, .btn-report-return:focus-visible {{
+  background: #fef3c7;
+  outline: none;
+}}
 </style>
 </head>
 <body>
@@ -1499,7 +1604,8 @@ body {{
     <a href="../archive/">アーカイブ</a>
   </nav>
   <h1 class="page-title">現調待ち一覧</h1>
-  <p class="lead">現調済み報告機能は準備中です。</p>
+  <p class="lead">径間ごとに地図・現場指示・報告用のリンクがあります。</p>
+  <p class="report-disclaimer">報告ボタンは Google フォームに送信します。送信後、PC側で確認して反映します。押しただけではこの一覧から消えません。</p>
   <main>
 {items_html}
 {map_block}
@@ -2417,7 +2523,11 @@ def main() -> int:
         f"archive_details={len(detail_paths)})"
     )
     survey_items, survey_empty_note = load_survey_public_items(repo_root)
-    survey_html = build_survey_html(survey_items, survey_empty_note)
+    survey_html = build_survey_html(
+        survey_items,
+        survey_empty_note,
+        date.today().isoformat(),
+    )
     survey_path = repo_root / "portal" / "survey" / "index.html"
     survey_path.parent.mkdir(parents=True, exist_ok=True)
     survey_path.write_text(survey_html, encoding="utf-8", newline="\n")
