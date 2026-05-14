@@ -1073,7 +1073,8 @@ def _completion_reports_root(repo_root: Path) -> Path:
 
 
 def _survey_source_path(repo_root: Path) -> Path:
-    return repo_root.parent / "ippatsu-pc" / "data" / "share" / "261231.json"
+    """現調待ちポータル用。正本は ippatsu-pc の data/survey/queue.json（261231.json は参照しない）。"""
+    return repo_root.parent / "ippatsu-pc" / "data" / "survey" / "queue.json"
 
 
 def _parse_latlng_from_map_url(url: str) -> tuple[str, str]:
@@ -1204,7 +1205,7 @@ def _to_float(v: str) -> float | None:
 
 
 def load_survey_public_items(repo_root: Path) -> tuple[list[SurveyPublicItem], str]:
-    """ippatsu-pc 側 share/261231.json を読み、公開可能項目だけ抽出する。"""
+    """ippatsu-pc 側 data/survey/queue.json を読み、公開可能項目だけ抽出する。"""
     path = _survey_source_path(repo_root)
     if not path.is_file():
         return [], "現調待ちリストはまだありません。"
