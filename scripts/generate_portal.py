@@ -1025,6 +1025,7 @@ def _build_share_live_edit_inject_html(api_url: str, api_token: str) -> str:
     cfg_json = cfg_json.replace("<", "\\u003c")
     parts = [
         _SHARE_LIVE_EDIT_BEGIN,
+        "<!-- share-live-edit: config from scripts/generate_portal.py constants -->",
         "<style>",
         _SHARE_LIVE_EDIT_CARD_CSS,
         "</style>",
@@ -1055,6 +1056,55 @@ def apply_share_live_edit_to_share_html(html: str, date_key: str) -> str:
     return out
 
 
+def _share_detail_edit_api_config_obj() -> dict[str, str]:
+    return {
+        "url": (SHARE_DETAIL_EDIT_API_URL or "").strip(),
+        "token": (SHARE_DETAIL_EDIT_API_TOKEN or "").strip(),
+    }
+
+
+def _share_live_edit_api_config_matches_html(html: str) -> bool:
+    """HTML 内の API 設定 JSON が generate_portal.py 定数と一致するか。"""
+    m = re.search(
+        r'<script\s+type="application/json"\s+id="share-detail-edit-api-config"\s*>\s*'
+        r"(\{[^<]+\})\s*</script>",
+        html,
+        re.I,
+    )
+    if not m:
+        return False
+    try:
+        got = json.loads(m.group(1))
+    except json.JSONDecodeError:
+        return False
+    exp = _share_detail_edit_api_config_obj()
+    return got.get("url") == exp.get("url") and got.get("token") == exp.get("token")
+
+
+def _share_live_edit_layer_complete(html: str) -> bool:
+    """未確定修正オーバーレイに必要なマークアップが揃っているか。"""
+    if _SHARE_LIVE_EDIT_BEGIN not in html or _SHARE_LIVE_EDIT_END not in html:
+        return False
+    if 'id="share-detail-edit-api-config"' not in html:
+        return False
+    if not re.search(r"<body[^>]*\sdata-share-page-date=\"[^\"]+\"", html, re.I):
+        return False
+    if "<article class=\"card\"" in html and 'data-management-no-key="' not in html:
+        return False
+    if (SHARE_DETAIL_EDIT_API_URL or "").strip():
+        return _share_live_edit_api_config_matches_html(html)
+    return True
+
+
+def ensure_share_detail_edit_on_share_html(html: str, date_key: str) -> str:
+    """詳細修正リンク・未確定修正オーバーレイを idempotent に適用する。"""
+    out = _strip_share_live_edit_inject_block(html)
+    out = _strip_share_live_edit_identity_attrs(out)
+    if share_detail_edit_form_enabled():
+        out = apply_share_detail_edit_to_share_html(out, date_key)
+    return apply_share_live_edit_to_share_html(out, date_key)
+
+
 def inject_share_detail_edit_into_share_pages(repo_root: Path) -> int:
     """share/<6桁>/index.html へ詳細修正ボタン・未確定修正オーバーレイ用マークアップを書き込む。"""
     root = repo_root / "share"
@@ -1073,16 +1123,14 @@ def inject_share_detail_edit_into_share_pages(repo_root: Path) -> int:
             raw = idx.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
-        new_t = raw
-        new_t = _strip_share_live_edit_inject_block(new_t)
-        new_t = _strip_share_live_edit_identity_attrs(new_t)
-        if share_detail_edit_form_enabled():
-            new_t = apply_share_detail_edit_to_share_html(new_t, sub.name)
-        new_t = apply_share_live_edit_to_share_html(new_t, sub.name)
-        if new_t != raw:
-            idx.write_text(new_t, encoding="utf-8", newline="\n")
-            n += 1
-            print(f"Wrote {idx} (share detail-edit + live overlay)")
+        new_t = ensure_share_detail_edit_on_share_html(raw, sub.name)
+        needs_write = new_t != raw or not _share_live_edit_layer_complete(raw)
+        if not needs_write:
+            continue
+        idx.write_text(new_t, encoding="utf-8", newline="\n")
+        n += 1
+        action = "updated" if new_t != raw else "repaired"
+        print(f"Wrote {idx} (share detail-edit + live overlay: {action})")
     return n
 
 
@@ -3134,6 +3182,9 @@ def main() -> int:
     if not share_dir.is_dir():
         print(f"Missing directory: {share_dir}", file=sys.stderr)
         return 1
+
+    # ippatsu-pc からの HTML コピー直後でも、ポータル生成前に必ず注入する。
+    inject_share_detail_edit_into_share_pages(repo_root)
 
     rows: list[tuple[str, Path]] = []
     for sub in sorted(share_dir.iterdir(), key=lambda p: p.name):
