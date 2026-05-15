@@ -222,6 +222,53 @@ body {
   outline: none;
 }
 
+
+.detail-edit-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+}
+.detail-edit-hint {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.detail-edit-footer--fallback {
+  margin: 0.5rem 0 0;
+  padding-top: 0.45rem;
+  border-top: 1px dashed var(--border);
+}
+.note-panel .btn-detail-edit--panel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.42rem 0.65rem;
+  min-height: 44px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  touch-action: manipulation;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #94a3b8;
+  line-height: 1.25;
+}
+.note-panel .btn-detail-edit--panel:hover,
+.note-panel .btn-detail-edit--panel:focus-visible {
+  background: #f1f5f9;
+  outline: none;
+}
+.detail-edit-footer--fallback .btn-detail-edit--panel {
+  font-size: 0.8rem;
+  min-height: 40px;
+}
+
 </style>
 </head>
 <body data-share-page-date="261231">
@@ -239,8 +286,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-0" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009384&amp;entry.2018449203=%EF%BC%B0%E7%99%BE%E8%B0%B738S10%EF%BD%9E38S11&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-0">{"a":{"name":"P百谷38S10","lat":34.34213,"lng":135.75069},"b":{"name":"38S11","lat":34.34195,"lng":135.75032}}</script>
@@ -248,7 +293,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-0" hidden>
     <div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-0" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09384</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-0" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09384</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009384&amp;entry.2018449203=%EF%BC%B0%E7%99%BE%E8%B0%B738S10%EF%BD%9E38S11&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="1" data-date="261231" data-management-no-key="51409344" data-management-no="514 09344">
   <div class="card-head">
@@ -260,8 +305,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-1" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009344&amp;entry.2018449203=%EF%BC%B0%E7%99%BE%E8%B0%B738S18%EF%BD%9E38S19&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-1">{"a":{"name":"P百谷38S18","lat":34.34049,"lng":135.75212},"b":{"name":"38S19","lat":34.34022,"lng":135.75258}}</script>
@@ -269,7 +312,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-1" hidden>
     <div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-1" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09344</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-1" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09344</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009344&amp;entry.2018449203=%EF%BC%B0%E7%99%BE%E8%B0%B738S18%EF%BD%9E38S19&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="2" data-date="261231" data-management-no-key="51409324" data-management-no="514 09324">
   <div class="card-head">
@@ -281,8 +324,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-2" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009324&amp;entry.2018449203=%EF%BC%B0%E7%99%BE%E8%B0%B738S19%EF%BD%9E38S20&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-2">{"a":{"name":"P百谷38S19","lat":34.34022,"lng":135.75258},"b":{"name":"38S20","lat":34.33996,"lng":135.75281}}</script>
@@ -290,7 +331,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-2" hidden>
     <div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-2" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09324</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-2" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09324</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009324&amp;entry.2018449203=%EF%BC%B0%E7%99%BE%E8%B0%B738S19%EF%BD%9E38S20&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="3" data-date="261231" data-management-no-key="51400214" data-management-no="514 00214">
   <div class="card-head">
@@ -302,8 +343,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-3" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000214&amp;entry.2018449203=%EF%BC%B0%E7%99%BE%E8%B0%B749N3%EF%BD%9E49N4&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-3">{"a":{"name":"P百谷49N3","lat":34.34412,"lng":135.75722},"b":{"name":"49N4","lat":34.34428,"lng":135.75679}}</script>
@@ -311,7 +350,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-3" hidden>
     <div id="share-two-map-3" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-3" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00214</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-3" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00214</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000214&amp;entry.2018449203=%EF%BC%B0%E7%99%BE%E8%B0%B749N3%EF%BD%9E49N4&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="4" data-date="261231" data-management-no-key="51409097" data-management-no="514 09097">
   <div class="card-head">
@@ -323,8 +362,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-4" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009097&amp;entry.2018449203=%E8%B5%A4%E6%9D%BE1%EF%BD%9E1G1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-4">{"a":{"name":"赤松1","lat":34.3324,"lng":135.7446},"b":{"name":"1G1","lat":34.33245,"lng":135.74426}}</script>
@@ -332,7 +369,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-4" hidden>
     <div id="share-two-map-4" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-4" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09097</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-4" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09097</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009097&amp;entry.2018449203=%E8%B5%A4%E6%9D%BE1%EF%BD%9E1G1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="5" data-date="261231" data-management-no-key="51409006" data-management-no="514 09006">
   <div class="card-head">
@@ -344,8 +381,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-5" data-two-map="share-two-map-5" data-two-json="two-geo-5" aria-expanded="false" aria-controls="two-wrap-5">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-5" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009006&amp;entry.2018449203=%E8%B5%A4%E6%9D%BE23%EF%BD%9E24&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-5">{"a":{"name":"赤松23","lat":34.33462,"lng":135.75558},"b":{"name":"24","lat":34.33493,"lng":135.7557}}</script>
@@ -353,7 +388,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-5" hidden>
     <div id="share-two-map-5" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-5" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09006</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-5" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09006</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009006&amp;entry.2018449203=%E8%B5%A4%E6%9D%BE23%EF%BD%9E24&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="6" data-date="261231" data-management-no-key="51400376" data-management-no="514 00376">
   <div class="card-head">
@@ -365,8 +400,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-6" data-two-map="share-two-map-6" data-two-json="two-geo-6" aria-expanded="false" aria-controls="two-wrap-6">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-6" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000376&amp;entry.2018449203=%E8%B5%A4%E6%9D%BE26N7%EF%BD%9E26N8&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-6">{"a":{"name":"赤松26N7","lat":34.33731,"lng":135.7546},"b":{"name":"26N8","lat":34.33755,"lng":135.75499}}</script>
@@ -374,7 +407,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-6" hidden>
     <div id="share-two-map-6" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-6" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00376</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-6" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00376</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000376&amp;entry.2018449203=%E8%B5%A4%E6%9D%BE26N7%EF%BD%9E26N8&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="7" data-date="261231" data-management-no-key="51409094" data-management-no="514 09094">
   <div class="card-head">
@@ -386,8 +419,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-7" data-two-map="share-two-map-7" data-two-json="two-geo-7" aria-expanded="false" aria-controls="two-wrap-7">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-7" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009094&amp;entry.2018449203=%E8%B5%A4%E6%9D%BE27%EF%BD%9E28&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-7">{"a":{"name":"赤松27","lat":34.33519,"lng":135.75636},"b":{"name":"28","lat":34.33432,"lng":135.75685}}</script>
@@ -395,7 +426,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-7" hidden>
     <div id="share-two-map-7" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-7" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09094</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-7" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09094</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009094&amp;entry.2018449203=%E8%B5%A4%E6%9D%BE27%EF%BD%9E28&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="8" data-date="261231" data-management-no-key="51400361" data-management-no="514 00361">
   <div class="card-head">
@@ -407,8 +438,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-8" data-two-map="share-two-map-8" data-two-json="two-geo-8" aria-expanded="false" aria-controls="two-wrap-8">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-8" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000361&amp;entry.2018449203=%E8%B5%A4%E6%9D%BE35%EF%BD%9E36&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-8">{"a":{"name":"赤松35","lat":34.33258,"lng":135.76051},"b":{"name":"36","lat":34.33134,"lng":135.76135}}</script>
@@ -416,7 +445,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-8" hidden>
     <div id="share-two-map-8" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-8" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00361</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-8" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00361</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000361&amp;entry.2018449203=%E8%B5%A4%E6%9D%BE35%EF%BD%9E36&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="9" data-date="261231" data-management-no-key="51401156" data-management-no="514 01156">
   <div class="card-head">
@@ -428,8 +457,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-9" data-two-map="share-two-map-9" data-two-json="two-geo-9" aria-expanded="false" aria-controls="two-wrap-9">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-9" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2001156&amp;entry.2018449203=%E5%A4%A7%E7%95%917%EF%BD%9E7E1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-9">{"a":{"name":"大畑7","lat":34.33471,"lng":135.76237},"b":{"name":"7E1","lat":34.33471,"lng":135.76314}}</script>
@@ -437,7 +464,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-9" hidden>
     <div id="share-two-map-9" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-9" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01156</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-9" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01156</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2001156&amp;entry.2018449203=%E5%A4%A7%E7%95%917%EF%BD%9E7E1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="10" data-date="261231" data-management-no-key="51403888" data-management-no="514 03888">
   <div class="card-head">
@@ -449,8 +476,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-10" data-two-map="share-two-map-10" data-two-json="two-geo-10" aria-expanded="false" aria-controls="two-wrap-10">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-10" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2003888&amp;entry.2018449203=%E6%9F%B4%E3%83%B6%E8%B0%B72%EF%BD%9E3&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-10">{"a":{"name":"柴ヶ谷2","lat":34.32942,"lng":135.76153},"b":{"name":"3","lat":34.32879,"lng":135.76127}}</script>
@@ -458,7 +483,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-10" hidden>
     <div id="share-two-map-10" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-10" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 03888</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-10" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 03888</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2003888&amp;entry.2018449203=%E6%9F%B4%E3%83%B6%E8%B0%B72%EF%BD%9E3&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="11" data-date="261231" data-management-no-key="51409990" data-management-no="514 09990">
   <div class="card-head">
@@ -470,8 +495,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-11" data-two-map="share-two-map-11" data-two-json="two-geo-11" aria-expanded="false" aria-controls="two-wrap-11">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-11" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009990&amp;entry.2018449203=%E6%9F%B4%E3%83%B6%E8%B0%B73%EF%BD%9E3G1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-11">{"a":{"name":"柴ヶ谷3","lat":34.32879,"lng":135.76127},"b":{"name":"3G1","lat":34.32879,"lng":135.76127}}</script>
@@ -479,7 +502,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-11" hidden>
     <div id="share-two-map-11" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-11" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09990</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-11" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09990</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009990&amp;entry.2018449203=%E6%9F%B4%E3%83%B6%E8%B0%B73%EF%BD%9E3G1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="12" data-date="261231" data-management-no-key="51409991" data-management-no="514 09991">
   <div class="card-head">
@@ -491,8 +514,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-12" data-two-map="share-two-map-12" data-two-json="two-geo-12" aria-expanded="false" aria-controls="two-wrap-12">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-12" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009991&amp;entry.2018449203=%E6%9F%B4%E3%83%B6%E8%B0%B73G1%EF%BD%9E4&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-12">{"a":{"name":"柴ヶ谷3G1","lat":34.32879,"lng":135.76127},"b":{"name":"4","lat":34.32879,"lng":135.76127}}</script>
@@ -500,7 +521,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-12" hidden>
     <div id="share-two-map-12" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-12" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09991</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-12" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09991</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009991&amp;entry.2018449203=%E6%9F%B4%E3%83%B6%E8%B0%B73G1%EF%BD%9E4&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="13" data-date="261231" data-management-no-key="51410156" data-management-no="514 10156">
   <div class="card-head">
@@ -516,7 +537,7 @@ body {
   </div>
   
   
-  <div class="note-panel" id="note-13" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 10156</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-13" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 10156</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2010156&amp;entry.2018449203=%E6%9F%B4%E3%83%B6%E8%B0%B79W1%EF%BD%9E%E5%BC%95%E8%BE%BC&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="14" data-date="261231" data-management-no-key="51409133" data-management-no="514 09133">
   <div class="card-head">
@@ -528,8 +549,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-14" data-two-map="share-two-map-14" data-two-json="two-geo-14" aria-expanded="false" aria-controls="two-wrap-14">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-14" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009133&amp;entry.2018449203=%E7%99%BD%E9%8A%80115W6%EF%BD%9E115W6S1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-14">{"a":{"name":"白銀115W6","lat":34.31784,"lng":135.73535},"b":{"name":"115W6S1","lat":34.31707,"lng":135.73456}}</script>
@@ -537,7 +556,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-14" hidden>
     <div id="share-two-map-14" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-14" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09133</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-14" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09133</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009133&amp;entry.2018449203=%E7%99%BD%E9%8A%80115W6%EF%BD%9E115W6S1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="15" data-date="261231" data-management-no-key="51404189" data-management-no="514 04189">
   <div class="card-head">
@@ -549,8 +568,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-15" data-two-map="share-two-map-15" data-two-json="two-geo-15" aria-expanded="false" aria-controls="two-wrap-15">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-15" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004189&amp;entry.2018449203=%E7%99%BD%E9%8A%80115W6S1N2%EF%BD%9E115W6S1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-15">{"a":{"name":"白銀115W6S1N2","lat":34.31691,"lng":135.73552},"b":{"name":"115W6S1","lat":34.31707,"lng":135.73456}}</script>
@@ -558,7 +575,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-15" hidden>
     <div id="share-two-map-15" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-15" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04189</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-15" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04189</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004189&amp;entry.2018449203=%E7%99%BD%E9%8A%80115W6S1N2%EF%BD%9E115W6S1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="16" data-date="261231" data-management-no-key="51404194" data-management-no="514 04194">
   <div class="card-head">
@@ -570,8 +587,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-16" data-two-map="share-two-map-16" data-two-json="two-geo-16" aria-expanded="false" aria-controls="two-wrap-16">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-16" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004194&amp;entry.2018449203=%E7%99%BD%E9%8A%80115W9%EF%BD%9E115W9W1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-16">{"a":{"name":"白銀115W9","lat":34.31877,"lng":135.73439},"b":{"name":"115W9W1","lat":34.31866,"lng":135.73416}}</script>
@@ -579,7 +594,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-16" hidden>
     <div id="share-two-map-16" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-16" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04194</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-16" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04194</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004194&amp;entry.2018449203=%E7%99%BD%E9%8A%80115W9%EF%BD%9E115W9W1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="17" data-date="261231" data-management-no-key="51409997" data-management-no="514 09997">
   <div class="card-head">
@@ -591,8 +606,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-17" data-two-map="share-two-map-17" data-two-json="two-geo-17" aria-expanded="false" aria-controls="two-wrap-17">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-17" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009997&amp;entry.2018449203=%E7%99%BD%E9%8A%80137W1%EF%BD%9E137W2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-17">{"a":{"name":"白銀137W1","lat":34.30972,"lng":135.74448},"b":{"name":"137W2","lat":34.30921,"lng":135.7443}}</script>
@@ -600,7 +613,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-17" hidden>
     <div id="share-two-map-17" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-17" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09997</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-17" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09997</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009997&amp;entry.2018449203=%E7%99%BD%E9%8A%80137W1%EF%BD%9E137W2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="18" data-date="261231" data-management-no-key="51404202" data-management-no="514 04202">
   <div class="card-head">
@@ -612,8 +625,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-18" data-two-map="share-two-map-18" data-two-json="two-geo-18" aria-expanded="false" aria-controls="two-wrap-18">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-18" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004202&amp;entry.2018449203=%E7%99%BD%E9%8A%80137W3G1%EF%BD%9E137W4&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-18">{"a":{"name":"白銀137W3G1","lat":34.30941,"lng":135.74371},"b":{"name":"137W4","lat":34.30965,"lng":135.74367}}</script>
@@ -621,7 +632,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-18" hidden>
     <div id="share-two-map-18" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-18" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04202</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-18" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04202</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004202&amp;entry.2018449203=%E7%99%BD%E9%8A%80137W3G1%EF%BD%9E137W4&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="19" data-date="261231" data-management-no-key="51409476" data-management-no="514 09476">
   <div class="card-head">
@@ -633,8 +644,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-19" data-two-map="share-two-map-19" data-two-json="two-geo-19" aria-expanded="false" aria-controls="two-wrap-19">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-19" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009476&amp;entry.2018449203=%E7%99%BD%E9%8A%80137W4%EF%BD%9E137W4W1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-19">{"a":{"name":"白銀137W4","lat":34.30965,"lng":135.74367},"b":{"name":"137W4W1","lat":34.30999,"lng":135.7433}}</script>
@@ -642,7 +651,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-19" hidden>
     <div id="share-two-map-19" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-19" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09476</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-19" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09476</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009476&amp;entry.2018449203=%E7%99%BD%E9%8A%80137W4%EF%BD%9E137W4W1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="20" data-date="261231" data-management-no-key="51404205" data-management-no="514 04205">
   <div class="card-head">
@@ -654,8 +663,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-20" data-two-map="share-two-map-20" data-two-json="two-geo-20" aria-expanded="false" aria-controls="two-wrap-20">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-20" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004205&amp;entry.2018449203=%E7%99%BD%E9%8A%80137W15%EF%BD%9E137W16&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-20">{"a":{"name":"白銀137W15","lat":34.31083,"lng":135.74028},"b":{"name":"137W16","lat":34.31111,"lng":135.74008}}</script>
@@ -663,7 +670,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-20" hidden>
     <div id="share-two-map-20" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-20" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04205</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-20" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04205</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004205&amp;entry.2018449203=%E7%99%BD%E9%8A%80137W15%EF%BD%9E137W16&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="21" data-date="261231" data-management-no-key="51404132" data-management-no="514 04132">
   <div class="card-head">
@@ -675,8 +682,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-21" data-two-map="share-two-map-21" data-two-json="two-geo-21" aria-expanded="false" aria-controls="two-wrap-21">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-21" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004132&amp;entry.2018449203=%E7%99%BD%E9%8A%80140E2%EF%BD%9E140E2N1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-21">{"a":{"name":"白銀140E2","lat":34.30768,"lng":135.74668},"b":{"name":"140E2N1","lat":34.30816,"lng":135.74648}}</script>
@@ -684,7 +689,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-21" hidden>
     <div id="share-two-map-21" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-21" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04132</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-21" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04132</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004132&amp;entry.2018449203=%E7%99%BD%E9%8A%80140E2%EF%BD%9E140E2N1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="22" data-date="261231" data-management-no-key="51404217" data-management-no="514 04217">
   <div class="card-head">
@@ -696,8 +701,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-22" data-two-map="share-two-map-22" data-two-json="two-geo-22" aria-expanded="false" aria-controls="two-wrap-22">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-22" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004217&amp;entry.2018449203=%E7%99%BD%E9%8A%80146S1%EF%BD%9E146S2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-22">{"a":{"name":"白銀146S1","lat":34.30517,"lng":135.74661},"b":{"name":"146S2","lat":34.30504,"lng":135.74671}}</script>
@@ -705,7 +708,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-22" hidden>
     <div id="share-two-map-22" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-22" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04217</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-22" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04217</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004217&amp;entry.2018449203=%E7%99%BD%E9%8A%80146S1%EF%BD%9E146S2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="23" data-date="261231" data-management-no-key="51404222" data-management-no="514 04222">
   <div class="card-head">
@@ -717,8 +720,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-23" data-two-map="share-two-map-23" data-two-json="two-geo-23" aria-expanded="false" aria-controls="two-wrap-23">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-23" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004222&amp;entry.2018449203=%E7%99%BD%E9%8A%80149S2%EF%BD%9E149S3&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-23">{"a":{"name":"白銀149S2","lat":34.30495,"lng":135.74852},"b":{"name":"149S3","lat":34.30467,"lng":135.7484}}</script>
@@ -726,7 +727,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-23" hidden>
     <div id="share-two-map-23" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-23" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04222</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-23" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04222</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004222&amp;entry.2018449203=%E7%99%BD%E9%8A%80149S2%EF%BD%9E149S3&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="24" data-date="261231" data-management-no-key="51404109" data-management-no="514 04109">
   <div class="card-head">
@@ -738,8 +739,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-24" data-two-map="share-two-map-24" data-two-json="two-geo-24" aria-expanded="false" aria-controls="two-wrap-24">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-24" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004109&amp;entry.2018449203=%E7%99%BD%E9%8A%80151%EF%BD%9E152&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-24">{"a":{"name":"白銀151","lat":34.3067,"lng":135.74903},"b":{"name":"152","lat":34.30706,"lng":135.74909}}</script>
@@ -747,7 +746,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-24" hidden>
     <div id="share-two-map-24" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-24" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04109</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-24" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04109</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004109&amp;entry.2018449203=%E7%99%BD%E9%8A%80151%EF%BD%9E152&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="25" data-date="261231" data-management-no-key="51404117" data-management-no="514 04117">
   <div class="card-head">
@@ -759,8 +758,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-25" data-two-map="share-two-map-25" data-two-json="two-geo-25" aria-expanded="false" aria-controls="two-wrap-25">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-25" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004117&amp;entry.2018449203=%E7%99%BD%E9%8A%80158%EF%BD%9E159&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-25">{"a":{"name":"白銀158","lat":34.30803,"lng":135.75138},"b":{"name":"159","lat":34.3085,"lng":135.75158}}</script>
@@ -768,7 +765,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-25" hidden>
     <div id="share-two-map-25" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-25" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04117</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-25" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04117</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004117&amp;entry.2018449203=%E7%99%BD%E9%8A%80158%EF%BD%9E159&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="26" data-date="261231" data-management-no-key="51404127" data-management-no="514 04127">
   <div class="card-head">
@@ -780,8 +777,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-26" data-two-map="share-two-map-26" data-two-json="two-geo-26" aria-expanded="false" aria-controls="two-wrap-26">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-26" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004127&amp;entry.2018449203=%E7%99%BD%E9%8A%80168%EF%BD%9E169&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-26">{"a":{"name":"白銀168","lat":34.31143,"lng":135.75543},"b":{"name":"169","lat":34.31159,"lng":135.75582}}</script>
@@ -789,7 +784,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-26" hidden>
     <div id="share-two-map-26" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-26" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04127</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-26" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 04127</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2004127&amp;entry.2018449203=%E7%99%BD%E9%8A%80168%EF%BD%9E169&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="27" data-date="261231" data-management-no-key="51409998" data-management-no="514 09998">
   <div class="card-head">
@@ -801,8 +796,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-27" data-two-map="share-two-map-27" data-two-json="two-geo-27" aria-expanded="false" aria-controls="two-wrap-27">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-27" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009998&amp;entry.2018449203=%E6%85%8E1%EF%BD%9E2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-27">{"a":{"name":"慎1","lat":34.31806,"lng":135.73273},"b":{"name":"2","lat":34.31749,"lng":135.73178}}</script>
@@ -810,7 +803,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-27" hidden>
     <div id="share-two-map-27" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-27" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09998</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-27" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09998</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009998&amp;entry.2018449203=%E6%85%8E1%EF%BD%9E2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="28" data-date="261231" data-management-no-key="51409459" data-management-no="514 09459">
   <div class="card-head">
@@ -822,8 +815,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-28" data-two-map="share-two-map-28" data-two-json="two-geo-28" aria-expanded="false" aria-controls="two-wrap-28">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-28" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009459&amp;entry.2018449203=%E8%A5%BF%E6%96%B0%E5%AD%9012N1%EF%BD%9E12N2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-28">{"a":{"name":"西新子12N1","lat":34.31831,"lng":135.74634},"b":{"name":"12N2","lat":34.31856,"lng":135.74635}}</script>
@@ -831,7 +822,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-28" hidden>
     <div id="share-two-map-28" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-28" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09459</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-28" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09459</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009459&amp;entry.2018449203=%E8%A5%BF%E6%96%B0%E5%AD%9012N1%EF%BD%9E12N2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="29" data-date="261231" data-management-no-key="51409228" data-management-no="514 09228">
   <div class="card-head">
@@ -843,8 +834,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-29" data-two-map="share-two-map-29" data-two-json="two-geo-29" aria-expanded="false" aria-controls="two-wrap-29">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-29" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009228&amp;entry.2018449203=%E8%A5%BF%E6%96%B0%E5%AD%9014G1%EF%BD%9E14E3&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-29">{"a":{"name":"西新子14G1","lat":34.31702,"lng":135.74864},"b":{"name":"14E3","lat":34.31634,"lng":135.74864}}</script>
@@ -852,7 +841,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-29" hidden>
     <div id="share-two-map-29" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-29" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09228</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-29" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09228</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009228&amp;entry.2018449203=%E8%A5%BF%E6%96%B0%E5%AD%9014G1%EF%BD%9E14E3&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="30" data-date="261231" data-management-no-key="51407220" data-management-no="514 07220">
   <div class="card-head">
@@ -864,8 +853,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-30" data-two-map="share-two-map-30" data-two-json="two-geo-30" aria-expanded="false" aria-controls="two-wrap-30">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-30" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2007220&amp;entry.2018449203=%E5%B9%B3%E6%B2%BC%E7%94%B017%EF%BD%9E18&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-30">{"a":{"name":"平沼田17","lat":34.32461,"lng":135.75285},"b":{"name":"18","lat":34.32473,"lng":135.75302}}</script>
@@ -873,7 +860,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-30" hidden>
     <div id="share-two-map-30" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-30" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 07220</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-30" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 07220</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2007220&amp;entry.2018449203=%E5%B9%B3%E6%B2%BC%E7%94%B017%EF%BD%9E18&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="31" data-date="261231" data-management-no-key="51407272" data-management-no="514 07272">
   <div class="card-head">
@@ -885,8 +872,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-31" data-two-map="share-two-map-31" data-two-json="two-geo-31" aria-expanded="false" aria-controls="two-wrap-31">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-31" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2007272&amp;entry.2018449203=%E5%B9%B3%E6%B2%BC%E7%94%B018%EF%BD%9E19&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-31">{"a":{"name":"平沼田18","lat":34.32473,"lng":135.75302},"b":{"name":"19","lat":34.32509,"lng":135.75435}}</script>
@@ -894,7 +879,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-31" hidden>
     <div id="share-two-map-31" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-31" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 07272</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-31" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 07272</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2007272&amp;entry.2018449203=%E5%B9%B3%E6%B2%BC%E7%94%B018%EF%BD%9E19&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="32" data-date="261231" data-management-no-key="51407898" data-management-no="514 07898">
   <div class="card-head">
@@ -906,8 +891,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-32" data-two-map="share-two-map-32" data-two-json="two-geo-32" aria-expanded="false" aria-controls="two-wrap-32">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-32" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2007898&amp;entry.2018449203=%E5%B9%B3%E6%B2%BC%E7%94%B043N4E1%EF%BD%9E43N4E2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-32">{"a":{"name":"平沼田43N4E1","lat":34.32059,"lng":135.7605},"b":{"name":"43N4E2","lat":34.32073,"lng":135.76071}}</script>
@@ -915,7 +898,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-32" hidden>
     <div id="share-two-map-32" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-32" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 07898</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-32" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 07898</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2007898&amp;entry.2018449203=%E5%B9%B3%E6%B2%BC%E7%94%B043N4E1%EF%BD%9E43N4E2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="33" data-date="261231" data-management-no-key="51408008" data-management-no="514 08008">
   <div class="card-head">
@@ -927,8 +910,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-33" data-two-map="share-two-map-33" data-two-json="two-geo-33" aria-expanded="false" aria-controls="two-wrap-33">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-33" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2008008&amp;entry.2018449203=%E6%B9%AF%E5%B7%9D4E6%EF%BD%9E4E7&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-33">{"a":{"name":"湯川4E6","lat":34.33446,"lng":135.74192},"b":{"name":"4E7","lat":34.3347,"lng":135.74189}}</script>
@@ -936,7 +917,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-33" hidden>
     <div id="share-two-map-33" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-33" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 08008</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-33" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 08008</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2008008&amp;entry.2018449203=%E6%B9%AF%E5%B7%9D4E6%EF%BD%9E4E7&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="34" data-date="261231" data-management-no-key="51408794" data-management-no="514 08794">
   <div class="card-head">
@@ -948,8 +929,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-34" data-two-map="share-two-map-34" data-two-json="two-geo-34" aria-expanded="false" aria-controls="two-wrap-34">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-34" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2008794&amp;entry.2018449203=%E5%A4%9C%E4%B8%AD8%EF%BD%9E9&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-34">{"a":{"name":"夜中8","lat":34.30406,"lng":135.74857},"b":{"name":"9","lat":34.30364,"lng":135.7491}}</script>
@@ -957,7 +936,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-34" hidden>
     <div id="share-two-map-34" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-34" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 08794</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-34" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 08794</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2008794&amp;entry.2018449203=%E5%A4%9C%E4%B8%AD8%EF%BD%9E9&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="35" data-date="261231" data-management-no-key="51408795" data-management-no="514 08795">
   <div class="card-head">
@@ -969,8 +948,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-35" data-two-map="share-two-map-35" data-two-json="two-geo-35" aria-expanded="false" aria-controls="two-wrap-35">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-35" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2008795&amp;entry.2018449203=%E5%A4%9C%E4%B8%AD9%EF%BD%9E10&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-35">{"a":{"name":"夜中9","lat":34.30364,"lng":135.7491},"b":{"name":"10","lat":34.30325,"lng":135.74953}}</script>
@@ -978,7 +955,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-35" hidden>
     <div id="share-two-map-35" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-35" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 08795</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-35" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 08795</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2008795&amp;entry.2018449203=%E5%A4%9C%E4%B8%AD9%EF%BD%9E10&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="36" data-date="261231" data-management-no-key="51409436" data-management-no="514 09436">
   <div class="card-head">
@@ -990,8 +967,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-36" data-two-map="share-two-map-36" data-two-json="two-geo-36" aria-expanded="false" aria-controls="two-wrap-36">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-36" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009436&amp;entry.2018449203=%E6%B1%9F%E5%87%BA27E18%EF%BD%9E27E19&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-36">{"a":{"name":"江出27E18","lat":34.30843,"lng":135.72007},"b":{"name":"27E19","lat":34.30876,"lng":135.72037}}</script>
@@ -999,7 +974,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-36" hidden>
     <div id="share-two-map-36" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-36" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09436</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-36" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 09436</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2009436&amp;entry.2018449203=%E6%B1%9F%E5%87%BA27E18%EF%BD%9E27E19&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="37" data-date="261231" data-management-no-key="51401024" data-management-no="514 01024">
   <div class="card-head">
@@ -1011,8 +986,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-37" data-two-map="share-two-map-37" data-two-json="two-geo-37" aria-expanded="false" aria-controls="two-wrap-37">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-37" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2001024&amp;entry.2018449203=%E6%B1%9F%E5%87%BA27E21%EF%BD%9E27E22&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-37">{"a":{"name":"江出27E21","lat":34.30914,"lng":135.72137},"b":{"name":"27E22","lat":34.30911,"lng":135.72199}}</script>
@@ -1020,7 +993,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-37" hidden>
     <div id="share-two-map-37" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-37" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01024</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-37" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01024</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2001024&amp;entry.2018449203=%E6%B1%9F%E5%87%BA27E21%EF%BD%9E27E22&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="38" data-date="261231" data-management-no-key="51401005" data-management-no="514 01005">
   <div class="card-head">
@@ -1032,8 +1005,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-38" data-two-map="share-two-map-38" data-two-json="two-geo-38" aria-expanded="false" aria-controls="two-wrap-38">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-38" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2001005&amp;entry.2018449203=%E6%B1%9F%E5%87%BA17%EF%BD%9E18&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-38">{"a":{"name":"江出17","lat":34.31529,"lng":135.71442},"b":{"name":"18","lat":34.31498,"lng":135.7147}}</script>
@@ -1041,7 +1012,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-38" hidden>
     <div id="share-two-map-38" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-38" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01005</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-38" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01005</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2001005&amp;entry.2018449203=%E6%B1%9F%E5%87%BA17%EF%BD%9E18&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="39" data-date="261231" data-management-no-key="51402687" data-management-no="514 02687">
   <div class="card-head">
@@ -1053,8 +1024,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-39" data-two-map="share-two-map-39" data-two-json="two-geo-39" aria-expanded="false" aria-controls="two-wrap-39">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-39" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2002687&amp;entry.2018449203=%E5%8C%97%E5%AE%87%E6%99%BA159%EF%BD%9E159W1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-39">{"a":{"name":"北宇智159","lat":34.37949,"lng":135.6913},"b":{"name":"159W1","lat":34.37823,"lng":135.68982}}</script>
@@ -1062,7 +1031,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-39" hidden>
     <div id="share-two-map-39" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-39" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 02687</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-39" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 02687</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2002687&amp;entry.2018449203=%E5%8C%97%E5%AE%87%E6%99%BA159%EF%BD%9E159W1&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="40" data-date="261231" data-management-no-key="51400263" data-management-no="514 00263">
   <div class="card-head">
@@ -1074,8 +1043,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-40" data-two-map="share-two-map-40" data-two-json="two-geo-40" aria-expanded="false" aria-controls="two-wrap-40">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-40" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000263&amp;entry.2018449203=%EF%BC%B0%E5%A5%A5%E8%B0%B711W12S1%EF%BD%9E11W12S2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-40">{"a":{"name":"P奥谷11W12S1","lat":34.32353,"lng":135.72786},"b":{"name":"11W12S2","lat":34.32339,"lng":135.72745}}</script>
@@ -1083,7 +1050,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-40" hidden>
     <div id="share-two-map-40" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-40" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00263</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-40" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00263</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000263&amp;entry.2018449203=%EF%BC%B0%E5%A5%A5%E8%B0%B711W12S1%EF%BD%9E11W12S2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="41" data-date="261231" data-management-no-key="51400395" data-management-no="514 00395">
   <div class="card-head">
@@ -1095,8 +1062,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-41" data-two-map="share-two-map-41" data-two-json="two-geo-41" aria-expanded="false" aria-controls="two-wrap-41">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-41" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000395&amp;entry.2018449203=%E8%8A%A6%E3%83%B6%E7%80%AC2%EF%BD%9E3&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-41">{"a":{"name":"芦ヶ瀬2","lat":34.35422,"lng":135.72693},"b":{"name":"3","lat":34.35488,"lng":135.72849}}</script>
@@ -1104,7 +1069,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-41" hidden>
     <div id="share-two-map-41" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-41" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00395</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-41" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00395</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000395&amp;entry.2018449203=%E8%8A%A6%E3%83%B6%E7%80%AC2%EF%BD%9E3&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="42" data-date="261231" data-management-no-key="51400414" data-management-no="514 00414">
   <div class="card-head">
@@ -1116,8 +1081,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-42" data-two-map="share-two-map-42" data-two-json="two-geo-42" aria-expanded="false" aria-controls="two-wrap-42">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-42" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000414&amp;entry.2018449203=%E8%8A%A6%E3%83%B6%E7%80%AC1E6E1%EF%BD%9E1E6E2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-42">{"a":{"name":"芦ヶ瀬1E6E1","lat":34.35162,"lng":135.72766},"b":{"name":"1E6E2","lat":34.35122,"lng":135.72776}}</script>
@@ -1125,7 +1088,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-42" hidden>
     <div id="share-two-map-42" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-42" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00414</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-42" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 00414</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2000414&amp;entry.2018449203=%E8%8A%A6%E3%83%B6%E7%80%AC1E6E1%EF%BD%9E1E6E2&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="43" data-date="261231" data-management-no-key="51410368" data-management-no="514 10368">
   <div class="card-head">
@@ -1137,8 +1100,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-43" data-two-map="share-two-map-43" data-two-json="two-geo-43" aria-expanded="false" aria-controls="two-wrap-43">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-43" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2010368&amp;entry.2018449203=%E8%8A%A6%E3%83%B6%E7%80%AC1E3%EF%BD%9E1E4&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-43">{"a":{"name":"芦ヶ瀬1E3","lat":34.35301,"lng":135.72699},"b":{"name":"1E4","lat":34.3527,"lng":135.72729}}</script>
@@ -1146,7 +1107,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-43" hidden>
     <div id="share-two-map-43" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-43" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 10368</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-43" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 10368</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2010368&amp;entry.2018449203=%E8%8A%A6%E3%83%B6%E7%80%AC1E3%EF%BD%9E1E4&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
 <article class="card" data-card-index="44" data-date="261231" data-management-no-key="51410367" data-management-no="514 10367">
   <div class="card-head">
@@ -1158,8 +1119,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-44" data-two-map="share-two-map-44" data-two-json="two-geo-44" aria-expanded="false" aria-controls="two-wrap-44">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-44" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2010367&amp;entry.2018449203=%E8%8A%A6%E3%83%B6%E7%80%AC1E2%EF%BD%9E1E3&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-44">{"a":{"name":"芦ヶ瀬1E2","lat":34.35337,"lng":135.72684},"b":{"name":"1E3","lat":34.35301,"lng":135.72699}}</script>
@@ -1167,7 +1126,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-44" hidden>
     <div id="share-two-map-44" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-44" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 10367</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-44" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 10367</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><p class="detail-edit-hint">現地で内容が違う場合のみ修正報告してください。</p><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=261231&amp;entry.1027174352=514%2010367&amp;entry.2018449203=%E8%8A%A6%E3%83%B6%E7%80%AC1E2%EF%BD%9E1E3&amp;entry.239315654=%E2%80%94&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a></div></div>
 </article>
   <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
@@ -1280,6 +1239,9 @@ body {
   });
 })();
 </script>
+
+
+
 
 
 
@@ -1472,6 +1434,15 @@ body {
       }
     } catch (e) {}
   }
+  function logInfo(msg, detail) {
+    try {
+      if (detail !== undefined) {
+        console.info("[share-live-edit]", msg, detail);
+      } else {
+        console.info("[share-live-edit]", msg);
+      }
+    } catch (e) {}
+  }
   function isApiOk(v) {
     if (v === true || v === 1) return true;
     if (typeof v === "string") {
@@ -1567,7 +1538,22 @@ body {
       if (kk) cardKeys.push(kk);
     });
     if (forPage > 0 && Object.keys(byKey).length === 0) {
-      logWarn("edits for page date but no usable management_no_key", list.slice(0, 3));
+      var rel0 = list
+        .filter(function (e) {
+          return e && String(e.date != null ? e.date : "").trim() === pd;
+        })
+        .slice(0, 6)
+        .map(function (e) {
+          return {
+            date: e.date,
+            management_no_key: e.management_no_key,
+            management_no: e.management_no
+          };
+        });
+      logWarn("edits for page date but no usable management_no_key", {
+        pageDate: pd,
+        editsForPageSample: rel0
+      });
     }
     var applied = 0;
     document.querySelectorAll("article.card[data-management-no-key]").forEach(function (article) {
@@ -1581,15 +1567,33 @@ body {
       }
     });
     if (forPage > 0 && applied === 0) {
-      logWarn(
-        "No card matched API edits for this page. pageDate=" +
-          pd +
-          " cardKeys=" +
-          JSON.stringify(cardKeys) +
-          " apiKeys=" +
-          JSON.stringify(Object.keys(byKey))
-      );
+      var rel = list
+        .filter(function (e) {
+          return e && String(e.date != null ? e.date : "").trim() === pd;
+        })
+        .slice(0, 8)
+        .map(function (e) {
+          return {
+            date: e.date,
+            management_no_key: e.management_no_key,
+            management_no: e.management_no
+          };
+        });
+      logWarn("No card matched API edits for this page", {
+        pageDate: pd,
+        cardKeys: cardKeys.slice(0, 12),
+        apiKeysFromPicker: Object.keys(byKey),
+        editsForPageSample: rel
+      });
     }
+    try {
+      logInfo("jsonp payload handled", {
+        pageDate: pd,
+        editsTotal: list.length,
+        forPage: forPage,
+        applied: applied
+      });
+    } catch (e3) {}
   }
   function run() {
     var c = cfg();
@@ -1632,7 +1636,14 @@ body {
       } catch (e) {
         logWarn("JSONP callback threw", e);
       } finally {
-        finish();
+        var fin = function () {
+          finish();
+        };
+        if (typeof requestAnimationFrame === "function") {
+          requestAnimationFrame(fin);
+        } else {
+          setTimeout(fin, 0);
+        }
       }
     };
     var url =
@@ -1641,7 +1652,9 @@ body {
       "token=" +
       encodeURIComponent(token) +
       "&callback=" +
-      encodeURIComponent(cbName);
+      encodeURIComponent(cbName) +
+      "&_ts=" +
+      String(Date.now());
     s.async = true;
     s.src = url;
     s.charset = "utf-8";
@@ -1653,13 +1666,34 @@ body {
       logWarn("JSONP script failed to load (network, 404, or non-JavaScript response)");
       finish();
     };
-    document.head.appendChild(s);
+    var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
+    head.appendChild(s);
   }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", run);
-  } else {
-    run();
+  function scheduleRun() {
+    function go() {
+      try {
+        run();
+      } catch (e) {
+        logWarn("run threw", e);
+      }
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function () {
+        if (typeof requestAnimationFrame === "function") {
+          requestAnimationFrame(go);
+        } else {
+          setTimeout(go, 0);
+        }
+      });
+    } else {
+      if (typeof requestAnimationFrame === "function") {
+        requestAnimationFrame(go);
+      } else {
+        setTimeout(go, 0);
+      }
+    }
   }
+  scheduleRun();
 })();
 
 </script>

@@ -84,30 +84,53 @@ _SHARE_DETAIL_EDIT_BTN_TITLE = (
     "共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）"
 )
 _SHARE_DETAIL_EDIT_CARD_CSS = """
-.card-actions .btn-detail-edit {
-  flex: 1 1 100%;
-  max-width: 100%;
+.detail-edit-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
 }
-.btn-detail-edit {
+.detail-edit-hint {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.detail-edit-footer--fallback {
+  margin: 0.5rem 0 0;
+  padding-top: 0.45rem;
+  border-top: 1px dashed var(--border);
+}
+.btn-detail-edit--panel {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.88rem;
+  box-sizing: border-box;
+  padding: 0.42rem 0.65rem;
+  min-height: 44px;
+  font-size: 0.82rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   text-decoration: none;
-  min-height: 44px;
   touch-action: manipulation;
-  background: #eff6ff;
-  color: #1e3a8a;
-  border: 2px solid #2563eb;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #94a3b8;
   line-height: 1.25;
+  max-width: min(100%, 280px);
 }
-.btn-detail-edit:hover, .btn-detail-edit:focus-visible {
-  filter: brightness(1.03);
+.btn-detail-edit--panel:hover,
+.btn-detail-edit--panel:focus-visible {
+  background: #f1f5f9;
   outline: none;
+}
+.note-panel .btn-detail-edit--panel {
+  width: 100%;
+  max-width: 100%;
+}
+.detail-edit-footer--fallback .btn-detail-edit--panel {
+  font-size: 0.8rem;
+  min-height: 40px;
 }
 """
 
@@ -676,12 +699,59 @@ def parse_share_card_article_for_detail_edit(article_html: str) -> ShareDetailEd
     )
 
 
-def _share_detail_edit_link_html(url: str) -> str:
+def _share_detail_edit_footer_inner_html(url: str) -> str:
+    """説明 + 詳細修正リンク（パネル内・フォールバック共通）。"""
     t = escape_html(_SHARE_DETAIL_EDIT_BTN_TITLE)
-    return (
-        f'<a class="btn btn-detail-edit" href="{escape_html(url)}" '
+    link = (
+        f'<a class="btn btn-detail-edit btn-detail-edit--panel" href="{escape_html(url)}" '
         f'target="_blank" rel="noopener noreferrer" title="{t}">詳細修正を報告</a>'
     )
+    hint = (
+        '<p class="detail-edit-hint">'
+        "現地で内容が違う場合のみ修正報告してください。"
+        "</p>"
+    )
+    return hint + link
+
+
+def _share_detail_edit_footer_html(url: str, *, fallback: bool = False) -> str:
+    cls = "detail-edit-footer detail-edit-footer--fallback" if fallback else "detail-edit-footer"
+    return f'<div class="{cls}">' + _share_detail_edit_footer_inner_html(url) + "</div>"
+
+
+def _share_detail_edit_link_html(url: str) -> str:
+    """アーカイブ詳細など、共有メイン以外でカードアクション行に単体リンクを置く場合用。"""
+    t = escape_html(_SHARE_DETAIL_EDIT_BTN_TITLE)
+    return (
+        f'<a class="btn btn-detail-edit btn-detail-edit--panel" href="{escape_html(url)}" '
+        f'target="_blank" rel="noopener noreferrer" title="{t}">詳細修正を報告</a>'
+    )
+
+
+def _inject_detail_edit_footer_into_note_panel(chunk: str, footer_html: str) -> str | None:
+    """1カード断片の note-panel 直前の閉じ </div> の前に footer を挿入。失敗時は None。"""
+    if 'class="note-panel"' not in chunk:
+        return None
+    idx = chunk.rfind("</article>")
+    if idx < 0:
+        return None
+    prefix = chunk[:idx]
+    last_div = prefix.rfind("</div>")
+    if last_div < 0:
+        return None
+    return prefix[:last_div] + footer_html + prefix[last_div:] + chunk[idx:]
+
+
+def _inject_detail_edit_footer_fallback_before_two_geo(chunk: str, url: str) -> str:
+    """note-panel が無いカード用: two-geo script の直前に控えめに挿入。"""
+    wrapped = _share_detail_edit_footer_html(url, fallback=True)
+    new_c, n_sub = re.subn(
+        r"(</div>\s*</div>\s*)(<script type=\"application/json\" id=\"two-geo-)",
+        r"\1" + wrapped + r"\n  \2",
+        chunk,
+        count=1,
+    )
+    return new_c if n_sub else chunk
 
 
 def apply_share_detail_edit_to_share_html(html: str, date_key: str) -> str:
@@ -690,7 +760,12 @@ def apply_share_detail_edit_to_share_html(html: str, date_key: str) -> str:
         return html
     out = html
     out = re.sub(r"\s*<a class=\"btn btn-detail-edit\"[^>]*>[\s\S]*?詳細修正を報告\s*</a>", "", out)
-    if ".btn-detail-edit" not in out:
+    out = re.sub(
+        r'<div class="detail-edit-footer[^>]*>[\s\S]*?</div>\s*',
+        "",
+        out,
+    )
+    if ".detail-edit-hint" not in out:
         out = out.replace("</style>", _SHARE_DETAIL_EDIT_CARD_CSS + "\n</style>", 1)
     parts = re.split(r"(?=<article class=\"card\")", out)
     rebuilt: list[str] = [parts[0]]
@@ -706,13 +781,12 @@ def apply_share_detail_edit_to_share_html(html: str, date_key: str) -> str:
         if not url:
             rebuilt.append(chunk)
             continue
-        new_c, n_sub = re.subn(
-            r"(<div class=\"card-actions\">)([\s\S]*?)(</div>\s*</div>\s*<script type=\"application/json\" id=\"two-geo-)",
-            r"\1\2\n      " + _share_detail_edit_link_html(url) + r"\n    \3",
-            chunk,
-            count=1,
-        )
-        rebuilt.append(new_c if n_sub else chunk)
+        footer = _share_detail_edit_footer_html(url, fallback=False)
+        placed = _inject_detail_edit_footer_into_note_panel(chunk, footer)
+        if placed is not None:
+            rebuilt.append(placed)
+        else:
+            rebuilt.append(_inject_detail_edit_footer_fallback_before_two_geo(chunk, url))
     return "".join(rebuilt)
 
 
@@ -943,6 +1017,15 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
       }
     } catch (e) {}
   }
+  function logInfo(msg, detail) {
+    try {
+      if (detail !== undefined) {
+        console.info("[share-live-edit]", msg, detail);
+      } else {
+        console.info("[share-live-edit]", msg);
+      }
+    } catch (e) {}
+  }
   function isApiOk(v) {
     if (v === true || v === 1) return true;
     if (typeof v === "string") {
@@ -1038,7 +1121,22 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
       if (kk) cardKeys.push(kk);
     });
     if (forPage > 0 && Object.keys(byKey).length === 0) {
-      logWarn("edits for page date but no usable management_no_key", list.slice(0, 3));
+      var rel0 = list
+        .filter(function (e) {
+          return e && String(e.date != null ? e.date : "").trim() === pd;
+        })
+        .slice(0, 6)
+        .map(function (e) {
+          return {
+            date: e.date,
+            management_no_key: e.management_no_key,
+            management_no: e.management_no
+          };
+        });
+      logWarn("edits for page date but no usable management_no_key", {
+        pageDate: pd,
+        editsForPageSample: rel0
+      });
     }
     var applied = 0;
     document.querySelectorAll("article.card[data-management-no-key]").forEach(function (article) {
@@ -1052,15 +1150,33 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
       }
     });
     if (forPage > 0 && applied === 0) {
-      logWarn(
-        "No card matched API edits for this page. pageDate=" +
-          pd +
-          " cardKeys=" +
-          JSON.stringify(cardKeys) +
-          " apiKeys=" +
-          JSON.stringify(Object.keys(byKey))
-      );
+      var rel = list
+        .filter(function (e) {
+          return e && String(e.date != null ? e.date : "").trim() === pd;
+        })
+        .slice(0, 8)
+        .map(function (e) {
+          return {
+            date: e.date,
+            management_no_key: e.management_no_key,
+            management_no: e.management_no
+          };
+        });
+      logWarn("No card matched API edits for this page", {
+        pageDate: pd,
+        cardKeys: cardKeys.slice(0, 12),
+        apiKeysFromPicker: Object.keys(byKey),
+        editsForPageSample: rel
+      });
     }
+    try {
+      logInfo("jsonp payload handled", {
+        pageDate: pd,
+        editsTotal: list.length,
+        forPage: forPage,
+        applied: applied
+      });
+    } catch (e3) {}
   }
   function run() {
     var c = cfg();
@@ -1103,7 +1219,14 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
       } catch (e) {
         logWarn("JSONP callback threw", e);
       } finally {
-        finish();
+        var fin = function () {
+          finish();
+        };
+        if (typeof requestAnimationFrame === "function") {
+          requestAnimationFrame(fin);
+        } else {
+          setTimeout(fin, 0);
+        }
       }
     };
     var url =
@@ -1112,7 +1235,9 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
       "token=" +
       encodeURIComponent(token) +
       "&callback=" +
-      encodeURIComponent(cbName);
+      encodeURIComponent(cbName) +
+      "&_ts=" +
+      String(Date.now());
     s.async = true;
     s.src = url;
     s.charset = "utf-8";
@@ -1124,13 +1249,34 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
       logWarn("JSONP script failed to load (network, 404, or non-JavaScript response)");
       finish();
     };
-    document.head.appendChild(s);
+    var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
+    head.appendChild(s);
   }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", run);
-  } else {
-    run();
+  function scheduleRun() {
+    function go() {
+      try {
+        run();
+      } catch (e) {
+        logWarn("run threw", e);
+      }
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function () {
+        if (typeof requestAnimationFrame === "function") {
+          requestAnimationFrame(go);
+        } else {
+          setTimeout(go, 0);
+        }
+      });
+    } else {
+      if (typeof requestAnimationFrame === "function") {
+        requestAnimationFrame(go);
+      } else {
+        setTimeout(go, 0);
+      }
+    }
   }
+  scheduleRun();
 })();
 """
 
