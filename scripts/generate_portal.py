@@ -48,6 +48,28 @@ SURVEY_REPORT_ENTRY_DATE = "entry.983859884"
 SURVEY_REPORT_TYPE_JP_COMPLETED = "現調済み"
 SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE = "返却候補"
 
+# ---------------------------------------------------------------------------
+# 現場共有アーカイブ詳細 — 詳細修正報告（Googleフォーム prefill）
+# すべて空の間は share_detail_edit_form_enabled() が False でボタン非表示。
+# 現調待ち（SURVEY_REPORT_*）とは独立。docs/share_detail_edit_form_apps_script.md 参照。
+# ---------------------------------------------------------------------------
+SHARE_DETAIL_EDIT_FORM_URL = ""
+SHARE_DETAIL_EDIT_ENTRY_DATE = ""
+SHARE_DETAIL_EDIT_ENTRY_MANAGEMENT_NO = ""
+SHARE_DETAIL_EDIT_ENTRY_LABEL = ""
+SHARE_DETAIL_EDIT_ENTRY_WORK_METHOD = ""
+SHARE_DETAIL_EDIT_ENTRY_BUCKET_TRUCK = ""
+SHARE_DETAIL_EDIT_ENTRY_ROAD_WIDTH = ""
+SHARE_DETAIL_EDIT_ENTRY_SLOPE = ""
+SHARE_DETAIL_EDIT_ENTRY_BRANCH_COUNT = ""
+SHARE_DETAIL_EDIT_ENTRY_ROOT_COUNT = ""
+SHARE_DETAIL_EDIT_ENTRY_BUSH_AREA = ""
+SHARE_DETAIL_EDIT_ENTRY_BAMBOO_COUNT = ""
+SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT = ""
+SHARE_DETAIL_EDIT_ENTRY_WARNING = ""
+SHARE_DETAIL_EDIT_ENTRY_NOTE = ""
+SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE = ""
+
 
 class TitleExtractor(HTMLParser):
     def __init__(self) -> None:
@@ -424,6 +446,68 @@ class ArchivePublicItem:
     crane_required: str
     warning: str
     note: str
+
+
+def _share_detail_edit_entry_id_list() -> tuple[str, ...]:
+    return (
+        SHARE_DETAIL_EDIT_ENTRY_DATE,
+        SHARE_DETAIL_EDIT_ENTRY_MANAGEMENT_NO,
+        SHARE_DETAIL_EDIT_ENTRY_LABEL,
+        SHARE_DETAIL_EDIT_ENTRY_WORK_METHOD,
+        SHARE_DETAIL_EDIT_ENTRY_BUCKET_TRUCK,
+        SHARE_DETAIL_EDIT_ENTRY_ROAD_WIDTH,
+        SHARE_DETAIL_EDIT_ENTRY_SLOPE,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_COUNT,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_COUNT,
+        SHARE_DETAIL_EDIT_ENTRY_BUSH_AREA,
+        SHARE_DETAIL_EDIT_ENTRY_BAMBOO_COUNT,
+        SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT,
+        SHARE_DETAIL_EDIT_ENTRY_WARNING,
+        SHARE_DETAIL_EDIT_ENTRY_NOTE,
+        SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE,
+    )
+
+
+def share_detail_edit_form_enabled() -> bool:
+    """フォーム URL と全 entry ID が揃っているときのみ True（未設定時はボタン非表示）。"""
+    base = (SHARE_DETAIL_EDIT_FORM_URL or "").strip()
+    if not base:
+        return False
+    return all((eid or "").strip() for eid in _share_detail_edit_entry_id_list())
+
+
+def build_share_detail_edit_url(item: ArchivePublicItem, date_key: str) -> str | None:
+    """アーカイブ詳細カード用の詳細修正 prefill URL。未設定時は None。報告者は付与しない。"""
+    if not share_detail_edit_form_enabled():
+        return None
+    dk = (date_key or "").strip()
+    warn = (item.warning or "").strip()
+    if warn == "—":
+        warn = ""
+    nt = (item.note or "").strip()
+    if nt == "—":
+        nt = ""
+    params: dict[str, str] = {
+        SHARE_DETAIL_EDIT_ENTRY_DATE: dk,
+        SHARE_DETAIL_EDIT_ENTRY_MANAGEMENT_NO: (item.management_no or "").strip(),
+        SHARE_DETAIL_EDIT_ENTRY_LABEL: (item.label or "").strip(),
+        SHARE_DETAIL_EDIT_ENTRY_WORK_METHOD: (item.method or "").strip(),
+        SHARE_DETAIL_EDIT_ENTRY_BUCKET_TRUCK: (item.bucket_available or "").strip(),
+        SHARE_DETAIL_EDIT_ENTRY_ROAD_WIDTH: (item.road_width_m or "").strip(),
+        SHARE_DETAIL_EDIT_ENTRY_SLOPE: "",
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_COUNT: str(item.branch_cut_total),
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_COUNT: str(item.root_cut_total),
+        SHARE_DETAIL_EDIT_ENTRY_BUSH_AREA: (item.brush_area_m2 or "").strip(),
+        SHARE_DETAIL_EDIT_ENTRY_BAMBOO_COUNT: (item.bamboo_count or "").strip(),
+        SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT: (item.vine_locations or "").strip(),
+        SHARE_DETAIL_EDIT_ENTRY_WARNING: warn,
+        SHARE_DETAIL_EDIT_ENTRY_NOTE: nt,
+        SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE: "",
+    }
+    b = (SHARE_DETAIL_EDIT_FORM_URL or "").strip()
+    q = urlencode(params, quote_via=quote, safe="")
+    joiner = "&" if "?" in b else "?"
+    return f"{b.rstrip('?')}{joiner}{q}"
 
 
 @dataclass(frozen=True)
@@ -1802,7 +1886,15 @@ def build_archive_detail_html(
                 f'<button type="button" class="btn btn-note" aria-expanded="false" '
                 f'aria-controls="{note_id}" data-note-toggle>現場指示</button>'
             )
-            actions = "".join(x for x in [map_btn, two_btn, note_btn] if x)
+            detail_edit_btn = ""
+            if share_detail_edit_form_enabled():
+                edit_url = build_share_detail_edit_url(it, folder)
+                if edit_url:
+                    detail_edit_btn = (
+                        f'<a class="btn btn-note" href="{escape_html(edit_url)}" '
+                        'target="_blank" rel="noopener noreferrer">詳細修正を報告</a>'
+                    )
+            actions = "".join(x for x in [map_btn, two_btn, note_btn, detail_edit_btn] if x)
             cards.append(
                 f"""<article class="card" data-card-index="{idx}">
       <div class="card-head">
