@@ -49,26 +49,58 @@ SURVEY_REPORT_TYPE_JP_COMPLETED = "現調済み"
 SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE = "返却候補"
 
 # ---------------------------------------------------------------------------
-# 現場共有アーカイブ詳細 — 詳細修正報告（Googleフォーム prefill）
-# すべて空の間は share_detail_edit_form_enabled() が False でボタン非表示。
+# 現場共有 — 詳細修正報告（Googleフォーム prefill）
 # 現調待ち（SURVEY_REPORT_*）とは独立。docs/share_detail_edit_form_apps_script.md 参照。
 # ---------------------------------------------------------------------------
-SHARE_DETAIL_EDIT_FORM_URL = ""
-SHARE_DETAIL_EDIT_ENTRY_DATE = ""
-SHARE_DETAIL_EDIT_ENTRY_MANAGEMENT_NO = ""
-SHARE_DETAIL_EDIT_ENTRY_LABEL = ""
-SHARE_DETAIL_EDIT_ENTRY_WORK_METHOD = ""
-SHARE_DETAIL_EDIT_ENTRY_BUCKET_TRUCK = ""
-SHARE_DETAIL_EDIT_ENTRY_ROAD_WIDTH = ""
-SHARE_DETAIL_EDIT_ENTRY_SLOPE = ""
-SHARE_DETAIL_EDIT_ENTRY_BRANCH_COUNT = ""
-SHARE_DETAIL_EDIT_ENTRY_ROOT_COUNT = ""
-SHARE_DETAIL_EDIT_ENTRY_BUSH_AREA = ""
-SHARE_DETAIL_EDIT_ENTRY_BAMBOO_COUNT = ""
-SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT = ""
-SHARE_DETAIL_EDIT_ENTRY_WARNING = ""
-SHARE_DETAIL_EDIT_ENTRY_NOTE = ""
-SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE = ""
+SHARE_DETAIL_EDIT_FORM_URL = (
+    "https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform"
+)
+SHARE_DETAIL_EDIT_ENTRY_DATE = "entry.1231613552"
+SHARE_DETAIL_EDIT_ENTRY_MANAGEMENT_NO = "entry.1027174352"
+SHARE_DETAIL_EDIT_ENTRY_LABEL = "entry.2018449203"
+SHARE_DETAIL_EDIT_ENTRY_WORK_METHOD = "entry.239315654"
+SHARE_DETAIL_EDIT_ENTRY_BUCKET_TRUCK = "entry.487861265"
+SHARE_DETAIL_EDIT_ENTRY_ROAD_WIDTH = "entry.943104657"
+SHARE_DETAIL_EDIT_ENTRY_SLOPE = "entry.26666214"
+SHARE_DETAIL_EDIT_ENTRY_BRANCH_COUNT = "entry.302694076"
+SHARE_DETAIL_EDIT_ENTRY_ROOT_COUNT = "entry.1898381908"
+SHARE_DETAIL_EDIT_ENTRY_BUSH_AREA = "entry.331993094"
+SHARE_DETAIL_EDIT_ENTRY_BAMBOO_COUNT = "entry.1734162451"
+SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT = "entry.538673483"
+SHARE_DETAIL_EDIT_ENTRY_WARNING = "entry.672707742"
+SHARE_DETAIL_EDIT_ENTRY_NOTE = "entry.475425842"
+SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE = "entry.681623373"
+
+_SHARE_DETAIL_EDIT_BTN_TITLE = (
+    "共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）"
+)
+_SHARE_DETAIL_EDIT_CARD_CSS = """
+.card-actions .btn-detail-edit {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+.btn-detail-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 44px;
+  touch-action: manipulation;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border: 2px solid #2563eb;
+  line-height: 1.25;
+}
+.btn-detail-edit:hover, .btn-detail-edit:focus-visible {
+  filter: brightness(1.03);
+  outline: none;
+}
+"""
 
 
 class TitleExtractor(HTMLParser):
@@ -448,6 +480,26 @@ class ArchivePublicItem:
     note: str
 
 
+@dataclass(frozen=True)
+class ShareDetailEditPrefill:
+    """詳細修正フォーム prefill 用（アーカイブ item または共有 HTML カードから組み立て）。"""
+
+    management_no: str
+    label: str
+    method: str
+    bucket_truck: str
+    road_width: str
+    slope: str
+    branch_count: str
+    root_count: str
+    bush_area: str
+    bamboo_count: str
+    vine_count: str
+    warning: str
+    note: str
+    edit_note: str
+
+
 def _share_detail_edit_entry_id_list() -> tuple[str, ...]:
     return (
         SHARE_DETAIL_EDIT_ENTRY_DATE,
@@ -476,38 +528,211 @@ def share_detail_edit_form_enabled() -> bool:
     return all((eid or "").strip() for eid in _share_detail_edit_entry_id_list())
 
 
-def build_share_detail_edit_url(item: ArchivePublicItem, date_key: str) -> str | None:
-    """アーカイブ詳細カード用の詳細修正 prefill URL。未設定時は None。報告者は付与しない。"""
+def build_share_detail_edit_prefill_url(prefill: ShareDetailEditPrefill, date_key: str) -> str | None:
+    """詳細修正 prefill URL。報告者は付与しない。"""
     if not share_detail_edit_form_enabled():
         return None
     dk = (date_key or "").strip()
+    params: dict[str, str] = {
+        SHARE_DETAIL_EDIT_ENTRY_DATE: dk,
+        SHARE_DETAIL_EDIT_ENTRY_MANAGEMENT_NO: prefill.management_no,
+        SHARE_DETAIL_EDIT_ENTRY_LABEL: prefill.label,
+        SHARE_DETAIL_EDIT_ENTRY_WORK_METHOD: prefill.method,
+        SHARE_DETAIL_EDIT_ENTRY_BUCKET_TRUCK: prefill.bucket_truck,
+        SHARE_DETAIL_EDIT_ENTRY_ROAD_WIDTH: prefill.road_width,
+        SHARE_DETAIL_EDIT_ENTRY_SLOPE: prefill.slope,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_COUNT: prefill.branch_count,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_COUNT: prefill.root_count,
+        SHARE_DETAIL_EDIT_ENTRY_BUSH_AREA: prefill.bush_area,
+        SHARE_DETAIL_EDIT_ENTRY_BAMBOO_COUNT: prefill.bamboo_count,
+        SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT: prefill.vine_count,
+        SHARE_DETAIL_EDIT_ENTRY_WARNING: prefill.warning,
+        SHARE_DETAIL_EDIT_ENTRY_NOTE: prefill.note,
+        SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE: prefill.edit_note,
+    }
+    b = (SHARE_DETAIL_EDIT_FORM_URL or "").strip()
+    q = urlencode(params, quote_via=quote, safe="")
+    joiner = "&" if "?" in b else "?"
+    return f"{b.rstrip('?')}{joiner}{q}"
+
+
+def _share_detail_prefill_from_archive_item(item: ArchivePublicItem) -> ShareDetailEditPrefill:
     warn = (item.warning or "").strip()
     if warn == "—":
         warn = ""
     nt = (item.note or "").strip()
     if nt == "—":
         nt = ""
-    params: dict[str, str] = {
-        SHARE_DETAIL_EDIT_ENTRY_DATE: dk,
-        SHARE_DETAIL_EDIT_ENTRY_MANAGEMENT_NO: (item.management_no or "").strip(),
-        SHARE_DETAIL_EDIT_ENTRY_LABEL: (item.label or "").strip(),
-        SHARE_DETAIL_EDIT_ENTRY_WORK_METHOD: (item.method or "").strip(),
-        SHARE_DETAIL_EDIT_ENTRY_BUCKET_TRUCK: (item.bucket_available or "").strip(),
-        SHARE_DETAIL_EDIT_ENTRY_ROAD_WIDTH: (item.road_width_m or "").strip(),
-        SHARE_DETAIL_EDIT_ENTRY_SLOPE: "",
-        SHARE_DETAIL_EDIT_ENTRY_BRANCH_COUNT: str(item.branch_cut_total),
-        SHARE_DETAIL_EDIT_ENTRY_ROOT_COUNT: str(item.root_cut_total),
-        SHARE_DETAIL_EDIT_ENTRY_BUSH_AREA: (item.brush_area_m2 or "").strip(),
-        SHARE_DETAIL_EDIT_ENTRY_BAMBOO_COUNT: (item.bamboo_count or "").strip(),
-        SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT: (item.vine_locations or "").strip(),
-        SHARE_DETAIL_EDIT_ENTRY_WARNING: warn,
-        SHARE_DETAIL_EDIT_ENTRY_NOTE: nt,
-        SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE: "",
-    }
-    b = (SHARE_DETAIL_EDIT_FORM_URL or "").strip()
-    q = urlencode(params, quote_via=quote, safe="")
-    joiner = "&" if "?" in b else "?"
-    return f"{b.rstrip('?')}{joiner}{q}"
+    return ShareDetailEditPrefill(
+        management_no=(item.management_no or "").strip(),
+        label=(item.label or "").strip(),
+        method=(item.method or "").strip(),
+        bucket_truck=(item.bucket_available or "").strip(),
+        road_width=(item.road_width_m or "").strip(),
+        slope="",
+        branch_count=str(item.branch_cut_total),
+        root_count=str(item.root_cut_total),
+        bush_area=(item.brush_area_m2 or "").strip(),
+        bamboo_count=(item.bamboo_count or "").strip(),
+        vine_count=(item.vine_locations or "").strip(),
+        warning=warn,
+        note=nt,
+        edit_note="",
+    )
+
+
+def build_share_detail_edit_url(item: ArchivePublicItem, date_key: str) -> str | None:
+    """アーカイブ詳細カード用の詳細修正 prefill URL。"""
+    return build_share_detail_edit_prefill_url(_share_detail_prefill_from_archive_item(item), date_key)
+
+
+def _parse_share_summary_rows(article_html: str) -> dict[str, str]:
+    cap = article_html.find("instr-cut-caption")
+    head = article_html[:cap] if cap >= 0 else article_html
+    out: dict[str, str] = {}
+    for m in re.finditer(r"<tr><th>([^<]+)</th><td>([^<]*)</td></tr>", head):
+        k = html_lib.unescape(m.group(1).strip())
+        out[k] = html_lib.unescape(m.group(2).strip())
+    return out
+
+
+def _parse_share_cut_table_totals(article_html: str) -> tuple[int, int]:
+    m = re.search(r'class="instr-table instr-cut"[^>]*>([\s\S]*?)</table>', article_html)
+    if not m:
+        return 0, 0
+    inner = m.group(1)
+    br = rt = 0
+    for row in re.finditer(r"<th>[^<]+</th><td>(\d+)</td><td>(\d+)</td>", inner):
+        br += int(row.group(1))
+        rt += int(row.group(2))
+    return br, rt
+
+
+def _parse_share_other_rows(article_html: str) -> dict[str, str]:
+    m = re.search(r'class="instr-table instr-other"[^>]*>([\s\S]*?)</table>', article_html)
+    if not m:
+        return {}
+    out: dict[str, str] = {}
+    for row in re.finditer(r"<tr><th>([^<]+)</th><td>([^<]*)</td></tr>", m.group(1)):
+        k = html_lib.unescape(row.group(1).strip())
+        out[k] = html_lib.unescape(row.group(2).strip())
+    return out
+
+
+def parse_share_card_article_for_detail_edit(article_html: str) -> ShareDetailEditPrefill | None:
+    """共有 index.html の1カード断片から prefill を抽出（HTMLは正本のまま読むのみ）。"""
+    mt = re.search(r'<h2 class="card-title">([^<]*)</h2>', article_html)
+    mm = re.search(r'<p class="item-mgmt">([^<]*)</p>', article_html)
+    if not mt or not mm:
+        return None
+    label = html_lib.unescape(mt.group(1).strip())
+    management_no = html_lib.unescape(mm.group(1).strip())
+    summary = _parse_share_summary_rows(article_html)
+    method = summary.get("処理方法", "")
+    bucket_truck = summary.get("B車", "")
+    road_width = summary.get("道幅", "")
+    slope = summary.get("傾斜", "")
+    if slope in {"—", "―", ""}:
+        slope = ""
+    other = _parse_share_other_rows(article_html)
+    bush_area = other.get("柴伐採面積", "")
+    bamboo_count = other.get("竹伐採本数", "")
+    vine_count = other.get("つる伐採箇所数", "")
+    br, rt = _parse_share_cut_table_totals(article_html)
+    note = ""
+    nm = re.search(r'<div class="instr-note"[^>]*>([\s\S]*?)</div>', article_html)
+    if nm:
+        raw = nm.group(1)
+        raw = re.sub(r"<[^>]+>", " ", raw)
+        note = html_lib.unescape(" ".join(raw.split())).strip()
+    warning = ""
+    wm = re.search(r'<div class="card-warning"[^>]*>([^<]*)</div>', article_html)
+    if wm:
+        warning = html_lib.unescape(wm.group(1).strip())
+    return ShareDetailEditPrefill(
+        management_no=management_no,
+        label=label,
+        method=method,
+        bucket_truck=bucket_truck,
+        road_width=road_width,
+        slope=slope,
+        branch_count=str(br),
+        root_count=str(rt),
+        bush_area=bush_area,
+        bamboo_count=bamboo_count,
+        vine_count=vine_count,
+        warning=warning,
+        note=note,
+        edit_note="",
+    )
+
+
+def _share_detail_edit_link_html(url: str) -> str:
+    t = escape_html(_SHARE_DETAIL_EDIT_BTN_TITLE)
+    return (
+        f'<a class="btn btn-detail-edit" href="{escape_html(url)}" '
+        f'target="_blank" rel="noopener noreferrer" title="{t}">詳細修正を報告</a>'
+    )
+
+
+def apply_share_detail_edit_to_share_html(html: str, date_key: str) -> str:
+    """share/<date>/index.html に詳細修正リンクを注入（正本 JSON は触らない）。"""
+    if not share_detail_edit_form_enabled():
+        return html
+    out = html
+    out = re.sub(r"\s*<a class=\"btn btn-detail-edit\"[^>]*>[\s\S]*?詳細修正を報告\s*</a>", "", out)
+    if ".btn-detail-edit" not in out:
+        out = out.replace("</style>", _SHARE_DETAIL_EDIT_CARD_CSS + "\n</style>", 1)
+    parts = re.split(r"(?=<article class=\"card\")", out)
+    rebuilt: list[str] = [parts[0]]
+    for chunk in parts[1:]:
+        if not chunk.startswith("<article"):
+            rebuilt.append(chunk)
+            continue
+        pre = parse_share_card_article_for_detail_edit(chunk)
+        if pre is None:
+            rebuilt.append(chunk)
+            continue
+        url = build_share_detail_edit_prefill_url(pre, date_key)
+        if not url:
+            rebuilt.append(chunk)
+            continue
+        new_c, n_sub = re.subn(
+            r"(<div class=\"card-actions\">)([\s\S]*?)(</div>\s*</div>\s*<script type=\"application/json\" id=\"two-geo-)",
+            r"\1\2\n      " + _share_detail_edit_link_html(url) + r"\n    \3",
+            chunk,
+            count=1,
+        )
+        rebuilt.append(new_c if n_sub else chunk)
+    return "".join(rebuilt)
+
+
+def inject_share_detail_edit_into_share_pages(repo_root: Path) -> int:
+    """share/<6桁>/index.html へ詳細修正ボタンを書き込む。"""
+    if not share_detail_edit_form_enabled():
+        return 0
+    root = repo_root / "share"
+    if not root.is_dir():
+        return 0
+    n = 0
+    for sub in sorted(root.iterdir(), key=lambda p: p.name):
+        if not sub.is_dir() or not re.fullmatch(r"\d{6}", sub.name):
+            continue
+        if sub.name.lower() == "sample":
+            continue
+        idx = sub / "index.html"
+        if not idx.is_file():
+            continue
+        try:
+            raw = idx.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        new_t = apply_share_detail_edit_to_share_html(raw, sub.name)
+        if new_t != raw:
+            idx.write_text(new_t, encoding="utf-8", newline="\n")
+            n += 1
+            print(f"Wrote {idx} (share detail-edit links)")
+    return n
 
 
 @dataclass(frozen=True)
@@ -1890,10 +2115,7 @@ def build_archive_detail_html(
             if share_detail_edit_form_enabled():
                 edit_url = build_share_detail_edit_url(it, folder)
                 if edit_url:
-                    detail_edit_btn = (
-                        f'<a class="btn btn-note" href="{escape_html(edit_url)}" '
-                        'target="_blank" rel="noopener noreferrer">詳細修正を報告</a>'
-                    )
+                    detail_edit_btn = _share_detail_edit_link_html(edit_url)
             actions = "".join(x for x in [map_btn, two_btn, note_btn, detail_edit_btn] if x)
             cards.append(
                 f"""<article class="card" data-card-index="{idx}">
@@ -2005,6 +2227,31 @@ body {{
 }}
 .card-done {{
   opacity: 0.78;
+}}
+.btn-detail-edit {{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 44px;
+  touch-action: manipulation;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border: 2px solid #2563eb;
+  line-height: 1.25;
+}}
+.card-actions .btn-detail-edit {{
+  flex: 1 1 100%;
+  max-width: 100%;
+}}
+.btn-detail-edit:hover, .btn-detail-edit:focus-visible {{
+  filter: brightness(1.03);
+  outline: none;
 }}
 .item-mgmt {{
   margin: -0.15rem 0 0;
@@ -2628,6 +2875,7 @@ def main() -> int:
     survey_path.parent.mkdir(parents=True, exist_ok=True)
     survey_path.write_text(survey_html, encoding="utf-8", newline="\n")
     print(f"Wrote {survey_path} (survey_items={len(survey_items)})")
+    inject_share_detail_edit_into_share_pages(repo_root)
     return 0
 
 
