@@ -1301,8 +1301,10 @@ body {
 
 
 
+
+
 <!-- share-live-edit-inject:begin -->
-<!-- share-live-edit: config from scripts/generate_portal.py constants -->
+<!-- share-live-edit: JSONP load (CORS-safe); Apps Script must echo callback when token=...&callback=... -->
 <style>
 
 .share-pending-overlay-banner {
@@ -1470,32 +1472,6 @@ body {
       }
     } catch (e) {}
   }
-  function responseLooksJson(txt) {
-    var s = (txt || "").replace(/^\uFEFF/, "").trim();
-    if (!s) return false;
-    var c = s.charAt(0);
-    return c === "{" || c === "[";
-  }
-  function parseJsonResponse(txt) {
-    var s = (txt || "").replace(/^\uFEFF/, "").trim();
-    if (!s) {
-      logWarn("API body is empty");
-      return null;
-    }
-    if (s.charAt(0) === "<") {
-      logWarn(
-        "API returned HTML (not JSON). Anonymous fetch may be blocked or Web App is not deployed as Anyone; check Apps Script deploy + CORS.",
-        s.substring(0, 200)
-      );
-      return null;
-    }
-    try {
-      return JSON.parse(s);
-    } catch (e) {
-      logWarn("JSON.parse failed", { message: e && e.message, head: s.substring(0, 200) });
-      return null;
-    }
-  }
   function isApiOk(v) {
     if (v === true || v === 1) return true;
     if (typeof v === "string") {
@@ -1568,6 +1544,53 @@ body {
     if ("note" in f) applyNoteHtml(panel, esc(f.note));
     ensureEditNote(article, ed.edit_note || "");
   }
+  function handlePayload(data, pageDate) {
+    var pd = String(pageDate || "").trim();
+    if (!data || typeof data !== "object") {
+      logWarn("JSONP payload is not an object", data);
+      return;
+    }
+    if (!isApiOk(data.ok)) {
+      logWarn("API ok flag is false or missing", { ok: data.ok, keys: Object.keys(data) });
+      return;
+    }
+    var byKey = pickEditsByKey(data, pd);
+    var list = editsArray(data);
+    var forPage = 0;
+    for (var j = 0; j < list.length; j++) {
+      var ed0 = list[j];
+      if (ed0 && String(ed0.date != null ? ed0.date : "").trim() === pd) forPage++;
+    }
+    var cardKeys = [];
+    document.querySelectorAll("article.card[data-management-no-key]").forEach(function (a) {
+      var kk = normKey(a.getAttribute("data-management-no-key"));
+      if (kk) cardKeys.push(kk);
+    });
+    if (forPage > 0 && Object.keys(byKey).length === 0) {
+      logWarn("edits for page date but no usable management_no_key", list.slice(0, 3));
+    }
+    var applied = 0;
+    document.querySelectorAll("article.card[data-management-no-key]").forEach(function (article) {
+      var k = normKey(article.getAttribute("data-management-no-key"));
+      if (!k || !byKey[k]) return;
+      try {
+        applyEditToArticle(article, byKey[k]);
+        applied++;
+      } catch (e) {
+        logWarn("applyEditToArticle threw", e);
+      }
+    });
+    if (forPage > 0 && applied === 0) {
+      logWarn(
+        "No card matched API edits for this page. pageDate=" +
+          pd +
+          " cardKeys=" +
+          JSON.stringify(cardKeys) +
+          " apiKeys=" +
+          JSON.stringify(Object.keys(byKey))
+      );
+    }
+  }
   function run() {
     var c = cfg();
     if (!c) {
@@ -1576,7 +1599,7 @@ body {
     }
     var apiUrl = (c && c.url) || "";
     if (!String(apiUrl).trim()) {
-      logWarn("API URL empty in config; skip fetch");
+      logWarn("API URL empty in config; skip JSONP load");
       return;
     }
     var token = (c && c.token) || "";
@@ -1586,67 +1609,51 @@ body {
       return;
     }
     var sep = apiUrl.indexOf("?") >= 0 ? "&" : "?";
-    var url = apiUrl + sep + "token=" + encodeURIComponent(token);
-    fetch(url, { credentials: "omit", mode: "cors", redirect: "follow" })
-      .then(function (r) {
-        if (!r.ok) {
-          logWarn("HTTP error from API", { status: r.status, statusText: r.statusText });
-          return Promise.reject(new Error("HTTP " + r.status));
-        }
-        return r.text();
-      })
-      .then(function (txt) {
-        if (txt == null) return;
-        if (!responseLooksJson(txt)) {
-          parseJsonResponse(txt);
-          return;
-        }
-        var data = parseJsonResponse(txt);
-        if (!data) return;
-        if (!isApiOk(data.ok)) {
-          logWarn("API ok flag is false or missing", { ok: data.ok, keys: Object.keys(data) });
-          return;
-        }
-        var byKey = pickEditsByKey(data, pageDate);
-        var list = editsArray(data);
-        var forPage = 0;
-        for (var j = 0; j < list.length; j++) {
-          var ed0 = list[j];
-          if (ed0 && String(ed0.date != null ? ed0.date : "").trim() === pageDate) forPage++;
-        }
-        var cardKeys = [];
-        document.querySelectorAll("article.card[data-management-no-key]").forEach(function (a) {
-          var kk = normKey(a.getAttribute("data-management-no-key"));
-          if (kk) cardKeys.push(kk);
-        });
-        if (forPage > 0 && Object.keys(byKey).length === 0) {
-          logWarn("edits for page date but no usable management_no_key", list.slice(0, 3));
-        }
-        var applied = 0;
-        document.querySelectorAll("article.card[data-management-no-key]").forEach(function (article) {
-          var k = normKey(article.getAttribute("data-management-no-key"));
-          if (!k || !byKey[k]) return;
-          try {
-            applyEditToArticle(article, byKey[k]);
-            applied++;
-          } catch (e) {
-            logWarn("applyEditToArticle threw", e);
-          }
-        });
-        if (forPage > 0 && applied === 0) {
-          logWarn(
-            "No card matched API edits for this page. pageDate=" +
-              pageDate +
-              " cardKeys=" +
-              JSON.stringify(cardKeys) +
-              " apiKeys=" +
-              JSON.stringify(Object.keys(byKey))
-          );
-        }
-      })
-      .catch(function (err) {
-        logWarn("fetch failed (network/CORS/redirect)", err);
-      });
+    var handlerId =
+      "h" + String(Date.now()) + "_" + String(Math.floor(Math.random() * 1e9));
+    var cbName = "__ippatsuShareLiveEditNs." + handlerId;
+    window.__ippatsuShareLiveEditNs = window.__ippatsuShareLiveEditNs || {};
+    var s = document.createElement("script");
+    var tid = 0;
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      if (tid) clearTimeout(tid);
+      try {
+        delete window.__ippatsuShareLiveEditNs[handlerId];
+      } catch (e2) {}
+      if (s && s.parentNode) s.parentNode.removeChild(s);
+    }
+    window.__ippatsuShareLiveEditNs[handlerId] = function (data) {
+      if (done) return;
+      try {
+        handlePayload(data, pageDate);
+      } catch (e) {
+        logWarn("JSONP callback threw", e);
+      } finally {
+        finish();
+      }
+    };
+    var url =
+      apiUrl +
+      sep +
+      "token=" +
+      encodeURIComponent(token) +
+      "&callback=" +
+      encodeURIComponent(cbName);
+    s.async = true;
+    s.src = url;
+    s.charset = "utf-8";
+    tid = setTimeout(function () {
+      logWarn("JSONP timeout (check Apps Script JSONP deploy + callback param)");
+      finish();
+    }, 30000);
+    s.onerror = function () {
+      logWarn("JSONP script failed to load (network, 404, or non-JavaScript response)");
+      finish();
+    };
+    document.head.appendChild(s);
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", run);

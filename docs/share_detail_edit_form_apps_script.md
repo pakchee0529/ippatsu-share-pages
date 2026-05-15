@@ -174,8 +174,14 @@ function createShareDetailEditForm_() {
 3. またはコード内の `API_TOKEN_FALLBACK` / `RESPONSE_SPREADSHEET_ID_FALLBACK` を一時的に埋める（本番はプロパティ推奨）。
 4. **デプロイ → 新しいデプロイ → 種類: ウェブアプリ**  
    - 次のユーザーとして実行: **自分**  
-   - アクセスできるユーザー: **全員**（GitHub Pages 等の静的サイトから `fetch` する場合）または社内のみ。
+   - アクセスできるユーザー: **全員**（GitHub Pages 等の静的サイトから読み込む場合）または社内のみ。
 5. 表示された **ウェブアプリ URL** を `generate_portal.py` の `SHARE_DETAIL_EDIT_API_URL` に設定し、`python scripts/generate_portal.py` で共有 HTML を再生成する。
+
+**CORS / JSONP**
+
+- GitHub Pages から `script.google.com` へ `fetch()` するとブラウザの CORS でブロックされることがあります。
+- 共有ページは **`callback` クエリ付きの JSONP**（`<script src=".../exec?token=...&callback=...">`）で取得します。Apps Script 側は下記 `output_` のとおり、`callback` が安全な識別子のときは `MimeType.JAVASCRIPT` で `callback({...});` を返してください。
+- コードを更新したら **ウェブアプリを再デプロイ** してください（バージョンを上げる）。
 
 **セキュリティ**
 
@@ -186,7 +192,7 @@ function createShareDetailEditForm_() {
 
 ```javascript
 /**
- * 現場共有「詳細修正報告」回答 → JSON API（doGet）
+ * 現場共有「詳細修正報告」回答 → JSON / JSONP API（doGet）
  *
  * 設定（優先順）:
  *   スクリプトプロパティ API_TOKEN
@@ -219,7 +225,21 @@ var HEADER_NAMES = {
   edit_note: ['修正メモ'],
 };
 
-function jsonOut_(obj) {
+/**
+ * GitHub Pages 等からの fetch は CORS でブロックされ得るため、共有ページは JSONP（callback 付き）で取得する。
+ * callback が無い、または安全でない場合は従来どおり JSON（MimeType.JSON）を返す。
+ */
+function isSafeCallbackName_(name) {
+  return /^[A-Za-z_$][0-9A-Za-z_$]*(\.[A-Za-z_$][0-9A-Za-z_$]*)*$/.test(String(name || ''));
+}
+
+function output_(obj, callback) {
+  var cb = String(callback || '').trim();
+  if (cb && isSafeCallbackName_(cb)) {
+    return ContentService
+      .createTextOutput(cb + '(' + JSON.stringify(obj) + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -266,29 +286,31 @@ function normMgmtKey_(s) {
 }
 
 function doGet(e) {
-  var token = (e && e.parameter && e.parameter.token) || '';
+  var p = (e && e.parameter) || {};
+  var cb = p.callback || '';
+  var token = p.token || '';
   var expected = getProp_('API_TOKEN') || API_TOKEN_FALLBACK;
   if (!expected || token !== expected) {
-    return jsonOut_({ ok: false, error: 'unauthorized' });
+    return output_({ ok: false, error: 'unauthorized' }, cb);
   }
 
   var ssId = getProp_('RESPONSE_SPREADSHEET_ID') || RESPONSE_SPREADSHEET_ID_FALLBACK;
   if (!ssId || ssId === 'REPLACE_SPREADSHEET_ID') {
-    return jsonOut_({ ok: false, error: 'config', detail: 'RESPONSE_SPREADSHEET_ID missing' });
+    return output_({ ok: false, error: 'config', detail: 'RESPONSE_SPREADSHEET_ID missing' }, cb);
   }
 
   var ss;
   try {
     ss = SpreadsheetApp.openById(ssId);
   } catch (err) {
-    return jsonOut_({ ok: false, error: 'spreadsheet', detail: String(err) });
+    return output_({ ok: false, error: 'spreadsheet', detail: String(err) }, cb);
   }
 
   var sh = ss.getSheets()[0];
   var range = sh.getDataRange();
   var values = range.getValues();
   if (!values || values.length < 2) {
-    return jsonOut_({ ok: true, edits: [] });
+    return output_({ ok: true, edits: [] }, cb);
   }
 
   var header = values[0];
@@ -312,7 +334,7 @@ function doGet(e) {
   };
 
   if (ci.date < 0 || ci.management_no < 0) {
-    return jsonOut_({ ok: false, error: 'header', detail: 'Need columns 対象日付 and 管理番号' });
+    return output_({ ok: false, error: 'header', detail: 'Need columns 対象日付 and 管理番号' }, cb);
   }
 
   var rows = [];
@@ -364,14 +386,13 @@ function doGet(e) {
     });
   }
 
-  return jsonOut_({ ok: true, edits: edits });
+  return output_({ ok: true, edits: edits }, cb);
 }
 ```
 
 **動作確認（ブラウザ）**
 
-```
-https://script.google.com/macros/s/XXXX/exec?token=あなたのAPI_TOKEN
-```
+- JSON（従来）: `https://script.google.com/macros/s/XXXX/exec?token=あなたのAPI_TOKEN`
+- JSONP（共有ページ・CORS 回避）: 同一 URL に `&callback=コールバック名` を付与。応答は `コールバック名({...});` かつ `Content-Type: text/javascript`（`MimeType.JAVASCRIPT`）。
 
-`ok:true` と `edits` が返れば共有ページ側と接続可能です。
+`ok:true` と `edits` が返れば共有ページ側と接続可能です。GitHub Pages からは `fetch` ではなく **JSONP（`<script src="...&callback=...">`）** で読み込みます。
