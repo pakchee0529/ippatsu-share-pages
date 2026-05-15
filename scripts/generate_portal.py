@@ -934,12 +934,72 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
     if (!n) return;
     n.innerHTML = "<strong>\u5099\u8003</strong><br>" + (htmlStr || "");
   }
+  function logWarn(msg, detail) {
+    try {
+      if (detail !== undefined) {
+        console.warn("[share-live-edit]", msg, detail);
+      } else {
+        console.warn("[share-live-edit]", msg);
+      }
+    } catch (e) {}
+  }
+  function responseLooksJson(txt) {
+    var s = (txt || "").replace(/^\uFEFF/, "").trim();
+    if (!s) return false;
+    var c = s.charAt(0);
+    return c === "{" || c === "[";
+  }
+  function parseJsonResponse(txt) {
+    var s = (txt || "").replace(/^\uFEFF/, "").trim();
+    if (!s) {
+      logWarn("API body is empty");
+      return null;
+    }
+    if (s.charAt(0) === "<") {
+      logWarn(
+        "API returned HTML (not JSON). Anonymous fetch may be blocked or Web App is not deployed as Anyone; check Apps Script deploy + CORS.",
+        s.substring(0, 200)
+      );
+      return null;
+    }
+    try {
+      return JSON.parse(s);
+    } catch (e) {
+      logWarn("JSON.parse failed", { message: e && e.message, head: s.substring(0, 200) });
+      return null;
+    }
+  }
+  function isApiOk(v) {
+    if (v === true || v === 1) return true;
+    if (typeof v === "string") {
+      var t = v.trim().toLowerCase();
+      return t === "true" || t === "yes" || t === "1";
+    }
+    return false;
+  }
+  function editsArray(data) {
+    var e = data && data.edits;
+    if (Array.isArray(e)) return e;
+    if (e && typeof e === "object") {
+      try {
+        return Object.keys(e).map(function (k) {
+          return e[k];
+        });
+      } catch (err) {
+        return [];
+      }
+    }
+    return [];
+  }
   function pickEditsByKey(data, pageDate) {
     var best = {};
-    var list = (data && data.edits) || [];
+    var list = editsArray(data);
+    var pd = String(pageDate || "").trim();
     for (var i = 0; i < list.length; i++) {
       var ed = list[i];
-      if (!ed || String(ed.date || "").trim() !== pageDate) continue;
+      if (!ed) continue;
+      var d = String(ed.date != null ? ed.date : "").trim();
+      if (d !== pd) continue;
       var k = normKey(ed.management_no_key || ed.management_no || "");
       if (!k) continue;
       var ts = String(ed.timestamp || ed.id || "");
@@ -951,7 +1011,11 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
   }
   function applyEditToArticle(article, ed) {
     var panel = article.querySelector(".note-panel");
-    if (!panel) return;
+    if (!panel) {
+      logWarn("note-panel missing on card; cannot apply overlay", article);
+      return;
+    }
+    ensureBanner(article);
     var f = ed.fields || {};
     if ("work_method" in f) setSummaryCell(panel, "\u51e6\u7406\u65b9\u6cd5", f.work_method);
     if ("bucket_truck" in f) setSummaryCell(panel, "B\u8eca", f.bucket_truck);
@@ -975,40 +1039,87 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
     }
     if ("warning" in f) applyWarning(article, panel, f.warning);
     if ("note" in f) applyNoteHtml(panel, esc(f.note));
-    ensureBanner(article);
     ensureEditNote(article, ed.edit_note || "");
   }
   function run() {
     var c = cfg();
+    if (!c) {
+      logWarn("share-detail-edit-api-config missing or invalid JSON");
+      return;
+    }
     var apiUrl = (c && c.url) || "";
-    if (!String(apiUrl).trim()) return;
+    if (!String(apiUrl).trim()) {
+      logWarn("API URL empty in config; skip fetch");
+      return;
+    }
     var token = (c && c.token) || "";
-    var pageDate = document.body.getAttribute("data-share-page-date") || "";
-    if (!pageDate) return;
+    var pageDate = String(document.body.getAttribute("data-share-page-date") || "").trim();
+    if (!pageDate) {
+      logWarn("body[data-share-page-date] missing; skip");
+      return;
+    }
     var sep = apiUrl.indexOf("?") >= 0 ? "&" : "?";
     var url = apiUrl + sep + "token=" + encodeURIComponent(token);
-    fetch(url, { credentials: "omit", mode: "cors" })
+    fetch(url, { credentials: "omit", mode: "cors", redirect: "follow" })
       .then(function (r) {
+        if (!r.ok) {
+          logWarn("HTTP error from API", { status: r.status, statusText: r.statusText });
+          return Promise.reject(new Error("HTTP " + r.status));
+        }
         return r.text();
       })
       .then(function (txt) {
-        var data;
-        try {
-          data = JSON.parse(txt);
-        } catch (e) {
+        if (txt == null) return;
+        if (!responseLooksJson(txt)) {
+          parseJsonResponse(txt);
           return;
         }
-        if (!data || !data.ok) return;
+        var data = parseJsonResponse(txt);
+        if (!data) return;
+        if (!isApiOk(data.ok)) {
+          logWarn("API ok flag is false or missing", { ok: data.ok, keys: Object.keys(data) });
+          return;
+        }
         var byKey = pickEditsByKey(data, pageDate);
+        var list = editsArray(data);
+        var forPage = 0;
+        for (var j = 0; j < list.length; j++) {
+          var ed0 = list[j];
+          if (ed0 && String(ed0.date != null ? ed0.date : "").trim() === pageDate) forPage++;
+        }
+        var cardKeys = [];
+        document.querySelectorAll("article.card[data-management-no-key]").forEach(function (a) {
+          var kk = normKey(a.getAttribute("data-management-no-key"));
+          if (kk) cardKeys.push(kk);
+        });
+        if (forPage > 0 && Object.keys(byKey).length === 0) {
+          logWarn("edits for page date but no usable management_no_key", list.slice(0, 3));
+        }
+        var applied = 0;
         document.querySelectorAll("article.card[data-management-no-key]").forEach(function (article) {
           var k = normKey(article.getAttribute("data-management-no-key"));
           if (!k || !byKey[k]) return;
           try {
             applyEditToArticle(article, byKey[k]);
-          } catch (e) {}
+            applied++;
+          } catch (e) {
+            logWarn("applyEditToArticle threw", e);
+          }
         });
+        if (forPage > 0 && applied === 0) {
+          logWarn(
+            "No card matched API edits for this page. pageDate=" +
+              pageDate +
+              " cardKeys=" +
+              JSON.stringify(cardKeys) +
+              " apiKeys=" +
+              JSON.stringify(Object.keys(byKey))
+          );
+        }
       })
-      .catch(function () {});
+      .catch(function (err) {
+        logWarn("fetch failed (network/CORS/redirect)", err);
+      });
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", run);
