@@ -332,8 +332,9 @@ function doGet(e) {
     var management_no = cellStr_(row, ci.management_no).trim();
     var key = normMgmtKey_(management_no);
     if (!date || !key) continue;
-    if (picked[key]) continue;
-    picked[key] = true;
+    var dedupeKey = date + '\t' + key;
+    if (picked[dedupeKey]) continue;
+    picked[dedupeKey] = true;
 
     var tsIso = cellStr_(row, tsIdx);
     var fields = {};
