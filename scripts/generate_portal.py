@@ -71,6 +71,13 @@ SHARE_DETAIL_EDIT_ENTRY_WARNING = "entry.672707742"
 SHARE_DETAIL_EDIT_ENTRY_NOTE = "entry.475425842"
 SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE = "entry.681623373"
 
+# 未確定修正の表示上書き（Apps Script Web アプリ JSON）。空のときは fetch しない。
+SHARE_DETAIL_EDIT_API_URL = ""
+SHARE_DETAIL_EDIT_API_TOKEN = ""
+
+_SHARE_LIVE_EDIT_BEGIN = "<!-- share-live-edit-inject:begin -->"
+_SHARE_LIVE_EDIT_END = "<!-- share-live-edit-inject:end -->"
+
 _SHARE_DETAIL_EDIT_BTN_TITLE = (
     "共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）"
 )
@@ -707,10 +714,347 @@ def apply_share_detail_edit_to_share_html(html: str, date_key: str) -> str:
     return "".join(rebuilt)
 
 
+def _strip_share_live_edit_identity_attrs(html: str) -> str:
+    return re.sub(
+        r'\s+data-date="[^"]*"\s+data-management-no-key="[^"]*"\s+data-management-no="[^"]*"',
+        "",
+        html,
+    )
+
+
+def _strip_share_live_edit_inject_block(html: str) -> str:
+    if _SHARE_LIVE_EDIT_BEGIN not in html:
+        return html
+    return re.sub(
+        re.escape(_SHARE_LIVE_EDIT_BEGIN) + r"[\s\S]*?" + re.escape(_SHARE_LIVE_EDIT_END),
+        "",
+        html,
+        count=1,
+    )
+
+
+def _inject_body_data_share_page_date(html: str, date_key: str) -> str:
+    dk = escape_html((date_key or "").strip())
+
+    def repl(m: re.Match[str]) -> str:
+        inner = m.group(1) or ""
+        inner = re.sub(r'\s+data-share-page-date="[^"]*"', "", inner, flags=re.I)
+        return f'<body data-share-page-date="{dk}"{inner}>'
+
+    return re.sub(r"<body([^>]*)>", repl, html, count=1, flags=re.I)
+
+
+def _inject_article_card_identity_attrs(html: str, date_key: str) -> str:
+    parts = re.split(r"(?=<article class=\"card\")", html)
+    rebuilt: list[str] = [parts[0]]
+    dk = escape_html((date_key or "").strip())
+    for chunk in parts[1:]:
+        if not chunk.startswith("<article"):
+            rebuilt.append(chunk)
+            continue
+        mm = re.search(r'<p class="item-mgmt">([^<]*)</p>', chunk)
+        if not mm:
+            rebuilt.append(chunk)
+            continue
+        mgmt = html_lib.unescape(mm.group(1)).strip()
+        key = re.sub(r"\s+", "", mgmt)
+        esc_mgmt = escape_html(mgmt)
+        esc_key = escape_html(key)
+
+        def open_repl(m: re.Match[str]) -> str:
+            tag_start, rest, closing = m.group(1), m.group(2) or "", m.group(3)
+            if "data-management-no-key=" in tag_start + rest:
+                return m.group(0)
+            return f'{tag_start}{rest} data-date="{dk}" data-management-no-key="{esc_key}" data-management-no="{esc_mgmt}"{closing}'
+
+        new_c, n_sub = re.subn(
+            r"^(<article\s+class=\"card\")([^>]*)(>)",
+            open_repl,
+            chunk,
+            count=1,
+            flags=re.M,
+        )
+        rebuilt.append(new_c if n_sub else chunk)
+    return "".join(rebuilt)
+
+
+_SHARE_LIVE_EDIT_CARD_CSS = """
+.share-pending-overlay-banner {
+  margin: 0 0 0.55rem;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+}
+.share-pending-overlay-banner[hidden] { display: none !important; }
+.share-pending-overlay-title {
+  display: block;
+  font-weight: 700;
+}
+.share-pending-overlay-sub {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.76rem;
+  color: #a16207;
+  font-weight: 500;
+}
+.share-live-edit-note {
+  margin: 0 0 0.55rem;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text, #1a1a1a);
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+}
+.share-live-edit-note[hidden] { display: none !important; }
+"""
+
+
+_SHARE_LIVE_EDIT_RUNNER_JS = r"""
+(function () {
+  function esc(t) {
+    var d = document.createElement("div");
+    d.textContent = t == null ? "" : String(t);
+    return d.innerHTML;
+  }
+  function normKey(s) {
+    return String(s || "").replace(/\s+/g, "");
+  }
+  function cfg() {
+    var el = document.getElementById("share-detail-edit-api-config");
+    if (!el) return null;
+    try {
+      return JSON.parse(el.textContent || "{}");
+    } catch (e) {
+      return null;
+    }
+  }
+  function setSummaryCell(panel, label, value) {
+    var rows = panel.querySelectorAll(".instr-summary tbody tr");
+    for (var i = 0; i < rows.length; i++) {
+      var th = rows[i].querySelector("th");
+      var td = rows[i].querySelector("td");
+      if (!th || !td) continue;
+      if (String(th.textContent || "").trim() === label) {
+        td.textContent = value == null ? "" : String(value);
+        return;
+      }
+    }
+  }
+  function setOtherCell(panel, label, value) {
+    var rows = panel.querySelectorAll(".instr-other tbody tr");
+    for (var i = 0; i < rows.length; i++) {
+      var th = rows[i].querySelector("th");
+      var td = rows[i].querySelector("td");
+      if (!th || !td) continue;
+      if (String(th.textContent || "").trim() === label) {
+        td.textContent = value == null ? "" : String(value);
+        return;
+      }
+    }
+  }
+  function applyCutTotals(panel, branch, root) {
+    var tb = panel.querySelector(".instr-cut tbody");
+    if (!tb) return;
+    tb.innerHTML =
+      '<tr><th scope="row">合計（未確定修正）</th><td>' +
+      esc(branch) +
+      "</td><td>" +
+      esc(root) +
+      "</td></tr>";
+  }
+  function ensureBanner(article) {
+    var b = article.querySelector(".share-pending-overlay-banner");
+    if (!b) {
+      b = document.createElement("div");
+      b.className = "share-pending-overlay-banner";
+      b.setAttribute("role", "status");
+      b.innerHTML =
+        '<span class="share-pending-overlay-title">\u73fe\u5834\u4fee\u6b63\u3042\u308a\uff08\u672a\u78ba\u5b9a\uff09</span>' +
+        '<span class="share-pending-overlay-sub">\u4f1a\u793e\u78ba\u8a8d\u524d\u306e\u4fee\u6b63\u5185\u5bb9\u3092\u8868\u793a\u4e2d</span>';
+      var head = article.querySelector(".card-head");
+      if (head && head.parentNode === article) {
+        article.insertBefore(b, head);
+      } else {
+        article.insertBefore(b, article.firstChild);
+      }
+    }
+    b.hidden = false;
+  }
+  function ensureEditNote(article, text) {
+    var n = article.querySelector(".share-live-edit-note");
+    if (!n) {
+      n = document.createElement("div");
+      n.className = "share-live-edit-note";
+      var ban = article.querySelector(".share-pending-overlay-banner");
+      var head = article.querySelector(".card-head");
+      if (ban && ban.parentNode === article) {
+        article.insertBefore(n, ban.nextSibling);
+      } else if (head && head.parentNode === article) {
+        article.insertBefore(n, head);
+      } else {
+        article.insertBefore(n, article.firstChild);
+      }
+    }
+    if (text) {
+      n.innerHTML =
+        "<strong>\u4fee\u6b63\u30e1\u30e2</strong>\uff1a " + esc(text);
+      n.hidden = false;
+    } else {
+      n.textContent = "";
+      n.hidden = true;
+    }
+  }
+  function applyWarning(article, panel, text) {
+    var w = article.querySelector(".card-warning");
+    if (text != null && String(text).length) {
+      if (!w) {
+        w = document.createElement("div");
+        w.className = "card-warning";
+        var head = article.querySelector(".card-head");
+        if (head) head.appendChild(w);
+        else article.appendChild(w);
+      }
+      w.textContent = String(text);
+      w.hidden = false;
+    } else if (text != null && w) {
+      w.textContent = "";
+      w.hidden = true;
+    }
+  }
+  function applyNoteHtml(panel, htmlStr) {
+    var n = panel.querySelector(".instr-note");
+    if (!n) return;
+    n.innerHTML = "<strong>\u5099\u8003</strong><br>" + (htmlStr || "");
+  }
+  function pickEditsByKey(data, pageDate) {
+    var best = {};
+    var list = (data && data.edits) || [];
+    for (var i = 0; i < list.length; i++) {
+      var ed = list[i];
+      if (!ed || String(ed.date || "").trim() !== pageDate) continue;
+      var k = normKey(ed.management_no_key || ed.management_no || "");
+      if (!k) continue;
+      var ts = String(ed.timestamp || ed.id || "");
+      if (!best[k] || ts > String(best[k].timestamp || best[k].id || "")) {
+        best[k] = ed;
+      }
+    }
+    return best;
+  }
+  function applyEditToArticle(article, ed) {
+    var panel = article.querySelector(".note-panel");
+    if (!panel) return;
+    var f = ed.fields || {};
+    if ("work_method" in f) setSummaryCell(panel, "\u51e6\u7406\u65b9\u6cd5", f.work_method);
+    if ("bucket_truck" in f) setSummaryCell(panel, "B\u8eca", f.bucket_truck);
+    if ("road_width" in f) setSummaryCell(panel, "\u9053\u5e45", f.road_width);
+    if ("slope" in f) setSummaryCell(panel, "\u50be\u659c", f.slope);
+    if ("branch_count" in f || "root_count" in f) {
+      applyCutTotals(
+        panel,
+        "branch_count" in f ? f.branch_count : "",
+        "root_count" in f ? f.root_count : ""
+      );
+    }
+    if ("bush_area" in f) {
+      setOtherCell(panel, "\u67f4\u4f10\u63a1\u9762\u7a4d", f.bush_area);
+    }
+    if ("bamboo_count" in f) {
+      setOtherCell(panel, "\u7af9\u4f10\u63a1\u672c\u6570", f.bamboo_count);
+    }
+    if ("vine_count" in f) {
+      setOtherCell(panel, "\u3064\u308b\u4f10\u63a1\u7b87\u6240\u6570", f.vine_count);
+    }
+    if ("warning" in f) applyWarning(article, panel, f.warning);
+    if ("note" in f) applyNoteHtml(panel, esc(f.note));
+    ensureBanner(article);
+    ensureEditNote(article, ed.edit_note || "");
+  }
+  function run() {
+    var c = cfg();
+    var apiUrl = (c && c.url) || "";
+    if (!String(apiUrl).trim()) return;
+    var token = (c && c.token) || "";
+    var pageDate = document.body.getAttribute("data-share-page-date") || "";
+    if (!pageDate) return;
+    var sep = apiUrl.indexOf("?") >= 0 ? "&" : "?";
+    var url = apiUrl + sep + "token=" + encodeURIComponent(token);
+    fetch(url, { credentials: "omit", mode: "cors" })
+      .then(function (r) {
+        return r.text();
+      })
+      .then(function (txt) {
+        var data;
+        try {
+          data = JSON.parse(txt);
+        } catch (e) {
+          return;
+        }
+        if (!data || !data.ok) return;
+        var byKey = pickEditsByKey(data, pageDate);
+        document.querySelectorAll("article.card[data-management-no-key]").forEach(function (article) {
+          var k = normKey(article.getAttribute("data-management-no-key"));
+          if (!k || !byKey[k]) return;
+          try {
+            applyEditToArticle(article, byKey[k]);
+          } catch (e) {}
+        });
+      })
+      .catch(function () {});
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", run);
+  } else {
+    run();
+  }
+})();
+"""
+
+
+def _build_share_live_edit_inject_html(api_url: str, api_token: str) -> str:
+    cfg_obj = {"url": (api_url or "").strip(), "token": (api_token or "").strip()}
+    cfg_json = json.dumps(cfg_obj, ensure_ascii=False)
+    cfg_json = cfg_json.replace("<", "\\u003c")
+    parts = [
+        _SHARE_LIVE_EDIT_BEGIN,
+        "<style>",
+        _SHARE_LIVE_EDIT_CARD_CSS,
+        "</style>",
+        '<script type="application/json" id="share-detail-edit-api-config">',
+        cfg_json,
+        "</script>",
+        "<script>",
+        _SHARE_LIVE_EDIT_RUNNER_JS,
+        "</script>",
+        _SHARE_LIVE_EDIT_END,
+    ]
+    return "\n".join(parts)
+
+
+def apply_share_live_edit_to_share_html(html: str, date_key: str) -> str:
+    """未確定修正オーバーレイ用の data 属性・クライアント JS を注入（正本 JSON は触らない）。"""
+    out = _strip_share_live_edit_inject_block(html)
+    out = _strip_share_live_edit_identity_attrs(out)
+    out = _inject_body_data_share_page_date(out, date_key)
+    out = _inject_article_card_identity_attrs(out, date_key)
+    inject = _build_share_live_edit_inject_html(
+        SHARE_DETAIL_EDIT_API_URL, SHARE_DETAIL_EDIT_API_TOKEN
+    )
+    if "</body>" in out:
+        out = out.replace("</body>", inject + "\n</body>", 1)
+    else:
+        out = out + "\n" + inject
+    return out
+
+
 def inject_share_detail_edit_into_share_pages(repo_root: Path) -> int:
-    """share/<6桁>/index.html へ詳細修正ボタンを書き込む。"""
-    if not share_detail_edit_form_enabled():
-        return 0
+    """share/<6桁>/index.html へ詳細修正ボタン・未確定修正オーバーレイ用マークアップを書き込む。"""
     root = repo_root / "share"
     if not root.is_dir():
         return 0
@@ -727,11 +1071,16 @@ def inject_share_detail_edit_into_share_pages(repo_root: Path) -> int:
             raw = idx.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
-        new_t = apply_share_detail_edit_to_share_html(raw, sub.name)
+        new_t = raw
+        new_t = _strip_share_live_edit_inject_block(new_t)
+        new_t = _strip_share_live_edit_identity_attrs(new_t)
+        if share_detail_edit_form_enabled():
+            new_t = apply_share_detail_edit_to_share_html(new_t, sub.name)
+        new_t = apply_share_live_edit_to_share_html(new_t, sub.name)
         if new_t != raw:
             idx.write_text(new_t, encoding="utf-8", newline="\n")
             n += 1
-            print(f"Wrote {idx} (share detail-edit links)")
+            print(f"Wrote {idx} (share detail-edit + live overlay)")
     return n
 
 
