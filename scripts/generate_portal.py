@@ -72,8 +72,10 @@ SHARE_DETAIL_EDIT_ENTRY_NOTE = "entry.475425842"
 SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE = "entry.681623373"
 
 # 未確定修正の表示上書き（Apps Script Web アプリ JSON）。空のときは fetch しない。
-SHARE_DETAIL_EDIT_API_URL = ""
-SHARE_DETAIL_EDIT_API_TOKEN = ""
+SHARE_DETAIL_EDIT_API_URL = (
+    "https://script.google.com/macros/s/AKfycbzLtv-yZP5QNjXQSEybhxBTmWrNaujJJfyb_okMcuSzjKyREFthJTwI_Y5fc0PKfGuOnA/exec"
+)
+SHARE_DETAIL_EDIT_API_TOKEN = "ippatsu_share_detail_edit_202605_long_token"
 
 _SHARE_LIVE_EDIT_BEGIN = "<!-- share-live-edit-inject:begin -->"
 _SHARE_LIVE_EDIT_END = "<!-- share-live-edit-inject:end -->"
