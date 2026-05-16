@@ -33,6 +33,11 @@ _H2_CARD_TITLE = re.compile(
     r'<h2\s+[^>]*\bclass\s*=\s*["\']card-title["\'][^>]*>([^<]*)</h2>', re.I
 )
 
+# 共有ページの枝切り・根切り表で集計対象とする区分ラベル（合計行・未確定行は除外）
+_SHARE_INSTR_CUT_BAND_LABELS = frozenset(
+    ("〜10未満", "〜20未満", "〜30未満", "〜40未満", "〜50未満", "50以上")
+)
+
 # ---------------------------------------------------------------------------
 # 現調結果報告（Googleフォーム prefill）
 # 報告者 entry.1882173754 / メモ entry.1568902885 はフォーム側入力のため URL に含めない。
@@ -628,9 +633,12 @@ def _parse_share_cut_table_totals(article_html: str) -> tuple[int, int]:
         return 0, 0
     inner = m.group(1)
     br = rt = 0
-    for row in re.finditer(r"<th>[^<]+</th><td>(\d+)</td><td>(\d+)</td>", inner):
-        br += int(row.group(1))
-        rt += int(row.group(2))
+    for row in re.finditer(r"<th[^>]*>([^<]+)</th><td>(\d+)</td><td>(\d+)</td>", inner):
+        label = html_lib.unescape(row.group(1)).strip()
+        if label not in _SHARE_INSTR_CUT_BAND_LABELS:
+            continue
+        br += int(row.group(2))
+        rt += int(row.group(3))
     return br, rt
 
 
@@ -887,6 +895,11 @@ _SHARE_LIVE_EDIT_CARD_CSS = """
   border-radius: 8px;
 }
 .share-live-edit-note[hidden] { display: none !important; }
+.instr-cut-pending-total th,
+.instr-cut-pending-total td {
+  background: #fffbeb;
+  font-weight: 600;
+}
 """
 
 
@@ -936,12 +949,24 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
   function applyCutTotals(panel, branch, root) {
     var tb = panel.querySelector(".instr-cut tbody");
     if (!tb) return;
-    tb.innerHTML =
-      '<tr><th scope="row">合計（未確定修正）</th><td>' +
-      esc(branch) +
+    var prev = tb.querySelectorAll("tr.instr-cut-pending-total");
+    for (var i = 0; i < prev.length; i++) {
+      prev[i].parentNode.removeChild(prev[i]);
+    }
+    var bStr = branch != null && String(branch).length ? String(branch) : "";
+    var rStr = root != null && String(root).length ? String(root) : "";
+    if (!bStr && !rStr) return;
+    var bCell = bStr ? esc(bStr) : "\u2014";
+    var rCell = rStr ? esc(rStr) : "\u2014";
+    var tr = document.createElement("tr");
+    tr.className = "instr-cut-pending-total";
+    tr.innerHTML =
+      '<th scope="row">\u5408\u8a08\uff08\u672a\u78ba\u5b9a\u4fee\u6b63\uff09</th><td>' +
+      bCell +
       "</td><td>" +
-      esc(root) +
-      "</td></tr>";
+      rCell +
+      "</td>";
+    tb.appendChild(tr);
   }
   function ensureBanner(article) {
     var b = article.querySelector(".share-pending-overlay-banner");

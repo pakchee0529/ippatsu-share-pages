@@ -1263,6 +1263,8 @@ body {
 
 
 
+
+
 <!-- share-live-edit-inject:begin -->
 <!-- share-live-edit: JSONP load (CORS-safe); Apps Script must echo callback when token=...&callback=... -->
 <style>
@@ -1300,6 +1302,11 @@ body {
   border-radius: 8px;
 }
 .share-live-edit-note[hidden] { display: none !important; }
+.instr-cut-pending-total th,
+.instr-cut-pending-total td {
+  background: #fffbeb;
+  font-weight: 600;
+}
 
 </style>
 <script type="application/json" id="share-detail-edit-api-config">
@@ -1352,12 +1359,24 @@ body {
   function applyCutTotals(panel, branch, root) {
     var tb = panel.querySelector(".instr-cut tbody");
     if (!tb) return;
-    tb.innerHTML =
-      '<tr><th scope="row">合計（未確定修正）</th><td>' +
-      esc(branch) +
+    var prev = tb.querySelectorAll("tr.instr-cut-pending-total");
+    for (var i = 0; i < prev.length; i++) {
+      prev[i].parentNode.removeChild(prev[i]);
+    }
+    var bStr = branch != null && String(branch).length ? String(branch) : "";
+    var rStr = root != null && String(root).length ? String(root) : "";
+    if (!bStr && !rStr) return;
+    var bCell = bStr ? esc(bStr) : "\u2014";
+    var rCell = rStr ? esc(rStr) : "\u2014";
+    var tr = document.createElement("tr");
+    tr.className = "instr-cut-pending-total";
+    tr.innerHTML =
+      '<th scope="row">\u5408\u8a08\uff08\u672a\u78ba\u5b9a\u4fee\u6b63\uff09</th><td>' +
+      bCell +
       "</td><td>" +
-      esc(root) +
-      "</td></tr>";
+      rCell +
+      "</td>";
+    tb.appendChild(tr);
   }
   function ensureBanner(article) {
     var b = article.querySelector(".share-pending-overlay-banner");
