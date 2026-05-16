@@ -222,6 +222,50 @@ body {
   outline: none;
 }
 
+
+.detail-edit-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+}
+.detail-edit-footer--fallback {
+  margin: 0.5rem 0 0;
+  padding-top: 0.45rem;
+  border-top: 1px dashed var(--border);
+}
+.btn-detail-edit--panel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0.42rem 0.65rem;
+  min-height: 44px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  touch-action: manipulation;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #94a3b8;
+  line-height: 1.25;
+  max-width: min(100%, 280px);
+}
+.btn-detail-edit--panel:hover,
+.btn-detail-edit--panel:focus-visible {
+  background: #f1f5f9;
+  outline: none;
+}
+.note-panel .btn-detail-edit--panel {
+  width: 100%;
+  max-width: 100%;
+}
+.detail-edit-footer--fallback .btn-detail-edit--panel {
+  font-size: 0.8rem;
+  min-height: 44px;
+}
+
 </style>
 </head>
 <body data-share-page-date="260521">
@@ -239,8 +283,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-0" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001892&amp;entry.2018449203=%E7%89%87%E5%B7%9D63%EF%BD%9E64&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=7&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-0">{"a":{"name":"片川63","lat":33.97975,"lng":135.8308},"b":{"name":"64","lat":33.97988,"lng":135.83117}}</script>
@@ -248,7 +290,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-0" hidden>
     <div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-0" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01892</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>1</td><td>0</td></tr><tr><th>〜20未満</th><td>3</td><td>0</td></tr><tr><th>〜30未満</th><td>3</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-0" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01892</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>1</td><td>0</td></tr><tr><th>〜20未満</th><td>3</td><td>0</td></tr><tr><th>〜30未満</th><td>3</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001892&amp;entry.2018449203=%E7%89%87%E5%B7%9D63%EF%BD%9E64&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=7&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
 </article>
 <article class="card" data-card-index="1" data-date="260521" data-management-no-key="51401881" data-management-no="514 01881">
   <div class="card-head">
@@ -260,8 +302,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-1" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001881&amp;entry.2018449203=%E7%89%87%E5%B7%9D49%EF%BD%9E50&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=11&amp;entry.331993094=30%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-1">{"a":{"name":"片川49","lat":33.97651,"lng":135.82759},"b":{"name":"50","lat":33.97683,"lng":135.82755}}</script>
@@ -269,7 +309,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-1" hidden>
     <div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-1" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01881</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>6</td></tr><tr><th>〜20未満</th><td>0</td><td>5</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>30㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-1" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01881</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>6</td></tr><tr><th>〜20未満</th><td>0</td><td>5</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>30㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001881&amp;entry.2018449203=%E7%89%87%E5%B7%9D49%EF%BD%9E50&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=11&amp;entry.331993094=30%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
 </article>
 <article class="card" data-card-index="2" data-date="260521" data-management-no-key="51401977" data-management-no="514 01977">
   <div class="card-head">
@@ -281,8 +321,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-2" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001977&amp;entry.2018449203=%E7%89%87%E5%B7%9D52N5%EF%BD%9E52N6&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=8&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=%E5%82%99%E8%80%83%20%E6%8C%87%E5%AE%9A%E5%A0%B4%E6%89%80%E3%81%AB%E9%9B%86%E7%A9%8D&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-2">{"a":{"name":"片川52N5","lat":33.97879,"lng":135.8262},"b":{"name":"52N6","lat":33.9787,"lng":135.82571}}</script>
@@ -290,7 +328,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-2" hidden>
     <div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-2" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01977</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>1</td><td>0</td></tr><tr><th>〜50未満</th><td>3</td><td>0</td></tr><tr><th>50以上</th><td>4</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>指定場所に集積</div></div>
+  <div class="note-panel" id="note-2" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01977</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>1</td><td>0</td></tr><tr><th>〜50未満</th><td>3</td><td>0</td></tr><tr><th>50以上</th><td>4</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>指定場所に集積</div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001977&amp;entry.2018449203=%E7%89%87%E5%B7%9D52N5%EF%BD%9E52N6&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=8&amp;entry.1898381908=0&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=%E5%82%99%E8%80%83%20%E6%8C%87%E5%AE%9A%E5%A0%B4%E6%89%80%E3%81%AB%E9%9B%86%E7%A9%8D&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
 </article>
 <article class="card" data-card-index="3" data-date="260521" data-management-no-key="51401850" data-management-no="514 01850">
   <div class="card-head">
@@ -302,8 +340,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-3" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001850&amp;entry.2018449203=%E7%89%87%E5%B7%9D16%EF%BD%9E17&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=13&amp;entry.331993094=4%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-3">{"a":{"name":"片川16","lat":33.96899,"lng":135.82954},"b":{"name":"17","lat":33.96925,"lng":135.82926}}</script>
@@ -311,7 +347,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-3" hidden>
     <div id="share-two-map-3" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-3" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01850</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>10</td></tr><tr><th>〜20未満</th><td>0</td><td>3</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>4㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-3" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01850</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>10</td></tr><tr><th>〜20未満</th><td>0</td><td>3</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>4㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001850&amp;entry.2018449203=%E7%89%87%E5%B7%9D16%EF%BD%9E17&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=0&amp;entry.1898381908=13&amp;entry.331993094=4%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
 </article>
 <article class="card" data-card-index="4" data-date="260521" data-management-no-key="51401846" data-management-no="514 01846">
   <div class="card-head">
@@ -323,8 +359,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-4" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001846&amp;entry.2018449203=%E7%89%87%E5%B7%9D12%EF%BD%9E13&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=7&amp;entry.1898381908=36&amp;entry.331993094=30%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-4">{"a":{"name":"片川12","lat":33.96774,"lng":135.82994},"b":{"name":"13","lat":33.96802,"lng":135.83006}}</script>
@@ -332,7 +366,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-4" hidden>
     <div id="share-two-map-4" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-4" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01846</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>36</td></tr><tr><th>〜20未満</th><td>3</td><td>0</td></tr><tr><th>〜30未満</th><td>1</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>2</td><td>0</td></tr><tr><th>50以上</th><td>1</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>30㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-4" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01846</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>36</td></tr><tr><th>〜20未満</th><td>3</td><td>0</td></tr><tr><th>〜30未満</th><td>1</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>2</td><td>0</td></tr><tr><th>50以上</th><td>1</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>30㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001846&amp;entry.2018449203=%E7%89%87%E5%B7%9D12%EF%BD%9E13&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=7&amp;entry.1898381908=36&amp;entry.331993094=30%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
 </article>
 <article class="card" data-card-index="5" data-date="260521" data-management-no-key="51401841" data-management-no="514 01841">
   <div class="card-head">
@@ -344,8 +378,6 @@ body {
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-5" data-two-map="share-two-map-5" data-two-json="two-geo-5" aria-expanded="false" aria-controls="two-wrap-5">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-5" data-note-toggle>現場指示</button>
-    
-      <a class="btn btn-detail-edit" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001841&amp;entry.2018449203=%E7%89%87%E5%B7%9D6%EF%BD%9E8&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=13&amp;entry.1898381908=3&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細修正を報告</a>
     </div>
   </div>
   <script type="application/json" id="two-geo-5">{"a":{"name":"片川6","lat":33.96632,"lng":135.82806},"b":{"name":"8","lat":33.96678,"lng":135.82878}}</script>
@@ -353,7 +385,7 @@ body {
   <div class="two-map-wrap" id="two-wrap-5" hidden>
     <div id="share-two-map-5" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-5" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01841</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>4</td><td>3</td></tr><tr><th>〜20未満</th><td>5</td><td>0</td></tr><tr><th>〜30未満</th><td>4</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+  <div class="note-panel" id="note-5" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 01841</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>4</td><td>3</td></tr><tr><th>〜20未満</th><td>5</td><td>0</td></tr><tr><th>〜30未満</th><td>4</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform?entry.1231613552=260521&amp;entry.1027174352=514%2001841&amp;entry.2018449203=%E7%89%87%E5%B7%9D6%EF%BD%9E8&amp;entry.239315654=%E9%9B%86%E7%A9%8D&amp;entry.487861265=%E5%8F%AF&amp;entry.943104657=0m&amp;entry.26666214=&amp;entry.302694076=13&amp;entry.1898381908=3&amp;entry.331993094=0%E3%8E%A1&amp;entry.1734162451=0%E6%9C%AC&amp;entry.538673483=0%E7%AE%87%E6%89%80&amp;entry.672707742=&amp;entry.475425842=&amp;entry.681623373=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
 </article>
   <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
@@ -467,8 +499,10 @@ body {
 })();
 </script>
 
+
+
 <!-- share-live-edit-inject:begin -->
-<!-- share-live-edit: config from scripts/generate_portal.py constants -->
+<!-- share-live-edit: JSONP load (CORS-safe); Apps Script must echo callback when token=...&callback=... -->
 <style>
 
 .share-pending-overlay-banner {
@@ -504,6 +538,11 @@ body {
   border-radius: 8px;
 }
 .share-live-edit-note[hidden] { display: none !important; }
+.instr-cut-pending-total th,
+.instr-cut-pending-total td {
+  background: #fffbeb;
+  font-weight: 600;
+}
 
 </style>
 <script type="application/json" id="share-detail-edit-api-config">
@@ -556,12 +595,24 @@ body {
   function applyCutTotals(panel, branch, root) {
     var tb = panel.querySelector(".instr-cut tbody");
     if (!tb) return;
-    tb.innerHTML =
-      '<tr><th scope="row">合計（未確定修正）</th><td>' +
-      esc(branch) +
+    var prev = tb.querySelectorAll("tr.instr-cut-pending-total");
+    for (var i = 0; i < prev.length; i++) {
+      prev[i].parentNode.removeChild(prev[i]);
+    }
+    var bStr = branch != null && String(branch).length ? String(branch) : "";
+    var rStr = root != null && String(root).length ? String(root) : "";
+    if (!bStr && !rStr) return;
+    var bCell = bStr ? esc(bStr) : "\u2014";
+    var rCell = rStr ? esc(rStr) : "\u2014";
+    var tr = document.createElement("tr");
+    tr.className = "instr-cut-pending-total";
+    tr.innerHTML =
+      '<th scope="row">\u5408\u8a08\uff08\u672a\u78ba\u5b9a\u4fee\u6b63\uff09</th><td>' +
+      bCell +
       "</td><td>" +
-      esc(root) +
-      "</td></tr>";
+      rCell +
+      "</td>";
+    tb.appendChild(tr);
   }
   function ensureBanner(article) {
     var b = article.querySelector(".share-pending-overlay-banner");
@@ -627,12 +678,55 @@ body {
     if (!n) return;
     n.innerHTML = "<strong>\u5099\u8003</strong><br>" + (htmlStr || "");
   }
+  function logWarn(msg, detail) {
+    try {
+      if (detail !== undefined) {
+        console.warn("[share-live-edit]", msg, detail);
+      } else {
+        console.warn("[share-live-edit]", msg);
+      }
+    } catch (e) {}
+  }
+  function logInfo(msg, detail) {
+    try {
+      if (detail !== undefined) {
+        console.info("[share-live-edit]", msg, detail);
+      } else {
+        console.info("[share-live-edit]", msg);
+      }
+    } catch (e) {}
+  }
+  function isApiOk(v) {
+    if (v === true || v === 1) return true;
+    if (typeof v === "string") {
+      var t = v.trim().toLowerCase();
+      return t === "true" || t === "yes" || t === "1";
+    }
+    return false;
+  }
+  function editsArray(data) {
+    var e = data && data.edits;
+    if (Array.isArray(e)) return e;
+    if (e && typeof e === "object") {
+      try {
+        return Object.keys(e).map(function (k) {
+          return e[k];
+        });
+      } catch (err) {
+        return [];
+      }
+    }
+    return [];
+  }
   function pickEditsByKey(data, pageDate) {
     var best = {};
-    var list = (data && data.edits) || [];
+    var list = editsArray(data);
+    var pd = String(pageDate || "").trim();
     for (var i = 0; i < list.length; i++) {
       var ed = list[i];
-      if (!ed || String(ed.date || "").trim() !== pageDate) continue;
+      if (!ed) continue;
+      var d = String(ed.date != null ? ed.date : "").trim();
+      if (d !== pd) continue;
       var k = normKey(ed.management_no_key || ed.management_no || "");
       if (!k) continue;
       var ts = String(ed.timestamp || ed.id || "");
@@ -644,7 +738,11 @@ body {
   }
   function applyEditToArticle(article, ed) {
     var panel = article.querySelector(".note-panel");
-    if (!panel) return;
+    if (!panel) {
+      logWarn("note-panel missing on card; cannot apply overlay", article);
+      return;
+    }
+    ensureBanner(article);
     var f = ed.fields || {};
     if ("work_method" in f) setSummaryCell(panel, "\u51e6\u7406\u65b9\u6cd5", f.work_method);
     if ("bucket_truck" in f) setSummaryCell(panel, "B\u8eca", f.bucket_truck);
@@ -668,46 +766,187 @@ body {
     }
     if ("warning" in f) applyWarning(article, panel, f.warning);
     if ("note" in f) applyNoteHtml(panel, esc(f.note));
-    ensureBanner(article);
     ensureEditNote(article, ed.edit_note || "");
+  }
+  function handlePayload(data, pageDate) {
+    var pd = String(pageDate || "").trim();
+    if (!data || typeof data !== "object") {
+      logWarn("JSONP payload is not an object", data);
+      return;
+    }
+    if (!isApiOk(data.ok)) {
+      logWarn("API ok flag is false or missing", { ok: data.ok, keys: Object.keys(data) });
+      return;
+    }
+    var byKey = pickEditsByKey(data, pd);
+    var list = editsArray(data);
+    var forPage = 0;
+    for (var j = 0; j < list.length; j++) {
+      var ed0 = list[j];
+      if (ed0 && String(ed0.date != null ? ed0.date : "").trim() === pd) forPage++;
+    }
+    var cardKeys = [];
+    document.querySelectorAll("article.card[data-management-no-key]").forEach(function (a) {
+      var kk = normKey(a.getAttribute("data-management-no-key"));
+      if (kk) cardKeys.push(kk);
+    });
+    if (forPage > 0 && Object.keys(byKey).length === 0) {
+      var rel0 = list
+        .filter(function (e) {
+          return e && String(e.date != null ? e.date : "").trim() === pd;
+        })
+        .slice(0, 6)
+        .map(function (e) {
+          return {
+            date: e.date,
+            management_no_key: e.management_no_key,
+            management_no: e.management_no
+          };
+        });
+      logWarn("edits for page date but no usable management_no_key", {
+        pageDate: pd,
+        editsForPageSample: rel0
+      });
+    }
+    var applied = 0;
+    document.querySelectorAll("article.card[data-management-no-key]").forEach(function (article) {
+      var k = normKey(article.getAttribute("data-management-no-key"));
+      if (!k || !byKey[k]) return;
+      try {
+        applyEditToArticle(article, byKey[k]);
+        applied++;
+      } catch (e) {
+        logWarn("applyEditToArticle threw", e);
+      }
+    });
+    if (forPage > 0 && applied === 0) {
+      var rel = list
+        .filter(function (e) {
+          return e && String(e.date != null ? e.date : "").trim() === pd;
+        })
+        .slice(0, 8)
+        .map(function (e) {
+          return {
+            date: e.date,
+            management_no_key: e.management_no_key,
+            management_no: e.management_no
+          };
+        });
+      logWarn("No card matched API edits for this page", {
+        pageDate: pd,
+        cardKeys: cardKeys.slice(0, 12),
+        apiKeysFromPicker: Object.keys(byKey),
+        editsForPageSample: rel
+      });
+    }
+    try {
+      logInfo("jsonp payload handled", {
+        pageDate: pd,
+        editsTotal: list.length,
+        forPage: forPage,
+        applied: applied
+      });
+    } catch (e3) {}
   }
   function run() {
     var c = cfg();
+    if (!c) {
+      logWarn("share-detail-edit-api-config missing or invalid JSON");
+      return;
+    }
     var apiUrl = (c && c.url) || "";
-    if (!String(apiUrl).trim()) return;
+    if (!String(apiUrl).trim()) {
+      logWarn("API URL empty in config; skip JSONP load");
+      return;
+    }
     var token = (c && c.token) || "";
-    var pageDate = document.body.getAttribute("data-share-page-date") || "";
-    if (!pageDate) return;
+    var pageDate = String(document.body.getAttribute("data-share-page-date") || "").trim();
+    if (!pageDate) {
+      logWarn("body[data-share-page-date] missing; skip");
+      return;
+    }
     var sep = apiUrl.indexOf("?") >= 0 ? "&" : "?";
-    var url = apiUrl + sep + "token=" + encodeURIComponent(token);
-    fetch(url, { credentials: "omit", mode: "cors" })
-      .then(function (r) {
-        return r.text();
-      })
-      .then(function (txt) {
-        var data;
-        try {
-          data = JSON.parse(txt);
-        } catch (e) {
-          return;
+    var handlerId =
+      "h" + String(Date.now()) + "_" + String(Math.floor(Math.random() * 1e9));
+    var cbName = "__ippatsuShareLiveEditNs." + handlerId;
+    window.__ippatsuShareLiveEditNs = window.__ippatsuShareLiveEditNs || {};
+    var s = document.createElement("script");
+    var tid = 0;
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      if (tid) clearTimeout(tid);
+      try {
+        delete window.__ippatsuShareLiveEditNs[handlerId];
+      } catch (e2) {}
+      if (s && s.parentNode) s.parentNode.removeChild(s);
+    }
+    window.__ippatsuShareLiveEditNs[handlerId] = function (data) {
+      if (done) return;
+      try {
+        handlePayload(data, pageDate);
+      } catch (e) {
+        logWarn("JSONP callback threw", e);
+      } finally {
+        var fin = function () {
+          finish();
+        };
+        if (typeof requestAnimationFrame === "function") {
+          requestAnimationFrame(fin);
+        } else {
+          setTimeout(fin, 0);
         }
-        if (!data || !data.ok) return;
-        var byKey = pickEditsByKey(data, pageDate);
-        document.querySelectorAll("article.card[data-management-no-key]").forEach(function (article) {
-          var k = normKey(article.getAttribute("data-management-no-key"));
-          if (!k || !byKey[k]) return;
-          try {
-            applyEditToArticle(article, byKey[k]);
-          } catch (e) {}
-        });
-      })
-      .catch(function () {});
+      }
+    };
+    var url =
+      apiUrl +
+      sep +
+      "token=" +
+      encodeURIComponent(token) +
+      "&callback=" +
+      encodeURIComponent(cbName) +
+      "&_ts=" +
+      String(Date.now());
+    s.async = true;
+    s.src = url;
+    s.charset = "utf-8";
+    tid = setTimeout(function () {
+      logWarn("JSONP timeout (check Apps Script JSONP deploy + callback param)");
+      finish();
+    }, 30000);
+    s.onerror = function () {
+      logWarn("JSONP script failed to load (network, 404, or non-JavaScript response)");
+      finish();
+    };
+    var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
+    head.appendChild(s);
   }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", run);
-  } else {
-    run();
+  function scheduleRun() {
+    function go() {
+      try {
+        run();
+      } catch (e) {
+        logWarn("run threw", e);
+      }
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function () {
+        if (typeof requestAnimationFrame === "function") {
+          requestAnimationFrame(go);
+        } else {
+          setTimeout(go, 0);
+        }
+      });
+    } else {
+      if (typeof requestAnimationFrame === "function") {
+        requestAnimationFrame(go);
+      } else {
+        setTimeout(go, 0);
+      }
+    }
   }
+  scheduleRun();
 })();
 
 </script>
