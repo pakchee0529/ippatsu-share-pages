@@ -37,6 +37,15 @@ _H2_CARD_TITLE = re.compile(
 _SHARE_INSTR_CUT_BAND_LABELS = frozenset(
     ("〜10未満", "〜20未満", "〜30未満", "〜40未満", "〜50未満", "50以上")
 )
+# prefill 用: 区分表示ラベル → JSON キー（枝・根）
+_SHARE_INSTR_CUT_BAND_PREFILL_ROWS: tuple[tuple[str, str, str], ...] = (
+    ("〜10未満", "branch_cut_under_10", "root_cut_under_10"),
+    ("〜20未満", "branch_cut_10_20", "root_cut_10_20"),
+    ("〜30未満", "branch_cut_20_30", "root_cut_20_30"),
+    ("〜40未満", "branch_cut_30_40", "root_cut_30_40"),
+    ("〜50未満", "branch_cut_40_50", "root_cut_40_50"),
+    ("50以上", "branch_cut_over_50", "root_cut_over_50"),
+)
 
 # ---------------------------------------------------------------------------
 # 現調結果報告（Googleフォーム prefill）
@@ -54,27 +63,35 @@ SURVEY_REPORT_TYPE_JP_COMPLETED = "現調済み"
 SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE = "返却候補"
 
 # ---------------------------------------------------------------------------
-# 現場共有 — 詳細修正報告（Googleフォーム prefill）
+# 現場共有 — 詳細修正（Googleフォーム prefill / V2・6区分枝根）
 # 現調待ち（SURVEY_REPORT_*）とは独立。docs/share_detail_edit_form_apps_script.md 参照。
 # ---------------------------------------------------------------------------
 SHARE_DETAIL_EDIT_FORM_URL = (
-    "https://docs.google.com/forms/d/e/1FAIpQLSfoB6VFRCg5OCEz26urKu5aRjWFioYJ3_4dC-YK9HzOhjaKMg/viewform"
+    "https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform"
 )
-SHARE_DETAIL_EDIT_ENTRY_DATE = "entry.1231613552"
-SHARE_DETAIL_EDIT_ENTRY_MANAGEMENT_NO = "entry.1027174352"
-SHARE_DETAIL_EDIT_ENTRY_LABEL = "entry.2018449203"
-SHARE_DETAIL_EDIT_ENTRY_WORK_METHOD = "entry.239315654"
-SHARE_DETAIL_EDIT_ENTRY_BUCKET_TRUCK = "entry.487861265"
-SHARE_DETAIL_EDIT_ENTRY_ROAD_WIDTH = "entry.943104657"
-SHARE_DETAIL_EDIT_ENTRY_SLOPE = "entry.26666214"
-SHARE_DETAIL_EDIT_ENTRY_BRANCH_COUNT = "entry.302694076"
-SHARE_DETAIL_EDIT_ENTRY_ROOT_COUNT = "entry.1898381908"
-SHARE_DETAIL_EDIT_ENTRY_BUSH_AREA = "entry.331993094"
-SHARE_DETAIL_EDIT_ENTRY_BAMBOO_COUNT = "entry.1734162451"
-SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT = "entry.538673483"
-SHARE_DETAIL_EDIT_ENTRY_WARNING = "entry.672707742"
-SHARE_DETAIL_EDIT_ENTRY_NOTE = "entry.475425842"
-SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE = "entry.681623373"
+SHARE_DETAIL_EDIT_ENTRY_DATE = "entry.1582884252"
+SHARE_DETAIL_EDIT_ENTRY_MANAGEMENT_NO = "entry.2102936974"
+SHARE_DETAIL_EDIT_ENTRY_LABEL = "entry.932009684"
+SHARE_DETAIL_EDIT_ENTRY_WORK_METHOD = "entry.579262382"
+SHARE_DETAIL_EDIT_ENTRY_BUCKET_TRUCK = "entry.2099732396"
+SHARE_DETAIL_EDIT_ENTRY_ROAD_WIDTH = "entry.1713335536"
+SHARE_DETAIL_EDIT_ENTRY_SLOPE = "entry.539982619"
+SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_UNDER_10 = "entry.948358914"
+SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_10_20 = "entry.740813394"
+SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_20_30 = "entry.74377314"
+SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_30_40 = "entry.957344080"
+SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_40_50 = "entry.382023163"
+SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_OVER_50 = "entry.288483164"
+SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_UNDER_10 = "entry.1467113295"
+SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_10_20 = "entry.108281366"
+SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_20_30 = "entry.77416071"
+SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_30_40 = "entry.792549802"
+SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_40_50 = "entry.1363589096"
+SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_OVER_50 = "entry.388844699"
+SHARE_DETAIL_EDIT_ENTRY_BUSH_AREA = "entry.133683289"
+SHARE_DETAIL_EDIT_ENTRY_BAMBOO_COUNT = "entry.1908811234"
+SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT = "entry.1406858047"
+SHARE_DETAIL_EDIT_ENTRY_NOTE = "entry.1367667439"
 
 # 未確定修正の表示上書き（Apps Script Web アプリ JSON）。空のときは fetch しない。
 SHARE_DETAIL_EDIT_API_URL = (
@@ -513,7 +530,7 @@ class ArchivePublicItem:
 
 @dataclass(frozen=True)
 class ShareDetailEditPrefill:
-    """詳細修正フォーム prefill 用（アーカイブ item または共有 HTML カードから組み立て）。"""
+    """詳細修正フォーム prefill 用（アーカイブ item または共有 HTML カードから組み立て）。V2: 枝根は6区分。"""
 
     management_no: str
     label: str
@@ -521,14 +538,22 @@ class ShareDetailEditPrefill:
     bucket_truck: str
     road_width: str
     slope: str
-    branch_count: str
-    root_count: str
+    branch_cut_under_10: str
+    branch_cut_10_20: str
+    branch_cut_20_30: str
+    branch_cut_30_40: str
+    branch_cut_40_50: str
+    branch_cut_over_50: str
+    root_cut_under_10: str
+    root_cut_10_20: str
+    root_cut_20_30: str
+    root_cut_30_40: str
+    root_cut_40_50: str
+    root_cut_over_50: str
     bush_area: str
     bamboo_count: str
     vine_count: str
-    warning: str
     note: str
-    edit_note: str
 
 
 def _share_detail_edit_entry_id_list() -> tuple[str, ...]:
@@ -540,14 +565,22 @@ def _share_detail_edit_entry_id_list() -> tuple[str, ...]:
         SHARE_DETAIL_EDIT_ENTRY_BUCKET_TRUCK,
         SHARE_DETAIL_EDIT_ENTRY_ROAD_WIDTH,
         SHARE_DETAIL_EDIT_ENTRY_SLOPE,
-        SHARE_DETAIL_EDIT_ENTRY_BRANCH_COUNT,
-        SHARE_DETAIL_EDIT_ENTRY_ROOT_COUNT,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_UNDER_10,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_10_20,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_20_30,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_30_40,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_40_50,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_OVER_50,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_UNDER_10,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_10_20,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_20_30,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_30_40,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_40_50,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_OVER_50,
         SHARE_DETAIL_EDIT_ENTRY_BUSH_AREA,
         SHARE_DETAIL_EDIT_ENTRY_BAMBOO_COUNT,
         SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT,
-        SHARE_DETAIL_EDIT_ENTRY_WARNING,
         SHARE_DETAIL_EDIT_ENTRY_NOTE,
-        SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE,
     )
 
 
@@ -572,14 +605,22 @@ def build_share_detail_edit_prefill_url(prefill: ShareDetailEditPrefill, date_ke
         SHARE_DETAIL_EDIT_ENTRY_BUCKET_TRUCK: prefill.bucket_truck,
         SHARE_DETAIL_EDIT_ENTRY_ROAD_WIDTH: prefill.road_width,
         SHARE_DETAIL_EDIT_ENTRY_SLOPE: prefill.slope,
-        SHARE_DETAIL_EDIT_ENTRY_BRANCH_COUNT: prefill.branch_count,
-        SHARE_DETAIL_EDIT_ENTRY_ROOT_COUNT: prefill.root_count,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_UNDER_10: prefill.branch_cut_under_10,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_10_20: prefill.branch_cut_10_20,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_20_30: prefill.branch_cut_20_30,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_30_40: prefill.branch_cut_30_40,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_40_50: prefill.branch_cut_40_50,
+        SHARE_DETAIL_EDIT_ENTRY_BRANCH_CUT_OVER_50: prefill.branch_cut_over_50,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_UNDER_10: prefill.root_cut_under_10,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_10_20: prefill.root_cut_10_20,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_20_30: prefill.root_cut_20_30,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_30_40: prefill.root_cut_30_40,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_40_50: prefill.root_cut_40_50,
+        SHARE_DETAIL_EDIT_ENTRY_ROOT_CUT_OVER_50: prefill.root_cut_over_50,
         SHARE_DETAIL_EDIT_ENTRY_BUSH_AREA: prefill.bush_area,
         SHARE_DETAIL_EDIT_ENTRY_BAMBOO_COUNT: prefill.bamboo_count,
         SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT: prefill.vine_count,
-        SHARE_DETAIL_EDIT_ENTRY_WARNING: prefill.warning,
         SHARE_DETAIL_EDIT_ENTRY_NOTE: prefill.note,
-        SHARE_DETAIL_EDIT_ENTRY_EDIT_NOTE: prefill.edit_note,
     }
     b = (SHARE_DETAIL_EDIT_FORM_URL or "").strip()
     q = urlencode(params, quote_via=quote, safe="")
@@ -587,13 +628,29 @@ def build_share_detail_edit_prefill_url(prefill: ShareDetailEditPrefill, date_ke
     return f"{b.rstrip('?')}{joiner}{q}"
 
 
+def _empty_cut_prefill_strings() -> dict[str, str]:
+    return {
+        "branch_cut_under_10": "",
+        "branch_cut_10_20": "",
+        "branch_cut_20_30": "",
+        "branch_cut_30_40": "",
+        "branch_cut_40_50": "",
+        "branch_cut_over_50": "",
+        "root_cut_under_10": "",
+        "root_cut_10_20": "",
+        "root_cut_20_30": "",
+        "root_cut_30_40": "",
+        "root_cut_40_50": "",
+        "root_cut_over_50": "",
+    }
+
+
 def _share_detail_prefill_from_archive_item(item: ArchivePublicItem) -> ShareDetailEditPrefill:
-    warn = (item.warning or "").strip()
-    if warn == "—":
-        warn = ""
+    """アーカイブ詳細は径間ごとの6区分が無いため、枝根12区分は空で渡す（手入力前提）。"""
     nt = (item.note or "").strip()
     if nt == "—":
         nt = ""
+    z = _empty_cut_prefill_strings()
     return ShareDetailEditPrefill(
         management_no=(item.management_no or "").strip(),
         label=(item.label or "").strip(),
@@ -601,14 +658,22 @@ def _share_detail_prefill_from_archive_item(item: ArchivePublicItem) -> ShareDet
         bucket_truck=(item.bucket_available or "").strip(),
         road_width=(item.road_width_m or "").strip(),
         slope="",
-        branch_count=str(item.branch_cut_total),
-        root_count=str(item.root_cut_total),
+        branch_cut_under_10=z["branch_cut_under_10"],
+        branch_cut_10_20=z["branch_cut_10_20"],
+        branch_cut_20_30=z["branch_cut_20_30"],
+        branch_cut_30_40=z["branch_cut_30_40"],
+        branch_cut_40_50=z["branch_cut_40_50"],
+        branch_cut_over_50=z["branch_cut_over_50"],
+        root_cut_under_10=z["root_cut_under_10"],
+        root_cut_10_20=z["root_cut_10_20"],
+        root_cut_20_30=z["root_cut_20_30"],
+        root_cut_30_40=z["root_cut_30_40"],
+        root_cut_40_50=z["root_cut_40_50"],
+        root_cut_over_50=z["root_cut_over_50"],
         bush_area=(item.brush_area_m2 or "").strip(),
         bamboo_count=(item.bamboo_count or "").strip(),
         vine_count=(item.vine_locations or "").strip(),
-        warning=warn,
         note=nt,
-        edit_note="",
     )
 
 
@@ -642,6 +707,26 @@ def _parse_share_cut_table_totals(article_html: str) -> tuple[int, int]:
     return br, rt
 
 
+def _parse_share_instr_cut_band_prefill(article_html: str) -> dict[str, str]:
+    """`.instr-cut` の6区分行から枝・根の表示値を取り出す（合計・未確定行は無視）。"""
+    out = _empty_cut_prefill_strings()
+    m = re.search(r'class="instr-table instr-cut"[^>]*>([\s\S]*?)</table>', article_html)
+    if not m:
+        return out
+    inner = m.group(1)
+    label_to_keys = {lab: (bk, rk) for lab, bk, rk in _SHARE_INSTR_CUT_BAND_PREFILL_ROWS}
+    for row in re.finditer(r"<th[^>]*>([^<]+)</th><td>([^<]*)</td><td>([^<]*)</td>", inner):
+        label = html_lib.unescape(row.group(1)).strip()
+        if label not in label_to_keys:
+            continue
+        bk, rk = label_to_keys[label]
+        btxt = html_lib.unescape(row.group(2).strip())
+        rtxt = html_lib.unescape(row.group(3).strip())
+        out[bk] = btxt
+        out[rk] = rtxt
+    return out
+
+
 def _parse_share_other_rows(article_html: str) -> dict[str, str]:
     m = re.search(r'class="instr-table instr-other"[^>]*>([\s\S]*?)</table>', article_html)
     if not m:
@@ -672,17 +757,13 @@ def parse_share_card_article_for_detail_edit(article_html: str) -> ShareDetailEd
     bush_area = other.get("柴伐採面積", "")
     bamboo_count = other.get("竹伐採本数", "")
     vine_count = other.get("つる伐採箇所数", "")
-    br, rt = _parse_share_cut_table_totals(article_html)
+    cuts = _parse_share_instr_cut_band_prefill(article_html)
     note = ""
     nm = re.search(r'<div class="instr-note"[^>]*>([\s\S]*?)</div>', article_html)
     if nm:
         raw = nm.group(1)
         raw = re.sub(r"<[^>]+>", " ", raw)
         note = html_lib.unescape(" ".join(raw.split())).strip()
-    warning = ""
-    wm = re.search(r'<div class="card-warning"[^>]*>([^<]*)</div>', article_html)
-    if wm:
-        warning = html_lib.unescape(wm.group(1).strip())
     return ShareDetailEditPrefill(
         management_no=management_no,
         label=label,
@@ -690,14 +771,22 @@ def parse_share_card_article_for_detail_edit(article_html: str) -> ShareDetailEd
         bucket_truck=bucket_truck,
         road_width=road_width,
         slope=slope,
-        branch_count=str(br),
-        root_count=str(rt),
+        branch_cut_under_10=cuts["branch_cut_under_10"],
+        branch_cut_10_20=cuts["branch_cut_10_20"],
+        branch_cut_20_30=cuts["branch_cut_20_30"],
+        branch_cut_30_40=cuts["branch_cut_30_40"],
+        branch_cut_40_50=cuts["branch_cut_40_50"],
+        branch_cut_over_50=cuts["branch_cut_over_50"],
+        root_cut_under_10=cuts["root_cut_under_10"],
+        root_cut_10_20=cuts["root_cut_10_20"],
+        root_cut_20_30=cuts["root_cut_20_30"],
+        root_cut_30_40=cuts["root_cut_30_40"],
+        root_cut_40_50=cuts["root_cut_40_50"],
+        root_cut_over_50=cuts["root_cut_over_50"],
         bush_area=bush_area,
         bamboo_count=bamboo_count,
         vine_count=vine_count,
-        warning=warning,
         note=note,
-        edit_note="",
     )
 
 
@@ -884,17 +973,6 @@ _SHARE_LIVE_EDIT_CARD_CSS = """
   color: #a16207;
   font-weight: 500;
 }
-.share-live-edit-note {
-  margin: 0 0 0.55rem;
-  padding: 0.45rem 0.55rem;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  color: var(--text, #1a1a1a);
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
-  border-radius: 8px;
-}
-.share-live-edit-note[hidden] { display: none !important; }
 .instr-cut-pending-total th,
 .instr-cut-pending-total td {
   background: #fffbeb;
@@ -986,45 +1064,116 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
     }
     b.hidden = false;
   }
-  function ensureEditNote(article, text) {
-    var n = article.querySelector(".share-live-edit-note");
-    if (!n) {
-      n = document.createElement("div");
-      n.className = "share-live-edit-note";
-      var ban = article.querySelector(".share-pending-overlay-banner");
-      var head = article.querySelector(".card-head");
-      if (ban && ban.parentNode === article) {
-        article.insertBefore(n, ban.nextSibling);
-      } else if (head && head.parentNode === article) {
-        article.insertBefore(n, head);
-      } else {
-        article.insertBefore(n, article.firstChild);
-      }
+  var V2_BRANCH_KEYS = [
+    "branch_cut_under_10",
+    "branch_cut_10_20",
+    "branch_cut_20_30",
+    "branch_cut_30_40",
+    "branch_cut_40_50",
+    "branch_cut_over_50",
+  ];
+  var V2_ROOT_KEYS = [
+    "root_cut_under_10",
+    "root_cut_10_20",
+    "root_cut_20_30",
+    "root_cut_30_40",
+    "root_cut_40_50",
+    "root_cut_over_50",
+  ];
+  function hasV2CutFields(f) {
+    if (!f || typeof f !== "object") return false;
+    var i;
+    for (i = 0; i < V2_BRANCH_KEYS.length; i++) {
+      if (V2_BRANCH_KEYS[i] in f) return true;
     }
-    if (text) {
-      n.innerHTML =
-        "<strong>\u4fee\u6b63\u30e1\u30e2</strong>\uff1a " + esc(text);
-      n.hidden = false;
-    } else {
-      n.textContent = "";
-      n.hidden = true;
+    for (i = 0; i < V2_ROOT_KEYS.length; i++) {
+      if (V2_ROOT_KEYS[i] in f) return true;
     }
+    return false;
   }
-  function applyWarning(article, panel, text) {
-    var w = article.querySelector(".card-warning");
-    if (text != null && String(text).length) {
-      if (!w) {
-        w = document.createElement("div");
-        w.className = "card-warning";
-        var head = article.querySelector(".card-head");
-        if (head) head.appendChild(w);
-        else article.appendChild(w);
+  function parseInt0(s) {
+    var t = String(s == null ? "" : s)
+      .trim()
+      .replace(/[^\d-]/g, "");
+    if (!t) return 0;
+    var n = parseInt(t, 10);
+    return isNaN(n) ? 0 : n;
+  }
+  var CUT_LABELS = [
+    "\u301c10\u672a\u6e80",
+    "\u301c20\u672a\u6e80",
+    "\u301c30\u672a\u6e80",
+    "\u301c40\u672a\u6e80",
+    "\u301c50\u672a\u6e80",
+    "50\u4ee5\u4e0a",
+  ];
+  var CUT_B_BY_LABEL = {
+    "\u301c10\u672a\u6e80": "branch_cut_under_10",
+    "\u301c20\u672a\u6e80": "branch_cut_10_20",
+    "\u301c30\u672a\u6e80": "branch_cut_20_30",
+    "\u301c40\u672a\u6e80": "branch_cut_30_40",
+    "\u301c50\u672a\u6e80": "branch_cut_40_50",
+    "50\u4ee5\u4e0a": "branch_cut_over_50",
+  };
+  var CUT_R_BY_LABEL = {
+    "\u301c10\u672a\u6e80": "root_cut_under_10",
+    "\u301c20\u672a\u6e80": "root_cut_10_20",
+    "\u301c30\u672a\u6e80": "root_cut_20_30",
+    "\u301c40\u672a\u6e80": "root_cut_30_40",
+    "\u301c50\u672a\u6e80": "root_cut_40_50",
+    "50\u4ee5\u4e0a": "root_cut_over_50",
+  };
+  function applyCutBandsFromFields(panel, f) {
+    var tb = panel.querySelector(".instr-cut tbody");
+    if (!tb) return;
+    var prev = tb.querySelectorAll("tr.instr-cut-pending-total");
+    for (var i = 0; i < prev.length; i++) {
+      prev[i].parentNode.removeChild(prev[i]);
+    }
+    var trs = tb.getElementsByTagName("tr");
+    var j, tr, th, tds, lab, bk, rk;
+    for (j = 0; j < trs.length; j++) {
+      tr = trs[j];
+      if (tr.classList.contains("instr-cut-total")) continue;
+      if (tr.classList.contains("instr-cut-pending-total")) continue;
+      th = tr.querySelector("th");
+      tds = tr.querySelectorAll("td");
+      if (!th || tds.length < 2) continue;
+      lab = String(th.textContent || "").trim();
+      bk = CUT_B_BY_LABEL[lab];
+      rk = CUT_R_BY_LABEL[lab];
+      if (bk && bk in f) tds[0].textContent = String(f[bk] == null ? "" : f[bk]);
+      if (rk && rk in f) tds[1].textContent = String(f[rk] == null ? "" : f[rk]);
+    }
+    recalcInstrCutTotal(panel);
+  }
+  function recalcInstrCutTotal(panel) {
+    var tb = panel.querySelector(".instr-cut tbody");
+    if (!tb) return;
+    var totalRow = tb.querySelector("tr.instr-cut-total");
+    if (!totalRow) return;
+    var sumB = 0;
+    var sumR = 0;
+    var trs = tb.getElementsByTagName("tr");
+    var li, j, tr, th, tds, lab;
+    for (li = 0; li < CUT_LABELS.length; li++) {
+      lab = CUT_LABELS[li];
+      for (j = 0; j < trs.length; j++) {
+        tr = trs[j];
+        if (tr.classList.contains("instr-cut-total")) continue;
+        if (tr.classList.contains("instr-cut-pending-total")) continue;
+        th = tr.querySelector("th");
+        tds = tr.querySelectorAll("td");
+        if (!th || tds.length < 2) continue;
+        if (String(th.textContent || "").trim() !== lab) continue;
+        sumB += parseInt0(tds[0].textContent);
+        sumR += parseInt0(tds[1].textContent);
       }
-      w.textContent = String(text);
-      w.hidden = false;
-    } else if (text != null && w) {
-      w.textContent = "";
-      w.hidden = true;
+    }
+    var tdt = totalRow.querySelectorAll("td");
+    if (tdt.length >= 2) {
+      tdt[0].textContent = String(sumB);
+      tdt[1].textContent = String(sumR);
     }
   }
   function applyNoteHtml(panel, htmlStr) {
@@ -1102,7 +1251,9 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
     if ("bucket_truck" in f) setSummaryCell(panel, "B\u8eca", f.bucket_truck);
     if ("road_width" in f) setSummaryCell(panel, "\u9053\u5e45", f.road_width);
     if ("slope" in f) setSummaryCell(panel, "\u50be\u659c", f.slope);
-    if ("branch_count" in f || "root_count" in f) {
+    if (hasV2CutFields(f)) {
+      applyCutBandsFromFields(panel, f);
+    } else if ("branch_count" in f || "root_count" in f) {
       applyCutTotals(
         panel,
         "branch_count" in f ? f.branch_count : "",
@@ -1118,9 +1269,7 @@ _SHARE_LIVE_EDIT_RUNNER_JS = r"""
     if ("vine_count" in f) {
       setOtherCell(panel, "\u3064\u308b\u4f10\u63a1\u7b87\u6240\u6570", f.vine_count);
     }
-    if ("warning" in f) applyWarning(article, panel, f.warning);
     if ("note" in f) applyNoteHtml(panel, esc(f.note));
-    ensureEditNote(article, ed.edit_note || "");
   }
   function handlePayload(data, pageDate) {
     var pd = String(pageDate || "").trim();

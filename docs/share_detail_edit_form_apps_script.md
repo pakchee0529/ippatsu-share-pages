@@ -100,7 +100,14 @@ function createShareDetailEditForm_() {
 - フォーム回答スプレッドシートを読み、**未確定修正**を JSON で返す。
 - 現場共有ページ（静的 HTML）が `fetch` で読み、**表示だけ**上書きする（正本 JSON は変更しない）。
 
-**返却 JSON 形式（成功時）**
+**V2（フォーム「現場共有 詳細修正」）**
+
+- 枝切り・根切りは **6 区分×2（枝／根）** の 12 フィールド。総数の `branch_count` / `root_count` は使いません。
+- `warning` / `edit_note` は **返却 JSON に含めません**（旧シート列が残っていても無視してよい）。
+- 回答スプレッドシート例（V2 用・URL の `/d/` と `/edit` の間）: `1LyzdIpbgDiEo02A8FkTx2FyR2ROStpIOBU8kNNdxt68`  
+  本番では **`RESPONSE_SPREADSHEET_ID` をスクリプトプロパティに設定**し、V2 の回答先 ID に差し替えてください。
+
+**返却 JSON 形式（成功時・V2）**
 
 ```json
 {
@@ -118,15 +125,23 @@ function createShareDetailEditForm_() {
         "bucket_truck": "...",
         "road_width": "...",
         "slope": "...",
-        "branch_count": "...",
-        "root_count": "...",
+        "branch_cut_under_10": "...",
+        "branch_cut_10_20": "...",
+        "branch_cut_20_30": "...",
+        "branch_cut_30_40": "...",
+        "branch_cut_40_50": "...",
+        "branch_cut_over_50": "...",
+        "root_cut_under_10": "...",
+        "root_cut_10_20": "...",
+        "root_cut_20_30": "...",
+        "root_cut_30_40": "...",
+        "root_cut_40_50": "...",
+        "root_cut_over_50": "...",
         "bush_area": "...",
         "bamboo_count": "...",
         "vine_count": "...",
-        "warning": "...",
         "note": "..."
-      },
-      "edit_note": "..."
+      }
     }
   ]
 }
@@ -145,7 +160,7 @@ function createShareDetailEditForm_() {
 **スプレッドシート前提**
 
 - 1 行目はヘッダ。Google フォーム連携の回答シートでは、先頭列が **タイムスタンプ**（日本語環境では `タイムスタンプ`）のことが多い。
-- 次の質問タイトルと **完全一致** で列を特定する（列順が変わっても動く）:
+- 次の質問タイトルと **完全一致** で列を特定する（列順が変わっても動く）。**V2** のヘッダ例:
 
 | ヘッダ文字列（1 行目） |
 |------------------------|
@@ -156,14 +171,24 @@ function createShareDetailEditForm_() {
 | B車 |
 | 道幅 |
 | 傾斜 |
-| 枝切り本数 |
-| 根切り本数 |
-| 柴面積 |
-| 竹本数 |
-| つる箇所数 |
-| 警告 |
+| 枝切り 〜10未満 |
+| 枝切り 〜20未満 |
+| 枝切り 〜30未満 |
+| 枝切り 〜40未満 |
+| 枝切り 〜50未満 |
+| 枝切り 50以上 |
+| 根切り 〜10未満 |
+| 根切り 〜20未満 |
+| 根切り 〜30未満 |
+| 根切り 〜40未満 |
+| 根切り 〜50未満 |
+| 根切り 50以上 |
+| 柴伐採面積 |
+| 竹伐採本数 |
+| つる伐採箇所数 |
 | 備考 |
-| 修正メモ |
+
+（旧フォームの **枝切り本数 / 根切り本数 / 警告 / 修正メモ** 列は V2 では使いません。）
 
 **セットアップ手順**
 
@@ -186,25 +211,25 @@ function createShareDetailEditForm_() {
 **セキュリティ**
 
 - トークンは URL クエリに載るため、HTTPS のみで運用し、トークンは十分長いランダム文字列にする。
-- スプレッドシート ID はリポジトリにコミットしない（プロパティ推奨）。
+- スプレッドシート ID は **本番の認証情報としてリポジトリに載せない**運用を推奨（下記 `RESPONSE_SPREADSHEET_ID_FALLBACK` の V2 例はセットアップ用の参照）。
 
 ### Apps Script 全文（`Code.gs` 用）
 
 ```javascript
 /**
- * 現場共有「詳細修正報告」回答 → JSON / JSONP API（doGet）
+ * 現場共有「詳細修正」回答 → JSON / JSONP API（doGet）— V2（6 区分枝／根）
  *
  * 設定（優先順）:
  *   スクリプトプロパティ API_TOKEN
- *   スクリプトプロパティ RESPONSE_SPREADSHEET_ID
+ *   スクリプトプロパティ RESPONSE_SPREADSHEET_ID（V2 回答スプレッドシート）
  * 未設定時は下の FALLBACK 定数（差し替え用）
  */
 
 /** @const 本番ではスクリプトプロパティ API_TOKEN を必ず設定してください */
 var API_TOKEN_FALLBACK = 'REPLACE_ME';
 
-/** @const 本番ではスクリプトプロパティ RESPONSE_SPREADSHEET_ID を必ず設定してください */
-var RESPONSE_SPREADSHEET_ID_FALLBACK = 'REPLACE_SPREADSHEET_ID';
+/** @const V2 回答スプレッドシート ID 例。本番はスクリプトプロパティ RESPONSE_SPREADSHEET_ID を推奨 */
+var RESPONSE_SPREADSHEET_ID_FALLBACK = '1LyzdIpbgDiEo02A8FkTx2FyR2ROStpIOBU8kNNdxt68';
 
 var HEADER_NAMES = {
   ts: ['タイムスタンプ', 'Timestamp'],
@@ -215,14 +240,22 @@ var HEADER_NAMES = {
   bucket_truck: ['B車'],
   road_width: ['道幅'],
   slope: ['傾斜'],
-  branch_count: ['枝切り本数'],
-  root_count: ['根切り本数'],
-  bush_area: ['柴面積'],
-  bamboo_count: ['竹本数'],
-  vine_count: ['つる箇所数'],
-  warning: ['警告'],
+  branch_cut_under_10: ['枝切り 〜10未満'],
+  branch_cut_10_20: ['枝切り 〜20未満'],
+  branch_cut_20_30: ['枝切り 〜30未満'],
+  branch_cut_30_40: ['枝切り 〜40未満'],
+  branch_cut_40_50: ['枝切り 〜50未満'],
+  branch_cut_over_50: ['枝切り 50以上'],
+  root_cut_under_10: ['根切り 〜10未満'],
+  root_cut_10_20: ['根切り 〜20未満'],
+  root_cut_20_30: ['根切り 〜30未満'],
+  root_cut_30_40: ['根切り 〜40未満'],
+  root_cut_40_50: ['根切り 〜50未満'],
+  root_cut_over_50: ['根切り 50以上'],
+  bush_area: ['柴伐採面積', '柴面積'],
+  bamboo_count: ['竹伐採本数', '竹本数'],
+  vine_count: ['つる伐採箇所数', 'つる箇所数'],
   note: ['備考'],
-  edit_note: ['修正メモ'],
 };
 
 /**
@@ -295,7 +328,7 @@ function doGet(e) {
   }
 
   var ssId = getProp_('RESPONSE_SPREADSHEET_ID') || RESPONSE_SPREADSHEET_ID_FALLBACK;
-  if (!ssId || ssId === 'REPLACE_SPREADSHEET_ID') {
+  if (!ssId) {
     return output_({ ok: false, error: 'config', detail: 'RESPONSE_SPREADSHEET_ID missing' }, cb);
   }
 
@@ -323,14 +356,22 @@ function doGet(e) {
     bucket_truck: colIndex_(header, HEADER_NAMES.bucket_truck),
     road_width: colIndex_(header, HEADER_NAMES.road_width),
     slope: colIndex_(header, HEADER_NAMES.slope),
-    branch_count: colIndex_(header, HEADER_NAMES.branch_count),
-    root_count: colIndex_(header, HEADER_NAMES.root_count),
+    branch_cut_under_10: colIndex_(header, HEADER_NAMES.branch_cut_under_10),
+    branch_cut_10_20: colIndex_(header, HEADER_NAMES.branch_cut_10_20),
+    branch_cut_20_30: colIndex_(header, HEADER_NAMES.branch_cut_20_30),
+    branch_cut_30_40: colIndex_(header, HEADER_NAMES.branch_cut_30_40),
+    branch_cut_40_50: colIndex_(header, HEADER_NAMES.branch_cut_40_50),
+    branch_cut_over_50: colIndex_(header, HEADER_NAMES.branch_cut_over_50),
+    root_cut_under_10: colIndex_(header, HEADER_NAMES.root_cut_under_10),
+    root_cut_10_20: colIndex_(header, HEADER_NAMES.root_cut_10_20),
+    root_cut_20_30: colIndex_(header, HEADER_NAMES.root_cut_20_30),
+    root_cut_30_40: colIndex_(header, HEADER_NAMES.root_cut_30_40),
+    root_cut_40_50: colIndex_(header, HEADER_NAMES.root_cut_40_50),
+    root_cut_over_50: colIndex_(header, HEADER_NAMES.root_cut_over_50),
     bush_area: colIndex_(header, HEADER_NAMES.bush_area),
     bamboo_count: colIndex_(header, HEADER_NAMES.bamboo_count),
     vine_count: colIndex_(header, HEADER_NAMES.vine_count),
-    warning: colIndex_(header, HEADER_NAMES.warning),
     note: colIndex_(header, HEADER_NAMES.note),
-    edit_note: colIndex_(header, HEADER_NAMES.edit_note),
   };
 
   if (ci.date < 0 || ci.management_no < 0) {
@@ -364,15 +405,22 @@ function doGet(e) {
     if (ci.bucket_truck >= 0) fields.bucket_truck = cellStr_(row, ci.bucket_truck);
     if (ci.road_width >= 0) fields.road_width = cellStr_(row, ci.road_width);
     if (ci.slope >= 0) fields.slope = cellStr_(row, ci.slope);
-    if (ci.branch_count >= 0) fields.branch_count = cellStr_(row, ci.branch_count);
-    if (ci.root_count >= 0) fields.root_count = cellStr_(row, ci.root_count);
+    if (ci.branch_cut_under_10 >= 0) fields.branch_cut_under_10 = cellStr_(row, ci.branch_cut_under_10);
+    if (ci.branch_cut_10_20 >= 0) fields.branch_cut_10_20 = cellStr_(row, ci.branch_cut_10_20);
+    if (ci.branch_cut_20_30 >= 0) fields.branch_cut_20_30 = cellStr_(row, ci.branch_cut_20_30);
+    if (ci.branch_cut_30_40 >= 0) fields.branch_cut_30_40 = cellStr_(row, ci.branch_cut_30_40);
+    if (ci.branch_cut_40_50 >= 0) fields.branch_cut_40_50 = cellStr_(row, ci.branch_cut_40_50);
+    if (ci.branch_cut_over_50 >= 0) fields.branch_cut_over_50 = cellStr_(row, ci.branch_cut_over_50);
+    if (ci.root_cut_under_10 >= 0) fields.root_cut_under_10 = cellStr_(row, ci.root_cut_under_10);
+    if (ci.root_cut_10_20 >= 0) fields.root_cut_10_20 = cellStr_(row, ci.root_cut_10_20);
+    if (ci.root_cut_20_30 >= 0) fields.root_cut_20_30 = cellStr_(row, ci.root_cut_20_30);
+    if (ci.root_cut_30_40 >= 0) fields.root_cut_30_40 = cellStr_(row, ci.root_cut_30_40);
+    if (ci.root_cut_40_50 >= 0) fields.root_cut_40_50 = cellStr_(row, ci.root_cut_40_50);
+    if (ci.root_cut_over_50 >= 0) fields.root_cut_over_50 = cellStr_(row, ci.root_cut_over_50);
     if (ci.bush_area >= 0) fields.bush_area = cellStr_(row, ci.bush_area);
     if (ci.bamboo_count >= 0) fields.bamboo_count = cellStr_(row, ci.bamboo_count);
     if (ci.vine_count >= 0) fields.vine_count = cellStr_(row, ci.vine_count);
-    if (ci.warning >= 0) fields.warning = cellStr_(row, ci.warning);
     if (ci.note >= 0) fields.note = cellStr_(row, ci.note);
-
-    var edit_note = ci.edit_note >= 0 ? cellStr_(row, ci.edit_note) : '';
 
     edits.push({
       id: String(rows[i].sheetRow),
@@ -382,7 +430,6 @@ function doGet(e) {
       management_no_key: key,
       label: ci.label >= 0 ? cellStr_(row, ci.label) : '',
       fields: fields,
-      edit_note: edit_note,
     });
   }
 
