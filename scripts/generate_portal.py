@@ -89,12 +89,6 @@ _SHARE_DETAIL_EDIT_CARD_CSS = """
   padding-top: 0.55rem;
   border-top: 1px dashed var(--border);
 }
-.detail-edit-hint {
-  margin: 0 0 0.45rem;
-  font-size: 0.78rem;
-  color: var(--muted);
-  line-height: 1.45;
-}
 .detail-edit-footer--fallback {
   margin: 0.5rem 0 0;
   padding-top: 0.45rem;
@@ -130,7 +124,7 @@ _SHARE_DETAIL_EDIT_CARD_CSS = """
 }
 .detail-edit-footer--fallback .btn-detail-edit--panel {
   font-size: 0.8rem;
-  min-height: 40px;
+  min-height: 44px;
 }
 """
 
@@ -700,18 +694,12 @@ def parse_share_card_article_for_detail_edit(article_html: str) -> ShareDetailEd
 
 
 def _share_detail_edit_footer_inner_html(url: str) -> str:
-    """説明 + 詳細修正リンク（パネル内・フォールバック共通）。"""
+    """現場指示パネル末尾のリンクのみ（パネル内・フォールバック共通）。"""
     t = escape_html(_SHARE_DETAIL_EDIT_BTN_TITLE)
-    link = (
+    return (
         f'<a class="btn btn-detail-edit btn-detail-edit--panel" href="{escape_html(url)}" '
-        f'target="_blank" rel="noopener noreferrer" title="{t}">詳細修正を報告</a>'
+        f'target="_blank" rel="noopener noreferrer" title="{t}">詳細を修正</a>'
     )
-    hint = (
-        '<p class="detail-edit-hint">'
-        "現地で内容が違う場合のみ修正報告してください。"
-        "</p>"
-    )
-    return hint + link
 
 
 def _share_detail_edit_footer_html(url: str, *, fallback: bool = False) -> str:
@@ -724,7 +712,7 @@ def _share_detail_edit_link_html(url: str) -> str:
     t = escape_html(_SHARE_DETAIL_EDIT_BTN_TITLE)
     return (
         f'<a class="btn btn-detail-edit btn-detail-edit--panel" href="{escape_html(url)}" '
-        f'target="_blank" rel="noopener noreferrer" title="{t}">詳細修正を報告</a>'
+        f'target="_blank" rel="noopener noreferrer" title="{t}">詳細を修正</a>'
     )
 
 
@@ -759,13 +747,24 @@ def apply_share_detail_edit_to_share_html(html: str, date_key: str) -> str:
     if not share_detail_edit_form_enabled():
         return html
     out = html
-    out = re.sub(r"\s*<a class=\"btn btn-detail-edit\"[^>]*>[\s\S]*?詳細修正を報告\s*</a>", "", out)
+    # 旧生成 HTML の style に残った説明用ルール・フォールバックの min-height を整理
+    out = re.sub(r"\.detail-edit-hint\s*\{[^}]*\}\s*", "", out)
+    out = re.sub(
+        r"(\.detail-edit-footer--fallback\s*\.btn-detail-edit--panel\s*\{[^}]*min-height:\s*)40px",
+        r"\g<1>44px",
+        out,
+    )
+    out = re.sub(
+        r"\s*<a class=\"btn btn-detail-edit[^\"]*\"[^>]*>[\s\S]*?詳細(?:修正を報告|を修正)\s*</a>",
+        "",
+        out,
+    )
     out = re.sub(
         r'<div class="detail-edit-footer[^>]*>[\s\S]*?</div>\s*',
         "",
         out,
     )
-    if ".detail-edit-hint" not in out:
+    if ".detail-edit-footer {" not in out:
         out = out.replace("</style>", _SHARE_DETAIL_EDIT_CARD_CSS + "\n</style>", 1)
     parts = re.split(r"(?=<article class=\"card\")", out)
     rebuilt: list[str] = [parts[0]]
