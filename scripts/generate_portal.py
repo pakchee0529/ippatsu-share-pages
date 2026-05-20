@@ -24,6 +24,10 @@ survey・share 注入・他日付のアーカイブ詳細は触らない。
 ``portal/index.html`` のアクティブ一覧は **share-pages の ``share/<date>/index.html``** を走査し、
 ``portal/archive_manifest.json`` に載る日付（対象日を含む）を TOP から除外する。
 ``data/share/*.json`` は参照しない（manifest は ippatsu-pc 側で事前更新される想定）。
+
+``--mode share-update --date YYMMDD``: 共有モードの公開・差し替え向けの最小生成。
+``portal/index.html`` と **当該日のみ** ``share/<date>/index.html`` の inject のみ。
+survey・アーカイブ一覧・全 archive 詳細・他日付 share inject は触らない。
 """
 
 from __future__ import annotations
@@ -1591,6 +1595,29 @@ def inject_share_detail_edit_into_share_pages(repo_root: Path) -> int:
         action = "updated" if new_t != raw else "repaired"
         print(f"Wrote {idx} (share detail-edit + live overlay: {action})")
     return n
+
+
+def inject_share_detail_edit_into_share_page_for_date(
+    repo_root: Path, date_key: str
+) -> int:
+    """``share/<date>/index.html`` のみ詳細修正注入（share-update 用）。"""
+    if not re.fullmatch(r"\d{6}", date_key):
+        return 0
+    idx = repo_root / "share" / date_key / "index.html"
+    if not idx.is_file():
+        return 0
+    try:
+        raw = idx.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return 0
+    new_t = ensure_share_detail_edit_on_share_html(raw, date_key)
+    needs_write = new_t != raw or not _share_live_edit_layer_complete(raw)
+    if not needs_write:
+        return 0
+    idx.write_text(new_t, encoding="utf-8", newline="\n")
+    action = "updated" if new_t != raw else "repaired"
+    print(f"Wrote {idx} (share detail-edit + live overlay: {action})")
+    return 1
 
 
 @dataclass(frozen=True)
@@ -3822,6 +3849,7 @@ a.portal-menu-item:focus-visible {{
 
 PORTAL_MODE_FULL = "full"
 PORTAL_MODE_COMPLETION_ARCHIVE = "completion-archive"
+PORTAL_MODE_SHARE_UPDATE = "share-update"
 
 
 def _parse_six_digit_date(value: str) -> str | None:
@@ -3852,19 +3880,27 @@ def main() -> int:
     )
     parser.add_argument(
         "--mode",
-        choices=(PORTAL_MODE_FULL, PORTAL_MODE_COMPLETION_ARCHIVE),
+        choices=(
+            PORTAL_MODE_FULL,
+            PORTAL_MODE_COMPLETION_ARCHIVE,
+            PORTAL_MODE_SHARE_UPDATE,
+        ),
         default=PORTAL_MODE_FULL,
         help=(
             "full: full portal regen (default). "
             "completion-archive: minimal regen for completion report archive sync "
-            "(requires --date)."
+            "(requires --date). "
+            "share-update: minimal regen for share-mode publish (requires --date)."
         ),
     )
     parser.add_argument(
         "--date",
         default=None,
         metavar="YYMMDD",
-        help="Target 6-digit date; required when --mode completion-archive",
+        help=(
+            "Target 6-digit date; required when --mode completion-archive "
+            "or share-update"
+        ),
     )
     ns = parser.parse_args()
     _DATA_ROOT_OVERRIDE = None
@@ -3876,15 +3912,18 @@ def main() -> int:
         _DATA_ROOT_OVERRIDE = dr
 
     mode = ns.mode
-    completion_date: str | None = None
-    if mode == PORTAL_MODE_COMPLETION_ARCHIVE:
-        completion_date = _parse_six_digit_date(ns.date or "")
-        if completion_date is None:
+    target_date: str | None = None
+    if mode in (PORTAL_MODE_COMPLETION_ARCHIVE, PORTAL_MODE_SHARE_UPDATE):
+        target_date = _parse_six_digit_date(ns.date or "")
+        if target_date is None:
             print(
-                "Error: --mode completion-archive requires --date YYMMDD (6 digits).",
+                f"Error: --mode {mode} requires --date YYMMDD (6 digits).",
                 file=sys.stderr,
             )
             return 1
+    completion_date = (
+        target_date if mode == PORTAL_MODE_COMPLETION_ARCHIVE else None
+    )
 
     repo_root = Path(__file__).resolve().parent.parent
     share_dir = repo_root / "share"
@@ -3917,7 +3956,7 @@ def main() -> int:
     for folder, path in rows:
         if folder in archived:
             continue
-        if mode == PORTAL_MODE_COMPLETION_ARCHIVE and folder == completion_date:
+        if mode == PORTAL_MODE_COMPLETION_ARCHIVE and folder == target_date:
             continue
         html_text = path.read_text(encoding="utf-8", errors="replace")
         date_line = card_heading(folder, path)
@@ -3952,6 +3991,19 @@ def main() -> int:
         f"Wrote {out_path} ({len(entries)} cards, "
         f"{len(archived)} date(s) hidden on top per manifest)"
     )
+
+    if mode == PORTAL_MODE_SHARE_UPDATE:
+        assert target_date is not None
+        n_inj = inject_share_detail_edit_into_share_page_for_date(
+            repo_root, target_date
+        )
+        print(
+            f"share-update mode (date={target_date}): "
+            "skipped portal/survey/index.html, portal/archive/*, "
+            "other share inject; "
+            f"target share inject: {n_inj} file(s)"
+        )
+        return 0
 
     today = date.today()
     recent_parts: list[
