@@ -12,10 +12,14 @@ manifest の entries[].href は **portal/archive/index.html を基準とした�
 
 portal/archive/<YYMMDD>/ は generate 時に manifest 済み分へ上書き生成する。manifest から date が消えた
 古い YYMMDD ディレクトリは自動では削除しない（孤立が残る）。必要なら生成前に 6 桁名フォルダだけ手で整理する。
+
+CLI では ``--data-root <path>`` に ippatsu の ``data`` ディレクトリ（``completion_reports/`` と ``survey/`` を含む）を
+渡せる。未指定時は従来どおり ``<share-pages の親>/ippatsu-pc/data`` を参照する。
 """
 
 from __future__ import annotations
 
+import argparse
 import html as html_lib
 import json
 import re
@@ -25,6 +29,9 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from html.parser import HTMLParser
 from pathlib import Path
+
+# ippatsu-pc の data ディレクトリ（--data-root で上書き）。未指定時は sibling ippatsu-pc/data。
+_DATA_ROOT_OVERRIDE: Path | None = None
 
 # Leading Japanese run (kanji / hiragana / katakana) before span codes (digits etc.).
 _CROWN_HEAD = re.compile(
@@ -2341,11 +2348,15 @@ def build_archive_instructions_html_from_source(src: dict) -> str:
 
 
 def _completion_reports_root(repo_root: Path) -> Path:
+    if _DATA_ROOT_OVERRIDE is not None:
+        return _DATA_ROOT_OVERRIDE / "completion_reports"
     return repo_root.parent / "ippatsu-pc" / "data" / "completion_reports"
 
 
 def _survey_source_path(repo_root: Path) -> Path:
-    """現調待ちポータル用。正本は ippatsu-pc の data/survey/queue.json（261231.json は参照しない）。"""
+    """現調待ちポータル用。正本は data/survey/queue.json（261231.json は参照しない）。"""
+    if _DATA_ROOT_OVERRIDE is not None:
+        return _DATA_ROOT_OVERRIDE / "survey" / "queue.json"
     return repo_root.parent / "ippatsu-pc" / "data" / "survey" / "queue.json"
 
 
@@ -3801,6 +3812,32 @@ a.portal-menu-item:focus-visible {{
 
 
 def main() -> int:
+    global _DATA_ROOT_OVERRIDE
+
+    parser = argparse.ArgumentParser(
+        description=(
+            "Regenerate portal HTML from share/ and ippatsu completion_reports / survey queue."
+        ),
+    )
+    parser.add_argument(
+        "--data-root",
+        type=Path,
+        default=None,
+        metavar="DIR",
+        help=(
+            "Path to the ippatsu-pc 'data' directory (contains completion_reports/ and survey/). "
+            "Default: <parent of this repo>/ippatsu-pc/data"
+        ),
+    )
+    ns = parser.parse_args()
+    _DATA_ROOT_OVERRIDE = None
+    if ns.data_root is not None:
+        dr = ns.data_root.expanduser().resolve()
+        if not dr.is_dir():
+            print(f"Error: --data-root is not a directory: {dr}", file=sys.stderr)
+            return 1
+        _DATA_ROOT_OVERRIDE = dr
+
     repo_root = Path(__file__).resolve().parent.parent
     share_dir = repo_root / "share"
     if not share_dir.is_dir():
