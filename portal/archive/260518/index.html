@@ -171,6 +171,52 @@ body {
   color: var(--text);
 }
 .note-panel[hidden] { display: none !important; }
+.archive-status-line,
+.archive-warn-line {
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+}
+.archive-warn-line { color: #b45309; }
+.instr-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.instr-table {
+  width: 100%;
+  min-width: min(100%, 320px);
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-bottom: 0.65rem;
+}
+.instr-table th,
+.instr-table td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+.instr-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.instr-cut-caption {
+  margin: 0.5rem 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.instr-cut-total th,
+.instr-cut-total td {
+  font-weight: 600;
+  background: #f1f5f9;
+}
+.instr-note {
+  margin-top: 0.65rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+  font-size: 0.92rem;
+}
 .two-map-wrap {
   margin-top: 0.65rem;
   border-radius: 8px;
@@ -244,41 +290,41 @@ body {
       <div class="card-head">
         <h2 class="card-title">葛川25～26 <span class="status-pill status-done">完了</span></h2>
         <p class="item-mgmt">514 02889</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.993750000000006,135.80903" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-0" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260518&amp;entry.2102936974=514%2002889&amp;entry.932009684=%E8%91%9B%E5%B7%9D25%EF%BD%9E26&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E4%B8%8D%E5%8F%AF&amp;entry.1713335536=0.0&amp;entry.539982619=&amp;entry.948358914=&amp;entry.740813394=&amp;entry.74377314=&amp;entry.957344080=&amp;entry.382023163=&amp;entry.288483164=&amp;entry.1467113295=&amp;entry.108281366=&amp;entry.77416071=&amp;entry.792549802=&amp;entry.1363589096=&amp;entry.388844699=&amp;entry.133683289=0&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=%E8%B0%B7%E8%B6%8A%202%E7%8F%AD%E3%81%AB%E5%88%A5%E3%82%8C%E3%81%A6%E3%80%8225%E5%81%B4750%E3%83%81%E3%83%AB" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.993750000000006,135.80903" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-0" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260518&amp;entry.2102936974=514%2002889&amp;entry.932009684=%E8%91%9B%E5%B7%9D25%EF%BD%9E26&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E4%B8%8D%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=%E5%82%BE&amp;entry.948358914=0&amp;entry.740813394=2&amp;entry.74377314=6&amp;entry.957344080=1&amp;entry.382023163=1&amp;entry.288483164=0&amp;entry.1467113295=5&amp;entry.108281366=7&amp;entry.77416071=3&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=0&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=%E8%B0%B7%E8%B6%8A%202%E7%8F%AD%E3%81%AB%E5%88%A5%E3%82%8C%E3%81%A6%E3%80%8225%E5%81%B4750%E3%83%81%E3%83%AB" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
       </div>
       <script type="application/json" id="two-geo-0">{&quot;a&quot;: {&quot;name&quot;: &quot;葛川25～26&quot;, &quot;lat&quot;: 33.99381, &quot;lng&quot;: 135.80862}, &quot;b&quot;: {&quot;name&quot;: &quot;葛川25～26&quot;, &quot;lat&quot;: 33.99369, &quot;lng&quot;: 135.80944}}</script>
       <div class="two-map-wrap" id="two-wrap-0" hidden><div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
-      <div class="note-panel" id="note-0" hidden>状態: 完了<br>処理方法: 集積<br>備考: 谷越 2班に別れて。25側750チル</div>
+      <div class="note-panel" id="note-0" hidden><p class="archive-status-line">状態: 完了</p><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>不可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>傾</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>5</td></tr><tr><th>〜20未満</th><td>2</td><td>7</td></tr><tr><th>〜30未満</th><td>6</td><td>3</td></tr><tr><th>〜40未満</th><td>1</td><td>0</td></tr><tr><th>〜50未満</th><td>1</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>10</td><td>15</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>谷越 2班に別れて。25側750チル</div></div>
 </article>
 <article class="card" data-card-index="1">
       <div class="card-head">
         <h2 class="card-title">葛川17W2～17W3 <span class="status-pill status-done">完了</span></h2>
         <p class="item-mgmt">514 02969</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.99194,135.80428999999998" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-1" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260518&amp;entry.2102936974=514%2002969&amp;entry.932009684=%E8%91%9B%E5%B7%9D17W2%EF%BD%9E17W3&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E4%B8%8D%E5%8F%AF&amp;entry.1713335536=0.0&amp;entry.539982619=&amp;entry.948358914=&amp;entry.740813394=&amp;entry.74377314=&amp;entry.957344080=&amp;entry.382023163=&amp;entry.288483164=&amp;entry.1467113295=&amp;entry.108281366=&amp;entry.77416071=&amp;entry.792549802=&amp;entry.1363589096=&amp;entry.388844699=&amp;entry.133683289=0&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=%E3%81%9D%E3%81%AE%E5%A0%B4%E3%81%B8" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.99194,135.80428999999998" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-1" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260518&amp;entry.2102936974=514%2002969&amp;entry.932009684=%E8%91%9B%E5%B7%9D17W2%EF%BD%9E17W3&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E4%B8%8D%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=%E5%82%BE&amp;entry.948358914=0&amp;entry.740813394=3&amp;entry.74377314=1&amp;entry.957344080=0&amp;entry.382023163=0&amp;entry.288483164=0&amp;entry.1467113295=0&amp;entry.108281366=0&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=0&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=%E3%81%9D%E3%81%AE%E5%A0%B4%E3%81%B8" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
       </div>
       <script type="application/json" id="two-geo-1">{&quot;a&quot;: {&quot;name&quot;: &quot;葛川17W2～17W3&quot;, &quot;lat&quot;: 33.99202, &quot;lng&quot;: 135.80416}, &quot;b&quot;: {&quot;name&quot;: &quot;葛川17W2～17W3&quot;, &quot;lat&quot;: 33.99186, &quot;lng&quot;: 135.80442}}</script>
       <div class="two-map-wrap" id="two-wrap-1" hidden><div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
-      <div class="note-panel" id="note-1" hidden>状態: 完了<br>処理方法: 集積<br>備考: その場へ</div>
+      <div class="note-panel" id="note-1" hidden><p class="archive-status-line">状態: 完了</p><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>不可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>傾</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>3</td><td>0</td></tr><tr><th>〜30未満</th><td>1</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>4</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>その場へ</div></div>
 </article>
 <article class="card" data-card-index="2">
       <div class="card-head">
         <h2 class="card-title">葛川19～20 <span class="status-pill status-done">完了</span></h2>
         <p class="item-mgmt">514 02883</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.992725,135.80458" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-2" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260518&amp;entry.2102936974=514%2002883&amp;entry.932009684=%E8%91%9B%E5%B7%9D19%EF%BD%9E20&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E4%B8%8D%E5%8F%AF&amp;entry.1713335536=0.0&amp;entry.539982619=&amp;entry.948358914=&amp;entry.740813394=&amp;entry.74377314=&amp;entry.957344080=&amp;entry.382023163=&amp;entry.288483164=&amp;entry.1467113295=&amp;entry.108281366=&amp;entry.77416071=&amp;entry.792549802=&amp;entry.1363589096=&amp;entry.388844699=&amp;entry.133683289=0&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.992725,135.80458" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-2" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260518&amp;entry.2102936974=514%2002883&amp;entry.932009684=%E8%91%9B%E5%B7%9D19%EF%BD%9E20&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E4%B8%8D%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=%E5%82%BE&amp;entry.948358914=2&amp;entry.740813394=0&amp;entry.74377314=3&amp;entry.957344080=6&amp;entry.382023163=0&amp;entry.288483164=0&amp;entry.1467113295=3&amp;entry.108281366=1&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=0&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
       </div>
       <script type="application/json" id="two-geo-2">{&quot;a&quot;: {&quot;name&quot;: &quot;葛川19～20&quot;, &quot;lat&quot;: 33.99262, &quot;lng&quot;: 135.80436}, &quot;b&quot;: {&quot;name&quot;: &quot;葛川19～20&quot;, &quot;lat&quot;: 33.99283, &quot;lng&quot;: 135.8048}}</script>
       <div class="two-map-wrap" id="two-wrap-2" hidden><div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
-      <div class="note-panel" id="note-2" hidden>状態: 完了<br>処理方法: 集積<br>備考: —</div>
+      <div class="note-panel" id="note-2" hidden><p class="archive-status-line">状態: 完了</p><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>不可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>傾</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>2</td><td>3</td></tr><tr><th>〜20未満</th><td>0</td><td>1</td></tr><tr><th>〜30未満</th><td>3</td><td>0</td></tr><tr><th>〜40未満</th><td>6</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>11</td><td>4</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
 </article>
 <article class="card" data-card-index="3">
       <div class="card-head">
         <h2 class="card-title">葛川17～17W1 <span class="status-pill status-done">完了</span></h2>
         <p class="item-mgmt">514 02881</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.992325,135.80349999999999" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-3" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260518&amp;entry.2102936974=514%2002881&amp;entry.932009684=%E8%91%9B%E5%B7%9D17%EF%BD%9E17W1&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E4%B8%8D%E5%8F%AF&amp;entry.1713335536=0.0&amp;entry.539982619=&amp;entry.948358914=&amp;entry.740813394=&amp;entry.74377314=&amp;entry.957344080=&amp;entry.382023163=&amp;entry.288483164=&amp;entry.1467113295=&amp;entry.108281366=&amp;entry.77416071=&amp;entry.792549802=&amp;entry.1363589096=&amp;entry.388844699=&amp;entry.133683289=0&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.992325,135.80349999999999" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-3" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260518&amp;entry.2102936974=514%2002881&amp;entry.932009684=%E8%91%9B%E5%B7%9D17%EF%BD%9E17W1&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E4%B8%8D%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=%E5%82%BE&amp;entry.948358914=0&amp;entry.740813394=5&amp;entry.74377314=4&amp;entry.957344080=1&amp;entry.382023163=0&amp;entry.288483164=0&amp;entry.1467113295=17&amp;entry.108281366=2&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=0&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
       </div>
       <script type="application/json" id="two-geo-3">{&quot;a&quot;: {&quot;name&quot;: &quot;葛川17～17W1&quot;, &quot;lat&quot;: 33.99241, &quot;lng&quot;: 135.80326}, &quot;b&quot;: {&quot;name&quot;: &quot;葛川17～17W1&quot;, &quot;lat&quot;: 33.99224, &quot;lng&quot;: 135.80374}}</script>
       <div class="two-map-wrap" id="two-wrap-3" hidden><div id="share-two-map-3" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
-      <div class="note-panel" id="note-3" hidden>状態: 完了<br>処理方法: 集積<br>備考: —</div>
+      <div class="note-panel" id="note-3" hidden><p class="archive-status-line">状態: 完了</p><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>不可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>傾</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>17</td></tr><tr><th>〜20未満</th><td>5</td><td>2</td></tr><tr><th>〜30未満</th><td>4</td><td>0</td></tr><tr><th>〜40未満</th><td>1</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>10</td><td>19</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
 </article>
   <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>

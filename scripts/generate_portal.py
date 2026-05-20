@@ -526,6 +526,8 @@ class ArchivePublicItem:
     crane_required: str
     warning: str
     note: str
+    instructions_html: str = ""
+    detail_prefill: ShareDetailEditPrefill | None = None
 
 
 @dataclass(frozen=True)
@@ -646,7 +648,9 @@ def _empty_cut_prefill_strings() -> dict[str, str]:
 
 
 def _share_detail_prefill_from_archive_item(item: ArchivePublicItem) -> ShareDetailEditPrefill:
-    """アーカイブ詳細は径間ごとの6区分が無いため、枝根12区分は空で渡す（手入力前提）。"""
+    """completion_reports の source_item 由来 prefill（無い場合は集計フィールドのみ）。"""
+    if item.detail_prefill is not None:
+        return item.detail_prefill
     nt = (item.note or "").strip()
     if nt == "—":
         nt = ""
@@ -2214,6 +2218,119 @@ def _method_text(src: dict) -> str:
     return "—"
 
 
+def _bucket_label_archive(bucket: object) -> str:
+    if bucket is True:
+        return "可"
+    if bucket is False:
+        return "不可"
+    if isinstance(bucket, str) and bucket.strip() == "一部可能":
+        return "一部可能"
+    return "未設定"
+
+
+def _fmt_m2_archive(v: float) -> str:
+    if abs(v - round(v)) < 1e-9:
+        return f"{int(round(v))}㎡"
+    return f"{v:g}㎡"
+
+
+def _share_detail_prefill_from_source_item(
+    src: dict, *, note_fallback: str = ""
+) -> ShareDetailEditPrefill:
+    """completion_reports の source_item から詳細修正 prefill を組み立てる。"""
+    nt = _to_str(src.get("note")) or note_fallback
+    if nt == "—":
+        nt = ""
+    rw = src.get("road_width_m")
+    road_width = f"{float(rw):g}m" if rw is not None and _to_str(rw) else ""
+    return ShareDetailEditPrefill(
+        management_no=_to_str(src.get("management_no")),
+        label=_to_str(src.get("label")),
+        method=_method_text(src),
+        bucket_truck=_bucket_label_archive(src.get("bucket_available")),
+        road_width=road_width,
+        slope=_to_str(src.get("slope")),
+        branch_cut_under_10=str(_as_num(src.get("branch_cut_under_10"))),
+        branch_cut_10_20=str(_as_num(src.get("branch_cut_10_20"))),
+        branch_cut_20_30=str(_as_num(src.get("branch_cut_20_30"))),
+        branch_cut_30_40=str(_as_num(src.get("branch_cut_30_40"))),
+        branch_cut_40_50=str(_as_num(src.get("branch_cut_40_50"))),
+        branch_cut_over_50=str(_as_num(src.get("branch_cut_over_50"))),
+        root_cut_under_10=str(_as_num(src.get("root_cut_under_10"))),
+        root_cut_10_20=str(_as_num(src.get("root_cut_10_20"))),
+        root_cut_20_30=str(_as_num(src.get("root_cut_20_30"))),
+        root_cut_30_40=str(_as_num(src.get("root_cut_30_40"))),
+        root_cut_40_50=str(_as_num(src.get("root_cut_40_50"))),
+        root_cut_over_50=str(_as_num(src.get("root_cut_over_50"))),
+        bush_area=str(_as_num(src.get("brush_area_m2"))),
+        bamboo_count=str(_as_num(src.get("bamboo_count"))),
+        vine_count=str(_as_num(src.get("vine_locations"))),
+        note=nt,
+    )
+
+
+def build_archive_instructions_html_from_source(src: dict) -> str:
+    """共有ページと同形式の現場指示表（completion_reports の source_item 由来）。"""
+    work = _method_text(src)
+    cut_rows: list[str] = []
+    branch_sum = 0
+    root_sum = 0
+    for label, br_key, rt_key in _SHARE_INSTR_CUT_BAND_PREFILL_ROWS:
+        bv = _as_num(src.get(br_key))
+        rv = _as_num(src.get(rt_key))
+        branch_sum += bv
+        root_sum += rv
+        cut_rows.append(
+            f"<tr><th>{escape_html(label)}</th>"
+            f"<td>{bv}</td><td>{rv}</td></tr>"
+        )
+    cut_rows.append(
+        f'<tr class="instr-cut-total"><th scope="row">{escape_html("合計")}</th>'
+        f"<td>{branch_sum}</td><td>{root_sum}</td></tr>"
+    )
+    bucket_txt = _bucket_label_archive(src.get("bucket_available"))
+    rw_raw = src.get("road_width_m")
+    if rw_raw is not None and _to_str(rw_raw):
+        rw = f"{float(rw_raw):g}m"
+    else:
+        rw = "未設定"
+    slope_disp = _to_str(src.get("slope")) or "—"
+    brush = float(_as_num(src.get("brush_area_m2")))
+    bamboo = _as_num(src.get("bamboo_count"))
+    vine = _as_num(src.get("vine_locations"))
+    summary_tbl = (
+        '<table class="instr-table instr-summary"><tbody>'
+        f"<tr><th>処理方法</th><td>{escape_html(work)}</td></tr>"
+        f"<tr><th>B車</th><td>{escape_html(bucket_txt)}</td></tr>"
+        f"<tr><th>道幅</th><td>{escape_html(rw)}</td></tr>"
+        f"<tr><th>傾斜</th><td>{escape_html(slope_disp)}</td></tr>"
+        "</tbody></table>"
+    )
+    cut_tbl = (
+        '<table class="instr-table instr-cut">'
+        '<thead><tr><th scope="col">区分</th>'
+        '<th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody>'
+        + "".join(cut_rows)
+        + "</tbody></table>"
+    )
+    other_tbl = (
+        '<table class="instr-table instr-other"><tbody>'
+        f"<tr><th>柴伐採面積</th><td>{escape_html(_fmt_m2_archive(brush))}</td></tr>"
+        f"<tr><th>竹伐採本数</th><td>{bamboo}本</td></tr>"
+        f"<tr><th>つる伐採箇所数</th><td>{vine}箇所</td></tr>"
+        "</tbody></table>"
+    )
+    return (
+        '<div class="instr-scroll">'
+        + summary_tbl
+        + '<p class="instr-cut-caption">枝切り・根切り（本数）</p>'
+        + cut_tbl
+        + '<p class="instr-cut-caption">その他伐採</p>'
+        + other_tbl
+        + "</div>"
+    )
+
+
 def _completion_reports_root(repo_root: Path) -> Path:
     return repo_root.parent / "ippatsu-pc" / "data" / "completion_reports"
 
@@ -2313,6 +2430,7 @@ def load_archive_public_items(
         status = _to_str(it.get("completion_status")).lower()
         if status not in {"completed", "incomplete"}:
             status = "—"
+        note_txt = _to_str(src.get("note")) or "—"
         out.append(
             ArchivePublicItem(
                 management_no=_to_str(src.get("management_no") or it.get("management_no")) or "—",
@@ -2334,7 +2452,11 @@ def load_archive_public_items(
                 bucket_available=_yes_no_jp(src.get("bucket_available")),
                 crane_required=_yes_no_jp(src.get("crane_required")),
                 warning=_to_str(src.get("warning")) or "—",
-                note=_to_str(src.get("note")) or "—",
+                note=note_txt,
+                instructions_html=build_archive_instructions_html_from_source(src),
+                detail_prefill=_share_detail_prefill_from_source_item(
+                    src, note_fallback=note_txt if note_txt != "—" else ""
+                ),
             )
         )
     return out, ""
@@ -2920,24 +3042,36 @@ def build_archive_detail_html(
                 if it.completion_status == "completed"
                 else "未完了"
                 if it.completion_status == "incomplete"
-                else "—"
+                else it.completion_status
             )
             reason_line = ""
             if it.completion_status == "incomplete" and it.incomplete_reason != "—":
-                reason_line = f"<br>未完了理由: {escape_html(it.incomplete_reason)}"
-            warn_line = "" if it.warning == "—" else f"<br>警告: {escape_html(it.warning)}"
-            note_body = (
-                f"状態: {escape_html(status_jp)}{reason_line}<br>"
-                f"処理方法: {escape_html(it.method)}<br>"
-                f"備考: {escape_html(it.note)}{warn_line}"
+                reason_line = (
+                    f'<p class="archive-status-line">未完了理由: '
+                    f"{escape_html(it.incomplete_reason)}</p>"
+                )
+            warn_line = ""
+            if it.warning != "—":
+                warn_line = (
+                    f'<p class="archive-warn-line">警告: {escape_html(it.warning)}</p>'
+                )
+            status_header = (
+                f'<p class="archive-status-line">状態: {escape_html(status_jp)}</p>'
             )
-            status_jp = (
-                "完了"
-                if it.completion_status == "completed"
-                else "未完了"
-                if it.completion_status == "incomplete"
-                else it.completion_status
-            )
+            instr_block = (it.instructions_html or "").strip()
+            if not instr_block:
+                instr_block = (
+                    f"<p>処理方法: {escape_html(it.method)}</p>"
+                    f"<p>備考: {escape_html(it.note)}</p>"
+                )
+            note_block = ""
+            nt = (it.note or "").strip()
+            if nt and nt != "—":
+                note_esc = escape_html(nt).replace("\n", "<br>")
+                note_block = (
+                    f'<div class="instr-note"><strong>備考</strong><br>{note_esc}</div>'
+                )
+            note_body = status_header + reason_line + warn_line + instr_block + note_block
             status_cls = (
                 "status-done" if it.completion_status == "completed" else "status-pending"
             )
@@ -3164,6 +3298,52 @@ body {{
   color: var(--text);
 }}
 .note-panel[hidden] {{ display: none !important; }}
+.archive-status-line,
+.archive-warn-line {{
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+}}
+.archive-warn-line {{ color: #b45309; }}
+.instr-scroll {{
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}}
+.instr-table {{
+  width: 100%;
+  min-width: min(100%, 320px);
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-bottom: 0.65rem;
+}}
+.instr-table th,
+.instr-table td {{
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}}
+.instr-table th {{
+  background: #f1f5f9;
+  font-weight: 600;
+  white-space: nowrap;
+}}
+.instr-cut-caption {{
+  margin: 0.5rem 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}}
+.instr-cut-total th,
+.instr-cut-total td {{
+  font-weight: 600;
+  background: #f1f5f9;
+}}
+.instr-note {{
+  margin-top: 0.65rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+  font-size: 0.92rem;
+}}
 .two-map-wrap {{
   margin-top: 0.65rem;
   border-radius: 8px;
