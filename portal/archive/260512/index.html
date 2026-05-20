@@ -69,6 +69,31 @@ body {
 .card-done {
   opacity: 0.78;
 }
+.btn-detail-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 44px;
+  touch-action: manipulation;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border: 2px solid #2563eb;
+  line-height: 1.25;
+}
+.card-actions .btn-detail-edit {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+.btn-detail-edit:hover, .btn-detail-edit:focus-visible {
+  filter: brightness(1.03);
+  outline: none;
+}
 .item-mgmt {
   margin: -0.15rem 0 0;
   font-size: 0.82rem;
@@ -219,7 +244,7 @@ body {
       <div class="card-head">
         <h2 class="card-title">小川155～156 <span class="status-pill status-done">完了</span></h2>
         <p class="item-mgmt">514 01376</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.962675000000004,135.84754" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-0" data-note-toggle>現場指示</button></div>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.962675000000004,135.84754" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-0" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260512&amp;entry.2102936974=514%2001376&amp;entry.932009684=%E5%B0%8F%E5%B7%9D155%EF%BD%9E156&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0.0&amp;entry.539982619=&amp;entry.948358914=&amp;entry.740813394=&amp;entry.74377314=&amp;entry.957344080=&amp;entry.382023163=&amp;entry.288483164=&amp;entry.1467113295=&amp;entry.108281366=&amp;entry.77416071=&amp;entry.792549802=&amp;entry.1363589096=&amp;entry.388844699=&amp;entry.133683289=66&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=%E9%81%93%E8%A3%8F%E3%81%B8" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
       </div>
       <script type="application/json" id="two-geo-0">{&quot;a&quot;: {&quot;name&quot;: &quot;小川155～156&quot;, &quot;lat&quot;: 33.96266, &quot;lng&quot;: 135.84737}, &quot;b&quot;: {&quot;name&quot;: &quot;小川155～156&quot;, &quot;lat&quot;: 33.96269, &quot;lng&quot;: 135.84771}}</script>
       <div class="two-map-wrap" id="two-wrap-0" hidden><div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -229,7 +254,7 @@ body {
       <div class="card-head">
         <h2 class="card-title">小川151～152 <span class="status-pill status-done">完了</span></h2>
         <p class="item-mgmt">514 01372</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.963835,135.84741000000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-1" data-note-toggle>現場指示</button></div>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.963835,135.84741000000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-1" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260512&amp;entry.2102936974=514%2001372&amp;entry.932009684=%E5%B0%8F%E5%B7%9D151%EF%BD%9E152&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0.0&amp;entry.539982619=&amp;entry.948358914=&amp;entry.740813394=&amp;entry.74377314=&amp;entry.957344080=&amp;entry.382023163=&amp;entry.288483164=&amp;entry.1467113295=&amp;entry.108281366=&amp;entry.77416071=&amp;entry.792549802=&amp;entry.1363589096=&amp;entry.388844699=&amp;entry.133683289=48&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=%E9%81%93%E8%A3%8F%E3%81%B8" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
       </div>
       <script type="application/json" id="two-geo-1">{&quot;a&quot;: {&quot;name&quot;: &quot;小川151～152&quot;, &quot;lat&quot;: 33.96403, &quot;lng&quot;: 135.84728}, &quot;b&quot;: {&quot;name&quot;: &quot;小川151～152&quot;, &quot;lat&quot;: 33.96364, &quot;lng&quot;: 135.84754}}</script>
       <div class="two-map-wrap" id="two-wrap-1" hidden><div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -239,7 +264,7 @@ body {
       <div class="card-head">
         <h2 class="card-title">小川137～138 <span class="status-pill status-done">完了</span></h2>
         <p class="item-mgmt">514 01359</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.967175,135.847725" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-2" data-note-toggle>現場指示</button></div>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.967175,135.847725" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-2" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260512&amp;entry.2102936974=514%2001359&amp;entry.932009684=%E5%B0%8F%E5%B7%9D137%EF%BD%9E138&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0.0&amp;entry.539982619=&amp;entry.948358914=&amp;entry.740813394=&amp;entry.74377314=&amp;entry.957344080=&amp;entry.382023163=&amp;entry.288483164=&amp;entry.1467113295=&amp;entry.108281366=&amp;entry.77416071=&amp;entry.792549802=&amp;entry.1363589096=&amp;entry.388844699=&amp;entry.133683289=66&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=%E9%81%93%E8%A3%8F%E3%81%B8" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
       </div>
       <script type="application/json" id="two-geo-2">{&quot;a&quot;: {&quot;name&quot;: &quot;小川137～138&quot;, &quot;lat&quot;: 33.96728, &quot;lng&quot;: 135.84751}, &quot;b&quot;: {&quot;name&quot;: &quot;小川137～138&quot;, &quot;lat&quot;: 33.96707, &quot;lng&quot;: 135.84794}}</script>
       <div class="two-map-wrap" id="two-wrap-2" hidden><div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -249,7 +274,7 @@ body {
       <div class="card-head">
         <h2 class="card-title">小川124～125 <span class="status-pill status-pending">未完了</span></h2>
         <p class="item-mgmt">514 01354</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.96981,135.846665" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-3" data-note-toggle>現場指示</button></div>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.96981,135.846665" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-3" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260512&amp;entry.2102936974=514%2001354&amp;entry.932009684=%E5%B0%8F%E5%B7%9D124%EF%BD%9E125&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0.0&amp;entry.539982619=&amp;entry.948358914=&amp;entry.740813394=&amp;entry.74377314=&amp;entry.957344080=&amp;entry.382023163=&amp;entry.288483164=&amp;entry.1467113295=&amp;entry.108281366=&amp;entry.77416071=&amp;entry.792549802=&amp;entry.1363589096=&amp;entry.388844699=&amp;entry.133683289=0&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=%E5%85%A8%E3%81%A6%E3%81%9D%E3%81%AE%E5%A0%B4%E3%80%82125%E5%81%B4%E5%A4%AA%E7%94%B0%E5%BB%BA%E8%A8%ADB%E8%BB%8A%E4%BE%B5%E5%85%A5%E5%8F%AF" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
       </div>
       <script type="application/json" id="two-geo-3">{&quot;a&quot;: {&quot;name&quot;: &quot;小川124～125&quot;, &quot;lat&quot;: 33.96954, &quot;lng&quot;: 135.84652}, &quot;b&quot;: {&quot;name&quot;: &quot;小川124～125&quot;, &quot;lat&quot;: 33.97008, &quot;lng&quot;: 135.84681}}</script>
       <div class="two-map-wrap" id="two-wrap-3" hidden><div id="share-two-map-3" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -259,7 +284,7 @@ body {
       <div class="card-head">
         <h2 class="card-title">小川123～124 <span class="status-pill status-done">完了</span></h2>
         <p class="item-mgmt">514 01353</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.969375,135.846605" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-4" data-note-toggle>現場指示</button></div>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.969375,135.846605" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-4" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260512&amp;entry.2102936974=514%2001353&amp;entry.932009684=%E5%B0%8F%E5%B7%9D123%EF%BD%9E124&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0.0&amp;entry.539982619=&amp;entry.948358914=&amp;entry.740813394=&amp;entry.74377314=&amp;entry.957344080=&amp;entry.382023163=&amp;entry.288483164=&amp;entry.1467113295=&amp;entry.108281366=&amp;entry.77416071=&amp;entry.792549802=&amp;entry.1363589096=&amp;entry.388844699=&amp;entry.133683289=66&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=%E6%9F%B4%E3%82%82%E6%9E%9D%E3%81%A7" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
       </div>
       <script type="application/json" id="two-geo-4">{&quot;a&quot;: {&quot;name&quot;: &quot;小川123～124&quot;, &quot;lat&quot;: 33.96921, &quot;lng&quot;: 135.84669}, &quot;b&quot;: {&quot;name&quot;: &quot;小川123～124&quot;, &quot;lat&quot;: 33.96954, &quot;lng&quot;: 135.84652}}</script>
       <div class="two-map-wrap" id="two-wrap-4" hidden><div id="share-two-map-4" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -269,7 +294,7 @@ body {
       <div class="card-head">
         <h2 class="card-title">小川79～80 <span class="status-pill status-done">完了</span></h2>
         <p class="item-mgmt">514 01324</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.96413,135.83368000000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-5" data-two-map="share-two-map-5" data-two-json="two-geo-5" aria-expanded="false" aria-controls="two-wrap-5">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-5" data-note-toggle>現場指示</button></div>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.96413,135.83368000000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-5" data-two-map="share-two-map-5" data-two-json="two-geo-5" aria-expanded="false" aria-controls="two-wrap-5">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-5" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260512&amp;entry.2102936974=514%2001324&amp;entry.932009684=%E5%B0%8F%E5%B7%9D79%EF%BD%9E80&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0.0&amp;entry.539982619=&amp;entry.948358914=&amp;entry.740813394=&amp;entry.74377314=&amp;entry.957344080=&amp;entry.382023163=&amp;entry.288483164=&amp;entry.1467113295=&amp;entry.108281366=&amp;entry.77416071=&amp;entry.792549802=&amp;entry.1363589096=&amp;entry.388844699=&amp;entry.133683289=0&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=%E3%81%9D%E3%81%AE%E5%A0%B4%E3%81%B8" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
       </div>
       <script type="application/json" id="two-geo-5">{&quot;a&quot;: {&quot;name&quot;: &quot;小川79～80&quot;, &quot;lat&quot;: 33.96398, &quot;lng&quot;: 135.83358}, &quot;b&quot;: {&quot;name&quot;: &quot;小川79～80&quot;, &quot;lat&quot;: 33.96428, &quot;lng&quot;: 135.83378}}</script>
       <div class="two-map-wrap" id="two-wrap-5" hidden><div id="share-two-map-5" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>

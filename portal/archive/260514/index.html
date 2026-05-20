@@ -69,6 +69,31 @@ body {
 .card-done {
   opacity: 0.78;
 }
+.btn-detail-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 44px;
+  touch-action: manipulation;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border: 2px solid #2563eb;
+  line-height: 1.25;
+}
+.card-actions .btn-detail-edit {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+.btn-detail-edit:hover, .btn-detail-edit:focus-visible {
+  filter: brightness(1.03);
+  outline: none;
+}
 .item-mgmt {
   margin: -0.15rem 0 0;
   font-size: 0.82rem;
@@ -215,69 +240,10 @@ body {
   <h1 class="page-title">2026年05月14日</h1>
   <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
   <main>
-<article class="card" data-card-index="0">
-      <div class="card-head">
-        <h2 class="card-title">小川187～188 <span class="status-pill status-done">完了</span></h2>
-        <p class="item-mgmt">514 01401</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.961785,135.85179" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-0" data-note-toggle>現場指示</button></div>
-      </div>
-      <script type="application/json" id="two-geo-0">{&quot;a&quot;: {&quot;name&quot;: &quot;小川187～188&quot;, &quot;lat&quot;: 33.96187, &quot;lng&quot;: 135.85157}, &quot;b&quot;: {&quot;name&quot;: &quot;小川187～188&quot;, &quot;lat&quot;: 33.9617, &quot;lng&quot;: 135.85201}}</script>
-      <div class="two-map-wrap" id="two-wrap-0" hidden><div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
-      <div class="note-panel" id="note-0" hidden>状態: 完了<br>処理方法: 集積<br>備考: 道裏へ</div>
-</article>
-<article class="card" data-card-index="1">
-      <div class="card-head">
-        <h2 class="card-title">小川181～182 <span class="status-pill status-done">完了</span></h2>
-        <p class="item-mgmt">514 01395</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.962595,135.84965499999998" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-1" data-note-toggle>現場指示</button></div>
-      </div>
-      <script type="application/json" id="two-geo-1">{&quot;a&quot;: {&quot;name&quot;: &quot;小川181～182&quot;, &quot;lat&quot;: 33.96271, &quot;lng&quot;: 135.84942}, &quot;b&quot;: {&quot;name&quot;: &quot;小川181～182&quot;, &quot;lat&quot;: 33.96248, &quot;lng&quot;: 135.84989}}</script>
-      <div class="two-map-wrap" id="two-wrap-1" hidden><div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
-      <div class="note-panel" id="note-1" hidden>状態: 完了<br>処理方法: 集積<br>備考: 道裏へ</div>
-</article>
-<article class="card" data-card-index="2">
-      <div class="card-head">
-        <h2 class="card-title">小川177～178 <span class="status-pill status-done">完了</span></h2>
-        <p class="item-mgmt">514 01391</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.963454999999996,135.84874000000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-2" data-note-toggle>現場指示</button></div>
-      </div>
-      <script type="application/json" id="two-geo-2">{&quot;a&quot;: {&quot;name&quot;: &quot;小川177～178&quot;, &quot;lat&quot;: 33.96358, &quot;lng&quot;: 135.84889}, &quot;b&quot;: {&quot;name&quot;: &quot;小川177～178&quot;, &quot;lat&quot;: 33.96333, &quot;lng&quot;: 135.84859}}</script>
-      <div class="two-map-wrap" id="two-wrap-2" hidden><div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
-      <div class="note-panel" id="note-2" hidden>状態: 完了<br>処理方法: 集積<br>備考: 道裏へ</div>
-</article>
-<article class="card" data-card-index="3">
-      <div class="card-head">
-        <h2 class="card-title">小川176～177 <span class="status-pill status-done">完了</span></h2>
-        <p class="item-mgmt">514 01389</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.963665,135.84919000000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-3" data-note-toggle>現場指示</button></div>
-      </div>
-      <script type="application/json" id="two-geo-3">{&quot;a&quot;: {&quot;name&quot;: &quot;小川176～177&quot;, &quot;lat&quot;: 33.96375, &quot;lng&quot;: 135.84949}, &quot;b&quot;: {&quot;name&quot;: &quot;小川176～177&quot;, &quot;lat&quot;: 33.96358, &quot;lng&quot;: 135.84889}}</script>
-      <div class="two-map-wrap" id="two-wrap-3" hidden><div id="share-two-map-3" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
-      <div class="note-panel" id="note-3" hidden>状態: 完了<br>処理方法: 集積<br>備考: 道裏へ</div>
-</article>
-<article class="card" data-card-index="4">
-      <div class="card-head">
-        <h2 class="card-title">小川176～古ル野1 <span class="status-pill status-done">完了</span></h2>
-        <p class="item-mgmt">514 01390</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.963665,135.84919000000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-4" data-note-toggle>現場指示</button></div>
-      </div>
-      <script type="application/json" id="two-geo-4">{&quot;a&quot;: {&quot;name&quot;: &quot;小川176～古ル野1&quot;, &quot;lat&quot;: 33.96375, &quot;lng&quot;: 135.84949}, &quot;b&quot;: {&quot;name&quot;: &quot;小川176～古ル野1&quot;, &quot;lat&quot;: 33.96358, &quot;lng&quot;: 135.84889}}</script>
-      <div class="two-map-wrap" id="two-wrap-4" hidden><div id="share-two-map-4" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
-      <div class="note-panel" id="note-4" hidden>状態: 完了<br>処理方法: 集積<br>備考: 道下へ</div>
-</article>
-<article class="card" data-card-index="5">
-      <div class="card-head">
-        <h2 class="card-title">古ル野15～16 <span class="status-pill status-done">完了</span></h2>
-        <p class="item-mgmt">514 07313</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=33.966525000000004,135.853165" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-5" data-two-map="share-two-map-5" data-two-json="two-geo-5" aria-expanded="false" aria-controls="two-wrap-5">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-5" data-note-toggle>現場指示</button></div>
-      </div>
-      <script type="application/json" id="two-geo-5">{&quot;a&quot;: {&quot;name&quot;: &quot;古ル野15～16&quot;, &quot;lat&quot;: 33.96661, &quot;lng&quot;: 135.85297}, &quot;b&quot;: {&quot;name&quot;: &quot;古ル野15～16&quot;, &quot;lat&quot;: 33.96644, &quot;lng&quot;: 135.85336}}</script>
-      <div class="two-map-wrap" id="two-wrap-5" hidden><div id="share-two-map-5" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
-      <div class="note-panel" id="note-5" hidden>状態: 完了<br>処理方法: 集積<br>備考: その場へ</div>
-</article>
-  <section class="map-section" aria-labelledby="map-heading">
+<p class="muted-tiny">詳細な現場一覧は未生成です（completion_reports が見つかりません）。</p>
+  <section class="map-section map-empty" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
-    <div id="share-map" role="application" aria-label="全径間の位置"></div>
+    <p class="muted-tiny">まとめて表示できる位置情報がありません。</p>
   </section>
 
   </main>
@@ -356,7 +322,7 @@ body {
     });
   });
 
-  var points = [{"name": "小川187～188", "lat": 33.96187, "lng": 135.85157, "management_no": "514 01401"}, {"name": "小川181～182", "lat": 33.96271, "lng": 135.84942, "management_no": "514 01395"}, {"name": "小川177～178", "lat": 33.96358, "lng": 135.84889, "management_no": "514 01391"}, {"name": "小川176～177", "lat": 33.96375, "lng": 135.84949, "management_no": "514 01389"}, {"name": "小川176～古ル野1", "lat": 33.96375, "lng": 135.84949, "management_no": "514 01390"}, {"name": "古ル野15～16", "lat": 33.96661, "lng": 135.85297, "management_no": "514 07313"}];
+  var points = [];
   var mapEl = document.getElementById("share-map");
   if (mapEl && Array.isArray(points) && points.length) {
     var map = L.map("share-map", { scrollWheelZoom: false });
