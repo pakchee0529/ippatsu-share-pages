@@ -15,6 +15,15 @@ portal/archive/<YYMMDD>/ は generate 時に manifest 済み分へ上書き生�
 
 CLI では ``--data-root <path>`` に ippatsu の ``data`` ディレクトリ（``completion_reports/`` と ``survey/`` を含む）を
 渡せる。未指定時は従来どおり ``<share-pages の親>/ippatsu-pc/data`` を参照する。
+
+``--mode full``（既定）: 従来どおり全体再生成（survey・share 注入・manifest 全日付のアーカイブ詳細を含む）。
+
+``--mode completion-archive --date YYMMDD``: 完了報告アーカイブ反映向けの最小生成。
+``portal/index.html``・``portal/archive/index.html``・``portal/archive/<date>/index.html`` のみ。
+survey・share 注入・他日付のアーカイブ詳細は触らない。
+``portal/index.html`` のアクティブ一覧は **share-pages の ``share/<date>/index.html``** を走査し、
+``portal/archive_manifest.json`` に載る日付（対象日を含む）を TOP から除外する。
+``data/share/*.json`` は参照しない（manifest は ippatsu-pc 側で事前更新される想定）。
 """
 
 from __future__ import annotations
@@ -3811,6 +3820,18 @@ a.portal-menu-item:focus-visible {{
 """
 
 
+PORTAL_MODE_FULL = "full"
+PORTAL_MODE_COMPLETION_ARCHIVE = "completion-archive"
+
+
+def _parse_six_digit_date(value: str) -> str | None:
+    """6桁日付キーを正規化。不正なら None。"""
+    d = (value or "").strip()
+    if len(d) == 6 and d.isdigit():
+        return d
+    return None
+
+
 def main() -> int:
     global _DATA_ROOT_OVERRIDE
 
@@ -3829,6 +3850,22 @@ def main() -> int:
             "Default: <parent of this repo>/ippatsu-pc/data"
         ),
     )
+    parser.add_argument(
+        "--mode",
+        choices=(PORTAL_MODE_FULL, PORTAL_MODE_COMPLETION_ARCHIVE),
+        default=PORTAL_MODE_FULL,
+        help=(
+            "full: full portal regen (default). "
+            "completion-archive: minimal regen for completion report archive sync "
+            "(requires --date)."
+        ),
+    )
+    parser.add_argument(
+        "--date",
+        default=None,
+        metavar="YYMMDD",
+        help="Target 6-digit date; required when --mode completion-archive",
+    )
     ns = parser.parse_args()
     _DATA_ROOT_OVERRIDE = None
     if ns.data_root is not None:
@@ -3838,14 +3875,26 @@ def main() -> int:
             return 1
         _DATA_ROOT_OVERRIDE = dr
 
+    mode = ns.mode
+    completion_date: str | None = None
+    if mode == PORTAL_MODE_COMPLETION_ARCHIVE:
+        completion_date = _parse_six_digit_date(ns.date or "")
+        if completion_date is None:
+            print(
+                "Error: --mode completion-archive requires --date YYMMDD (6 digits).",
+                file=sys.stderr,
+            )
+            return 1
+
     repo_root = Path(__file__).resolve().parent.parent
     share_dir = repo_root / "share"
     if not share_dir.is_dir():
         print(f"Missing directory: {share_dir}", file=sys.stderr)
         return 1
 
-    # ippatsu-pc からの HTML コピー直後でも、ポータル生成前に必ず注入する。
-    inject_share_detail_edit_into_share_pages(repo_root)
+    if mode == PORTAL_MODE_FULL:
+        # ippatsu-pc からの HTML コピー直後でも、ポータル生成前に必ず注入する。
+        inject_share_detail_edit_into_share_pages(repo_root)
 
     rows: list[tuple[str, Path]] = []
     for sub in sorted(share_dir.iterdir(), key=lambda p: p.name):
@@ -3867,6 +3916,8 @@ def main() -> int:
     entries: list[tuple[str, str]] = []
     for folder, path in rows:
         if folder in archived:
+            continue
+        if mode == PORTAL_MODE_COMPLETION_ARCHIVE and folder == completion_date:
             continue
         html_text = path.read_text(encoding="utf-8", errors="replace")
         date_line = card_heading(folder, path)
@@ -3920,7 +3971,18 @@ def main() -> int:
     arch_path = repo_root / "portal" / "archive" / "index.html"
     arch_path.parent.mkdir(parents=True, exist_ok=True)
     arch_path.write_text(arch_html, encoding="utf-8", newline="\n")
-    detail_paths = write_archive_detail_pages(repo_root, manifest_entries)
+    if mode == PORTAL_MODE_COMPLETION_ARCHIVE:
+        detail_entries = [e for e in manifest_entries if e.date == completion_date]
+        if not detail_entries:
+            print(
+                f"Warning: archive manifest has no entry for '{completion_date}'; "
+                "skipping portal/archive/<date>/index.html "
+                "(merge archive_manifest.json before generate_portal).",
+                file=sys.stderr,
+            )
+    else:
+        detail_entries = manifest_entries
+    detail_paths = write_archive_detail_pages(repo_root, detail_entries)
     for dp in detail_paths:
         print(f"Wrote {dp}")
     print(
@@ -3928,17 +3990,24 @@ def main() -> int:
         f"archive_rows={len(archive_parts)}, recent={len(recent_parts)}, months={len(sections)}, "
         f"archive_details={len(detail_paths)})"
     )
-    survey_items, survey_empty_note = load_survey_public_items(repo_root)
-    survey_html = build_survey_html(
-        survey_items,
-        survey_empty_note,
-        date.today().isoformat(),
-    )
-    survey_path = repo_root / "portal" / "survey" / "index.html"
-    survey_path.parent.mkdir(parents=True, exist_ok=True)
-    survey_path.write_text(survey_html, encoding="utf-8", newline="\n")
-    print(f"Wrote {survey_path} (survey_items={len(survey_items)})")
-    inject_share_detail_edit_into_share_pages(repo_root)
+    if mode == PORTAL_MODE_FULL:
+        survey_items, survey_empty_note = load_survey_public_items(repo_root)
+        survey_html = build_survey_html(
+            survey_items,
+            survey_empty_note,
+            date.today().isoformat(),
+        )
+        survey_path = repo_root / "portal" / "survey" / "index.html"
+        survey_path.parent.mkdir(parents=True, exist_ok=True)
+        survey_path.write_text(survey_html, encoding="utf-8", newline="\n")
+        print(f"Wrote {survey_path} (survey_items={len(survey_items)})")
+        inject_share_detail_edit_into_share_pages(repo_root)
+    else:
+        print(
+            f"completion-archive mode (date={completion_date}): "
+            "skipped portal/survey/index.html and share inject; "
+            f"wrote {len(detail_paths)} archive detail page(s) only for target date"
+        )
     return 0
 
 
