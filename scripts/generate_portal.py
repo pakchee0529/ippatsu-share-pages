@@ -6,6 +6,10 @@
 に登録された6桁日付のみ。アーカイブ一覧・各日付の詳細ページは manifest を正本とし、share が無い日付も
 一覧・詳細に出せる（共有ページ削除後もアーカイブ詳細でサマリを残すため）。
 
+manifest の entries[].href は **portal/archive/index.html を基準としたアーカイブ詳細への相対 URL**
+（例: ``./260520/``）を推奨する。``../../share/<date>/`` は共有ページ削除後に 404 になるため、登録済み
+アーカイブ日付では使わないこと。
+
 portal/archive/<YYMMDD>/ は generate 時に manifest 済み分へ上書き生成する。manifest から date が消えた
 古い YYMMDD ディレクトリは自動では削除しない（孤立が残る）。必要なら生成前に 6 桁名フォルダだけ手で整理する。
 """
@@ -1765,17 +1769,22 @@ def build_archive_row_context(
     )
 
 
+def archive_list_detail_href(date_key: str) -> str:
+    """portal/archive/index.html 上の「アーカイブ詳細を開く」先。共有ページ有無に依存しない。"""
+    return f"./{date_key}/"
+
+
 def format_archive_row_article(
     entry: ManifestEntry,
     share_summary: ShareSummary | None,
     public_items: list[ArchivePublicItem] | None,
 ) -> str:
-    """1行分のアーカイブカード（data-search 付き）。主リンクはアーカイブ詳細 ./<date>/ 。"""
+    """1行分のアーカイブカード（data-search 付き）。主リンクは常にアーカイブ詳細（共有ページ URL は使わない）。"""
     folder = entry.date
     date_jp = fallback_heading(folder)
     ctx = build_archive_row_context(entry, share_summary, public_items)
     search_attr = escape_html(ctx.search_blob)
-    href = f"./{folder}/"
+    href = archive_list_detail_href(folder)
     return f"""    <article class="archive-row" data-search="{search_attr}">
       <div class="archive-row-top">
         <div class="archive-main">{escape_html(ctx.span_summary)}</div>
