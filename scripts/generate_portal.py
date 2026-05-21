@@ -37,6 +37,7 @@ import html as html_lib
 import json
 import re
 import sys
+import unicodedata
 from urllib.parse import parse_qs, quote, urlencode, urlparse
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -412,6 +413,52 @@ def build_portal_heading(
 
 def escape_html(s: str) -> str:
     return html_lib.escape(s, quote=True)
+
+
+def normalize_management_no(raw: str) -> str | None:
+    """ippatsu-pc ``app/share/supabase_case_import.normalize_management_no`` と同じ規則。"""
+    if raw is None:
+        return None
+    s = unicodedata.normalize("NFKC", str(raw)).strip()
+    s = s.replace("\u3000", " ")
+    digits = re.sub(r"\D+", "", s)
+    if not digits:
+        return None
+    n = len(digits)
+    if n <= 5:
+        prefix = "514"
+        body = digits.zfill(5)
+    elif n == 6:
+        head = digits[0]
+        if head == "5":
+            prefix = "515"
+        elif head == "4":
+            prefix = "514"
+        else:
+            return None
+        body = digits[1:]
+    elif n == 8:
+        prefix = digits[:3]
+        body = digits[3:]
+        if prefix not in {"514", "515"}:
+            return None
+    else:
+        return None
+    if len(body) != 5:
+        return None
+    return f"{prefix} {body}"
+
+
+def management_no_key(raw: str) -> str | None:
+    """ippatsu-pc ``app/share/supabase_case_import.management_no_key`` と同じ規則。"""
+    s = str(raw or "").strip()
+    if not s or s == "—":
+        return None
+    norm = normalize_management_no(s)
+    if norm is not None:
+        return re.sub(r"\s+", "", norm)
+    digits = re.sub(r"\D+", "", unicodedata.normalize("NFKC", s))
+    return digits or None
 
 
 def build_survey_report_url(
@@ -1623,6 +1670,7 @@ def inject_share_detail_edit_into_share_page_for_date(
 @dataclass(frozen=True)
 class SurveyPublicItem:
     management_no: str
+    management_no_key: str
     label: str
     map_url: str
     start_label: str
@@ -2546,9 +2594,12 @@ def load_survey_public_items(repo_root: Path) -> tuple[list[SurveyPublicItem], s
     for it in items:
         if not isinstance(it, dict):
             continue
+        mno = _to_str(it.get("management_no")) or "—"
+        mno_key = management_no_key(mno) if mno != "—" else None
         out.append(
             SurveyPublicItem(
-                management_no=_to_str(it.get("management_no")) or "—",
+                management_no=mno,
+                management_no_key=mno_key or "",
                 label=_to_str(it.get("label")) or "—",
                 map_url=_to_str(it.get("map_url")),
                 start_label=_to_str(it.get("start_label")),
@@ -2643,13 +2694,32 @@ def build_survey_html(
             f'target="_blank" rel="noopener noreferrer">返却候補を報告</a>'
             f"</div>"
         )
+        portal_request_btns = ""
+        if it.management_no_key:
+            portal_request_btns = (
+                '<div class="card-actions card-actions-portal-request" role="group" '
+                'aria-label="現調済み（PC承認待ち・送信テスト）">'
+                '<button type="button" class="btn btn-survey-mark-done" '
+                'data-survey-mark-done>現調済みにする</button>'
+                '<p class="survey-mark-hint muted-tiny">'
+                "押すとPC側の承認待ちになります（今回は送信テスト）"
+                "</p>"
+                '<p class="survey-mark-status muted-tiny" data-survey-mark-status '
+                'hidden role="status"></p>'
+                "</div>"
+            )
         cards.append(
-            f"""<article class="card" data-card-index="{idx}">
+            f"""<article class="card survey-update-card" data-card-index="{idx}"
+  data-management-no-key="{escape_html(it.management_no_key)}"
+  data-management-no="{escape_html(it.management_no)}"
+  data-label="{escape_html(it.label)}"
+  data-requested-action="mark_survey_completed">
   <div class="card-head">
     <h2 class="card-title">{escape_html(it.label)}</h2>
     <p class="item-mgmt">{escape_html(it.management_no)}</p>
     <div class="card-actions">{actions}</div>
     {report_btns}
+    {portal_request_btns}
   </div>
   {two_json}
   {two_wrap}
@@ -2920,6 +2990,43 @@ body {{
   background: #fef3c7;
   outline: none;
 }}
+.card-actions-portal-request {{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  flex-basis: 100%;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--border);
+}}
+.btn-survey-mark-done {{
+  background: #ecfdf5;
+  color: #047857;
+  border: 2px solid #6ee7b7;
+}}
+.btn-survey-mark-done:hover, .btn-survey-mark-done:focus-visible {{
+  background: #d1fae5;
+  outline: none;
+}}
+.btn-survey-mark-done:disabled {{
+  opacity: 0.8;
+  cursor: default;
+}}
+.survey-mark-hint {{
+  margin: 0;
+  line-height: 1.4;
+}}
+.survey-mark-status {{
+  margin: 0;
+  color: #047857;
+  font-weight: 600;
+}}
+.survey-mark-status[hidden] {{ display: none !important; }}
+.survey-update-card.survey-mark-sent {{
+  border-color: #a7f3d0;
+}}
 </style>
 </head>
 <body>
@@ -2930,7 +3037,7 @@ body {{
   </nav>
   <h1 class="page-title">現調待ち一覧</h1>
   <p class="lead">径間ごとに地図・現場指示・報告用のリンクがあります。</p>
-  <p class="report-disclaimer">報告ボタンは Google フォームに送信します。送信後、PC側で確認して反映します。押しただけではこの一覧から消えません。</p>
+  <p class="report-disclaimer">「現調済みを報告」「返却候補を報告」は Google フォームに送信します。「現調済みにする」は今回送信テストのみ（Supabase 未送信）。いずれも押しただけではこの一覧から消えません。</p>
   <main>
 {items_html}
 {map_block}
@@ -3027,6 +3134,65 @@ body {{
     if (bounds.length === 1) map.setView(bounds[0], 15);
     else if (bounds.length > 1) map.fitBounds(bounds, {{ padding: [28, 28], maxZoom: 16 }});
   }}
+  var SURVEY_DUMMY_LS_PREFIX = "survey_update_request_dummy:";
+  var SURVEY_MARK_CONFIRM =
+    "この案件を「現調済み」として送信しますか？（今回は送信テストで、実際にはまだ反映されません）";
+  function surveyDummyLsKey(mgmtKey, action) {{
+    return SURVEY_DUMMY_LS_PREFIX + mgmtKey + ":" + action;
+  }}
+  function dummyRequestId() {{
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {{
+      return "dummy-" + crypto.randomUUID();
+    }}
+    return "dummy-" + String(Date.now()) + "-" + Math.random().toString(16).slice(2);
+  }}
+  function applySurveyMarkDoneState(card, btn, statusEl, sent) {{
+    if (sent) {{
+      statusEl.hidden = false;
+      statusEl.textContent = "送信テスト済み（PC反映待ちの予定）";
+      btn.disabled = true;
+      btn.textContent = "送信テスト済み";
+      card.classList.add("survey-mark-sent");
+    }} else {{
+      statusEl.hidden = true;
+      statusEl.textContent = "";
+      btn.disabled = false;
+      btn.textContent = "現調済みにする";
+      card.classList.remove("survey-mark-sent");
+    }}
+  }}
+  document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {{
+    var key = (card.getAttribute("data-management-no-key") || "").trim();
+    var action = (card.getAttribute("data-requested-action") || "mark_survey_completed").trim();
+    var btn = card.querySelector("[data-survey-mark-done]");
+    var statusEl = card.querySelector("[data-survey-mark-status]");
+    if (!key || !btn || !statusEl) return;
+    var lsKey = surveyDummyLsKey(key, action);
+    try {{
+      if (localStorage.getItem(lsKey) === "1") {{
+        applySurveyMarkDoneState(card, btn, statusEl, true);
+      }}
+    }} catch (e) {{}}
+    btn.addEventListener("click", function() {{
+      if (btn.disabled) return;
+      if (!window.confirm(SURVEY_MARK_CONFIRM)) return;
+      var payload = {{
+        request_id: dummyRequestId(),
+        management_no_key: key,
+        management_no: (card.getAttribute("data-management-no") || "").trim(),
+        label: (card.getAttribute("data-label") || "").trim(),
+        requested_action: action,
+        source: "portal_survey",
+        portal_page_url: location.href,
+        client_note: ""
+      }};
+      console.log("[survey-portal-dummy] payload", payload);
+      try {{
+        localStorage.setItem(lsKey, "1");
+      }} catch (e2) {{}}
+      applySurveyMarkDoneState(card, btn, statusEl, true);
+    }});
+  }});
 }})();
   </script>
 </body>
