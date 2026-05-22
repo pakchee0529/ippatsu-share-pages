@@ -87,6 +87,11 @@ SURVEY_REPORT_ENTRY_DATE = "entry.983859884"
 SURVEY_REPORT_TYPE_JP_COMPLETED = "現調済み"
 SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE = "返却候補"
 
+# 現調済み更新依頼（Supabase Edge Function）。service_role は公開 HTML に出さない。
+SURVEY_STATUS_REQUEST_ENDPOINT = (
+    "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request"
+)
+
 # ---------------------------------------------------------------------------
 # 現場共有 — 詳細修正（Googleフォーム prefill / V2・6区分枝根）
 # 現調待ち（SURVEY_REPORT_*）とは独立。docs/share_detail_edit_form_apps_script.md 参照。
@@ -2619,6 +2624,7 @@ def build_survey_html(
     empty_note: str,
     report_date_iso: str,
     form_base_url: str = SURVEY_REPORT_FORM_URL,
+    status_request_endpoint: str = SURVEY_STATUS_REQUEST_ENDPOINT,
 ) -> str:
     cards: list[str] = []
     points: list[dict] = []
@@ -2698,11 +2704,11 @@ def build_survey_html(
         if it.management_no_key:
             portal_request_btns = (
                 '<div class="card-actions card-actions-portal-request" role="group" '
-                'aria-label="現調済み（PC承認待ち・送信テスト）">'
+                'aria-label="現調済み（PC承認待ち）">'
                 '<button type="button" class="btn btn-survey-mark-done" '
                 'data-survey-mark-done>現調済みにする</button>'
                 '<p class="survey-mark-hint muted-tiny">'
-                "押すとPC側の承認待ちになります（今回は送信テスト）"
+                "押すとPC側の承認待ちになります（更新依頼を送信）"
                 "</p>"
                 '<p class="survey-mark-status muted-tiny" data-survey-mark-status '
                 'hidden role="status"></p>'
@@ -3023,6 +3029,9 @@ body {{
   color: #047857;
   font-weight: 600;
 }}
+.survey-mark-status.is-error {{
+  color: #b45309;
+}}
 .survey-mark-status[hidden] {{ display: none !important; }}
 .survey-update-card.survey-mark-sent {{
   border-color: #a7f3d0;
@@ -3037,7 +3046,7 @@ body {{
   </nav>
   <h1 class="page-title">現調待ち一覧</h1>
   <p class="lead">径間ごとに地図・現場指示・報告用のリンクがあります。</p>
-  <p class="report-disclaimer">「現調済みを報告」「返却候補を報告」は Google フォームに送信します。「現調済みにする」は今回送信テストのみ（Supabase 未送信）。いずれも押しただけではこの一覧から消えません。</p>
+  <p class="report-disclaimer">「現調済みを報告」「返却候補を報告」は Google フォームに送信します。「現調済みにする」は Supabase へ更新依頼（PC反映待ち）を送信します。いずれも押しただけではこの一覧から消えません。</p>
   <main>
 {items_html}
 {map_block}
@@ -3134,32 +3143,97 @@ body {{
     if (bounds.length === 1) map.setView(bounds[0], 15);
     else if (bounds.length > 1) map.fitBounds(bounds, {{ padding: [28, 28], maxZoom: 16 }});
   }}
-  var SURVEY_DUMMY_LS_PREFIX = "survey_update_request_dummy:";
+  // Edge Function endpoint (M6). Change SURVEY_STATUS_REQUEST_ENDPOINT in generate_portal.py only.
+  // Auth: deployed with --no-verify-jwt (M5b); no Authorization header for now.
+  // Before production: re-check verify_jwt, anon key, and CORS. Never put service_role in HTML.
+  var SURVEY_STATUS_REQUEST_ENDPOINT = {json.dumps(status_request_endpoint, ensure_ascii=False)};
+  var SURVEY_SENT_LS_PREFIX = "survey_update_request_sent:";
   var SURVEY_MARK_CONFIRM =
-    "この案件を「現調済み」として送信しますか？（今回は送信テストで、実際にはまだ反映されません）";
-  function surveyDummyLsKey(mgmtKey, action) {{
-    return SURVEY_DUMMY_LS_PREFIX + mgmtKey + ":" + action;
+    "この案件を「現調済み」として送信しますか？送信後、PC側で確認・反映されます。";
+  function surveySentLsKey(mgmtKey, action) {{
+    return SURVEY_SENT_LS_PREFIX + mgmtKey + ":" + action;
   }}
-  function dummyRequestId() {{
+  function newRequestId() {{
     if (typeof crypto !== "undefined" && crypto.randomUUID) {{
-      return "dummy-" + crypto.randomUUID();
+      return crypto.randomUUID();
     }}
-    return "dummy-" + String(Date.now()) + "-" + Math.random().toString(16).slice(2);
+    return String(Date.now()) + "-" + Math.random().toString(16).slice(2);
   }}
-  function applySurveyMarkDoneState(card, btn, statusEl, sent) {{
-    if (sent) {{
+  function setSurveyMarkUi(card, btn, statusEl, state, message) {{
+    statusEl.classList.remove("is-error");
+    if (state === "sent" || state === "duplicate") {{
       statusEl.hidden = false;
-      statusEl.textContent = "送信テスト済み（PC反映待ちの予定）";
+      statusEl.textContent = message || "送信済み（PC反映待ち）";
       btn.disabled = true;
-      btn.textContent = "送信テスト済み";
+      btn.textContent = "送信済み";
       card.classList.add("survey-mark-sent");
-    }} else {{
-      statusEl.hidden = true;
-      statusEl.textContent = "";
+      return;
+    }}
+    if (state === "sending") {{
+      statusEl.hidden = false;
+      statusEl.textContent = "送信中...";
+      btn.disabled = true;
+      btn.textContent = "送信中...";
+      card.classList.remove("survey-mark-sent");
+      return;
+    }}
+    if (state === "error") {{
+      statusEl.hidden = false;
+      statusEl.classList.add("is-error");
+      statusEl.textContent =
+        message || "送信に失敗しました。通信状態を確認して再試行してください";
       btn.disabled = false;
       btn.textContent = "現調済みにする";
       card.classList.remove("survey-mark-sent");
+      return;
     }}
+    statusEl.hidden = true;
+    statusEl.textContent = "";
+    btn.disabled = false;
+    btn.textContent = "現調済みにする";
+    card.classList.remove("survey-mark-sent");
+  }}
+  function mapSurveySubmitError(httpStatus, body) {{
+    var err = "";
+    if (body && typeof body === "object") {{
+      err = String(body.error || body.message || "");
+    }}
+    if (
+      httpStatus === 409 &&
+      (err === "duplicate_open_request" || err === "duplicate_request_id")
+    ) {{
+      return {{
+        state: "duplicate",
+        message: "すでに送信済みです（PC反映待ち）",
+        persist: true,
+      }};
+    }}
+    if (err === "not_survey_wait") {{
+      return {{
+        state: "error",
+        message: "この案件は現在、現調待ちではありません",
+        persist: false,
+      }};
+    }}
+    if (err === "case_not_found") {{
+      return {{
+        state: "error",
+        message: "対象案件が見つかりません",
+        persist: false,
+      }};
+    }}
+    if (httpStatus === 403 || err === "origin_not_allowed") {{
+      return {{
+        state: "error",
+        message: "送信に失敗しました（接続元が許可されていません）",
+        persist: false,
+      }};
+    }}
+    return {{
+      state: "error",
+      message: "送信に失敗しました。通信状態を確認して再試行してください",
+      persist: false,
+    }};
   }}
   document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {{
     var key = (card.getAttribute("data-management-no-key") || "").trim();
@@ -3167,30 +3241,64 @@ body {{
     var btn = card.querySelector("[data-survey-mark-done]");
     var statusEl = card.querySelector("[data-survey-mark-status]");
     if (!key || !btn || !statusEl) return;
-    var lsKey = surveyDummyLsKey(key, action);
+    var lsKey = surveySentLsKey(key, action);
     try {{
       if (localStorage.getItem(lsKey) === "1") {{
-        applySurveyMarkDoneState(card, btn, statusEl, true);
+        setSurveyMarkUi(card, btn, statusEl, "sent", "送信済み（PC反映待ち）");
       }}
     }} catch (e) {{}}
     btn.addEventListener("click", function() {{
       if (btn.disabled) return;
       if (!window.confirm(SURVEY_MARK_CONFIRM)) return;
       var payload = {{
-        request_id: dummyRequestId(),
+        request_id: newRequestId(),
         management_no_key: key,
         management_no: (card.getAttribute("data-management-no") || "").trim(),
         label: (card.getAttribute("data-label") || "").trim(),
         requested_action: action,
         source: "portal_survey",
         portal_page_url: location.href,
-        client_note: ""
+        client_note: "",
       }};
-      console.log("[survey-portal-dummy] payload", payload);
-      try {{
-        localStorage.setItem(lsKey, "1");
-      }} catch (e2) {{}}
-      applySurveyMarkDoneState(card, btn, statusEl, true);
+      setSurveyMarkUi(card, btn, statusEl, "sending");
+      fetch(SURVEY_STATUS_REQUEST_ENDPOINT, {{
+        method: "POST",
+        headers: {{ "Content-Type": "application/json" }},
+        body: JSON.stringify(payload),
+      }})
+        .then(function(res) {{
+          return res
+            .json()
+            .catch(function() {{ return {{}}; }})
+            .then(function(data) {{ return {{ res: res, data: data }}; }});
+        }})
+        .then(function(r) {{
+          if (r.res.ok && r.data && r.data.ok) {{
+            try {{
+              localStorage.setItem(lsKey, "1");
+            }} catch (e2) {{}}
+            setSurveyMarkUi(card, btn, statusEl, "sent", "送信済み（PC反映待ち）");
+            return;
+          }}
+          var mapped = mapSurveySubmitError(r.res.status, r.data);
+          if (mapped.persist) {{
+            try {{
+              localStorage.setItem(lsKey, "1");
+            }} catch (e3) {{}}
+            setSurveyMarkUi(card, btn, statusEl, "duplicate", mapped.message);
+            return;
+          }}
+          setSurveyMarkUi(card, btn, statusEl, "error", mapped.message);
+        }})
+        .catch(function() {{
+          setSurveyMarkUi(
+            card,
+            btn,
+            statusEl,
+            "error",
+            "送信に失敗しました。通信状態を確認して再試行してください",
+          );
+        }});
     }});
   }});
 }})();
