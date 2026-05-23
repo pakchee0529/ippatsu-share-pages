@@ -41,7 +41,7 @@ git log --oneline --decorate -5
 
 | エージェント | 主な担当 | 備考 |
 |---|---|---|
-| **ChatGPT** | 設計・任務書・停止条件・危険判定・レビュー観点 | 長期状態の正本は AGENTS.md / docs / ippatsu-pc 側 work_logs |
+| **ChatGPT** | 設計・任務書・停止条件・危険判定・レビュー観点 | 長期状態の正本は AGENTS.md / 各 repo の `docs/work_logs/` |
 | **Cursor Agents Window** | 実装・調査・検証・branch / commit・diff 整理 | **push / publish / main merge は人間承認後のみ** |
 | **Cursor Editor / Chat** | 小規模確認・diff レビュー・手動微修正・質問応答 | 大きな実装や commit は原則 Agents Window へ |
 | **Claude Cowork** | AGENTS.md・docs・開発ハーネス整理 | コード実装・publish / push はしない |
@@ -54,7 +54,7 @@ git log --oneline --decorate -5
 ### 🟢 自由に読み書きしてよい
 
 - `AGENTS.md`（本ファイル）
-- `docs/*` — 設計メモ・作業ログ（既存ログの大幅改変は禁止）
+- `docs/*` — 設計メモ（`docs/work_logs/` は §5 の作業ログ新規作成専用。既存ログの大幅改変は禁止）
 
 ### 🟡 変更は設計確認後・ブランチで・差分を小さく
 
@@ -119,7 +119,74 @@ git log --oneline --decorate -5
 
 ---
 
-## 5. Secret / API key ルール
+## 5. 作業ログ運用ルール（1作業1ファイル）
+
+### 5.1 基本方針
+
+- **ファイル変更を伴う作業は必ず作業ログを作成する**（Cursor Agents Window / Claude Cowork / 人間）
+- **作業ログは原則この repo 内の `docs/work_logs/` に新規作成する**（ippatsu-share-pages の変更 → 本 repo の `docs/work_logs/`）
+- **1作業 = 1ログファイル**。既存ログファイルへの追記は禁止（コンフリクト回避）
+- ログファイルは変更ファイルと **同一コミットに含める**
+- ドキュメントのみの変更でも作成する
+
+### 5.1.1 横断作業の例外
+
+- **複数 repo をまたぐ横断作業のみ** `ippatsu-pc/docs/work_logs/` に横断まとめログを追加作成してよい
+- 横断ログは各 repo の repo-local ログを**代替しない**（share-pages 単体の変更は必ず本 repo にログを残す）
+
+### 5.2 ファイル命名規則
+
+```
+docs/work_logs/YYYY-MM-DD_HHMM_<agent>_<task-slug>.md
+```
+
+| フィールド | 値の例 |
+|-----------|--------|
+| `YYYY-MM-DD` | `2026-05-23` |
+| `HHMM` | `1944`（作業開始 or 完了の現地時刻） |
+| `<agent>` | `cursor` / `cowork` / `human` |
+| `<task-slug>` | `share-pages-work-log-policy` / `m11-negotiation-portal` |
+
+例: `docs/work_logs/2026-05-23_1944_cursor_share-pages-work-log-policy.md`
+
+### 5.3 ログファイルのテンプレート
+
+```markdown
+# 作業ログ: <タスク名>
+
+| 項目 | 値 |
+|------|----|
+| 日時 | YYYY-MM-DD HH:MM |
+| 担当 | cursor / cowork / human |
+| repo | ippatsu-share-pages |
+| branch | cursor/xxx |
+
+## 変更ファイル
+
+- `path/to/file`
+
+## 実施内容
+
+（何をしたか）
+
+## 守った制約
+
+（禁止事項・制約）
+
+## 次に必要な作業
+
+（なければ省略）
+```
+
+### 5.4 コミット・push ルール
+
+- ログファイルは変更ファイルと **同じ `git add`・同じ `git commit`** に含める
+- **branch push のみ**（`git push origin <branch>`）
+- **`main` への push / GitHub Pages publish / Supabase 通信 / 本番 `data` 変更**は人間承認必須（§4 参照）
+
+---
+
+## 6. Secret / API key ルール
 
 以下の **実値**を表示・commit・公開 HTML へ直書き **禁止**:
 
@@ -137,7 +204,7 @@ git log --oneline --decorate -5
 
 ---
 
-## 6. Edge Function / survey request 関連
+## 7. Edge Function / survey request 関連
 
 - ポータル（ブラウザ）から **`cases` を直接 UPDATE しない**
 - 「現調済みにする」報告は **Edge Function 経由**で `survey_status_update_requests` へ **request INSERT のみ**
@@ -146,11 +213,14 @@ git log --oneline --decorate -5
 
 ---
 
-## 7. 完了報告
+## 8. 完了報告
 
-作業完了時は次を必ず報告する。
+作業完了時は **§5 の作業ログファイル** を作成し、チャット／handoff では次を必ず報告する。
 
 ```markdown
+## 作業ログ
+- `docs/work_logs/YYYY-MM-DD_HHMM_<agent>_<task-slug>.md`（同一コミットに含めたこと）
+
 ## 変更ファイル
 ## 実装内容
 ## 実行した確認
@@ -163,7 +233,7 @@ git log --oneline --decorate -5
 
 ## 参照（ippatsu-pc 側）
 
-- `AGENTS.md` — 母艦の共通ルール・家PC/会社PC 制約
+- `AGENTS.md` — 母艦の共通ルール・家PC/会社PC 制約・横断作業ログ方針（§5）
 - `docs/worktree_prod_operations.md` — 業務 worktree・P1a 許可リスト・generate モード
 - `docs/git_sync_workflow.md` — 家PC / 会社PC 同期
 - `docs/survey_portal_update_request_mvp_design.md` — 現調更新依頼 MVP
