@@ -43,6 +43,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from html.parser import HTMLParser
 from pathlib import Path
+from typing import Any
 
 # ippatsu-pc の data ディレクトリ（--data-root で上書き）。未指定時は sibling ippatsu-pc/data。
 _DATA_ROOT_OVERRIDE: Path | None = None
@@ -2487,6 +2488,39 @@ def _pick_survey_item_latlng(item: SurveyPublicItem) -> tuple[str, str]:
     return "", ""
 
 
+def _survey_queue_field_str(v: object) -> str:
+    """queue.json の status / survey_status 用。None・空は空文字。"""
+    if v is None:
+        return ""
+    return str(v).strip()
+
+
+def _survey_done_is_true(v: object) -> bool:
+    """survey_done が真とみなすか。未設定・偽は False。"""
+    if v is True:
+        return True
+    if v is False or v is None:
+        return False
+    s = _survey_queue_field_str(v).lower()
+    return s in ("true", "1", "yes", "on")
+
+
+def _survey_exclude_reason(item: dict) -> str | None:
+    """現調待ちポータルから除外する主理由。表示対象なら None。"""
+    if _survey_done_is_true(item.get("survey_done")):
+        return "survey_done"
+    if _survey_queue_field_str(item.get("survey_status")) == "現調済み":
+        return "survey_status_done"
+    if _survey_queue_field_str(item.get("status")) == "対応中":
+        return "status_in_progress"
+    return None
+
+
+def is_pending_survey_item(item: dict) -> bool:
+    """queue.json の1件が現調待ちポータルに載せるべきか。"""
+    return _survey_exclude_reason(item) is None
+
+
 def build_multi_pin_map_url(items: list[ArchivePublicItem]) -> str:
     pts: list[tuple[str, str]] = []
     seen: set[str] = set()
@@ -2581,23 +2615,42 @@ def _to_float(v: str) -> float | None:
         return None
 
 
-def load_survey_public_items(repo_root: Path) -> tuple[list[SurveyPublicItem], str]:
-    """ippatsu-pc 側 data/survey/queue.json を読み、公開可能項目だけ抽出する。"""
+def _empty_survey_load_stats() -> dict[str, Any]:
+    return {
+        "total": 0,
+        "visible": 0,
+        "filtered": 0,
+        "exclude_reasons": {},
+    }
+
+
+def load_survey_public_items(
+    repo_root: Path,
+) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
+    """ippatsu-pc 側 data/survey/queue.json を読み、現調待ち表示対象だけ抽出する。"""
     path = _survey_source_path(repo_root)
+    empty_msg = "現調待ちリストはまだありません。"
     if not path.is_file():
-        return [], "現調待ちリストはまだありません。"
+        return [], empty_msg, _empty_survey_load_stats()
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return [], "現調待ちリストはまだありません。"
+        return [], empty_msg, _empty_survey_load_stats()
     if not isinstance(raw, dict):
-        return [], "現調待ちリストはまだありません。"
+        return [], empty_msg, _empty_survey_load_stats()
     items = raw.get("items")
     if not isinstance(items, list):
-        return [], "現調待ちリストはまだありません。"
+        return [], empty_msg, _empty_survey_load_stats()
     out: list[SurveyPublicItem] = []
+    exclude_reasons: dict[str, int] = {}
+    total = 0
     for it in items:
         if not isinstance(it, dict):
+            continue
+        total += 1
+        reason = _survey_exclude_reason(it)
+        if reason:
+            exclude_reasons[reason] = exclude_reasons.get(reason, 0) + 1
             continue
         mno = _to_str(it.get("management_no")) or "—"
         mno_key = management_no_key(mno) if mno != "—" else None
@@ -2616,7 +2669,15 @@ def load_survey_public_items(repo_root: Path) -> tuple[list[SurveyPublicItem], s
                 note=_to_str(it.get("note")) or "—",
             )
         )
-    return out, ""
+    stats: dict[str, Any] = {
+        "total": total,
+        "visible": len(out),
+        "filtered": total - len(out),
+        "exclude_reasons": exclude_reasons,
+    }
+    if not out:
+        return [], empty_msg, stats
+    return out, "", stats
 
 
 def build_survey_html(
@@ -3045,7 +3106,7 @@ body {{
     <a href="../archive/">アーカイブ</a>
   </nav>
   <h1 class="page-title">現調待ち一覧</h1>
-  <p class="lead">径間ごとに地図・現場指示・報告用のリンクがあります。</p>
+  <p class="lead">径間ごとに地図・現場指示・報告用のリンクがあります。（表示 {len(items)} 件）</p>
   <p class="report-disclaimer">「現調済みを報告」「返却候補を報告」は Google フォームに送信します。「現調済みにする」は Supabase へ更新依頼（PC反映待ち）を送信します。いずれも押しただけではこの一覧から消えません。</p>
   <main>
 {items_html}
@@ -4317,7 +4378,9 @@ def main() -> int:
         f"archive_details={len(detail_paths)})"
     )
     if mode == PORTAL_MODE_FULL:
-        survey_items, survey_empty_note = load_survey_public_items(repo_root)
+        survey_items, survey_empty_note, survey_stats = load_survey_public_items(
+            repo_root
+        )
         survey_html = build_survey_html(
             survey_items,
             survey_empty_note,
@@ -4326,7 +4389,14 @@ def main() -> int:
         survey_path = repo_root / "portal" / "survey" / "index.html"
         survey_path.parent.mkdir(parents=True, exist_ok=True)
         survey_path.write_text(survey_html, encoding="utf-8", newline="\n")
-        print(f"Wrote {survey_path} (survey_items={len(survey_items)})")
+        print(
+            f"Wrote {survey_path} (survey_items={len(survey_items)}, "
+            f"survey_items_total={survey_stats['total']}, "
+            f"visible={survey_stats['visible']}, "
+            f"filtered={survey_stats['filtered']})"
+        )
+        if survey_stats.get("exclude_reasons"):
+            print(f"  survey_exclude_reasons: {survey_stats['exclude_reasons']}")
         inject_share_detail_edit_into_share_pages(repo_root)
     else:
         print(
