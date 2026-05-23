@@ -33,8 +33,10 @@ survey・アーカイブ一覧・全 archive 詳細・他日付 share inject は
 from __future__ import annotations
 
 import argparse
+import base64
 import html as html_lib
 import json
+import os
 import re
 import sys
 import unicodedata
@@ -92,6 +94,37 @@ SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE = "返却候補"
 SURVEY_STATUS_REQUEST_ENDPOINT = (
     "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request"
 )
+
+
+def _jwt_role_from_api_key(key: str) -> str | None:
+    """JWT 形式の Supabase API key から role を読む（service_role 誤埋め込み防止）。"""
+    parts = key.split(".")
+    if len(parts) != 3:
+        return None
+    try:
+        pad = parts[1] + "=" * (-len(parts[1]) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(pad))
+        role = payload.get("role")
+        return str(role) if role is not None else None
+    except (json.JSONDecodeError, ValueError, OSError):
+        return None
+
+
+def survey_status_request_api_key() -> str:
+    """ポータル HTML 用 apikey（publishable/anon のみ）。service_role は使わない。"""
+    for name in ("PORTAL_SURVEY_REQUEST_API_KEY", "SUPABASE_ANON_KEY"):
+        raw = (os.environ.get(name) or "").strip()
+        if not raw:
+            continue
+        if _jwt_role_from_api_key(raw) == "service_role":
+            print(
+                f"warning: {name} looks like service_role; "
+                "skipped for portal HTML (use anon/publishable only).",
+                file=sys.stderr,
+            )
+            continue
+        return raw
+    return ""
 
 # ---------------------------------------------------------------------------
 # 現場共有 — 詳細修正（Googleフォーム prefill / V2・6区分枝根）
@@ -2686,6 +2719,7 @@ def build_survey_html(
     report_date_iso: str,
     form_base_url: str = SURVEY_REPORT_FORM_URL,
     status_request_endpoint: str = SURVEY_STATUS_REQUEST_ENDPOINT,
+    status_request_api_key: str = "",
 ) -> str:
     cards: list[str] = []
     points: list[dict] = []
@@ -3204,10 +3238,10 @@ body {{
     if (bounds.length === 1) map.setView(bounds[0], 15);
     else if (bounds.length > 1) map.fitBounds(bounds, {{ padding: [28, 28], maxZoom: 16 }});
   }}
-  // Edge Function endpoint (M6). Change SURVEY_STATUS_REQUEST_ENDPOINT in generate_portal.py only.
-  // Auth: deployed with --no-verify-jwt (M5b); no Authorization header for now.
-  // Before production: re-check verify_jwt, anon key, and CORS. Never put service_role in HTML.
+  // Edge Function (M6/M10b). verify_jwt=false; POST sends apikey header (publishable/anon in HTML).
+  // Never embed service_role. Key from generate_portal env: PORTAL_SURVEY_REQUEST_API_KEY or SUPABASE_ANON_KEY.
   var SURVEY_STATUS_REQUEST_ENDPOINT = {json.dumps(status_request_endpoint, ensure_ascii=False)};
+  var SURVEY_STATUS_REQUEST_API_KEY = {json.dumps(status_request_api_key, ensure_ascii=False)};
   var SURVEY_SENT_LS_PREFIX = "survey_update_request_sent:";
   var SURVEY_MARK_CONFIRM =
     "この案件を「現調済み」として送信しますか？送信後、PC側で確認・反映されます。";
@@ -3290,18 +3324,45 @@ body {{
         persist: false,
       }};
     }}
+    if (httpStatus === 401 || err === "invalid_api_key") {{
+      return {{
+        state: "error",
+        message: "送信に失敗しました（APIキーが無効です）",
+        persist: false,
+      }};
+    }}
+    if (httpStatus === 503 || err === "server_not_configured") {{
+      return {{
+        state: "error",
+        message: "送信機能がサーバ側で未設定です",
+        persist: false,
+      }};
+    }}
     return {{
       state: "error",
       message: "送信に失敗しました。通信状態を確認して再試行してください",
       persist: false,
     }};
   }}
+  document.querySelectorAll("[data-survey-mark-done]").forEach(function(btn) {{
+    if (!SURVEY_STATUS_REQUEST_API_KEY) btn.disabled = true;
+  }});
   document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {{
     var key = (card.getAttribute("data-management-no-key") || "").trim();
     var action = (card.getAttribute("data-requested-action") || "mark_survey_completed").trim();
     var btn = card.querySelector("[data-survey-mark-done]");
     var statusEl = card.querySelector("[data-survey-mark-status]");
     if (!key || !btn || !statusEl) return;
+    if (!SURVEY_STATUS_REQUEST_API_KEY) {{
+      setSurveyMarkUi(
+        card,
+        btn,
+        statusEl,
+        "error",
+        "送信設定が未設定です（ポータル再生成時にキーが必要です）",
+      );
+      return;
+    }}
     var lsKey = surveySentLsKey(key, action);
     try {{
       if (localStorage.getItem(lsKey) === "1") {{
@@ -3324,7 +3385,10 @@ body {{
       setSurveyMarkUi(card, btn, statusEl, "sending");
       fetch(SURVEY_STATUS_REQUEST_ENDPOINT, {{
         method: "POST",
-        headers: {{ "Content-Type": "application/json" }},
+        headers: {{
+          "Content-Type": "application/json",
+          apikey: SURVEY_STATUS_REQUEST_API_KEY,
+        }},
         body: JSON.stringify(payload),
       }})
         .then(function(res) {{
@@ -4381,10 +4445,19 @@ def main() -> int:
         survey_items, survey_empty_note, survey_stats = load_survey_public_items(
             repo_root
         )
+        portal_api_key = survey_status_request_api_key()
+        if not portal_api_key:
+            print(
+                "warning: survey portal apikey not set; "
+                "set PORTAL_SURVEY_REQUEST_API_KEY or SUPABASE_ANON_KEY "
+                "when generating (送信ボタンは無効化されます).",
+                file=sys.stderr,
+            )
         survey_html = build_survey_html(
             survey_items,
             survey_empty_note,
             date.today().isoformat(),
+            status_request_api_key=portal_api_key,
         )
         survey_path = repo_root / "portal" / "survey" / "index.html"
         survey_path.parent.mkdir(parents=True, exist_ok=True)
