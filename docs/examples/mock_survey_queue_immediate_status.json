@@ -1,0 +1,33 @@
+{
+  "date": "mock-immediate-status",
+  "note": "B-plan immediate portal status mock queue. NOT production data.",
+  "items": [
+    {
+      "management_no": "514 00000",
+      "management_no_key": "51400000",
+      "label": "テスト現調待ちA",
+      "status": null,
+      "survey_status": null,
+      "survey_done": false,
+      "note": "mock: 現調待ち（即時昇格テスト用）"
+    },
+    {
+      "management_no": "514 00001",
+      "management_no_key": "51400001",
+      "label": "テスト現調待ちB",
+      "status": null,
+      "survey_status": null,
+      "survey_done": false,
+      "note": "mock: 現調待ち2件目"
+    },
+    {
+      "management_no": "514 09344",
+      "management_no_key": "51409344",
+      "label": "Ｐ百谷38S18～38S19",
+      "status": "対応中",
+      "survey_status": "現調済み",
+      "survey_done": true,
+      "note": "mock: 静的交渉待ち（戻すボタンテスト用）"
+    }
+  ]
+}
