@@ -103,7 +103,8 @@ SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE = "返却候補"
 SURVEY_STATUS_REQUEST_ENDPOINT = (
     "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request"
 )
-PORTAL_CASE_STATUS_ENDPOINT = PORTAL_CASE_STATUS_ENDPOINT_DEFAULT
+# B-plan routes through deployed submit-survey-status-request (GET/POST overlay).
+PORTAL_CASE_STATUS_ENDPOINT = SURVEY_STATUS_REQUEST_ENDPOINT
 
 
 def _jwt_role_from_api_key(key: str) -> str | None:

@@ -9,8 +9,9 @@ import json
 import os
 from typing import Any
 
+# Same deployed function as A-plan until update-portal-case-status is deployed separately.
 PORTAL_CASE_STATUS_ENDPOINT_DEFAULT = (
-    "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/update-portal-case-status"
+    "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request"
 )
 
 
