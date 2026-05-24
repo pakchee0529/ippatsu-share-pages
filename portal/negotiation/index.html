@@ -395,6 +395,8 @@ body {
     var host = document.querySelector("main");
     if (!host || !Array.isArray(PROMOTED_SURVEY_CANDIDATES)) return;
     var existing = existingNegotiationKeys();
+    // 全体地図セクションより前（交渉待ちカード群の直後）に挿入する基準点
+    var mapSection = host.querySelector(".map-section");
     var idx = 0;
     PROMOTED_SURVEY_CANDIDATES.forEach(function(c) {
       var key = String(c.management_no_key || "").trim();
@@ -418,7 +420,12 @@ body {
         + '</div></div>'
         + '<div class="note-panel">' + escHtml(note) + '</div>'
         + '</article>';
-      host.insertAdjacentHTML("beforeend", html);
+      // 地図より前に挿入して既存カードと同じ一覧エリアに表示する
+      if (mapSection) {
+        mapSection.insertAdjacentHTML("beforebegin", html);
+      } else {
+        host.insertAdjacentHTML("beforeend", html);
+      }
       existing[key] = true;
       idx += 1;
     });
