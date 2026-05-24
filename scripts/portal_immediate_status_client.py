@@ -58,16 +58,24 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
     }});
     return map;
   }}
-  function applySurveyOverlay(statusMap) {{
+  function applySurveyOverlay(statusMap, serverOk) {{
     document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {{
       var key = (card.getAttribute("data-management-no-key") || "").trim();
       if (!key) return;
       var st = statusMap[key];
-      try {{
-        if (localStorage.getItem(portalStatusLsKey(key)) === "negotiation_wait") {{
-          st = "negotiation_wait";
+      if (serverOk) {{
+        // サーバーが正常応答: サーバー結果を正とし、古いlocalStorageを清掃する
+        if (st !== "negotiation_wait") {{
+          try {{ localStorage.removeItem(portalStatusLsKey(key)); }} catch (e) {{}}
         }}
-      }} catch (e) {{}}
+      }} else {{
+        // サーバー到達不可: localStorageをフォールバックとして使用
+        try {{
+          if (localStorage.getItem(portalStatusLsKey(key)) === "negotiation_wait") {{
+            st = "negotiation_wait";
+          }}
+        }} catch (e) {{}}
+      }}
       if (st === "negotiation_wait") {{
         card.hidden = true;
         card.setAttribute("data-portal-moved", "negotiation");
@@ -124,7 +132,7 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
     card.classList.remove("survey-mark-sent");
   }}
   function fetchPortalOverrides() {{
-    if (!PORTAL_STATUS_API_KEY) return Promise.resolve(Object.create(null));
+    if (!PORTAL_STATUS_API_KEY) return Promise.resolve({{ ok: false, statusMap: Object.create(null) }});
     return fetch(PORTAL_STATUS_ENDPOINT, {{
       method: "GET",
       headers: {{ apikey: PORTAL_STATUS_API_KEY }},
@@ -133,16 +141,16 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
         return res.json().catch(function() {{ return {{}}; }});
       }})
       .then(function(data) {{
-        if (!data || !data.ok) return Object.create(null);
-        return portalStatusMapFromResponse(data);
+        if (!data || !data.ok) return {{ ok: false, statusMap: Object.create(null) }};
+        return {{ ok: true, statusMap: portalStatusMapFromResponse(data) }};
       }})
-      .catch(function() {{ return Object.create(null); }});
+      .catch(function() {{ return {{ ok: false, statusMap: Object.create(null) }}; }});
   }}
   document.querySelectorAll("[data-survey-mark-done]").forEach(function(btn) {{
     if (!PORTAL_STATUS_API_KEY) btn.disabled = true;
   }});
-  fetchPortalOverrides().then(function(statusMap) {{
-    applySurveyOverlay(statusMap);
+  fetchPortalOverrides().then(function(result) {{
+    applySurveyOverlay(result.statusMap, result.ok);
   }});
   document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {{
     var key = (card.getAttribute("data-management-no-key") || "").trim();

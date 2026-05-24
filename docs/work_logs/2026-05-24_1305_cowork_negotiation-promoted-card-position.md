@@ -1,4 +1,4 @@
-# 作業ログ: 交渉待ちページ 昇格カード表示位置修正
+# 作業ログ: 交渉待ちページ 昇格カード表示位置 + survey localStorage キャッシュ修正
 
 | 項目 | 値 |
 |------|----|
@@ -9,70 +9,109 @@
 
 ## Purpose
 
-スマホ E2E 中に発見したバグ修正。
+スマホ E2E で発見した2つのバグを修正。
 
-現調待ちから昇格した案件（portal_case_status_overrides overlay）が
-交渉待ちページで「全体地図の下」に表示されていた。
+1. **表示位置バグ**: 昇格カードが交渉待ちページの全体地図の下に表示される
+2. **localStorage キャッシュバグ**: revert 後に現調待ちページで 99990001 が一瞬表示後に消える
 
-期待: 既存の交渉待ちカード群と同じエリア（全体地図より上）に表示する。
+## Bug 1: 昇格カード表示位置
 
-## Root Cause
+### Root Cause
 
-`appendPromotedCards` 関数が `host.insertAdjacentHTML("beforeend", html)` で
-`<main>` の末尾に追記していた。
+`appendPromotedCards` が `host.insertAdjacentHTML("beforeend", html)` で
+`<main>` 末尾に追記 → `<section class="map-section">` の後になる。
 
-`<main>` の構造:
+### Fix
+
+`render_negotiation_immediate_status_js()` 内で `host.querySelector(".map-section")` を取得し、
+`mapSection.insertAdjacentHTML("beforebegin", html)` で地図の直前に挿入。
+地図セクションが存在しない場合は `beforeend` フォールバック。
+
+## Bug 2: survey ページ localStorage キャッシュが revert 後も残る
+
+### Root Cause
+
+`applySurveyOverlay(statusMap)` が **サーバー結果より localStorage を優先**していた。
+
+```javascript
+// 旧コード（バグ）
+var st = statusMap[key];  // サーバー: undefined（revert済）
+if (localStorage.getItem(portalStatusLsKey(key)) === "negotiation_wait") {
+  st = "negotiation_wait";  // ← 古いキャッシュが勝ってカードを隠す！
+}
 ```
-<main>
-  <article class="card negotiation-card">  ← 静的カード
-  <section class="map-section">           ← 全体地図
-</main>
+
+revert 後: DB は空 → サーバー結果 = undefined だが localStorage に
+`"negotiation_wait"` が残っていたため、カードが非表示になっていた。
+
+### Fix
+
+`fetchPortalOverrides()` を `{ok: boolean, statusMap: {...}}` を返すよう変更。
+`applySurveyOverlay(statusMap, serverOk)` にサーバー正常応答フラグを追加。
+
+- `serverOk=true` (サーバー正常応答): サーバー結果を正とし、`negotiation_wait` でないキーの
+  localStorage を清掃する
+- `serverOk=false` (サーバー到達不可): localStorage をフォールバックとして使用
+
+```javascript
+// 修正後
+function fetchPortalOverrides() {
+  if (!PORTAL_STATUS_API_KEY) return Promise.resolve({ ok: false, statusMap: {} });
+  return fetch(...)
+    .then(data => data.ok ? { ok: true, statusMap: portalStatusMapFromResponse(data) }
+                          : { ok: false, statusMap: {} })
+    .catch(() => ({ ok: false, statusMap: {} }));
+}
+
+function applySurveyOverlay(statusMap, serverOk) {
+  // serverOk=true のとき: negotiation_wait でなければ localStorage を清掃
+  if (serverOk && st !== "negotiation_wait") {
+    localStorage.removeItem(portalStatusLsKey(key));
+  }
+}
+
+fetchPortalOverrides().then(result => {
+  applySurveyOverlay(result.statusMap, result.ok);
+});
 ```
-
-`beforeend` で追記すると `<section class="map-section">` の後ろになる。
-
-## Fix
-
-修正箇所: **`scripts/portal_immediate_status_client.py`** の `render_negotiation_immediate_status_js()`
-（generate_portal.py がインポートして portal/negotiation/index.html を生成するテンプレートソース）
-
-`appendPromotedCards` 内で `host.querySelector(".map-section")` で地図セクションを取得し、
-`mapSection.insertAdjacentHTML("beforebegin", html)` で地図の直前に挿入するよう変更。
-
-地図セクションが存在しない場合は従来通り `beforeend` にフォールバック。
 
 ## Changed Files
 
-- `scripts/portal_immediate_status_client.py` — `appendPromotedCards` 生成テンプレートの挿入位置修正
-- `portal/negotiation/index.html` — `PORTAL_SURVEY_REQUEST_API_KEY` + テスト queue で再生成（修正反映済み）
+- `scripts/portal_immediate_status_client.py` — Bug 1 + Bug 2 両方の修正
+- `portal/survey/index.html` — 再生成（修正反映済み）
+- `portal/negotiation/index.html` — 再生成（修正反映済み）
 
 ## Verification（サンドボックス）
 
 再生成コマンド:
 ```
-PORTAL_SURVEY_REQUEST_API_KEY=<anon JWT> \
-PORTAL_IMMEDIATE_STATUS=1 \
+PORTAL_SURVEY_REQUEST_API_KEY=<anon JWT> PORTAL_IMMEDIATE_STATUS=1 \
 python scripts/generate_portal.py --data-root /tmp/test_data_root
 ```
-（`/tmp/test_data_root/survey/queue.json` = `docs/examples/immediate_status_test_queue.json`）
 
-確認結果:
+### survey/index.html
 - `PORTAL_STATUS_API_KEY`: 空でない・is_jwt=True ✅
-- `PROMOTED_SURVEY_CANDIDATES`: count=2 keys=['99990001', '99990002'] ✅
-- `mapSection = host.querySelector(".map-section")` 存在 ✅
-- `mapSection.insertAdjacentHTML("beforebegin", html)` 存在 ✅
-- `beforeend` フォールバック 存在 ✅
-- `service_role` 実値なし（コメント文のみ）✅
-- `sb_secret_` / `SUPABASE_ACCESS_TOKEN` 実値なし ✅
-- revert ボタン（`data-negotiation-revert`）・`revert_to_survey_wait` API 呼び出し維持 ✅
+- `fetchPortalOverrides` returns `{ok, statusMap}` ✅
+- `applySurveyOverlay(result.statusMap, result.ok)` ✅
+- `serverOk` branch present ✅
+- `localStorage.removeItem(portalStatusLsKey` in overlay ✅
+- `service_role` 実値なし（コメントのみ）✅
 
-## スマホ E2E 手順
+### negotiation/index.html
+- `PORTAL_STATUS_API_KEY`: 空でない・is_jwt=True ✅
+- `PROMOTED_SURVEY_CANDIDATES`: count=2 keys=['99990001','99990002'] ✅
+- `mapSection.insertAdjacentHTML("beforebegin", html)` ✅
+- `beforeend` フォールバック ✅
+- `service_role` 実値なし（コメントのみ）✅
 
-1. 現調待ちページで 99990001 を「現調済みにする」
-2. 交渉待ちページを開く
-3. 99990001 が全体地図より**上**の交渉待ちカード一覧エリアに表示される
-4. 「現調待ちに戻す」で 99990001 が消える
-5. 現調待ちページに 99990001 が戻る
+## スマホ E2E 期待動作
+
+1. 現調待ちで 99990001 を「現調済みにする」→ 交渉待ちへ昇格
+2. 交渉待ちページで 99990001 が地図より**上**に表示される
+3. 「現調待ちに戻す」を押す → DB から削除 + localStorage 清掃予約
+4. 現調待ちページを開く → 99990001 が**消えずに**表示されたまま残る
+5. 99990002 も残る（未操作）
+6. ページ再読み込み後も 99990001 / 99990002 が表示される
 
 ## Commit
 
@@ -80,6 +119,6 @@ python scripts/generate_portal.py --data-root /tmp/test_data_root
 
 ## Next actions
 
-- Cursor: commit 後に hash をこのログに追記
-- 人間: main push → GitHub Pages publish（承認後）
-- スマホ E2E: 上記手順で表示位置確認
+- Cursor: lock ファイル削除後 `git add` + commit
+- 人間: main push → GitHub Pages publish
+- スマホ E2E: 上記手順で確認
