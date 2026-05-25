@@ -45,6 +45,15 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from html.parser import HTMLParser
 from pathlib import Path
+
+from portal_immediate_status_client import (
+    PORTAL_CASE_STATUS_ENDPOINT_DEFAULT,
+    portal_immediate_status_enabled,
+    render_negotiation_immediate_status_js,
+    render_survey_immediate_status_js,
+    render_survey_legacy_request_js,
+    serialize_promoted_candidates,
+)
 from typing import Any
 
 # ippatsu-pc の data ディレクトリ（--data-root で上書き）。未指定時は sibling ippatsu-pc/data。
@@ -94,6 +103,8 @@ SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE = "返却候補"
 SURVEY_STATUS_REQUEST_ENDPOINT = (
     "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request"
 )
+# B-plan routes through deployed submit-survey-status-request (GET/POST overlay).
+PORTAL_CASE_STATUS_ENDPOINT = SURVEY_STATUS_REQUEST_ENDPOINT
 
 
 def _jwt_role_from_api_key(key: str) -> str | None:
@@ -2186,6 +2197,7 @@ a.btn-archive:hover, a.btn-archive:active {{
   <nav class="top-bar" aria-label="サイト内リンク">
     <a href="../">ポータルTOP</a>
     <a href="../survey/">現調待ち</a>
+    <a href="../negotiation/">交渉待ち</a>
     <a href="./">アーカイブ</a>
   </nav>
   <h1>現場共有アーカイブ</h1>
@@ -2554,6 +2566,27 @@ def is_pending_survey_item(item: dict) -> bool:
     return _survey_exclude_reason(item) is None
 
 
+def is_negotiation_wait_item(item: dict) -> bool:
+    """queue.json の1件が交渉待ちポータル（M11）に載せるべきか。
+
+    判定条件（いずれかが真）:
+      - ``survey_done`` が真（_survey_done_is_true 経由で受理する表現を含む）
+      - ``survey_status`` == "現調済み"
+      - ``status`` == "対応中"
+
+    M8 の現調待ち除外理由（_survey_exclude_reason）と同条件で構成しているが、
+    将来どちらかが独立に変わっても壊れないよう判定基準をここで再宣言する。
+    現状は is_pending_survey_item と相補的に動くため、両方 True になることはない。
+    """
+    if _survey_done_is_true(item.get("survey_done")):
+        return True
+    if _survey_queue_field_str(item.get("survey_status")) == "現調済み":
+        return True
+    if _survey_queue_field_str(item.get("status")) == "対応中":
+        return True
+    return False
+
+
 def build_multi_pin_map_url(items: list[ArchivePublicItem]) -> str:
     pts: list[tuple[str, str]] = []
     seen: set[str] = set()
@@ -2713,6 +2746,64 @@ def load_survey_public_items(
     return out, "", stats
 
 
+def load_negotiation_public_items(
+    repo_root: Path,
+) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
+    """ippatsu-pc 側 data/survey/queue.json を読み、交渉待ち表示対象だけ抽出する（M11）。
+
+    SurveyPublicItem を再利用する。判定は is_negotiation_wait_item に委譲する。
+    現調待ちローダ（load_survey_public_items）と並行して queue.json を読み直すが、
+    stdlib・小ファイル前提なので I/O 重複は許容する。M8 ローダを壊さないこと優先。
+    """
+    path = _survey_source_path(repo_root)
+    empty_msg = "交渉待ちリストはまだありません。"
+    if not path.is_file():
+        return [], empty_msg, _empty_survey_load_stats()
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return [], empty_msg, _empty_survey_load_stats()
+    if not isinstance(raw, dict):
+        return [], empty_msg, _empty_survey_load_stats()
+    items = raw.get("items")
+    if not isinstance(items, list):
+        return [], empty_msg, _empty_survey_load_stats()
+    out: list[SurveyPublicItem] = []
+    total = 0
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        total += 1
+        if not is_negotiation_wait_item(it):
+            continue
+        mno = _to_str(it.get("management_no")) or "—"
+        mno_key = management_no_key(mno) if mno != "—" else None
+        out.append(
+            SurveyPublicItem(
+                management_no=mno,
+                management_no_key=mno_key or "",
+                label=_to_str(it.get("label")) or "—",
+                map_url=_to_str(it.get("map_url")),
+                start_label=_to_str(it.get("start_label")),
+                start_lat=_to_str(it.get("start_lat")),
+                start_lng=_to_str(it.get("start_lng")),
+                end_label=_to_str(it.get("end_label")),
+                end_lat=_to_str(it.get("end_lat")),
+                end_lng=_to_str(it.get("end_lng")),
+                note=_to_str(it.get("note")) or "—",
+            )
+        )
+    stats: dict[str, Any] = {
+        "total": total,
+        "visible": len(out),
+        "filtered": total - len(out),
+        "exclude_reasons": {},
+    }
+    if not out:
+        return [], empty_msg, stats
+    return out, "", stats
+
+
 def build_survey_html(
     items: list[SurveyPublicItem],
     empty_note: str,
@@ -2720,7 +2811,32 @@ def build_survey_html(
     form_base_url: str = SURVEY_REPORT_FORM_URL,
     status_request_endpoint: str = SURVEY_STATUS_REQUEST_ENDPOINT,
     status_request_api_key: str = "",
+    portal_status_endpoint: str = PORTAL_CASE_STATUS_ENDPOINT,
+    immediate_status: bool | None = None,
 ) -> str:
+    use_immediate = (
+        immediate_status
+        if immediate_status is not None
+        else portal_immediate_status_enabled()
+    )
+    if use_immediate:
+        survey_mark_hint = (
+            "押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）"
+        )
+        survey_requested_action = "mark_survey_done"
+        survey_disclaimer = (
+            "「現調済みを報告」「返却候補を報告」は Google フォームに送信します。"
+            "「現調済みにする」は交渉待ちへ即時反映します（portal status overlay）。"
+            "従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。"
+        )
+    else:
+        survey_mark_hint = "押すとPC側の承認待ちになります（更新依頼を送信）"
+        survey_requested_action = "mark_survey_completed"
+        survey_disclaimer = (
+            "「現調済みを報告」「返却候補を報告」は Google フォームに送信します。"
+            "「現調済みにする」は Supabase へ更新依頼（PC反映待ち）を送信します。"
+            "いずれも押しただけではこの一覧から消えません。"
+        )
     cards: list[str] = []
     points: list[dict] = []
     for idx, it in enumerate(items):
@@ -2803,7 +2919,7 @@ def build_survey_html(
                 '<button type="button" class="btn btn-survey-mark-done" '
                 'data-survey-mark-done>現調済みにする</button>'
                 '<p class="survey-mark-hint muted-tiny">'
-                "押すとPC側の承認待ちになります（更新依頼を送信）"
+                f"{survey_mark_hint}"
                 "</p>"
                 '<p class="survey-mark-status muted-tiny" data-survey-mark-status '
                 'hidden role="status"></p>'
@@ -2814,7 +2930,7 @@ def build_survey_html(
   data-management-no-key="{escape_html(it.management_no_key)}"
   data-management-no="{escape_html(it.management_no)}"
   data-label="{escape_html(it.label)}"
-  data-requested-action="mark_survey_completed">
+  data-requested-action="{survey_requested_action}">
   <div class="card-head">
     <h2 class="card-title">{escape_html(it.label)}</h2>
     <p class="item-mgmt">{escape_html(it.management_no)}</p>
@@ -2855,6 +2971,14 @@ def build_survey_html(
   </section>
 """
     points_js = json.dumps(points, ensure_ascii=False)
+    if use_immediate:
+        survey_portal_js = render_survey_immediate_status_js(
+            portal_status_endpoint, status_request_api_key
+        )
+    else:
+        survey_portal_js = render_survey_legacy_request_js(
+            status_request_endpoint, status_request_api_key
+        )
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -3137,11 +3261,12 @@ body {{
   <nav class="top-bar" aria-label="サイト内リンク">
     <a href="../">ポータルTOP</a>
     <a href="./">現調待ち</a>
+    <a href="../negotiation/">交渉待ち</a>
     <a href="../archive/">アーカイブ</a>
   </nav>
   <h1 class="page-title">現調待ち一覧</h1>
   <p class="lead">径間ごとに地図・現場指示・報告用のリンクがあります。（表示 {len(items)} 件）</p>
-  <p class="report-disclaimer">「現調済みを報告」「返却候補を報告」は Google フォームに送信します。「現調済みにする」は Supabase へ更新依頼（PC反映待ち）を送信します。いずれも押しただけではこの一覧から消えません。</p>
+  <p class="report-disclaimer">{survey_disclaimer}</p>
   <main>
 {items_html}
 {map_block}
@@ -3238,194 +3363,520 @@ body {{
     if (bounds.length === 1) map.setView(bounds[0], 15);
     else if (bounds.length > 1) map.fitBounds(bounds, {{ padding: [28, 28], maxZoom: 16 }});
   }}
-  // Edge Function (M6/M10b). verify_jwt=false; POST sends apikey header (publishable/anon in HTML).
-  // Never embed service_role. Key from generate_portal env: PORTAL_SURVEY_REQUEST_API_KEY or SUPABASE_ANON_KEY.
-  var SURVEY_STATUS_REQUEST_ENDPOINT = {json.dumps(status_request_endpoint, ensure_ascii=False)};
-  var SURVEY_STATUS_REQUEST_API_KEY = {json.dumps(status_request_api_key, ensure_ascii=False)};
-  var SURVEY_SENT_LS_PREFIX = "survey_update_request_sent:";
-  var SURVEY_MARK_CONFIRM =
-    "この案件を「現調済み」として送信しますか？送信後、PC側で確認・反映されます。";
-  function surveySentLsKey(mgmtKey, action) {{
-    return SURVEY_SENT_LS_PREFIX + mgmtKey + ":" + action;
+  // Portal status overlay (B-plan) or legacy pending request (A-plan). Never embed service_role.
+{survey_portal_js}
+}})();
+  </script>
+</body>
+</html>
+"""
+
+
+def build_negotiation_html(
+    items: list[SurveyPublicItem],
+    empty_note: str,
+    promoted_candidates: list[SurveyPublicItem] | None = None,
+    portal_status_endpoint: str = PORTAL_CASE_STATUS_ENDPOINT,
+    status_request_api_key: str = "",
+    immediate_status: bool | None = None,
+) -> str:
+    """交渉待ちページ（M11 + B-plan immediate status draft）。
+
+    - 静的生成: queue.json の交渉待ち相当案件。
+    - B-plan: apikey + update-portal-case-status で即時昇格/戻し。
+    - promoted_candidates: 現調待ち静的候補（即時昇格カード用）。
+    """
+    use_immediate = (
+        immediate_status
+        if immediate_status is not None
+        else portal_immediate_status_enabled()
+    )
+    if use_immediate:
+        negotiation_disclaimer = (
+            "「現調待ちに戻す」は誤操作取り消し用です。"
+            "押すと portal status overlay を解除し、現調待ちページへ戻ります。"
+            "Google フォーム報告は現調待ちページから行ってください。"
+        )
+    else:
+        negotiation_disclaimer = (
+            "このページは閲覧用です。状態を変更するボタン（Supabase送信・Googleフォーム）はありません。"
+            "「現調待ちに戻す」は未実装のため無効化しています。"
+        )
+    cards: list[str] = []
+    points: list[dict] = []
+    for idx, it in enumerate(items):
+        map_btn = ""
+        if it.map_url and it.map_url.startswith(("http://", "https://")):
+            map_btn = (
+                f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
+                'target="_blank" rel="noopener noreferrer">地図を開く</a>'
+            )
+        two_btn = ""
+        two_json = ""
+        two_wrap = ""
+        start_lat = _to_float(it.start_lat)
+        start_lng = _to_float(it.start_lng)
+        end_lat = _to_float(it.end_lat)
+        end_lng = _to_float(it.end_lng)
+        if (
+            start_lat is not None
+            and start_lng is not None
+            and end_lat is not None
+            and end_lng is not None
+        ):
+            two_json_id = f"two-geo-{idx}"
+            two_wrap_id = f"two-wrap-{idx}"
+            two_map_id = f"share-two-map-{idx}"
+            two_btn = (
+                f'<button type="button" class="btn btn-map" data-two-open '
+                f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
+                f'data-two-json="{two_json_id}" aria-expanded="false" '
+                f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
+            )
+            two_geo = {
+                "a": {"name": it.start_label or it.label, "lat": start_lat, "lng": start_lng},
+                "b": {"name": it.end_label or it.label, "lat": end_lat, "lng": end_lng},
+            }
+            two_json = (
+                f'<script type="application/json" id="{two_json_id}">'
+                f'{escape_html(json.dumps(two_geo, ensure_ascii=False))}</script>'
+            )
+            two_wrap = (
+                f'<div class="two-map-wrap" id="{two_wrap_id}" hidden>'
+                f'<div id="{two_map_id}" class="share-two-map-canvas" '
+                'role="application" aria-label="2点地図"></div></div>'
+            )
+        note_id = f"neg-note-{idx}"
+        note_btn = (
+            f'<button type="button" class="btn btn-note" aria-expanded="false" '
+            f'aria-controls="{note_id}" data-note-toggle>現場指示</button>'
+        )
+        note_body = f"備考: {escape_html(it.note)}"
+        actions = "".join(x for x in [map_btn, two_btn, note_btn] if x)
+        if use_immediate and it.management_no_key:
+            revert_block = (
+                '<div class="card-actions card-actions-revert" role="group" '
+                'aria-label="現調待ちに戻す">'
+                '<button type="button" class="btn btn-revert" data-negotiation-revert>'
+                "現調待ちに戻す"
+                "</button>"
+                '<p class="revert-hint muted-tiny">誤操作時は現調待ち一覧へ戻せます。</p>'
+                '<p class="negotiation-revert-status muted-tiny" '
+                'data-negotiation-revert-status hidden role="status"></p>'
+                "</div>"
+            )
+        else:
+            revert_block = (
+                '<div class="card-actions card-actions-revert" role="group" '
+                'aria-label="現調待ちに戻す（未実装）">'
+                '<button type="button" class="btn btn-revert-disabled" '
+                'disabled aria-disabled="true" '
+                'title="現調待ちへ戻す機能は未実装です">'
+                "現調待ちに戻す（未実装）"
+                "</button>"
+                '<p class="revert-hint muted-tiny">'
+                "この操作はまだ実装されていません。誤操作防止のため無効化しています。"
+                "</p>"
+                "</div>"
+            )
+        cards.append(
+            f"""<article class="card negotiation-card" data-card-index="{idx}"
+  data-management-no-key="{escape_html(it.management_no_key)}"
+  data-management-no="{escape_html(it.management_no)}"
+  data-label="{escape_html(it.label)}">
+  <div class="card-head">
+    <h2 class="card-title">{escape_html(it.label)}</h2>
+    <p class="item-mgmt">{escape_html(it.management_no)}</p>
+    <div class="card-actions">{actions}</div>
+    {revert_block}
+  </div>
+  {two_json}
+  {two_wrap}
+  <div class="note-panel" id="{note_id}" hidden>{note_body}</div>
+</article>"""
+        )
+        p_lat, p_lng = _pick_survey_item_latlng(it)
+        f_lat = _to_float(p_lat)
+        f_lng = _to_float(p_lng)
+        if f_lat is not None and f_lng is not None:
+            points.append(
+                {
+                    "name": it.label,
+                    "lat": f_lat,
+                    "lng": f_lng,
+                    "management_no": it.management_no,
+                }
+            )
+    items_html = "\n".join(cards)
+    if not items_html:
+        items_html = f'<p class="muted-tiny">{escape_html(empty_note)}</p>'
+    if points:
+        map_block = """  <section class="map-section" aria-labelledby="map-heading">
+    <h2 id="map-heading">全体地図</h2>
+    <div id="share-map" role="application" aria-label="全径間の位置"></div>
+  </section>
+"""
+    else:
+        map_block = """  <section class="map-section map-empty" aria-labelledby="map-heading">
+    <h2 id="map-heading">全体地図</h2>
+    <p class="muted-tiny">まとめて表示できる位置情報がありません。</p>
+  </section>
+"""
+    points_js = json.dumps(points, ensure_ascii=False)
+    candidates_json = serialize_promoted_candidates(promoted_candidates or [])
+    negotiation_portal_js = ""
+    if use_immediate:
+        negotiation_portal_js = render_negotiation_immediate_status_js(
+            portal_status_endpoint,
+            status_request_api_key,
+            candidates_json,
+        )
+    return f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>交渉待ち一覧</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin="">
+<style>
+:root {{
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+  --accent2: #0d9488;
+}}
+* {{ box-sizing: border-box; }}
+body {{
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
+    "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding: 0.75rem 0.75rem 1.25rem;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}}
+.top-bar {{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}}
+.top-bar a {{
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}}
+.top-bar a:hover, .top-bar a:focus-visible {{
+  text-decoration: underline;
+  outline: none;
+}}
+.page-title {{
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
+}}
+.lead {{
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}}
+.report-disclaimer {{
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--muted);
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}}
+.card {{
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}}
+.item-mgmt {{
+  margin: -0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}}
+.card-head {{
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}}
+.card-title {{
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}}
+.card-actions {{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}}
+.btn {{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 40px;
+  touch-action: manipulation;
+}}
+.btn-map {{
+  background: var(--accent);
+  color: #fff;
+}}
+.btn-map:hover, .btn-map:focus {{ filter: brightness(1.05); }}
+.btn-note {{
+  background: #fff;
+  color: var(--accent2);
+  border: 2px solid var(--accent2);
+}}
+.btn-note[aria-expanded="true"] {{
+  background: var(--accent2);
+  color: #fff;
+}}
+.note-panel {{
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  font-size: 0.92rem;
+  color: var(--text);
+}}
+.note-panel[hidden] {{ display: none !important; }}
+.two-map-wrap {{
+  margin-top: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}}
+.two-map-wrap[hidden] {{ display: none !important; }}
+.share-two-map-canvas {{
+  width: 100%;
+  height: min(45vh, 320px);
+  min-height: 200px;
+}}
+.leaflet-tooltip.two-tip {{
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}}
+.map-section {{
+  margin-top: 1.0rem;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 0.85rem;
+}}
+.map-section h2 {{
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}}
+#share-map {{
+  width: 100%;
+  height: min(55vh, 420px);
+  min-height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}}
+.map-empty .muted-tiny {{
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}}
+.leaflet-container {{ font-family: inherit; }}
+.muted-tiny {{
+  font-size: 0.88rem;
+  color: var(--muted);
+}}
+.footer-note {{
+  margin-top: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}}
+@media (min-width: 480px) {{
+  .card-head {{
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
   }}
-  function newRequestId() {{
-    if (typeof crypto !== "undefined" && crypto.randomUUID) {{
-      return crypto.randomUUID();
-    }}
-    return String(Date.now()) + "-" + Math.random().toString(16).slice(2);
-  }}
-  function setSurveyMarkUi(card, btn, statusEl, state, message) {{
-    statusEl.classList.remove("is-error");
-    if (state === "sent" || state === "duplicate") {{
-      statusEl.hidden = false;
-      statusEl.textContent = message || "送信済み（PC反映待ち）";
-      btn.disabled = true;
-      btn.textContent = "送信済み";
-      card.classList.add("survey-mark-sent");
-      return;
-    }}
-    if (state === "sending") {{
-      statusEl.hidden = false;
-      statusEl.textContent = "送信中...";
-      btn.disabled = true;
-      btn.textContent = "送信中...";
-      card.classList.remove("survey-mark-sent");
-      return;
-    }}
-    if (state === "error") {{
-      statusEl.hidden = false;
-      statusEl.classList.add("is-error");
-      statusEl.textContent =
-        message || "送信に失敗しました。通信状態を確認して再試行してください";
-      btn.disabled = false;
-      btn.textContent = "現調済みにする";
-      card.classList.remove("survey-mark-sent");
-      return;
-    }}
-    statusEl.hidden = true;
-    statusEl.textContent = "";
-    btn.disabled = false;
-    btn.textContent = "現調済みにする";
-    card.classList.remove("survey-mark-sent");
-  }}
-  function mapSurveySubmitError(httpStatus, body) {{
-    var err = "";
-    if (body && typeof body === "object") {{
-      err = String(body.error || body.message || "");
-    }}
-    if (
-      httpStatus === 409 &&
-      (err === "duplicate_open_request" || err === "duplicate_request_id")
-    ) {{
-      return {{
-        state: "duplicate",
-        message: "すでに送信済みです（PC反映待ち）",
-        persist: true,
-      }};
-    }}
-    if (err === "not_survey_wait") {{
-      return {{
-        state: "error",
-        message: "この案件は現在、現調待ちではありません",
-        persist: false,
-      }};
-    }}
-    if (err === "case_not_found") {{
-      return {{
-        state: "error",
-        message: "対象案件が見つかりません",
-        persist: false,
-      }};
-    }}
-    if (httpStatus === 403 || err === "origin_not_allowed") {{
-      return {{
-        state: "error",
-        message: "送信に失敗しました（接続元が許可されていません）",
-        persist: false,
-      }};
-    }}
-    if (httpStatus === 401 || err === "invalid_api_key") {{
-      return {{
-        state: "error",
-        message: "送信に失敗しました（APIキーが無効です）",
-        persist: false,
-      }};
-    }}
-    if (httpStatus === 503 || err === "server_not_configured") {{
-      return {{
-        state: "error",
-        message: "送信機能がサーバ側で未設定です",
-        persist: false,
-      }};
-    }}
-    return {{
-      state: "error",
-      message: "送信に失敗しました。通信状態を確認して再試行してください",
-      persist: false,
-    }};
-  }}
-  document.querySelectorAll("[data-survey-mark-done]").forEach(function(btn) {{
-    if (!SURVEY_STATUS_REQUEST_API_KEY) btn.disabled = true;
-  }});
-  document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {{
-    var key = (card.getAttribute("data-management-no-key") || "").trim();
-    var action = (card.getAttribute("data-requested-action") || "mark_survey_completed").trim();
-    var btn = card.querySelector("[data-survey-mark-done]");
-    var statusEl = card.querySelector("[data-survey-mark-status]");
-    if (!key || !btn || !statusEl) return;
-    if (!SURVEY_STATUS_REQUEST_API_KEY) {{
-      setSurveyMarkUi(
-        card,
-        btn,
-        statusEl,
-        "error",
-        "送信設定が未設定です（ポータル再生成時にキーが必要です）",
-      );
-      return;
-    }}
-    var lsKey = surveySentLsKey(key, action);
-    try {{
-      if (localStorage.getItem(lsKey) === "1") {{
-        setSurveyMarkUi(card, btn, statusEl, "sent", "送信済み（PC反映待ち）");
-      }}
-    }} catch (e) {{}}
+  .page-title {{ font-size: 1.4rem; }}
+}}
+.card-actions-revert {{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  flex-basis: 100%;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+}}
+.btn-revert {{
+  background: #fff7ed;
+  color: #9a3412;
+  border: 2px solid #fdba74;
+}}
+.btn-revert:hover {{
+  background: #ffedd5;
+}}
+.btn-revert-disabled {{
+  background: #f1f5f9;
+  color: #64748b;
+  border: 2px dashed #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.85;
+}}
+.btn-revert-disabled:disabled {{
+  cursor: not-allowed;
+}}
+.revert-hint {{
+  margin: 0;
+  line-height: 1.4;
+}}
+</style>
+</head>
+<body>
+  <nav class="top-bar" aria-label="サイト内リンク">
+    <a href="../">ポータルTOP</a>
+    <a href="../survey/">現調待ち</a>
+    <a href="./">交渉待ち</a>
+    <a href="../archive/">アーカイブ</a>
+  </nav>
+  <h1 class="page-title">交渉待ち一覧</h1>
+  <p class="lead">現調済み・対応中の案件です。地主交渉に進む案件を確認します。（表示 {len(items)} 件）</p>
+  <p class="report-disclaimer">{negotiation_disclaimer}</p>
+  <main>
+{items_html}
+{map_block}
+  </main>
+  <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+  <script>
+(function () {{
+  document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {{
+    var id = btn.getAttribute("aria-controls");
+    var panel = id ? document.getElementById(id) : null;
+    if (!panel) return;
     btn.addEventListener("click", function() {{
-      if (btn.disabled) return;
-      if (!window.confirm(SURVEY_MARK_CONFIRM)) return;
-      var payload = {{
-        request_id: newRequestId(),
-        management_no_key: key,
-        management_no: (card.getAttribute("data-management-no") || "").trim(),
-        label: (card.getAttribute("data-label") || "").trim(),
-        requested_action: action,
-        source: "portal_survey",
-        portal_page_url: location.href,
-        client_note: "",
-      }};
-      setSurveyMarkUi(card, btn, statusEl, "sending");
-      fetch(SURVEY_STATUS_REQUEST_ENDPOINT, {{
-        method: "POST",
-        headers: {{
-          "Content-Type": "application/json",
-          apikey: SURVEY_STATUS_REQUEST_API_KEY,
-        }},
-        body: JSON.stringify(payload),
-      }})
-        .then(function(res) {{
-          return res
-            .json()
-            .catch(function() {{ return {{}}; }})
-            .then(function(data) {{ return {{ res: res, data: data }}; }});
-        }})
-        .then(function(r) {{
-          if (r.res.ok && r.data && r.data.ok) {{
-            try {{
-              localStorage.setItem(lsKey, "1");
-            }} catch (e2) {{}}
-            setSurveyMarkUi(card, btn, statusEl, "sent", "送信済み（PC反映待ち）");
-            return;
-          }}
-          var mapped = mapSurveySubmitError(r.res.status, r.data);
-          if (mapped.persist) {{
-            try {{
-              localStorage.setItem(lsKey, "1");
-            }} catch (e3) {{}}
-            setSurveyMarkUi(card, btn, statusEl, "duplicate", mapped.message);
-            return;
-          }}
-          setSurveyMarkUi(card, btn, statusEl, "error", mapped.message);
-        }})
-        .catch(function() {{
-          setSurveyMarkUi(
-            card,
-            btn,
-            statusEl,
-            "error",
-            "送信に失敗しました。通信状態を確認して再試行してください",
-          );
-        }});
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", open ? "false" : "true");
+      panel.hidden = open;
     }});
   }});
+  function gmaps(lat, lng) {{
+    return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
+  }}
+  var twoMaps = Object.create(null);
+  document.querySelectorAll("[data-two-open]").forEach(function(btn) {{
+    var wrapId = btn.getAttribute("data-two-wrap");
+    var mapId = btn.getAttribute("data-two-map");
+    var jsonId = btn.getAttribute("data-two-json");
+    var wrap = wrapId ? document.getElementById(wrapId) : null;
+    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
+    if (!wrap || !jsonEl) return;
+    btn.addEventListener("click", function() {{
+      var nowOpen = btn.getAttribute("aria-expanded") === "true";
+      wrap.hidden = nowOpen;
+      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
+      btn.textContent = nowOpen ? "2点地図を開く" : "2点地図を閉じる";
+      if (nowOpen) return;
+      var geo = null;
+      try {{
+        geo = JSON.parse(jsonEl.textContent || "{{}}");
+      }} catch (e) {{
+        return;
+      }}
+      if (!geo || !geo.a || !geo.b) return;
+      var key = mapId;
+      if (!twoMaps[key]) {{
+        var mmap = L.map(mapId, {{ scrollWheelZoom: false }});
+        twoMaps[key] = mmap;
+        L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }}).addTo(mmap);
+      }}
+      var mmap = twoMaps[key];
+      mmap.eachLayer(function(layer) {{
+        if (layer instanceof L.Marker || layer instanceof L.Polyline) mmap.removeLayer(layer);
+      }});
+      function addPoint(p, cls) {{
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.marker([lat, lng]).addTo(mmap);
+        if (p.name) m.bindTooltip(String(p.name), {{ permanent: true, direction: "top", className: cls }});
+        m.on("click", function() {{ window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer"); }});
+        return [lat, lng];
+      }}
+      var a = addPoint(geo.a, "two-tip");
+      var b = addPoint(geo.b, "two-tip");
+      var pts = [];
+      if (a) pts.push(a);
+      if (b) pts.push(b);
+      if (pts.length === 2) L.polyline(pts, {{ weight: 3, opacity: 0.8 }}).addTo(mmap);
+      if (pts.length === 1) mmap.setView(pts[0], 15);
+      else if (pts.length > 1) mmap.fitBounds(pts, {{ padding: [24, 24], maxZoom: 16 }});
+      setTimeout(function() {{ mmap.invalidateSize(); }}, 60);
+    }});
+  }});
+  var points = {points_js};
+  var mapEl = document.getElementById("share-map");
+  if (mapEl && Array.isArray(points) && points.length) {{
+    var map = L.map("share-map", {{ scrollWheelZoom: false }});
+    L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }}).addTo(map);
+    var bounds = [];
+    points.forEach(function(p) {{
+      var lat = Number(p.lat), lng = Number(p.lng);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      bounds.push([lat, lng]);
+      var m = L.marker([lat, lng]).addTo(map);
+      var label = (p.name || "現場") + (p.management_no ? (" (" + p.management_no + ")") : "");
+      m.bindTooltip(label, {{ permanent: false, direction: "top" }});
+    }});
+    if (bounds.length === 1) map.setView(bounds[0], 15);
+    else if (bounds.length > 1) map.fitBounds(bounds, {{ padding: [28, 28], maxZoom: 16 }});
+  }}
+  // Portal status overlay (B-plan immediate). Never embed service_role.
+{negotiation_portal_js}
 }})();
   </script>
 </body>
@@ -4201,6 +4652,7 @@ a.portal-menu-item:focus-visible {{
         <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
           <a class="portal-menu-item" role="menuitem" href="./">ポータルTOP</a>
           <a class="portal-menu-item" role="menuitem" href="./survey/">現調待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="./negotiation/">交渉待ち</a>
           <a class="portal-menu-item" role="menuitem" href="./archive/">アーカイブ</a>
         </nav>
       </div>
@@ -4398,8 +4850,8 @@ def main() -> int:
         )
         print(
             f"share-update mode (date={target_date}): "
-            "skipped portal/survey/index.html, portal/archive/*, "
-            "other share inject; "
+            "skipped portal/survey/index.html, portal/negotiation/index.html, "
+            "portal/archive/*, other share inject; "
             f"target share inject: {n_inj} file(s)"
         )
         return 0
@@ -4458,6 +4910,7 @@ def main() -> int:
             survey_empty_note,
             date.today().isoformat(),
             status_request_api_key=portal_api_key,
+            portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
         )
         survey_path = repo_root / "portal" / "survey" / "index.html"
         survey_path.parent.mkdir(parents=True, exist_ok=True)
@@ -4470,11 +4923,35 @@ def main() -> int:
         )
         if survey_stats.get("exclude_reasons"):
             print(f"  survey_exclude_reasons: {survey_stats['exclude_reasons']}")
+        # M11 + B-plan: 交渉待ちページ。即時 status overlay（apikey は publishable/anon のみ）。
+        negotiation_items, negotiation_empty_note, negotiation_stats = (
+            load_negotiation_public_items(repo_root)
+        )
+        negotiation_html = build_negotiation_html(
+            negotiation_items,
+            negotiation_empty_note,
+            promoted_candidates=survey_items,
+            status_request_api_key=portal_api_key,
+            portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+        )
+        negotiation_path = repo_root / "portal" / "negotiation" / "index.html"
+        negotiation_path.parent.mkdir(parents=True, exist_ok=True)
+        negotiation_path.write_text(
+            negotiation_html, encoding="utf-8", newline="\n"
+        )
+        print(
+            f"Wrote {negotiation_path} "
+            f"(negotiation_items={len(negotiation_items)}, "
+            f"negotiation_items_total={negotiation_stats['total']}, "
+            f"visible={negotiation_stats['visible']}, "
+            f"filtered={negotiation_stats['filtered']})"
+        )
         inject_share_detail_edit_into_share_pages(repo_root)
     else:
         print(
             f"completion-archive mode (date={completion_date}): "
-            "skipped portal/survey/index.html and share inject; "
+            "skipped portal/survey/index.html, portal/negotiation/index.html, "
+            "and share inject; "
             f"wrote {len(detail_paths)} archive detail page(s) only for target date"
         )
     return 0

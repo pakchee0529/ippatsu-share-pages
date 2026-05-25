@@ -1,0 +1,33 @@
+{
+  "date": "immediate-status-e2e-test",
+  "note": "B-plan E2E test only. NOT production queue.json. Keys 99990001-99990003 are fictional.",
+  "items": [
+    {
+      "management_no": "999 90001",
+      "management_no_key": "99990001",
+      "label": "テスト現調待ちA",
+      "status": null,
+      "survey_status": null,
+      "survey_done": false,
+      "note": "E2E: survey_wait — mark_survey_done で交渉待ちへ昇格"
+    },
+    {
+      "management_no": "999 90002",
+      "management_no_key": "99990002",
+      "label": "テスト現調待ちB",
+      "status": null,
+      "survey_status": null,
+      "survey_done": false,
+      "note": "E2E: survey_wait — 2件目の即時反映テスト"
+    },
+    {
+      "management_no": "999 90003",
+      "management_no_key": "99990003",
+      "label": "テスト交渉待ち初期",
+      "status": "対応中",
+      "survey_status": "現調済み",
+      "survey_done": true,
+      "note": "E2E: negotiation_wait — 静的交渉待ち + revert ボタン確認"
+    }
+  ]
+}
