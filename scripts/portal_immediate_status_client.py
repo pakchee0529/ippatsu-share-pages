@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import json
 import os
+import urllib.error
+import urllib.request
 from typing import Any
 
 # Same deployed function as A-plan until update-portal-case-status is deployed separately.
@@ -19,6 +21,47 @@ def portal_immediate_status_enabled() -> bool:
     """Default on for B-plan draft. Set PORTAL_IMMEDIATE_STATUS=0 to embed legacy A-plan JS."""
     raw = (os.environ.get("PORTAL_IMMEDIATE_STATUS") or "1").strip().lower()
     return raw not in {"0", "false", "no", "legacy"}
+
+
+def fetch_portal_negotiation_wait_keys(endpoint: str, api_key: str) -> set[str]:
+    """GET portal status overrides; return management_no_key set for negotiation_wait.
+
+    Used at generate time to omit overlay-promoted cases from the static survey list.
+    Never logs or prints api_key. On failure returns an empty set (non-fatal).
+    """
+    ep = (endpoint or "").strip()
+    key = (api_key or "").strip()
+    if not ep or not key:
+        return set()
+    req = urllib.request.Request(
+        ep,
+        method="GET",
+        headers={"apikey": key, "Accept": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            body = resp.read().decode("utf-8", errors="replace")
+    except (urllib.error.URLError, OSError, TimeoutError):
+        return set()
+    try:
+        data = json.loads(body)
+    except json.JSONDecodeError:
+        return set()
+    if not isinstance(data, dict) or not data.get("ok"):
+        return set()
+    overrides = data.get("overrides")
+    if not isinstance(overrides, list):
+        return set()
+    out: set[str] = set()
+    for row in overrides:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("portal_status") or "").strip() != "negotiation_wait":
+            continue
+        k = str(row.get("management_no_key") or "").strip()
+        if k:
+            out.add(k)
+    return out
 
 
 def serialize_promoted_candidates(items: list[Any]) -> str:
@@ -149,6 +192,7 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
   document.querySelectorAll("[data-survey-mark-done]").forEach(function(btn) {{
     if (!PORTAL_STATUS_API_KEY) btn.disabled = true;
   }});
+  applySurveyOverlay(Object.create(null), false);
   fetchPortalOverrides().then(function(result) {{
     applySurveyOverlay(result.statusMap, result.ok);
   }});

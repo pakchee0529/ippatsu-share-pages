@@ -48,6 +48,7 @@ from pathlib import Path
 
 from portal_immediate_status_client import (
     PORTAL_CASE_STATUS_ENDPOINT_DEFAULT,
+    fetch_portal_negotiation_wait_keys,
     portal_immediate_status_enabled,
     render_negotiation_immediate_status_js,
     render_survey_immediate_status_js,
@@ -2562,7 +2563,12 @@ def _survey_exclude_reason(item: dict) -> str | None:
 
 
 def is_pending_survey_item(item: dict) -> bool:
-    """queue.json の1件が現調待ちポータルに載せるべきか。"""
+    """queue.json の1件が現調待ちポータルに載せるべきか。
+
+    交渉待ち相当（``is_negotiation_wait_item``）は現調待ちに出さない。
+    """
+    if is_negotiation_wait_item(item):
+        return False
     return _survey_exclude_reason(item) is None
 
 
@@ -2576,7 +2582,7 @@ def is_negotiation_wait_item(item: dict) -> bool:
 
     M8 の現調待ち除外理由（_survey_exclude_reason）と同条件で構成しているが、
     将来どちらかが独立に変わっても壊れないよう判定基準をここで再宣言する。
-    現状は is_pending_survey_item と相補的に動くため、両方 True になることはない。
+    ``is_pending_survey_item`` は本関数が真の行を除外する。
     """
     if _survey_done_is_true(item.get("survey_done")):
         return True
@@ -2692,8 +2698,14 @@ def _empty_survey_load_stats() -> dict[str, Any]:
 
 def load_survey_public_items(
     repo_root: Path,
+    *,
+    exclude_portal_overlay_keys: set[str] | None = None,
 ) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
-    """ippatsu-pc 側 data/survey/queue.json を読み、現調待ち表示対象だけ抽出する。"""
+    """ippatsu-pc 側 data/survey/queue.json を読み、現調待ち表示対象だけ抽出する。
+
+    ``exclude_portal_overlay_keys``: Supabase overlay で negotiation_wait の
+    management_no_key。静的 survey HTML から除外する（案件データは削除しない）。
+    """
     path = _survey_source_path(repo_root)
     empty_msg = "現調待ちリストはまだありません。"
     if not path.is_file():
@@ -2709,17 +2721,29 @@ def load_survey_public_items(
         return [], empty_msg, _empty_survey_load_stats()
     out: list[SurveyPublicItem] = []
     exclude_reasons: dict[str, int] = {}
+    overlay_exclude = exclude_portal_overlay_keys or set()
     total = 0
     for it in items:
         if not isinstance(it, dict):
             continue
         total += 1
-        reason = _survey_exclude_reason(it)
-        if reason:
-            exclude_reasons[reason] = exclude_reasons.get(reason, 0) + 1
+        if not is_pending_survey_item(it):
+            if is_negotiation_wait_item(it):
+                exclude_reasons["negotiation_wait"] = (
+                    exclude_reasons.get("negotiation_wait", 0) + 1
+                )
+            else:
+                reason = _survey_exclude_reason(it)
+                if reason:
+                    exclude_reasons[reason] = exclude_reasons.get(reason, 0) + 1
             continue
         mno = _to_str(it.get("management_no")) or "—"
         mno_key = management_no_key(mno) if mno != "—" else None
+        if mno_key and mno_key in overlay_exclude:
+            exclude_reasons["portal_status_overlay"] = (
+                exclude_reasons.get("portal_status_overlay", 0) + 1
+            )
+            continue
         out.append(
             SurveyPublicItem(
                 management_no=mno,
@@ -2744,6 +2768,17 @@ def load_survey_public_items(
     if not out:
         return [], empty_msg, stats
     return out, "", stats
+
+
+def load_survey_promoted_candidate_items(
+    repo_root: Path,
+) -> list[SurveyPublicItem]:
+    """交渉待ちページの即時昇格カード用メタデータ（現調待ち相当のみ）。
+
+    overlay 除外前の候補。静的 survey から外した案件も昇格カード表示に使う。
+    """
+    items, _, _ = load_survey_public_items(repo_root, exclude_portal_overlay_keys=set())
+    return items
 
 
 def load_negotiation_public_items(
@@ -2813,12 +2848,15 @@ def build_survey_html(
     status_request_api_key: str = "",
     portal_status_endpoint: str = PORTAL_CASE_STATUS_ENDPOINT,
     immediate_status: bool | None = None,
+    *,
+    initial_hidden_overlay_keys: set[str] | None = None,
 ) -> str:
     use_immediate = (
         immediate_status
         if immediate_status is not None
         else portal_immediate_status_enabled()
     )
+    hidden_overlay_keys = initial_hidden_overlay_keys or set()
     if use_immediate:
         survey_mark_hint = (
             "押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）"
@@ -2925,12 +2963,18 @@ def build_survey_html(
                 'hidden role="status"></p>'
                 "</div>"
             )
+        hidden_attr = ""
+        if (
+            it.management_no_key
+            and it.management_no_key in hidden_overlay_keys
+        ):
+            hidden_attr = ' hidden data-portal-moved="negotiation"'
         cards.append(
             f"""<article class="card survey-update-card" data-card-index="{idx}"
   data-management-no-key="{escape_html(it.management_no_key)}"
   data-management-no="{escape_html(it.management_no)}"
   data-label="{escape_html(it.label)}"
-  data-requested-action="{survey_requested_action}">
+  data-requested-action="{survey_requested_action}"{hidden_attr}>
   <div class="card-head">
     <h2 class="card-title">{escape_html(it.label)}</h2>
     <p class="item-mgmt">{escape_html(it.management_no)}</p>
@@ -4894,9 +4938,6 @@ def main() -> int:
         f"archive_details={len(detail_paths)})"
     )
     if mode == PORTAL_MODE_FULL:
-        survey_items, survey_empty_note, survey_stats = load_survey_public_items(
-            repo_root
-        )
         portal_api_key = survey_status_request_api_key()
         if not portal_api_key:
             print(
@@ -4905,12 +4946,29 @@ def main() -> int:
                 "when generating (送信ボタンは無効化されます).",
                 file=sys.stderr,
             )
+        overlay_neg_keys: set[str] = set()
+        if portal_api_key and portal_immediate_status_enabled():
+            overlay_neg_keys = fetch_portal_negotiation_wait_keys(
+                PORTAL_CASE_STATUS_ENDPOINT, portal_api_key
+            )
+            if overlay_neg_keys:
+                print(
+                    f"portal overlay: excluding {len(overlay_neg_keys)} "
+                    "negotiation_wait key(s) from static survey list",
+                    file=sys.stderr,
+                )
+        survey_items, survey_empty_note, survey_stats = load_survey_public_items(
+            repo_root,
+            exclude_portal_overlay_keys=overlay_neg_keys,
+        )
+        promoted_candidates = load_survey_promoted_candidate_items(repo_root)
         survey_html = build_survey_html(
             survey_items,
             survey_empty_note,
             date.today().isoformat(),
             status_request_api_key=portal_api_key,
             portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+            initial_hidden_overlay_keys=overlay_neg_keys,
         )
         survey_path = repo_root / "portal" / "survey" / "index.html"
         survey_path.parent.mkdir(parents=True, exist_ok=True)
@@ -4930,7 +4988,7 @@ def main() -> int:
         negotiation_html = build_negotiation_html(
             negotiation_items,
             negotiation_empty_note,
-            promoted_candidates=survey_items,
+            promoted_candidates=promoted_candidates,
             status_request_api_key=portal_api_key,
             portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
         )
