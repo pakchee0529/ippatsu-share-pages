@@ -28,43 +28,92 @@ body {
   margin-right: auto;
 }
 
-.portal-page-nav {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-  margin-bottom: 0.85rem;
+.portal-page-header {
+  margin-bottom: 0.5rem;
 }
-.portal-page-nav a {
+.portal-page-header-row {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.portal-page-header-row h1 {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+.portal-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.portal-menu-btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #fff;
-  background: #1565c0;
-  border-radius: 10px;
-  padding: 0.65rem 0.45rem;
+  gap: 0.35rem;
   min-height: 48px;
-  line-height: 1.25;
-  border: 1px solid transparent;
-  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.08);
-  touch-action: manipulation;
+  min-width: 48px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-b);
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.06);
 }
-.portal-page-nav a:hover,
-.portal-page-nav a:focus-visible {
-  background: #0d47a1;
+.portal-menu-btn:hover,
+.portal-menu-btn:focus-visible {
+  border-color: var(--accent-b);
   outline: none;
 }
-.portal-page-nav a.is-current {
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4);
-  font-weight: 700;
+.portal-menu-icon {
+  font-size: 1.15rem;
+  line-height: 1;
 }
-@media (min-width: 520px) {
-  .portal-page-nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+.portal-menu-label {
+  white-space: nowrap;
+}
+.portal-menu-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 12.5rem;
+  padding: 0.35rem 0;
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(20, 32, 51, 0.12);
+}
+.portal-menu-panel[hidden] {
+  display: none !important;
+}
+.portal-menu-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text-b);
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+a.portal-menu-item:hover,
+a.portal-menu-item:focus-visible {
+  background: var(--bg-b);
+  outline: none;
+}
+.portal-menu-item.is-current {
+  font-weight: 700;
+  background: #e8eef5;
 }
 
 h1 {
@@ -238,13 +287,24 @@ a.btn-archive:hover, a.btn-archive:active {
 </style>
 </head>
 <body>
-  <nav class="portal-page-nav" aria-label="サイト内リンク">
-    <a href="../">ポータルTOP</a>
-    <a href="../survey/">現調待ち</a>
-    <a href="../negotiation/">交渉待ち</a>
-    <a href="./" class="is-current">アーカイブ</a>
-  </nav>
-  <h1>現場共有アーカイブ</h1>
+  <header class="portal-page-header">
+    <div class="portal-page-header-row">
+      <h1>現場共有アーカイブ</h1>
+      <div class="portal-menu-wrap">
+        <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel" aria-label="サイトメニューを開く">
+          <span class="portal-menu-icon" aria-hidden="true">☰</span>
+          <span class="portal-menu-label">メニュー</span>
+        </button>
+        <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
+          <a class="portal-menu-item" role="menuitem" href="../">ポータルTOP</a>
+          <a class="portal-menu-item" role="menuitem" href="../calendar/">社内カレンダー</a>
+          <a class="portal-menu-item" role="menuitem" href="../survey/">現調待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="../negotiation/">交渉待ち</a>
+          <a class="portal-menu-item is-current" role="menuitem" href="./" aria-current="page">アーカイブ</a>
+        </nav>
+      </div>
+    </div>
+  </header>
   <p class="disclaimer-note">表示対象は <code>portal/archive_manifest.json</code> の <code>entries</code> に登録した6桁日付のみです。個人情報・次回確認メモ・地主情報などはマニフェストに書き込まないでください。</p>
   <p class="lead">冠称名・径間名・管理番号で過去現場を検索できます。直近7日分は「最近1週間」、それ以前は月別に表示します。</p>
   <div class="search-wrap">
@@ -464,6 +524,29 @@ a.btn-archive:hover, a.btn-archive:active {
   }
   input.addEventListener("input", apply);
   input.addEventListener("search", apply);
+})();
+
+(function () {
+  var btn = document.getElementById("portal-menu-btn");
+  var panel = document.getElementById("portal-menu-panel");
+  if (!btn || !panel) return;
+  function setOpen(open) {
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  btn.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    setOpen(panel.hidden);
+  });
+  document.addEventListener("click", function () {
+    setOpen(false);
+  });
+  panel.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") setOpen(false);
+  });
 })();
   </script>
 </body>

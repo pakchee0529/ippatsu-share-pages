@@ -31,43 +31,86 @@ body {
   margin-right: auto;
 }
 
-.portal-page-nav {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-  margin-bottom: 0.85rem;
+
+.portal-page-header {
+  margin-bottom: 0.35rem;
 }
-.portal-page-nav a {
+.portal-page-header-row {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.portal-page-header-row .page-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0 0 0.8rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
+}
+.portal-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.portal-menu-btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #fff;
-  background: #1565c0;
-  border-radius: 10px;
-  padding: 0.65rem 0.45rem;
+  gap: 0.35rem;
   min-height: 48px;
-  line-height: 1.25;
-  border: 1px solid transparent;
-  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.08);
-  touch-action: manipulation;
+  min-width: 48px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.06);
 }
-.portal-page-nav a:hover,
-.portal-page-nav a:focus-visible {
-  background: #0d47a1;
+.portal-menu-btn:hover,
+.portal-menu-btn:focus-visible {
+  border-color: var(--accent);
   outline: none;
 }
-.portal-page-nav a.is-current {
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4);
-  font-weight: 700;
+.portal-menu-icon { font-size: 1.15rem; line-height: 1; }
+.portal-menu-label { white-space: nowrap; }
+.portal-menu-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 12.5rem;
+  padding: 0.35rem 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(20, 32, 51, 0.12);
 }
-@media (min-width: 520px) {
-  .portal-page-nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+.portal-menu-panel[hidden] { display: none !important; }
+.portal-menu-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+a.portal-menu-item:hover,
+a.portal-menu-item:focus-visible {
+  background: var(--bg);
+  outline: none;
+}
+.portal-menu-item.is-current {
+  font-weight: 700;
+  background: #f1f5f9;
 }
 
 .page-title {
@@ -304,14 +347,25 @@ body {
 </style>
 </head>
 <body>
-  <nav class="portal-page-nav" aria-label="サイト内リンク">
-    <a href="../../">ポータルTOP</a>
-    <a href="../../survey/">現調待ち</a>
-    <a href="../../negotiation/">交渉待ち</a>
-    <a href="../" class="is-current">アーカイブ</a>
-  </nav>
-  <h1 class="page-title">2026年05月18日</h1>
-  <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
+  <header class="portal-page-header">
+    <div class="portal-page-header-row">
+      <h1 class="page-title">2026年05月18日</h1>
+      <div class="portal-menu-wrap">
+        <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel" aria-label="サイトメニューを開く">
+          <span class="portal-menu-icon" aria-hidden="true">☰</span>
+          <span class="portal-menu-label">メニュー</span>
+        </button>
+        <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
+          <a class="portal-menu-item" role="menuitem" href="../../">ポータルTOP</a>
+          <a class="portal-menu-item" role="menuitem" href="../../calendar/">社内カレンダー</a>
+          <a class="portal-menu-item" role="menuitem" href="../../survey/">現調待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="../../negotiation/">交渉待ち</a>
+          <a class="portal-menu-item is-current" role="menuitem" href="../" aria-current="page">アーカイブ</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+<p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
   <main>
 <article class="card" data-card-index="0">
       <div class="card-head">
@@ -455,6 +509,27 @@ body {
     else if (bounds.length > 1) map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
   }
 })();
+  </script>
+  <script>
+(function () {
+  var btn = document.getElementById("portal-menu-btn");
+  var panel = document.getElementById("portal-menu-panel");
+  if (!btn || !panel) return;
+  function setOpen(open) {
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  btn.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    setOpen(panel.hidden);
+  });
+  document.addEventListener("click", function () { setOpen(false); });
+  panel.addEventListener("click", function (ev) { ev.stopPropagation(); });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") setOpen(false);
+  });
+})();
+
   </script>
 </body>
 </html>

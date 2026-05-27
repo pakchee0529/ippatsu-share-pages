@@ -66,6 +66,84 @@
     display: flex;
     gap: 8px;
   }
+  .portal-menu-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .portal-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: white;
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .portal-menu-btn:hover,
+  .portal-menu-btn:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+    outline: none;
+  }
+  .portal-menu-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+  .portal-menu-label {
+    white-space: nowrap;
+  }
+  .portal-menu-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 200;
+    min-width: 13rem;
+    padding: 0.35rem 0;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+  .portal-menu-panel[hidden] {
+    display: none !important;
+  }
+  .portal-menu-item {
+    display: block;
+    padding: 0.7rem 1rem;
+    font-size: 0.92rem;
+    color: var(--text);
+    text-decoration: none;
+    border: 0;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  a.portal-menu-item:hover,
+  a.portal-menu-item:focus-visible,
+  button.portal-menu-item:hover,
+  button.portal-menu-item:focus-visible {
+    background: var(--bg);
+    outline: none;
+  }
+  .portal-menu-item.is-current {
+    font-weight: 700;
+    background: #eaf5ef;
+    color: var(--green);
+  }
+  .portal-menu-divider {
+    height: 1px;
+    margin: 0.3rem 0.5rem;
+    background: var(--border);
+  }
   .btn {
     padding: 7px 14px;
     border-radius: 6px;
@@ -710,8 +788,20 @@
 
 <header>
   <h1>📅 社内カレンダー</h1>
-  <div class="header-right">
-    <button class="btn btn-outline" onclick="openManageModal()">予定編集</button>
+  <div class="portal-menu-wrap">
+    <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel" aria-label="サイトメニューを開く">
+      <span class="portal-menu-icon" aria-hidden="true">☰</span>
+      <span class="portal-menu-label">メニュー</span>
+    </button>
+    <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
+      <a class="portal-menu-item" role="menuitem" href="../">ポータルTOP</a>
+      <a class="portal-menu-item is-current" role="menuitem" href="./" aria-current="page">社内カレンダー</a>
+      <a class="portal-menu-item" role="menuitem" href="../survey/">現調待ち</a>
+      <a class="portal-menu-item" role="menuitem" href="../negotiation/">交渉待ち</a>
+      <a class="portal-menu-item" role="menuitem" href="../archive/">アーカイブ</a>
+      <div class="portal-menu-divider" role="separator"></div>
+      <button type="button" class="portal-menu-item" role="menuitem" id="portal-menu-edit-schedule">予定編集</button>
+    </nav>
   </div>
 </header>
 
@@ -1639,6 +1729,32 @@ async function initApp() {
   renderCalendar();
   renderList();
 }
+
+(function initPortalMenu() {
+  const btn = document.getElementById("portal-menu-btn");
+  const panel = document.getElementById("portal-menu-panel");
+  const editBtn = document.getElementById("portal-menu-edit-schedule");
+  if (!btn || !panel) return;
+  function setOpen(open) {
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  btn.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    setOpen(panel.hidden);
+  });
+  document.addEventListener("click", () => setOpen(false));
+  panel.addEventListener("click", (ev) => ev.stopPropagation());
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape") setOpen(false);
+  });
+  if (editBtn) {
+    editBtn.addEventListener("click", () => {
+      setOpen(false);
+      openManageModal();
+    });
+  }
+})();
 
 initApp();
 </script>

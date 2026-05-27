@@ -118,6 +118,23 @@ a.portal-menu-item:focus-visible {
   color: var(--muted-b);
   cursor: default;
 }
+.portal-menu-item.is-current {
+  font-weight: 700;
+  background: var(--bg-b);
+}
+button.portal-menu-item {
+  cursor: pointer;
+}
+button.portal-menu-item:hover,
+button.portal-menu-item:focus-visible {
+  background: var(--bg-b);
+  outline: none;
+}
+.portal-menu-divider {
+  height: 1px;
+  margin: 0.3rem 0.5rem;
+  background: var(--border-b);
+}
 .intro {
   font-size: 0.95rem;
   color: var(--muted-b);
@@ -308,7 +325,7 @@ a.portal-menu-item:focus-visible {
           <span class="portal-menu-label">メニュー</span>
         </button>
         <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
-          <a class="portal-menu-item" role="menuitem" href="./">ポータルTOP</a>
+          <a class="portal-menu-item is-current" role="menuitem" href="./" aria-current="page">ポータルTOP</a>
           <a class="portal-menu-item" role="menuitem" href="./calendar/">社内カレンダー</a>
           <a class="portal-menu-item" role="menuitem" href="./survey/">現調待ち</a>
           <a class="portal-menu-item" role="menuitem" href="./negotiation/">交渉待ち</a>
