@@ -2863,15 +2863,13 @@ def build_survey_html(
         )
         survey_requested_action = "mark_survey_done"
         survey_disclaimer = (
-            "「現調済みを報告」「返却候補を報告」は Google フォームに送信します。"
-            "「現調済みにする」は交渉待ちへ即時反映します（portal status overlay）。"
+            "「現調済みにする」を押すと交渉待ちへ即時反映します（portal status overlay）。"
             "従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。"
         )
     else:
         survey_mark_hint = "押すとPC側の承認待ちになります（更新依頼を送信）"
         survey_requested_action = "mark_survey_completed"
         survey_disclaimer = (
-            "「現調済みを報告」「返却候補を報告」は Google フォームに送信します。"
             "「現調済みにする」は Supabase へ更新依頼（PC反映待ち）を送信します。"
             "いずれも押しただけではこの一覧から消えません。"
         )
@@ -2926,34 +2924,11 @@ def build_survey_html(
         )
         note_body = f"備考: {escape_html(it.note)}"
         actions = "".join(x for x in [map_btn, two_btn, note_btn] if x)
-        url_done = build_survey_report_url(
-            form_base_url,
-            it.management_no,
-            it.label,
-            SURVEY_REPORT_TYPE_JP_COMPLETED,
-            report_date_iso,
-        )
-        url_return = build_survey_report_url(
-            form_base_url,
-            it.management_no,
-            it.label,
-            SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE,
-            report_date_iso,
-        )
-        report_btns = (
-            f'<div class="card-actions card-actions-report" role="group" '
-            f'aria-label="現調結果の報告">'
-            f'<a class="btn btn-report-done" href="{escape_html(url_done)}" '
-            f'target="_blank" rel="noopener noreferrer">現調済みを報告</a>'
-            f'<a class="btn btn-report-return" href="{escape_html(url_return)}" '
-            f'target="_blank" rel="noopener noreferrer">返却候補を報告</a>'
-            f"</div>"
-        )
         portal_request_btns = ""
         if it.management_no_key:
             portal_request_btns = (
                 '<div class="card-actions card-actions-portal-request" role="group" '
-                'aria-label="現調済み（PC承認待ち）">'
+                'aria-label="現調待ちから交渉待ちへ反映">'
                 '<button type="button" class="btn btn-survey-mark-done" '
                 'data-survey-mark-done>現調済みにする</button>'
                 '<p class="survey-mark-hint muted-tiny">'
@@ -2979,7 +2954,6 @@ def build_survey_html(
     <h2 class="card-title">{escape_html(it.label)}</h2>
     <p class="item-mgmt">{escape_html(it.management_no)}</p>
     <div class="card-actions">{actions}</div>
-    {report_btns}
     {portal_request_btns}
   </div>
   {two_json}
@@ -3226,39 +3200,6 @@ body {{
   }}
   .page-title {{ font-size: 1.4rem; }}
 }}
-.card-actions-report {{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  flex-basis: 100%;
-  width: 100%;
-  margin-top: 0.35rem;
-  padding-top: 0.55rem;
-  border-top: 1px dashed var(--border);
-}}
-.card-actions-report .btn {{
-  flex: 1 1 calc(50% - 0.25rem);
-  min-width: 9.5rem;
-  min-height: 44px;
-  font-size: 0.88rem;
-}}
-.btn-report-done {{
-  background: var(--accent);
-  color: #fff;
-}}
-.btn-report-done:hover, .btn-report-done:focus-visible {{
-  filter: brightness(1.05);
-  outline: none;
-}}
-.btn-report-return {{
-  background: #fffbeb;
-  color: #92400e;
-  border: 2px solid #f59e0b;
-}}
-.btn-report-return:hover, .btn-report-return:focus-visible {{
-  background: #fef3c7;
-  outline: none;
-}}
 .card-actions-portal-request {{
   display: flex;
   flex-direction: column;
@@ -3268,9 +3209,10 @@ body {{
   width: 100%;
   margin-top: 0.35rem;
   padding-top: 0.55rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px dashed var(--border);
 }}
 .btn-survey-mark-done {{
+  min-height: 44px;
   background: #ecfdf5;
   color: #047857;
   border: 2px solid #6ee7b7;
