@@ -207,10 +207,10 @@
     color: var(--red);
     border-left: 2.5px solid var(--red);
   }
-  .event-tag.health {
-    background: var(--blue-light);
-    color: var(--blue);
-    border-left: 2.5px solid var(--blue);
+  .event-tag.business_trip {
+    background: #fdebd0;
+    color: #b45f06;
+    border-left: 2.5px solid #e67e22;
   }
   .event-tag.holiday-tag {
     background: var(--yellow-light);
@@ -285,13 +285,13 @@
   }
   .event-list-item.company { background: var(--green-light); }
   .event-list-item.absent { background: var(--red-light); }
-  .event-list-item.health { background: var(--blue-light); }
+  .event-list-item.business_trip { background: #fdebd0; }
   .event-list-item .dot {
     width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
   }
   .event-list-item.company .dot { background: var(--green-mid); }
   .event-list-item.absent .dot { background: var(--red); }
-  .event-list-item.health .dot { background: var(--blue); }
+  .event-list-item.business_trip .dot { background: #e67e22; }
 
   .modal-add-btn {
     width: 100%;
@@ -499,7 +499,9 @@
   }
   .badge-company { background: var(--green-light); color: var(--green); }
   .badge-absent { background: var(--red-light); color: var(--red); }
-  .badge-health { background: var(--blue-light); color: var(--blue); }
+  .badge-business_trip { background: #fdebd0; color: #b45f06; }
+  .badge-holiday { background: var(--yellow-light); color: var(--yellow); }
+  .badge-other { background: var(--bg); color: var(--text-muted); }
 
   /* ===== FAB ===== */
   .fab {
@@ -587,9 +589,9 @@
     <button onclick="changeMonth(1)">›</button>
   </div>
   <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:#52b788"></div>行事・会社予定</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div>不在・休み</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#1a5276"></div>健診・研修</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#52b788"></div>行事</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div>不在</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div>出張</div>
   </div>
   <div class="calendar-wrap">
     <div class="weekday-header">
@@ -625,9 +627,9 @@
     <div class="form-group">
       <label>種別</label>
       <select id="eventType">
-        <option value="company">🟢 行事・会社予定</option>
-        <option value="absent">🔴 不在・休み（社員）</option>
-        <option value="health">🔵 健診・研修</option>
+        <option value="company">🟢 行事</option>
+        <option value="absent">🔴 不在</option>
+        <option value="business_trip">🟠 出張</option>
       </select>
     </div>
     <div class="form-row">
@@ -641,8 +643,8 @@
       </div>
     </div>
     <div class="form-group">
-      <label>内容・タイトル</label>
-      <input type="text" id="eventTitle" placeholder="例：安全大会、森本休み">
+      <label>内容・タイトル（不在は任意）</label>
+      <input type="text" id="eventTitle" placeholder="例：安全大会、健診①、休み 近大">
     </div>
     <div class="form-group">
       <label>対象社員（任意）</label>
@@ -677,24 +679,36 @@ const CALENDAR_API_ENDPOINT = "";
 
 // ===== STORAGE =====
 const STORAGE_KEY = "companyCalendarEvents";
-const ALLOWED_EVENT_TYPES = ["company", "absent", "health"];
+const ALLOWED_EVENT_TYPES = ["company", "absent", "business_trip", "holiday", "other"];
+const IMPORT_REJECTED_TYPES = ["health"];
+
+const TYPE_META = {
+  company: { emoji: "🟢", badge: "行事", badgeClass: "badge-company" },
+  absent: { emoji: "🔴", badge: "不在", badgeClass: "badge-absent" },
+  business_trip: { emoji: "🟠", badge: "出張", badgeClass: "badge-business_trip" },
+  holiday: { emoji: "🟡", badge: "祝日", badgeClass: "badge-holiday" },
+  other: { emoji: "⚪", badge: "その他", badgeClass: "badge-other" },
+};
 
 const seedEvents = [
   { id: 1, type: "company", dateStart: "2026-06-01", dateEnd: "2026-06-01", title: "大師", person: "" },
-  { id: 2, type: "health", dateStart: "2026-06-03", dateEnd: "2026-06-03", title: "安全大会", person: "" },
-  { id: 3, type: "health", dateStart: "2026-06-22", dateEnd: "2026-06-22", title: "健診①", person: "" },
-  { id: 4, type: "absent", dateStart: "2026-06-22", dateEnd: "2026-06-22", title: "休み", person: "稲垂・井上竜・森本・壮綾" },
-  { id: 5, type: "health", dateStart: "2026-06-23", dateEnd: "2026-06-23", title: "健診②", person: "" },
-  { id: 6, type: "absent", dateStart: "2026-06-23", dateEnd: "2026-06-23", title: "休み", person: "昆弘・九鬼・小西" },
-  { id: 7, type: "health", dateStart: "2026-06-30", dateEnd: "2026-06-30", title: "健診③", person: "" },
-  { id: 8, type: "absent", dateStart: "2026-06-30", dateEnd: "2026-06-30", title: "休み", person: "稲田・北岡・田中・竜美" },
-  { id: 9, type: "company", dateStart: "2026-07-10", dateEnd: "2026-07-10", title: "きんでん教育", person: "" },
-  { id: 10, type: "company", dateStart: "2026-07-20", dateEnd: "2026-07-20", title: "海の日（祝）", person: "" },
-  { id: 11, type: "company", dateStart: "2026-07-28", dateEnd: "2026-07-28", title: "干股 25t", person: "" },
+  { id: 2, type: "absent", dateStart: "2026-06-02", dateEnd: "2026-06-02", title: "休み", person: "稲田" },
+  { id: 3, type: "company", dateStart: "2026-06-03", dateEnd: "2026-06-03", title: "安全大会", person: "" },
+  { id: 4, type: "business_trip", dateStart: "2026-06-08", dateEnd: "2026-06-08", title: "十津川出張", person: "" },
+  { id: 5, type: "company", dateStart: "2026-06-16", dateEnd: "2026-06-16", title: "宇野峠・規制車", person: "" },
+  { id: 6, type: "company", dateStart: "2026-06-17", dateEnd: "2026-06-17", title: "佐曽・時間規制", person: "" },
+  { id: 7, type: "absent", dateStart: "2026-06-22", dateEnd: "2026-06-22", title: "健診①", person: "社長・井上竜・森本・井上綾" },
+  { id: 8, type: "absent", dateStart: "2026-06-23", dateEnd: "2026-06-23", title: "健診②", person: "晃弘・九鬼・小西" },
+  { id: 9, type: "absent", dateStart: "2026-06-30", dateEnd: "2026-06-30", title: "健診③", person: "稲田・北岡・田中・龍見" },
+  { id: 10, type: "absent", dateStart: "2026-06-30", dateEnd: "2026-06-30", title: "安全運転講習", person: "森本" },
+  { id: 11, type: "company", dateStart: "2026-07-10", dateEnd: "2026-07-10", title: "きんでん教育", person: "" },
+  { id: 12, type: "company", dateStart: "2026-07-20", dateEnd: "2026-07-20", title: "海の日（祝）", person: "" },
+  { id: 13, type: "company", dateStart: "2026-07-28", dateEnd: "2026-07-28", title: "干股 25t", person: "" },
+  { id: 14, type: "absent", dateStart: "2026-07-28", dateEnd: "2026-07-28", title: "休み 近大", person: "森本" },
 ];
 
 let events = [];
-let nextId = 12;
+let nextId = 15;
 
 // ===== STATE =====
 const today = new Date();
@@ -723,13 +737,43 @@ function cloneEvents(arr) {
   }));
 }
 
+function fixDateRange(dateStart, dateEnd) {
+  const start = dateStart || "";
+  let end = dateEnd || start;
+  if (!start) return { dateStart: start, dateEnd: end };
+  if (end < start) end = start;
+  return { dateStart: start, dateEnd: end };
+}
+
+function getEventDisplayLabel(ev) {
+  const person = ev.person != null ? String(ev.person).trim() : "";
+  const title = ev.title != null ? String(ev.title).trim() : "";
+  if (ev.type === "absent") {
+    if (person) return person;
+    if (title) return title;
+    return "不在";
+  }
+  return title || "（無題）";
+}
+
+function getEventCellTagText(ev) {
+  const label = getEventDisplayLabel(ev);
+  if (label.length <= 6) return label;
+  return label.slice(0, 5) + "…";
+}
+
+function getTypeMeta(type) {
+  return TYPE_META[type] || TYPE_META.other;
+}
+
 function normalizeEvent(ev) {
+  const fixed = fixDateRange(ev.dateStart, ev.dateEnd || ev.dateStart);
   return {
     id: ev.id,
     type: ev.type,
-    dateStart: ev.dateStart,
-    dateEnd: ev.dateEnd || ev.dateStart,
-    title: String(ev.title).trim(),
+    dateStart: fixed.dateStart,
+    dateEnd: fixed.dateEnd,
+    title: ev.title != null ? String(ev.title).trim() : "",
     person: ev.person != null ? String(ev.person) : "",
   };
 }
@@ -737,11 +781,25 @@ function normalizeEvent(ev) {
 function validateImportItem(ev) {
   if (!ev || typeof ev !== "object") return false;
   if (ev.id == null || ev.id === "") return false;
+  if (IMPORT_REJECTED_TYPES.includes(ev.type)) return false;
   if (!ALLOWED_EVENT_TYPES.includes(ev.type)) return false;
-  if (!ev.dateStart || !ev.dateEnd) return false;
-  if (!ev.title || !String(ev.title).trim()) return false;
+  if (!ev.dateStart) return false;
   if (ev.person == null) return false;
+  const title = ev.title != null ? String(ev.title).trim() : "";
+  if (ev.type !== "absent" && !title) return false;
   return true;
+}
+
+function getManageLineText(ev) {
+  if (ev.type === "absent") {
+    const person = (ev.person || "").trim();
+    const title = (ev.title || "").trim();
+    if (person && title) return person + " / " + title;
+    return getEventDisplayLabel(ev);
+  }
+  const title = (ev.title || "").trim();
+  const person = (ev.person || "").trim();
+  return title + (person ? " / " + person : "");
 }
 
 function recomputeNextId() {
@@ -780,7 +838,7 @@ function initEventsFromLocal() {
     recomputeNextId();
   } else {
     events = cloneEvents(seedEvents);
-    nextId = 12;
+    nextId = 15;
     persistEvents();
   }
 }
@@ -828,9 +886,13 @@ function handleImportFile(file) {
         alert("JSONは配列形式である必要があります");
         return;
       }
+      if (parsed.some((e) => e && IMPORT_REJECTED_TYPES.includes(e.type))) {
+        alert("type=health の予定が含まれています。健診・研修種別は廃止されたため、JSONを手動で修正してから再度インポートしてください。");
+        return;
+      }
       const valid = parsed.filter(validateImportItem);
       if (valid.length !== parsed.length) {
-        alert("一部の行が不正なためスキップしました（id, type, dateStart, dateEnd, title, person が必須）");
+        alert("一部の行が不正なためスキップしました（id, type, dateStart, person 必須。不在以外は title 必須）");
       }
       if (valid.length === 0) {
         alert("取り込める予定がありません");
@@ -853,7 +915,7 @@ function handleImportFile(file) {
 function resetToSeedEvents() {
   if (!confirm("初期データに戻します。現在の予定はすべて失われます。よろしいですか？")) return;
   events = cloneEvents(seedEvents);
-  nextId = 12;
+  nextId = 15;
   persistEvents();
   renderManageList();
   renderCalendar();
@@ -901,7 +963,7 @@ function renderCalendar() {
     dayEvents.slice(0, maxShow).forEach(ev => {
       const tag = document.createElement('div');
       tag.className = `event-tag ${ev.type}`;
-      tag.textContent = ev.person ? ev.person.split('・')[0]+(ev.person.includes('・')?'…':'') : ev.title;
+      tag.textContent = getEventCellTagText(ev);
       evWrap.appendChild(tag);
     });
     if (dayEvents.length > maxShow) {
@@ -948,7 +1010,7 @@ function openDayModal(ymd, dateObj) {
       text.style.flex = '1';
       text.style.fontSize = '14px';
       text.style.fontWeight = '600';
-      text.textContent = ev.title + (ev.person ? `　${ev.person}` : '');
+      text.textContent = getManageLineText(ev);
       item.appendChild(dot);
       item.appendChild(text);
       content.appendChild(item);
@@ -1013,33 +1075,35 @@ function openEditModal(id) {
 
 // ★ 修正: saveEvent() に編集モード対応を追加
 function saveEvent() {
-  const title = document.getElementById('eventTitle').value.trim();
+  const type = document.getElementById('eventType').value;
   const dateStart = document.getElementById('eventDateStart').value;
-  const dateEnd = document.getElementById('eventDateEnd').value || dateStart;
-  if (!title || !dateStart) { alert('日付とタイトルを入力してください'); return; }
+  let dateEnd = document.getElementById('eventDateEnd').value || dateStart;
+  const fixed = fixDateRange(dateStart, dateEnd);
+  dateEnd = fixed.dateEnd;
+  if (document.getElementById('eventDateEnd').value !== dateEnd) {
+    document.getElementById('eventDateEnd').value = dateEnd;
+  }
+  const title = document.getElementById('eventTitle').value.trim();
+  const person = document.getElementById('eventPerson').value.trim();
+  if (!dateStart) { alert('開始日を入力してください'); return; }
+  if (type !== 'absent' && !title) { alert('タイトルを入力してください'); return; }
+
+  const payload = {
+    type,
+    dateStart,
+    dateEnd,
+    title,
+    person,
+  };
 
   if (editingId !== null) {
-    // 編集モード: 該当イベントを上書き更新
     const idx = events.findIndex(e => e.id === editingId);
     if (idx !== -1) {
-      events[idx] = {
-        id: editingId,
-        type: document.getElementById('eventType').value,
-        dateStart, dateEnd,
-        title,
-        person: document.getElementById('eventPerson').value.trim()
-      };
+      events[idx] = { id: editingId, ...payload };
     }
-    editingId = null; // リセット
+    editingId = null;
   } else {
-    // 新規追加モード
-    events.push({
-      id: nextId++,
-      type: document.getElementById('eventType').value,
-      dateStart, dateEnd,
-      title,
-      person: document.getElementById('eventPerson').value.trim()
-    });
+    events.push({ id: nextId++, ...payload });
   }
 
   closeAddModal();
@@ -1064,12 +1128,12 @@ function renderManageList() {
   }
   const sorted = [...events].sort((a,b) => a.dateStart.localeCompare(b.dateStart));
   list.innerHTML = sorted.map(ev => {
-    const typeLabel = { company: '🟢', absent: '🔴', health: '🔵' }[ev.type] || '';
+    const meta = getTypeMeta(ev.type);
     const dateLabel = ev.dateStart === ev.dateEnd ? ev.dateStart : `${ev.dateStart}〜${ev.dateEnd}`;
     return `<div class="event-manage-item ${ev.type}">
       <div style="flex:1">
-        <div style="font-size:12px;color:#888;margin-bottom:2px">${typeLabel} ${dateLabel}</div>
-        <div style="font-size:14px;font-weight:600">${ev.title}${ev.person ? ' / '+ev.person : ''}</div>
+        <div style="font-size:12px;color:#888;margin-bottom:2px">${meta.emoji} ${meta.badge} ${dateLabel}</div>
+        <div style="font-size:14px;font-weight:600">${getManageLineText(ev)}</div>
       </div>
       <div class="action-btns">
         <button class="edit-btn" onclick="openEditModal(${ev.id})" title="編集">✏️</button>
@@ -1108,8 +1172,11 @@ function renderList() {
     evs.forEach(ev => {
       const d = new Date(ev.dateStart+'T00:00:00');
       const dow = d.getDay();
-      const badgeClass = {company:'badge-company',absent:'badge-absent',health:'badge-health'}[ev.type];
-      const badgeText = {company:'行事',absent:'不在',health:'健診・研修'}[ev.type];
+      const meta = getTypeMeta(ev.type);
+      const displayLabel = getEventDisplayLabel(ev);
+      const subLine = (ev.type === 'absent' && ev.person && ev.title)
+        ? `<div class="list-item-sub">${ev.title}</div>`
+        : (ev.person && ev.type !== 'absent' ? `<div class="list-item-sub">${ev.person}</div>` : '');
 
       const item = document.createElement('div');
       item.className = 'list-item';
@@ -1119,10 +1186,10 @@ function renderList() {
           <div class="w">${WEEKDAYS[dow]}</div>
         </div>
         <div class="list-item-content">
-          <div class="list-item-title">${ev.title}</div>
-          ${ev.person ? `<div class="list-item-sub">${ev.person}</div>` : ''}
+          <div class="list-item-title">${displayLabel}</div>
+          ${subLine}
         </div>
-        <span class="list-item-badge ${badgeClass}">${badgeText}</span>
+        <span class="list-item-badge ${meta.badgeClass}">${meta.badge}</span>
       `;
       group.appendChild(item);
     });
