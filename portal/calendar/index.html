@@ -526,6 +526,41 @@
     color: var(--text-muted);
     font-size: 13px;
   }
+
+  .storage-mode-banner {
+    margin: 0;
+    padding: 6px 20px 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .manage-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .manage-tools .btn-tool {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .manage-tools .btn-tool:hover { background: var(--bg); }
+  .manage-tools .btn-tool-warn {
+    border-color: #e0b4b0;
+    color: var(--red);
+  }
 </style>
 </head>
 <body>
@@ -536,6 +571,8 @@
     <button class="btn btn-outline" onclick="openManageModal()">管理</button>
   </div>
 </header>
+
+<p class="storage-mode-banner" id="storageModeLabel">ローカル保存モード（この端末のブラウザに保存）</p>
 
 <div class="tab-bar">
   <div class="tab active" onclick="switchTab('calendar', this)">カレンダー</div>
@@ -622,26 +659,41 @@
 <div class="admin-modal-overlay" id="manageModal">
   <div class="admin-modal" style="max-height:80vh;overflow-y:auto">
     <h3>予定の管理・削除</h3>
+    <div class="manage-tools">
+      <button type="button" class="btn-tool" onclick="exportEventsJson()">JSONエクスポート</button>
+      <input type="file" id="importFileInput" accept=".json,application/json" hidden>
+      <button type="button" class="btn-tool" onclick="triggerImportJson()">JSONインポート</button>
+      <button type="button" class="btn-tool btn-tool-warn" onclick="resetToSeedEvents()">初期データに戻す</button>
+    </div>
     <div id="manageList"></div>
     <button class="btn-cancel" style="width:100%;margin-top:10px" onclick="closeManageModal()">閉じる</button>
   </div>
 </div>
 
 <script>
-// ===== DATA =====
-let events = [
-  { id: 1, type: 'company', dateStart: '2026-06-01', dateEnd: '2026-06-01', title: '大師', person: '' },
-  { id: 2, type: 'health',  dateStart: '2026-06-03', dateEnd: '2026-06-03', title: '安全大会', person: '' },
-  { id: 3, type: 'health',  dateStart: '2026-06-22', dateEnd: '2026-06-22', title: '健診①', person: '' },
-  { id: 4, type: 'absent',  dateStart: '2026-06-22', dateEnd: '2026-06-22', title: '休み', person: '稲垂・井上竜・森本・壮綾' },
-  { id: 5, type: 'health',  dateStart: '2026-06-23', dateEnd: '2026-06-23', title: '健診②', person: '' },
-  { id: 6, type: 'absent',  dateStart: '2026-06-23', dateEnd: '2026-06-23', title: '休み', person: '昆弘・九鬼・小西' },
-  { id: 7, type: 'health',  dateStart: '2026-06-30', dateEnd: '2026-06-30', title: '健診③', person: '' },
-  { id: 8, type: 'absent',  dateStart: '2026-06-30', dateEnd: '2026-06-30', title: '休み', person: '稲田・北岡・田中・竜美' },
-  { id: 9, type: 'company', dateStart: '2026-07-10', dateEnd: '2026-07-10', title: 'きんでん教育', person: '' },
-  { id:10, type: 'company', dateStart: '2026-07-20', dateEnd: '2026-07-20', title: '海の日（祝）', person: '' },
-  { id:11, type: 'company', dateStart: '2026-07-28', dateEnd: '2026-07-28', title: '干股 25t', person: '' },
+// ===== SUPABASE (将来接続・現時点では未使用) =====
+const CALENDAR_SUPABASE_ENABLED = false;
+const CALENDAR_API_ENDPOINT = "";
+
+// ===== STORAGE =====
+const STORAGE_KEY = "companyCalendarEvents";
+const ALLOWED_EVENT_TYPES = ["company", "absent", "health"];
+
+const seedEvents = [
+  { id: 1, type: "company", dateStart: "2026-06-01", dateEnd: "2026-06-01", title: "大師", person: "" },
+  { id: 2, type: "health", dateStart: "2026-06-03", dateEnd: "2026-06-03", title: "安全大会", person: "" },
+  { id: 3, type: "health", dateStart: "2026-06-22", dateEnd: "2026-06-22", title: "健診①", person: "" },
+  { id: 4, type: "absent", dateStart: "2026-06-22", dateEnd: "2026-06-22", title: "休み", person: "稲垂・井上竜・森本・壮綾" },
+  { id: 5, type: "health", dateStart: "2026-06-23", dateEnd: "2026-06-23", title: "健診②", person: "" },
+  { id: 6, type: "absent", dateStart: "2026-06-23", dateEnd: "2026-06-23", title: "休み", person: "昆弘・九鬼・小西" },
+  { id: 7, type: "health", dateStart: "2026-06-30", dateEnd: "2026-06-30", title: "健診③", person: "" },
+  { id: 8, type: "absent", dateStart: "2026-06-30", dateEnd: "2026-06-30", title: "休み", person: "稲田・北岡・田中・竜美" },
+  { id: 9, type: "company", dateStart: "2026-07-10", dateEnd: "2026-07-10", title: "きんでん教育", person: "" },
+  { id: 10, type: "company", dateStart: "2026-07-20", dateEnd: "2026-07-20", title: "海の日（祝）", person: "" },
+  { id: 11, type: "company", dateStart: "2026-07-28", dateEnd: "2026-07-28", title: "干股 25t", person: "" },
 ];
+
+let events = [];
 let nextId = 12;
 
 // ===== STATE =====
@@ -653,12 +705,160 @@ let editingId = null; // ★ 追加: 編集中のイベントID（null = 新規�
 
 // ===== HELPERS =====
 function toYMD(d) {
-  return d.toISOString().split('T')[0];
+  return d.toISOString().split("T")[0];
 }
 function getEventsForDate(ymd) {
   return events.filter(e => e.dateStart <= ymd && ymd <= e.dateEnd);
 }
-const WEEKDAYS = ['日','月','火','水','木','金','土'];
+const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
+
+function cloneEvents(arr) {
+  return arr.map(e => ({
+    id: e.id,
+    type: e.type,
+    dateStart: e.dateStart,
+    dateEnd: e.dateEnd,
+    title: e.title,
+    person: e.person != null ? String(e.person) : "",
+  }));
+}
+
+function normalizeEvent(ev) {
+  return {
+    id: ev.id,
+    type: ev.type,
+    dateStart: ev.dateStart,
+    dateEnd: ev.dateEnd || ev.dateStart,
+    title: String(ev.title).trim(),
+    person: ev.person != null ? String(ev.person) : "",
+  };
+}
+
+function validateImportItem(ev) {
+  if (!ev || typeof ev !== "object") return false;
+  if (ev.id == null || ev.id === "") return false;
+  if (!ALLOWED_EVENT_TYPES.includes(ev.type)) return false;
+  if (!ev.dateStart || !ev.dateEnd) return false;
+  if (!ev.title || !String(ev.title).trim()) return false;
+  if (ev.person == null) return false;
+  return true;
+}
+
+function recomputeNextId() {
+  let max = 0;
+  events.forEach(e => {
+    const n = Number(e.id);
+    if (!Number.isNaN(n) && n > max) max = n;
+  });
+  nextId = max + 1;
+}
+
+function loadEventsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw === null) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed;
+  } catch (err) {
+    return null;
+  }
+}
+
+function persistEvents() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+  } catch (err) {
+    alert("保存に失敗しました（ブラウザの容量制限の可能性があります）");
+  }
+}
+
+function initEventsFromLocal() {
+  const stored = loadEventsFromStorage();
+  if (stored !== null) {
+    events = stored.filter(validateImportItem).map(normalizeEvent);
+    recomputeNextId();
+  } else {
+    events = cloneEvents(seedEvents);
+    nextId = 12;
+    persistEvents();
+  }
+}
+
+function updateStorageModeLabel() {
+  const el = document.getElementById("storageModeLabel");
+  if (!el) return;
+  if (CALENDAR_SUPABASE_ENABLED && CALENDAR_API_ENDPOINT) {
+    el.textContent = "Supabase接続モード";
+  } else {
+    el.textContent = "ローカル保存モード（この端末のブラウザに保存）";
+  }
+}
+
+async function maybeLoadFromSupabase() {
+  if (!CALENDAR_SUPABASE_ENABLED || !CALENDAR_API_ENDPOINT) return false;
+  // Phase 3: Edge Function から月範囲取得（未実装・deploy 前は呼ばない）
+  return false;
+}
+
+function exportEventsJson() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const blob = new Blob([JSON.stringify(events, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "company_calendar_events_" + y + m + day + ".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function triggerImportJson() {
+  document.getElementById("importFileInput").click();
+}
+
+function handleImportFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function () {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!Array.isArray(parsed)) {
+        alert("JSONは配列形式である必要があります");
+        return;
+      }
+      const valid = parsed.filter(validateImportItem);
+      if (valid.length !== parsed.length) {
+        alert("一部の行が不正なためスキップしました（id, type, dateStart, dateEnd, title, person が必須）");
+      }
+      if (valid.length === 0) {
+        alert("取り込める予定がありません");
+        return;
+      }
+      if (!confirm(valid.length + " 件を読み込みます。現在の予定は置き換えられます。よろしいですか？")) return;
+      events = valid.map(normalizeEvent);
+      recomputeNextId();
+      persistEvents();
+      renderManageList();
+      renderCalendar();
+      renderList();
+    } catch (err) {
+      alert("JSONの読み込みに失敗しました");
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+}
+
+function resetToSeedEvents() {
+  if (!confirm("初期データに戻します。現在の予定はすべて失われます。よろしいですか？")) return;
+  events = cloneEvents(seedEvents);
+  nextId = 12;
+  persistEvents();
+  renderManageList();
+  renderCalendar();
+  renderList();
+}
 
 // ===== RENDER CALENDAR =====
 function renderCalendar() {
@@ -843,6 +1043,7 @@ function saveEvent() {
   }
 
   closeAddModal();
+  persistEvents();
   renderCalendar();
   renderList();
 }
@@ -878,8 +1079,9 @@ function renderManageList() {
   }).join('');
 }
 function deleteEvent(id) {
-  if (!confirm('この予定を削除しますか？')) return;
+  if (!confirm("この予定を削除しますか？")) return;
   events = events.filter(e => e.id !== id);
+  persistEvents();
   renderManageList();
   renderCalendar();
   renderList();
@@ -937,8 +1139,21 @@ function switchTab(name, el) {
 }
 
 // ===== INIT =====
-renderCalendar();
-renderList();
+document.getElementById("importFileInput").addEventListener("change", function (ev) {
+  const file = ev.target.files && ev.target.files[0];
+  handleImportFile(file);
+  ev.target.value = "";
+});
+
+async function initApp() {
+  const loadedRemote = await maybeLoadFromSupabase();
+  if (!loadedRemote) initEventsFromLocal();
+  updateStorageModeLabel();
+  renderCalendar();
+  renderList();
+}
+
+initApp();
 </script>
 </body>
 </html>
