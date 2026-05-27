@@ -568,7 +568,7 @@ a.portal-menu-item:focus-visible {
 </article>
   <section class="return-candidate-section" aria-labelledby="return-candidate-heading">
     <h2 id="return-candidate-heading">返却待ちリスト</h2>
-    <p class="muted-tiny return-candidate-note">※ モック表示です。返却待ちの正本反映は未実装です。</p>
+    <p class="muted-tiny return-candidate-note">返却候補（overlay）。PCでの返却待ち正本化は未実施です。</p>
     <div id="return-candidate-list" class="return-candidate-list" role="list"></div>
     <p id="return-candidate-empty" class="muted-tiny">返却候補はありません。</p>
   </section>
@@ -670,7 +670,6 @@ a.portal-menu-item:focus-visible {
 
   var PORTAL_STATUS_ENDPOINT = "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request";
   var PORTAL_STATUS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
-  var RETURN_CANDIDATE_LS_KEY = "portalReturnCandidates";
   var PROMOTED_SURVEY_CANDIDATES = [{"management_no_key": "51409384", "management_no": "514 09384", "label": "Ｐ百谷38S10～38S11", "note": "—"}, {"management_no_key": "51409344", "management_no": "514 09344", "label": "Ｐ百谷38S18～38S19", "note": "—"}, {"management_no_key": "51409324", "management_no": "514 09324", "label": "Ｐ百谷38S19～38S20", "note": "—"}, {"management_no_key": "51400214", "management_no": "514 00214", "label": "Ｐ百谷49N3～49N4", "note": "—"}, {"management_no_key": "51409097", "management_no": "514 09097", "label": "赤松1～1G1", "note": "—"}, {"management_no_key": "51409006", "management_no": "514 09006", "label": "赤松23～24", "note": "—"}, {"management_no_key": "51400376", "management_no": "514 00376", "label": "赤松26N7～26N8", "note": "—"}, {"management_no_key": "51409094", "management_no": "514 09094", "label": "赤松27～28", "note": "—"}, {"management_no_key": "51400361", "management_no": "514 00361", "label": "赤松35～36", "note": "—"}, {"management_no_key": "51401156", "management_no": "514 01156", "label": "大畑7～7E1", "note": "—"}, {"management_no_key": "51403888", "management_no": "514 03888", "label": "柴ヶ谷2～3", "note": "—"}, {"management_no_key": "51409990", "management_no": "514 09990", "label": "柴ヶ谷3～3G1", "note": "—"}, {"management_no_key": "51409991", "management_no": "514 09991", "label": "柴ヶ谷3G1～4", "note": "—"}, {"management_no_key": "51410156", "management_no": "514 10156", "label": "柴ヶ谷9W1～引込", "note": "—"}, {"management_no_key": "51409133", "management_no": "514 09133", "label": "白銀115W6～115W6S1", "note": "—"}, {"management_no_key": "51404189", "management_no": "514 04189", "label": "白銀115W6S1N2～115W6S1", "note": "—"}, {"management_no_key": "51404194", "management_no": "514 04194", "label": "白銀115W9～115W9W1", "note": "—"}, {"management_no_key": "51409998", "management_no": "514 09998", "label": "慎1～2", "note": "—"}, {"management_no_key": "51409459", "management_no": "514 09459", "label": "西新子12N1～12N2", "note": "—"}, {"management_no_key": "51409228", "management_no": "514 09228", "label": "西新子14G1～14E3", "note": "—"}, {"management_no_key": "51407220", "management_no": "514 07220", "label": "平沼田17～18", "note": "—"}, {"management_no_key": "51407272", "management_no": "514 07272", "label": "平沼田18～19", "note": "—"}, {"management_no_key": "51407898", "management_no": "514 07898", "label": "平沼田43N4E1～43N4E2", "note": "—"}, {"management_no_key": "51408008", "management_no": "514 08008", "label": "湯川4E6～4E7", "note": "—"}, {"management_no_key": "51408794", "management_no": "514 08794", "label": "夜中8～9", "note": "—"}, {"management_no_key": "51408795", "management_no": "514 08795", "label": "夜中9～10", "note": "—"}, {"management_no_key": "51402687", "management_no": "514 02687", "label": "北宇智159～159W1", "note": "—"}, {"management_no_key": "51400263", "management_no": "514 00263", "label": "Ｐ奥谷11W12S1～11W12S2", "note": "—"}, {"management_no_key": "51400395", "management_no": "514 00395", "label": "芦ヶ瀬2～3", "note": "—"}, {"management_no_key": "51400414", "management_no": "514 00414", "label": "芦ヶ瀬1E6E1～1E6E2", "note": "—"}, {"management_no_key": "51410368", "management_no": "514 10368", "label": "芦ヶ瀬1E3～1E4", "note": "—"}, {"management_no_key": "51410367", "management_no": "514 10367", "label": "芦ヶ瀬1E2～1E3", "note": "—"}];
   var REVERT_CONFIRM =
     "この案件を現調待ち一覧へ戻しますか？\n\n交渉待ちから非表示になり、現調待ちページに再表示されます。";
@@ -810,20 +809,41 @@ a.portal-menu-item:focus-visible {
       })
       .catch(function() { return Object.create(null); });
   }
-  function loadReturnCandidates() {
-    try {
-      var raw = localStorage.getItem(RETURN_CANDIDATE_LS_KEY);
-      if (!raw) return [];
-      var arr = JSON.parse(raw);
-      return Array.isArray(arr) ? arr : [];
-    } catch (e) {
-      return [];
+  function mapReturnCandidateError(httpStatus, body) {
+    var err = "";
+    if (body && typeof body === "object") {
+      err = String(body.error || body.message || "");
     }
+    if (httpStatus === 401 || err === "invalid_api_key") {
+      return "解除に失敗しました（APIキーが無効です）";
+    }
+    if (httpStatus === 404 || err === "return_candidate_not_found") {
+      return "返却候補が見つかりません";
+    }
+    return "解除に失敗しました。通信状態を確認して再試行してください";
   }
-  function saveReturnCandidates(items) {
-    try {
-      localStorage.setItem(RETURN_CANDIDATE_LS_KEY, JSON.stringify(items));
-    } catch (e) {}
+  function fetchReturnCandidates() {
+    if (!PORTAL_STATUS_API_KEY) {
+      return Promise.resolve({ ok: false, items: [] });
+    }
+    return fetch(PORTAL_STATUS_ENDPOINT + "?list=return_candidates", {
+      method: "GET",
+      headers: { apikey: PORTAL_STATUS_API_KEY },
+    })
+      .then(function(res) {
+        return res
+          .json()
+          .catch(function() { return {}; })
+          .then(function(data) { return { res: res, data: data }; });
+      })
+      .then(function(r) {
+        if (!r.res.ok || !r.data || !r.data.ok) {
+          return { ok: false, items: [] };
+        }
+        var list = r.data.return_candidates;
+        return { ok: true, items: Array.isArray(list) ? list : [] };
+      })
+      .catch(function() { return { ok: false, items: [] }; });
   }
   function fmtMarkedAt(iso) {
     var s = String(iso || "").trim();
@@ -838,18 +858,17 @@ a.portal-menu-item:focus-visible {
       String(d.getMinutes()).padStart(2, "0")
     );
   }
-  function renderReturnCandidateList() {
+  function renderReturnCandidateList(items) {
     var listEl = document.getElementById("return-candidate-list");
     var emptyEl = document.getElementById("return-candidate-empty");
     if (!listEl || !emptyEl) return;
-    var items = loadReturnCandidates();
     listEl.innerHTML = "";
-    if (!items.length) {
+    if (!items || !items.length) {
       emptyEl.hidden = false;
       return;
     }
     emptyEl.hidden = true;
-    items.forEach(function(it, i) {
+    items.forEach(function(it) {
       var key = String(it.management_no_key || "").trim();
       if (!key) return;
       var html =
@@ -861,7 +880,8 @@ a.portal-menu-item:focus-visible {
         "</div>" +
         '<button type="button" class="btn btn-return-candidate-clear" data-return-candidate-clear="' + escHtml(key) + '">返却候補を解除</button>' +
         "</div>" +
-        '<p class="return-candidate-item-meta">返却候補（モック） / marked_at: ' + escHtml(fmtMarkedAt(it.marked_at)) + "</p>" +
+        '<p class="return-candidate-item-meta">返却候補（overlay） / ' + escHtml(fmtMarkedAt(it.marked_at || it.updated_at)) + "</p>" +
+        '<p class="return-candidate-clear-status muted-tiny" data-return-clear-status hidden role="status"></p>' +
         "</article>";
       listEl.insertAdjacentHTML("beforeend", html);
     });
@@ -870,20 +890,63 @@ a.portal-menu-item:focus-visible {
       btn.setAttribute("data-clear-bound", "1");
       btn.addEventListener("click", function() {
         var key = (btn.getAttribute("data-return-candidate-clear") || "").trim();
-        if (!key) return;
+        if (!key || !PORTAL_STATUS_API_KEY) return;
         if (!window.confirm(RETURN_CANDIDATE_CLEAR_CONFIRM)) return;
-        var next = loadReturnCandidates().filter(function(it) {
-          return String(it.management_no_key || "").trim() !== key;
-        });
-        saveReturnCandidates(next);
-        renderReturnCandidateList();
+        var itemEl = btn.closest(".return-candidate-item");
+        var statusEl = itemEl
+          ? itemEl.querySelector("[data-return-clear-status]")
+          : null;
+        btn.disabled = true;
+        if (statusEl) {
+          statusEl.hidden = false;
+          statusEl.textContent = "解除中...";
+        }
+        fetch(PORTAL_STATUS_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: PORTAL_STATUS_API_KEY,
+          },
+          body: JSON.stringify({
+            management_no_key: key,
+            action: "unmark_return_candidate",
+            source: "portal_negotiation",
+          }),
+        })
+          .then(function(res) {
+            return res
+              .json()
+              .catch(function() { return {}; })
+              .then(function(data) { return { res: res, data: data }; });
+          })
+          .then(function(r) {
+            if (r.res.ok && r.data && r.data.ok) {
+              fetchReturnCandidates().then(function(result) {
+                renderReturnCandidateList(result.items);
+              });
+              return;
+            }
+            btn.disabled = false;
+            if (statusEl) {
+              statusEl.textContent = mapReturnCandidateError(r.res.status, r.data);
+            }
+          })
+          .catch(function() {
+            btn.disabled = false;
+            if (statusEl) {
+              statusEl.textContent =
+                "解除に失敗しました。通信状態を確認して再試行してください";
+            }
+          });
       });
     });
   }
   fetchPortalOverrides().then(function(statusMap) {
     appendPromotedCards(statusMap);
     bindRevertButtons();
-    renderReturnCandidateList();
+    fetchReturnCandidates().then(function(result) {
+      renderReturnCandidateList(result.items);
+    });
   });
 
 })();
