@@ -176,7 +176,7 @@ a.portal-menu-item:focus-visible {
   color: var(--muted-b);
   text-align: center;
 }
-/* 本日の予定（モック → 将来 Supabase 差し替え） */
+/* 本日の予定（社内カレンダー API 読み取り専用） */
 .today-schedule {
   margin-bottom: 1.25rem;
   padding: 1rem 1rem 0.85rem;
@@ -267,7 +267,8 @@ a.portal-menu-item:focus-visible {
   opacity: 0.9;
   margin-top: 0.1rem;
 }
-.today-schedule-empty {
+.today-schedule-empty,
+.today-schedule-status {
   margin: 0;
   padding: 0.65rem 0.5rem;
   font-size: 0.9rem;
@@ -275,6 +276,10 @@ a.portal-menu-item:focus-visible {
   text-align: center;
   background: var(--bg-b);
   border-radius: 8px;
+}
+.today-schedule-status.is-error {
+  color: #9f1239;
+  background: #fff1f2;
 }
 .today-schedule-more {
   margin: 0.65rem 0 0;
@@ -320,7 +325,7 @@ a.portal-menu-item:focus-visible {
 
   <section class="today-schedule" aria-labelledby="today-schedule-heading">
     <h2 class="today-schedule-heading" id="today-schedule-heading">本日の予定</h2>
-    <p class="today-schedule-note">社内カレンダーの本日分を簡易表示（モック）</p>
+    <p class="today-schedule-note">社内カレンダーの本日分を簡易表示</p>
     <div id="today-schedule-root"></div>
     <p class="today-schedule-more"><a href="./calendar/">社内カレンダーで詳細を見る</a></p>
   </section>
@@ -363,13 +368,11 @@ a.portal-menu-item:focus-visible {
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
   <script>
 (function () {
-  /** 本日の予定モック（将来: Supabase GET 等に差し替え） */
-  var todayScheduleMock = [
-    { type: "company", title: "安全大会", person: "" },
-    { type: "absent", title: "健診①", person: "稲田" },
-    { type: "business_trip", title: "十津川出張", person: "" },
-    { type: "other", title: "車両点検", person: "田中" }
-  ];
+  var CALENDAR_API_ENDPOINT =
+    "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/company-calendar-events";
+  var PORTAL_CALENDAR_API_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
+  var PORTAL_ORIGIN = "https://pakchee0529.github.io";
 
   var TODAY_SCHEDULE_TYPE_LABELS = {
     company: "行事",
@@ -378,6 +381,68 @@ a.portal-menu-item:focus-visible {
     holiday: "祝日",
     other: "その他"
   };
+
+  var TODAY_SCHEDULE_TYPE_ORDER = {
+    company: 0,
+    business_trip: 1,
+    absent: 2,
+    holiday: 3,
+    other: 4
+  };
+
+  function toLocalYMD(d) {
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+
+  function normalizeTodayEvent(raw) {
+    return {
+      type: raw.type || "other",
+      dateStart: raw.dateStart || raw.date_start || "",
+      dateEnd: raw.dateEnd || raw.date_end || raw.dateStart || raw.date_start || "",
+      title: raw.title != null ? String(raw.title).trim() : "",
+      person: raw.person != null ? String(raw.person).trim() : ""
+    };
+  }
+
+  function isEventOnDate(ev, ymd) {
+    var start = ev.dateStart;
+    var end = ev.dateEnd || start;
+    if (!start) return false;
+    return start <= ymd && ymd <= end;
+  }
+
+  function sortTodayEvents(events) {
+    return events.slice().sort(function (a, b) {
+      var ta = TODAY_SCHEDULE_TYPE_ORDER[a.type] != null ? TODAY_SCHEDULE_TYPE_ORDER[a.type] : 9;
+      var tb = TODAY_SCHEDULE_TYPE_ORDER[b.type] != null ? TODAY_SCHEDULE_TYPE_ORDER[b.type] : 9;
+      if (ta !== tb) return ta - tb;
+      return String(a.dateStart).localeCompare(String(b.dateStart));
+    });
+  }
+
+  function renderTodayScheduleStatus(message, extraClass) {
+    var root = document.getElementById("today-schedule-root");
+    if (!root) return;
+    root.innerHTML = "";
+    var el = document.createElement("p");
+    el.className = "today-schedule-status" + (extraClass ? " " + extraClass : "");
+    el.textContent = message;
+    root.appendChild(el);
+  }
+
+  function getTodayScheduleTitle(ev) {
+    if (ev.type === "absent") {
+      var person = ev.person || "";
+      var title = ev.title || "";
+      if (person) return person + " 不在";
+      if (title) return title;
+      return "不在";
+    }
+    return ev.title || "（無題）";
+  }
 
   function renderTodaySchedule(events) {
     var root = document.getElementById("today-schedule-root");
@@ -405,12 +470,17 @@ a.portal-menu-item:focus-visible {
       body.className = "today-schedule-body";
       var titleEl = document.createElement("div");
       titleEl.className = "today-schedule-title";
-      titleEl.textContent = ev.title || "（無題）";
+      titleEl.textContent = getTodayScheduleTitle(ev);
       body.appendChild(titleEl);
-      if (ev.person && String(ev.person).trim()) {
+      if (ev.type === "absent" && ev.title && ev.person) {
+        var sub = document.createElement("div");
+        sub.className = "today-schedule-person";
+        sub.textContent = ev.title;
+        body.appendChild(sub);
+      } else if (ev.person && ev.type !== "absent") {
         var personEl = document.createElement("div");
         personEl.className = "today-schedule-person";
-        personEl.textContent = String(ev.person).trim();
+        personEl.textContent = ev.person;
         body.appendChild(personEl);
       }
       li.appendChild(badge);
@@ -420,7 +490,55 @@ a.portal-menu-item:focus-visible {
     root.appendChild(list);
   }
 
-  renderTodaySchedule(todayScheduleMock);
+  function fetchCalendarMonth(year, month) {
+    var url =
+      CALENDAR_API_ENDPOINT +
+      "?year=" +
+      encodeURIComponent(year) +
+      "&month=" +
+      encodeURIComponent(month);
+    return fetch(url, {
+      method: "GET",
+      headers: {
+        apikey: PORTAL_CALENDAR_API_KEY,
+        Origin: PORTAL_ORIGIN
+      }
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "fetch_failed");
+        }
+        return (data.events || []).map(normalizeTodayEvent);
+      });
+    });
+  }
+
+  function loadTodaySchedule() {
+    renderTodayScheduleStatus("本日の予定を読み込み中...");
+    var now = new Date();
+    var todayYmd = toLocalYMD(now);
+    var year = now.getFullYear();
+    var month = now.getMonth() + 1;
+
+    if (!PORTAL_CALENDAR_API_KEY || !CALENDAR_API_ENDPOINT) {
+      renderTodayScheduleStatus("本日の予定を取得できませんでした", "is-error");
+      return;
+    }
+
+    fetchCalendarMonth(year, month)
+      .then(function (monthEvents) {
+        var todayEvents = monthEvents.filter(function (ev) {
+          if (ev.type === "health") return false;
+          return isEventOnDate(ev, todayYmd);
+        });
+        renderTodaySchedule(sortTodayEvents(todayEvents));
+      })
+      .catch(function () {
+        renderTodayScheduleStatus("本日の予定を取得できませんでした", "is-error");
+      });
+  }
+
+  loadTodaySchedule();
 })();
 
 (function () {
