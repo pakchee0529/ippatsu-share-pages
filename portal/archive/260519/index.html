@@ -30,21 +30,46 @@ body {
   margin-left: auto;
   margin-right: auto;
 }
-.top-bar {
+
+.portal-page-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+.portal-page-nav a {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-}
-.top-bar a {
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--accent);
+  justify-content: center;
+  text-align: center;
   text-decoration: none;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #fff;
+  background: #1565c0;
+  border-radius: 10px;
+  padding: 0.65rem 0.45rem;
+  min-height: 48px;
+  line-height: 1.25;
+  border: 1px solid transparent;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.08);
+  touch-action: manipulation;
 }
+.portal-page-nav a:hover,
+.portal-page-nav a:focus-visible {
+  background: #0d47a1;
+  outline: none;
+}
+.portal-page-nav a.is-current {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+}
+@media (min-width: 520px) {
+  .portal-page-nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .page-title {
   font-size: 1.35rem;
   font-weight: 700;
@@ -279,9 +304,11 @@ body {
 </style>
 </head>
 <body>
-  <nav class="top-bar" aria-label="サイト内リンク">
+  <nav class="portal-page-nav" aria-label="サイト内リンク">
     <a href="../../">ポータルTOP</a>
-    <a href="../">アーカイブ</a>
+    <a href="../../survey/">現調待ち</a>
+    <a href="../../negotiation/">交渉待ち</a>
+    <a href="../" class="is-current">アーカイブ</a>
   </nav>
   <h1 class="page-title">2026年05月19日</h1>
   <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>

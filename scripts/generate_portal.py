@@ -138,6 +138,119 @@ def survey_status_request_api_key() -> str:
         return raw
     return ""
 
+
+# portal/index.html の .card a.btn と同系統のページ移動ナビ（案件操作ボタンとは別クラス）
+_PORTAL_PAGE_NAV_ACCENT = "#1565c0"
+_PORTAL_PAGE_NAV_ACCENT_HOVER = "#0d47a1"
+
+
+def portal_page_nav_css() -> str:
+    return f"""
+.portal-page-nav {{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}}
+.portal-page-nav a {{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #fff;
+  background: {_PORTAL_PAGE_NAV_ACCENT};
+  border-radius: 10px;
+  padding: 0.65rem 0.45rem;
+  min-height: 48px;
+  line-height: 1.25;
+  border: 1px solid transparent;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.08);
+  touch-action: manipulation;
+}}
+.portal-page-nav a:hover,
+.portal-page-nav a:focus-visible {{
+  background: {_PORTAL_PAGE_NAV_ACCENT_HOVER};
+  outline: none;
+}}
+.portal-page-nav a.is-current {{
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+}}
+@media (min-width: 520px) {{
+  .portal-page-nav {{
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }}
+}}
+"""
+
+
+def portal_standard_nav_links(
+    *,
+    page: str,
+) -> list[tuple[str, str, bool]]:
+    """page: survey | negotiation | archive"""
+    return [
+        ("../", "ポータルTOP", False),
+        (
+            "./" if page == "survey" else "../survey/",
+            "現調待ち",
+            page == "survey",
+        ),
+        (
+            "./" if page == "negotiation" else "../negotiation/",
+            "交渉待ち",
+            page == "negotiation",
+        ),
+        (
+            "./" if page == "archive" else "../archive/",
+            "アーカイブ",
+            page == "archive",
+        ),
+    ]
+
+
+def portal_archive_detail_nav_links() -> list[tuple[str, str, bool]]:
+    return [
+        ("../../", "ポータルTOP", False),
+        ("../../survey/", "現調待ち", False),
+        ("../../negotiation/", "交渉待ち", False),
+        ("../", "アーカイブ", True),
+    ]
+
+
+def render_portal_page_nav(links: list[tuple[str, str, bool]]) -> str:
+    parts = ['  <nav class="portal-page-nav" aria-label="サイト内リンク">']
+    for href, label, is_current in links:
+        cls = ' class="is-current"' if is_current else ""
+        parts.append(
+            f'    <a href="{escape_html(href)}"{cls}>{escape_html(label)}</a>'
+        )
+    parts.append("  </nav>")
+    return "\n".join(parts)
+
+
+def survey_case_action_row_css() -> str:
+    """案件操作ボタン横並び（f-string へ関数結果として挿入するため単一ブレース）。"""
+    return """
+.survey-case-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+  align-items: stretch;
+}
+.survey-case-action-row .btn-survey-mark-done,
+.survey-case-action-row .btn-survey-mark-return-candidate {
+  flex: 1 1 calc(50% - 0.25rem);
+  min-width: 8.5rem;
+  margin: 0;
+}
+"""
+
+
 # ---------------------------------------------------------------------------
 # 現場共有 — 詳細修正（Googleフォーム prefill / V2・6区分枝根）
 # 現調待ち（SURVEY_REPORT_*）とは独立。docs/share_detail_edit_form_apps_script.md 参照。
@@ -2005,25 +2118,7 @@ body {{
   margin-left: auto;
   margin-right: auto;
 }}
-.top-bar {{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-}}
-.top-bar a {{
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--accent-b);
-  text-decoration: none;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
-}}
-.top-bar a:hover, .top-bar a:focus-visible {{
-  text-decoration: underline;
-  outline: none;
-}}
+{portal_page_nav_css()}
 h1 {{
   font-size: 1.25rem;
   font-weight: 700;
@@ -2195,12 +2290,7 @@ a.btn-archive:hover, a.btn-archive:active {{
 </style>
 </head>
 <body>
-  <nav class="top-bar" aria-label="サイト内リンク">
-    <a href="../">ポータルTOP</a>
-    <a href="../survey/">現調待ち</a>
-    <a href="../negotiation/">交渉待ち</a>
-    <a href="./">アーカイブ</a>
-  </nav>
+{render_portal_page_nav(portal_standard_nav_links(page="archive"))}
   <h1>現場共有アーカイブ</h1>
   <p class="disclaimer-note">表示対象は <code>portal/archive_manifest.json</code> の <code>entries</code> に登録した6桁日付のみです。個人情報・次回確認メモ・地主情報などはマニフェストに書き込まないでください。</p>
   <p class="lead">冠称名・径間名・管理番号で過去現場を検索できます。直近7日分は「最近1週間」、それ以前は月別に表示します。</p>
@@ -2930,10 +3020,12 @@ def build_survey_html(
             portal_request_btns = (
                 '<div class="card-actions card-actions-portal-request" role="group" '
                 'aria-label="現調待ちから交渉待ちへ反映">'
+                '<div class="survey-case-action-row" role="group" aria-label="案件操作">'
                 '<button type="button" class="btn btn-survey-mark-done" '
                 'data-survey-mark-done>現調済みにする</button>'
                 '<button type="button" class="btn btn-survey-mark-return-candidate" '
                 'data-return-candidate-mark>返却候補にする</button>'
+                "</div>"
                 '<p class="survey-mark-hint muted-tiny">'
                 f"{survey_mark_hint}"
                 "</p>"
@@ -3029,25 +3121,7 @@ body {{
   margin-left: auto;
   margin-right: auto;
 }}
-.top-bar {{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-}}
-.top-bar a {{
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--accent);
-  text-decoration: none;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
-}}
-.top-bar a:hover, .top-bar a:focus-visible {{
-  text-decoration: underline;
-  outline: none;
-}}
+{portal_page_nav_css()}
 .page-title {{
   font-size: 1.25rem;
   font-weight: 700;
@@ -3211,6 +3285,7 @@ body {{
   padding-top: 0.55rem;
   border-top: 1px dashed var(--border);
 }}
+{survey_case_action_row_css()}
 .btn-survey-mark-done {{
   min-height: 44px;
   background: #ecfdf5;
@@ -3242,11 +3317,15 @@ body {{
 .survey-mark-hint {{
   margin: 0;
   line-height: 1.4;
+  flex-basis: 100%;
+  width: 100%;
 }}
 .survey-mark-status {{
   margin: 0;
   color: #047857;
   font-weight: 600;
+  flex-basis: 100%;
+  width: 100%;
 }}
 .survey-mark-status.is-error {{
   color: #b45309;
@@ -3256,6 +3335,8 @@ body {{
   margin: 0;
   color: #92400e;
   font-weight: 600;
+  flex-basis: 100%;
+  width: 100%;
 }}
 .return-candidate-status.is-error {{
   color: #b45309;
@@ -3271,12 +3352,7 @@ body {{
 </style>
 </head>
 <body>
-  <nav class="top-bar" aria-label="サイト内リンク">
-    <a href="../">ポータルTOP</a>
-    <a href="./">現調待ち</a>
-    <a href="../negotiation/">交渉待ち</a>
-    <a href="../archive/">アーカイブ</a>
-  </nav>
+{render_portal_page_nav(portal_standard_nav_links(page="survey"))}
   <h1 class="page-title">現調待ち一覧</h1>
   <p class="lead">径間ごとに地図・現場指示・報告用のリンクがあります。（表示 {len(items)} 件）</p>
   <p class="report-disclaimer">{survey_disclaimer}</p>
@@ -3571,25 +3647,7 @@ body {{
   margin-left: auto;
   margin-right: auto;
 }}
-.top-bar {{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-}}
-.top-bar a {{
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--accent);
-  text-decoration: none;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
-}}
-.top-bar a:hover, .top-bar a:focus-visible {{
-  text-decoration: underline;
-  outline: none;
-}}
+{portal_page_nav_css()}
 .page-title {{
   font-size: 1.25rem;
   font-weight: 700;
@@ -3837,12 +3895,7 @@ body {{
 </style>
 </head>
 <body>
-  <nav class="top-bar" aria-label="サイト内リンク">
-    <a href="../">ポータルTOP</a>
-    <a href="../survey/">現調待ち</a>
-    <a href="./">交渉待ち</a>
-    <a href="../archive/">アーカイブ</a>
-  </nav>
+{render_portal_page_nav(portal_standard_nav_links(page="negotiation"))}
   <h1 class="page-title">交渉待ち一覧</h1>
   <p class="lead">現調済み・対応中の案件です。地主交渉に進む案件を確認します。（表示 {len(items)} 件）</p>
   <p class="report-disclaimer">{negotiation_disclaimer}</p>
@@ -4130,21 +4183,7 @@ body {{
   margin-left: auto;
   margin-right: auto;
 }}
-.top-bar {{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-}}
-.top-bar a {{
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--accent);
-  text-decoration: none;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
-}}
+{portal_page_nav_css()}
 .page-title {{
   font-size: 1.35rem;
   font-weight: 700;
@@ -4379,10 +4418,7 @@ body {{
 </style>
 </head>
 <body>
-  <nav class="top-bar" aria-label="サイト内リンク">
-    <a href="../../">ポータルTOP</a>
-    <a href="../">アーカイブ</a>
-  </nav>
+{render_portal_page_nav(portal_archive_detail_nav_links())}
   <h1 class="page-title">{escape_html(date_jp)}</h1>
   <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
   <main>
