@@ -2864,6 +2864,7 @@ def build_survey_html(
         survey_requested_action = "mark_survey_done"
         survey_disclaimer = (
             "「現調済みにする」を押すと交渉待ちへ即時反映します（portal status overlay）。"
+            "「返却候補にする」はモック表示です。正本データにはまだ反映しません。"
             "従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。"
         )
     else:
@@ -2931,10 +2932,14 @@ def build_survey_html(
                 'aria-label="現調待ちから交渉待ちへ反映">'
                 '<button type="button" class="btn btn-survey-mark-done" '
                 'data-survey-mark-done>現調済みにする</button>'
+                '<button type="button" class="btn btn-survey-mark-return-candidate" '
+                'data-return-candidate-mark>返却候補にする</button>'
                 '<p class="survey-mark-hint muted-tiny">'
                 f"{survey_mark_hint}"
                 "</p>"
                 '<p class="survey-mark-status muted-tiny" data-survey-mark-status '
+                'hidden role="status"></p>'
+                '<p class="return-candidate-status muted-tiny" data-return-candidate-status '
                 'hidden role="status"></p>'
                 "</div>"
             )
@@ -2976,16 +2981,11 @@ def build_survey_html(
     items_html = "\n".join(cards)
     if not items_html:
         items_html = f'<p class="muted-tiny">{escape_html(empty_note)}</p>'
-    if points:
-        map_block = """  <section class="map-section" aria-labelledby="map-heading">
-    <h2 id="map-heading">全体地図</h2>
-    <div id="share-map" role="application" aria-label="全径間の位置"></div>
-  </section>
-"""
-    else:
-        map_block = """  <section class="map-section map-empty" aria-labelledby="map-heading">
-    <h2 id="map-heading">全体地図</h2>
-    <p class="muted-tiny">まとめて表示できる位置情報がありません。</p>
+    map_block = """  <section class="return-candidate-section" aria-labelledby="return-candidate-heading">
+    <h2 id="return-candidate-heading">返却待ちリスト</h2>
+    <p class="muted-tiny return-candidate-note">※ モック表示です。返却待ちの正本反映は未実装です。</p>
+    <div id="return-candidate-list" class="return-candidate-list" role="list"></div>
+    <p id="return-candidate-empty" class="muted-tiny">返却候補はありません。</p>
   </section>
 """
     points_js = json.dumps(points, ensure_ascii=False)
@@ -3225,6 +3225,20 @@ body {{
   opacity: 0.8;
   cursor: default;
 }}
+.btn-survey-mark-return-candidate {{
+  min-height: 44px;
+  background: #fffbeb;
+  color: #92400e;
+  border: 2px solid #f59e0b;
+}}
+.btn-survey-mark-return-candidate:hover, .btn-survey-mark-return-candidate:focus-visible {{
+  background: #fef3c7;
+  outline: none;
+}}
+.btn-survey-mark-return-candidate:disabled {{
+  opacity: 0.8;
+  cursor: default;
+}}
 .survey-mark-hint {{
   margin: 0;
   line-height: 1.4;
@@ -3238,8 +3252,21 @@ body {{
   color: #b45309;
 }}
 .survey-mark-status[hidden] {{ display: none !important; }}
+.return-candidate-status {{
+  margin: 0;
+  color: #92400e;
+  font-weight: 600;
+}}
+.return-candidate-status.is-error {{
+  color: #b45309;
+}}
+.return-candidate-status[hidden] {{ display: none !important; }}
 .survey-update-card.survey-mark-sent {{
   border-color: #a7f3d0;
+}}
+.survey-update-card.return-candidate-marked {{
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.18);
 }}
 </style>
 </head>
@@ -3496,16 +3523,11 @@ def build_negotiation_html(
     items_html = "\n".join(cards)
     if not items_html:
         items_html = f'<p class="muted-tiny">{escape_html(empty_note)}</p>'
-    if points:
-        map_block = """  <section class="map-section" aria-labelledby="map-heading">
-    <h2 id="map-heading">全体地図</h2>
-    <div id="share-map" role="application" aria-label="全径間の位置"></div>
-  </section>
-"""
-    else:
-        map_block = """  <section class="map-section map-empty" aria-labelledby="map-heading">
-    <h2 id="map-heading">全体地図</h2>
-    <p class="muted-tiny">まとめて表示できる位置情報がありません。</p>
+    map_block = """  <section class="return-candidate-section" aria-labelledby="return-candidate-heading">
+    <h2 id="return-candidate-heading">返却待ちリスト</h2>
+    <p class="muted-tiny return-candidate-note">※ モック表示です。返却待ちの正本反映は未実装です。</p>
+    <div id="return-candidate-list" class="return-candidate-list" role="list"></div>
+    <p id="return-candidate-empty" class="muted-tiny">返却候補はありません。</p>
   </section>
 """
     points_js = json.dumps(points, ensure_ascii=False)
@@ -3752,6 +3774,65 @@ body {{
 .revert-hint {{
   margin: 0;
   line-height: 1.4;
+}}
+.return-candidate-section {{
+  margin-top: 1.0rem;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 0.85rem;
+}}
+.return-candidate-section h2 {{
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}}
+.return-candidate-note {{
+  margin: 0 0 0.55rem;
+}}
+.return-candidate-list {{
+  display: grid;
+  gap: 0.55rem;
+}}
+.return-candidate-item {{
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.6rem;
+  background: #fffef8;
+}}
+.return-candidate-item-head {{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+}}
+.return-candidate-item-title {{
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 700;
+}}
+.return-candidate-item-mgmt {{
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}}
+.return-candidate-item-meta {{
+  margin: 0.35rem 0 0;
+  font-size: 0.79rem;
+  color: #92400e;
+}}
+.btn-return-candidate-clear {{
+  background: #fff;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  min-height: 36px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.82rem;
+}}
+.btn-return-candidate-clear:hover,
+.btn-return-candidate-clear:focus-visible {{
+  background: #fef3c7;
+  outline: none;
 }}
 </style>
 </head>

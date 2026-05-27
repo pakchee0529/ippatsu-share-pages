@@ -86,8 +86,10 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
   var PORTAL_STATUS_ENDPOINT = {ep};
   var PORTAL_STATUS_API_KEY = {key};
   var PORTAL_STATUS_LS_PREFIX = "portal_case_status:";
+  var RETURN_CANDIDATE_LS_KEY = "portalReturnCandidates";
   var SURVEY_MARK_CONFIRM =
     "この案件を「現調済み」として交渉待ちへ移動しますか？\\n\\n即時に交渉待ちページへ表示されます。誤操作は交渉待ちページの「現調待ちに戻す」で取り消せます。";
+  var RETURN_CANDIDATE_MARK_CONFIRM = "この案件を返却候補にしますか？";
   function portalStatusLsKey(mgmtKey) {{
     return PORTAL_STATUS_LS_PREFIX + mgmtKey;
   }}
@@ -174,6 +176,56 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
     btn.textContent = "現調済みにする";
     card.classList.remove("survey-mark-sent");
   }}
+  function loadReturnCandidates() {{
+    try {{
+      var raw = localStorage.getItem(RETURN_CANDIDATE_LS_KEY);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    }} catch (e) {{
+      return [];
+    }}
+  }}
+  function saveReturnCandidates(items) {{
+    try {{
+      localStorage.setItem(RETURN_CANDIDATE_LS_KEY, JSON.stringify(items));
+    }} catch (e) {{}}
+  }}
+  function setReturnCandidateUi(card, statusEl, state, message) {{
+    statusEl.classList.remove("is-error");
+    if (state === "marked") {{
+      statusEl.hidden = false;
+      statusEl.textContent = message || "返却候補に設定済み（モック）";
+      card.classList.add("return-candidate-marked");
+      return;
+    }}
+    if (state === "error") {{
+      statusEl.hidden = false;
+      statusEl.classList.add("is-error");
+      statusEl.textContent = message || "返却候補の設定に失敗しました";
+      return;
+    }}
+    statusEl.hidden = true;
+    statusEl.textContent = "";
+    card.classList.remove("return-candidate-marked");
+  }}
+  function refreshReturnCandidateCardState() {{
+    var map = Object.create(null);
+    loadReturnCandidates().forEach(function(it) {{
+      var key = String(it.management_no_key || "").trim();
+      if (key) map[key] = true;
+    }});
+    document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {{
+      var key = (card.getAttribute("data-management-no-key") || "").trim();
+      var statusEl = card.querySelector("[data-return-candidate-status]");
+      if (!key || !statusEl) return;
+      if (map[key]) {{
+        setReturnCandidateUi(card, statusEl, "marked");
+      }} else {{
+        setReturnCandidateUi(card, statusEl, "idle");
+      }}
+    }});
+  }}
   function fetchPortalOverrides() {{
     if (!PORTAL_STATUS_API_KEY) return Promise.resolve({{ ok: false, statusMap: Object.create(null) }});
     return fetch(PORTAL_STATUS_ENDPOINT, {{
@@ -200,6 +252,8 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
     var key = (card.getAttribute("data-management-no-key") || "").trim();
     var btn = card.querySelector("[data-survey-mark-done]");
     var statusEl = card.querySelector("[data-survey-mark-status]");
+    var returnBtn = card.querySelector("[data-return-candidate-mark]");
+    var returnStatusEl = card.querySelector("[data-return-candidate-status]");
     if (!key || !btn || !statusEl) return;
     if (!PORTAL_STATUS_API_KEY) {{
       setSurveyMarkUi(
@@ -209,61 +263,83 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
         "error",
         "送信設定が未設定です（ポータル再生成時にキーが必要です）",
       );
-      return;
     }}
-    btn.addEventListener("click", function() {{
-      if (btn.disabled) return;
-      if (!window.confirm(SURVEY_MARK_CONFIRM)) return;
-      var payload = {{
-        management_no_key: key,
-        action: "mark_survey_done",
-        source: "portal_survey",
-        note: "",
-      }};
-      setSurveyMarkUi(card, btn, statusEl, "sending");
-      fetch(PORTAL_STATUS_ENDPOINT, {{
-        method: "POST",
-        headers: {{
-          "Content-Type": "application/json",
-          apikey: PORTAL_STATUS_API_KEY,
-        }},
-        body: JSON.stringify(payload),
-      }})
-        .then(function(res) {{
-          return res
-            .json()
-            .catch(function() {{ return {{}}; }})
-            .then(function(data) {{ return {{ res: res, data: data }}; }});
+    if (PORTAL_STATUS_API_KEY) {{
+      btn.addEventListener("click", function() {{
+        if (btn.disabled) return;
+        if (!window.confirm(SURVEY_MARK_CONFIRM)) return;
+        var payload = {{
+          management_no_key: key,
+          action: "mark_survey_done",
+          source: "portal_survey",
+          note: "",
+        }};
+        setSurveyMarkUi(card, btn, statusEl, "sending");
+        fetch(PORTAL_STATUS_ENDPOINT, {{
+          method: "POST",
+          headers: {{
+            "Content-Type": "application/json",
+            apikey: PORTAL_STATUS_API_KEY,
+          }},
+          body: JSON.stringify(payload),
         }})
-        .then(function(r) {{
-          if (r.res.ok && r.data && r.data.ok) {{
-            try {{
-              localStorage.setItem(portalStatusLsKey(key), "negotiation_wait");
-            }} catch (e2) {{}}
-            card.hidden = true;
-            card.setAttribute("data-portal-moved", "negotiation");
-            setSurveyMarkUi(card, btn, statusEl, "sent", "交渉待ちへ移動済み（この一覧から非表示）");
-            return;
-          }}
-          setSurveyMarkUi(
-            card,
-            btn,
-            statusEl,
-            "error",
-            mapPortalStatusError(r.res.status, r.data),
-          );
-        }})
-        .catch(function() {{
-          setSurveyMarkUi(
-            card,
-            btn,
-            statusEl,
-            "error",
-            "送信に失敗しました。通信状態を確認して再試行してください",
-          );
+          .then(function(res) {{
+            return res
+              .json()
+              .catch(function() {{ return {{}}; }})
+              .then(function(data) {{ return {{ res: res, data: data }}; }});
+          }})
+          .then(function(r) {{
+            if (r.res.ok && r.data && r.data.ok) {{
+              try {{
+                localStorage.setItem(portalStatusLsKey(key), "negotiation_wait");
+              }} catch (e2) {{}}
+              card.hidden = true;
+              card.setAttribute("data-portal-moved", "negotiation");
+              setSurveyMarkUi(card, btn, statusEl, "sent", "交渉待ちへ移動済み（この一覧から非表示）");
+              return;
+            }}
+            setSurveyMarkUi(
+              card,
+              btn,
+              statusEl,
+              "error",
+              mapPortalStatusError(r.res.status, r.data),
+            );
+          }})
+          .catch(function() {{
+            setSurveyMarkUi(
+              card,
+              btn,
+              statusEl,
+              "error",
+              "送信に失敗しました。通信状態を確認して再試行してください",
+            );
+          }});
+      }});
+    }}
+    if (returnBtn && returnStatusEl) {{
+      returnBtn.addEventListener("click", function() {{
+        if (!window.confirm(RETURN_CANDIDATE_MARK_CONFIRM)) return;
+        var items = loadReturnCandidates();
+        var found = items.some(function(it) {{
+          return String(it.management_no_key || "").trim() === key;
         }});
-    }});
+        if (!found) {{
+          items.push({{
+            management_no_key: key,
+            management_no: (card.getAttribute("data-management-no") || "").trim(),
+            label: (card.getAttribute("data-label") || "").trim(),
+            marked_at: new Date().toISOString(),
+          }});
+          saveReturnCandidates(items);
+        }}
+        setReturnCandidateUi(card, returnStatusEl, "marked", "返却候補に設定済み（モック）");
+        window.alert("返却候補に設定しました");
+      }});
+    }}
   }});
+  refreshReturnCandidateCardState();
 """
 
 
@@ -469,9 +545,11 @@ def render_negotiation_immediate_status_js(
     return f"""
   var PORTAL_STATUS_ENDPOINT = {ep};
   var PORTAL_STATUS_API_KEY = {key};
+  var RETURN_CANDIDATE_LS_KEY = "portalReturnCandidates";
   var PROMOTED_SURVEY_CANDIDATES = {promoted_candidates_json};
   var REVERT_CONFIRM =
     "この案件を現調待ち一覧へ戻しますか？\\n\\n交渉待ちから非表示になり、現調待ちページに再表示されます。";
+  var RETURN_CANDIDATE_CLEAR_CONFIRM = "この案件の返却候補を解除しますか？";
   function escHtml(s) {{
     return String(s || "")
       .replace(/&/g, "&amp;")
@@ -501,8 +579,8 @@ def render_negotiation_immediate_status_js(
     var host = document.querySelector("main");
     if (!host || !Array.isArray(PROMOTED_SURVEY_CANDIDATES)) return;
     var existing = existingNegotiationKeys();
-    // 全体地図セクションより前（交渉待ちカード群の直後）に挿入する基準点
-    var mapSection = host.querySelector(".map-section");
+    // 返却待ちセクションより前（交渉待ちカード群の直後）に挿入する基準点
+    var mapSection = host.querySelector(".return-candidate-section");
     var idx = 0;
     PROMOTED_SURVEY_CANDIDATES.forEach(function(c) {{
       var key = String(c.management_no_key || "").trim();
@@ -526,7 +604,7 @@ def render_negotiation_immediate_status_js(
         + '</div></div>'
         + '<div class="note-panel">' + escHtml(note) + '</div>'
         + '</article>';
-      // 地図より前に挿入して既存カードと同じ一覧エリアに表示する
+      // 返却待ちセクションより前に挿入して既存カードと同じ一覧エリアに表示する
       if (mapSection) {{
         mapSection.insertAdjacentHTML("beforebegin", html);
       }} else {{
@@ -607,8 +685,79 @@ def render_negotiation_immediate_status_js(
       }})
       .catch(function() {{ return Object.create(null); }});
   }}
+  function loadReturnCandidates() {{
+    try {{
+      var raw = localStorage.getItem(RETURN_CANDIDATE_LS_KEY);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    }} catch (e) {{
+      return [];
+    }}
+  }}
+  function saveReturnCandidates(items) {{
+    try {{
+      localStorage.setItem(RETURN_CANDIDATE_LS_KEY, JSON.stringify(items));
+    }} catch (e) {{}}
+  }}
+  function fmtMarkedAt(iso) {{
+    var s = String(iso || "").trim();
+    if (!s) return "時刻不明";
+    var d = new Date(s);
+    if (isNaN(d.getTime())) return "時刻不明";
+    return (
+      d.getFullYear() + "-" +
+      String(d.getMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getDate()).padStart(2, "0") + " " +
+      String(d.getHours()).padStart(2, "0") + ":" +
+      String(d.getMinutes()).padStart(2, "0")
+    );
+  }}
+  function renderReturnCandidateList() {{
+    var listEl = document.getElementById("return-candidate-list");
+    var emptyEl = document.getElementById("return-candidate-empty");
+    if (!listEl || !emptyEl) return;
+    var items = loadReturnCandidates();
+    listEl.innerHTML = "";
+    if (!items.length) {{
+      emptyEl.hidden = false;
+      return;
+    }}
+    emptyEl.hidden = true;
+    items.forEach(function(it, i) {{
+      var key = String(it.management_no_key || "").trim();
+      if (!key) return;
+      var html =
+        '<article class="return-candidate-item" role="listitem" data-return-candidate-key="' + escHtml(key) + '">' +
+        '<div class="return-candidate-item-head">' +
+        '<div>' +
+        '<p class="return-candidate-item-title">' + escHtml(String(it.label || "（名称未設定）")) + "</p>" +
+        '<p class="return-candidate-item-mgmt">' + escHtml(String(it.management_no || "管理番号不明")) + "</p>" +
+        "</div>" +
+        '<button type="button" class="btn btn-return-candidate-clear" data-return-candidate-clear="' + escHtml(key) + '">返却候補を解除</button>' +
+        "</div>" +
+        '<p class="return-candidate-item-meta">返却候補（モック） / marked_at: ' + escHtml(fmtMarkedAt(it.marked_at)) + "</p>" +
+        "</article>";
+      listEl.insertAdjacentHTML("beforeend", html);
+    }});
+    listEl.querySelectorAll("[data-return-candidate-clear]").forEach(function(btn) {{
+      if (btn.getAttribute("data-clear-bound") === "1") return;
+      btn.setAttribute("data-clear-bound", "1");
+      btn.addEventListener("click", function() {{
+        var key = (btn.getAttribute("data-return-candidate-clear") || "").trim();
+        if (!key) return;
+        if (!window.confirm(RETURN_CANDIDATE_CLEAR_CONFIRM)) return;
+        var next = loadReturnCandidates().filter(function(it) {{
+          return String(it.management_no_key || "").trim() !== key;
+        }});
+        saveReturnCandidates(next);
+        renderReturnCandidateList();
+      }});
+    }});
+  }}
   fetchPortalOverrides().then(function(statusMap) {{
     appendPromotedCards(statusMap);
     bindRevertButtons();
+    renderReturnCandidateList();
   }});
 """
