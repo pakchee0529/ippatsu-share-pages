@@ -176,6 +176,121 @@ a.portal-menu-item:focus-visible {
   color: var(--muted-b);
   text-align: center;
 }
+/* 本日の予定（モック → 将来 Supabase 差し替え） */
+.today-schedule {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1rem 0.85rem;
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(20, 32, 51, 0.06);
+}
+.today-schedule-heading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  line-height: 1.35;
+}
+.today-schedule-note {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+  color: var(--muted-b);
+}
+.today-schedule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.today-schedule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  border-left-width: 3px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.today-schedule-item.company {
+  background: #dbeafe;
+  border-color: rgba(37, 99, 235, 0.22);
+  border-left-color: #2563eb;
+  color: #1e3a8a;
+}
+.today-schedule-item.absent {
+  background: #ffe4e6;
+  border-color: rgba(225, 29, 72, 0.22);
+  border-left-color: #e11d48;
+  color: #9f1239;
+}
+.today-schedule-item.business_trip {
+  background: #ede9fe;
+  border-color: rgba(124, 58, 237, 0.22);
+  border-left-color: #7c3aed;
+  color: #5b21b6;
+}
+.today-schedule-item.holiday {
+  background: #fef3c7;
+  border-color: rgba(217, 119, 6, 0.25);
+  border-left-color: #d97706;
+  color: #92400e;
+}
+.today-schedule-item.other {
+  background: #e2e8f0;
+  border-color: rgba(71, 85, 105, 0.22);
+  border-left-color: #475569;
+  color: #334155;
+}
+.today-schedule-badge {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.55);
+  line-height: 1.2;
+}
+.today-schedule-body {
+  flex: 1;
+  min-width: 0;
+}
+.today-schedule-title {
+  font-weight: 700;
+  word-break: break-word;
+}
+.today-schedule-person {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  margin-top: 0.1rem;
+}
+.today-schedule-empty {
+  margin: 0;
+  padding: 0.65rem 0.5rem;
+  font-size: 0.9rem;
+  color: var(--muted-b);
+  text-align: center;
+  background: var(--bg-b);
+  border-radius: 8px;
+}
+.today-schedule-more {
+  margin: 0.65rem 0 0;
+  font-size: 0.82rem;
+  text-align: right;
+}
+.today-schedule-more a {
+  color: var(--accent-b);
+  font-weight: 600;
+  text-decoration: none;
+}
+.today-schedule-more a:hover,
+.today-schedule-more a:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
 </style>
 </head>
 <body>
@@ -203,11 +318,14 @@ a.portal-menu-item:focus-visible {
     <p style="margin:0">今日・今週の作業内容は、次のリンクから日付ごとの共有ページを開いて確認してください。スマホのブックマークに登録して使えます。</p>
   </div>
 
+  <section class="today-schedule" aria-labelledby="today-schedule-heading">
+    <h2 class="today-schedule-heading" id="today-schedule-heading">本日の予定</h2>
+    <p class="today-schedule-note">社内カレンダーの本日分を簡易表示（モック）</p>
+    <div id="today-schedule-root"></div>
+    <p class="today-schedule-more"><a href="./calendar/">社内カレンダーで詳細を見る</a></p>
+  </section>
+
   <div class="card-list" role="list">
-    <article class="card" role="listitem">
-      <h2 class="card-title">社内カレンダー（会社行事・健診・休み）</h2>
-      <a class="btn" href="./calendar/">社内カレンダーを開く</a>
-    </article>
     <article class="card" role="listitem">
       <h2 class="card-title">2026年05月28日　千股　3件　ラフター・倒木実費</h2>
       <a class="btn" href="../share/260528/">共有ページを開く</a>
@@ -244,6 +362,67 @@ a.portal-menu-item:focus-visible {
 
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
   <script>
+(function () {
+  /** 本日の予定モック（将来: Supabase GET 等に差し替え） */
+  var todayScheduleMock = [
+    { type: "company", title: "安全大会", person: "" },
+    { type: "absent", title: "健診①", person: "稲田" },
+    { type: "business_trip", title: "十津川出張", person: "" },
+    { type: "other", title: "車両点検", person: "田中" }
+  ];
+
+  var TODAY_SCHEDULE_TYPE_LABELS = {
+    company: "行事",
+    absent: "不在",
+    business_trip: "出張",
+    holiday: "祝日",
+    other: "その他"
+  };
+
+  function renderTodaySchedule(events) {
+    var root = document.getElementById("today-schedule-root");
+    if (!root) return;
+    root.innerHTML = "";
+    if (!events || !events.length) {
+      var empty = document.createElement("p");
+      empty.className = "today-schedule-empty";
+      empty.textContent = "本日の予定はありません";
+      root.appendChild(empty);
+      return;
+    }
+    var list = document.createElement("ul");
+    list.className = "today-schedule-list";
+    list.setAttribute("role", "list");
+    events.forEach(function (ev) {
+      var type = ev.type || "other";
+      var li = document.createElement("li");
+      li.className = "today-schedule-item " + type;
+      li.setAttribute("role", "listitem");
+      var badge = document.createElement("span");
+      badge.className = "today-schedule-badge";
+      badge.textContent = TODAY_SCHEDULE_TYPE_LABELS[type] || "その他";
+      var body = document.createElement("div");
+      body.className = "today-schedule-body";
+      var titleEl = document.createElement("div");
+      titleEl.className = "today-schedule-title";
+      titleEl.textContent = ev.title || "（無題）";
+      body.appendChild(titleEl);
+      if (ev.person && String(ev.person).trim()) {
+        var personEl = document.createElement("div");
+        personEl.className = "today-schedule-person";
+        personEl.textContent = String(ev.person).trim();
+        body.appendChild(personEl);
+      }
+      li.appendChild(badge);
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+    root.appendChild(list);
+  }
+
+  renderTodaySchedule(todayScheduleMock);
+})();
+
 (function () {
   var btn = document.getElementById("portal-menu-btn");
   var panel = document.getElementById("portal-menu-panel");
