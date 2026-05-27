@@ -719,9 +719,16 @@
 </div>
 
 <script>
-// ===== SUPABASE (将来接続・現時点では未使用) =====
-const CALENDAR_SUPABASE_ENABLED = false;
-const CALENDAR_API_ENDPOINT = "";
+// ===== SUPABASE =====
+const CALENDAR_SUPABASE_ENABLED = true;
+const CALENDAR_API_ENDPOINT = "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/company-calendar-events";
+const PORTAL_CALENDAR_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
+const EDIT_SESSION_STORAGE_KEY = "companyCalendarEditSession";
+const CALENDAR_ORIGIN = "https://pakchee0529.github.io";
+
+let editSessionToken = null;
+let editSessionExpiresAt = null;
+let supabaseLoadError = null;
 
 // ===== STORAGE =====
 const STORAGE_KEY = "companyCalendarEvents";
@@ -904,6 +911,7 @@ function loadEventsFromStorage() {
 }
 
 function persistEvents() {
+  if (CALENDAR_SUPABASE_ENABLED && CALENDAR_API_ENDPOINT) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
   } catch (err) {
@@ -927,7 +935,11 @@ function updateStorageModeLabel() {
   const el = document.getElementById("storageModeLabel");
   if (!el) return;
   if (CALENDAR_SUPABASE_ENABLED && CALENDAR_API_ENDPOINT) {
-    el.textContent = "Supabase接続モード";
+    if (supabaseLoadError) {
+      el.textContent = "Supabase接続エラー: " + supabaseLoadError;
+    } else {
+      el.textContent = "Supabase接続モード（正本はクラウド）";
+    }
   } else {
     el.innerHTML =
       "ローカル保存モード（この端末のブラウザに保存）" +
@@ -935,10 +947,147 @@ function updateStorageModeLabel() {
   }
 }
 
+function loadEditSessionFromStorage() {
+  try {
+    const raw = sessionStorage.getItem(EDIT_SESSION_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.token) return;
+    editSessionToken = String(parsed.token);
+    editSessionExpiresAt = parsed.expiresAt ? String(parsed.expiresAt) : null;
+    if (editSessionExpiresAt && Date.parse(editSessionExpiresAt) <= Date.now()) {
+      clearEditSession();
+    }
+  } catch (err) {
+    clearEditSession();
+  }
+}
+
+function saveEditSessionToStorage(token, expiresAt) {
+  editSessionToken = token;
+  editSessionExpiresAt = expiresAt;
+  try {
+    sessionStorage.setItem(
+      EDIT_SESSION_STORAGE_KEY,
+      JSON.stringify({ token: editSessionToken, expiresAt: editSessionExpiresAt })
+    );
+  } catch (err) {
+    /* ignore */
+  }
+}
+
+function clearEditSession() {
+  editSessionToken = null;
+  editSessionExpiresAt = null;
+  try {
+    sessionStorage.removeItem(EDIT_SESSION_STORAGE_KEY);
+  } catch (err) {
+    /* ignore */
+  }
+}
+
+function isEditSessionValid() {
+  if (!editSessionToken) return false;
+  if (!editSessionExpiresAt) return true;
+  return Date.parse(editSessionExpiresAt) > Date.now();
+}
+
+function calendarApiHeaders(includeSession) {
+  const headers = {
+    "Content-Type": "application/json",
+    Origin: CALENDAR_ORIGIN,
+  };
+  if (PORTAL_CALENDAR_API_KEY) headers.apikey = PORTAL_CALENDAR_API_KEY;
+  if (includeSession && editSessionToken) {
+    headers["X-Calendar-Edit-Session"] = editSessionToken;
+  }
+  return headers;
+}
+
+async function calendarGetMonth(year, month) {
+  const url =
+    CALENDAR_API_ENDPOINT +
+    "?year=" +
+    encodeURIComponent(year) +
+    "&month=" +
+    encodeURIComponent(month);
+  const res = await fetch(url, {
+    method: "GET",
+    headers: calendarApiHeaders(false),
+  });
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    throw new Error("応答の解析に失敗しました");
+  }
+  if (!res.ok || !data.ok) {
+    throw new Error(data.error || "取得に失敗しました (" + res.status + ")");
+  }
+  return (data.events || []).map(normalizeEvent);
+}
+
+async function calendarPost(body, includeSession) {
+  const res = await fetch(CALENDAR_API_ENDPOINT, {
+    method: "POST",
+    headers: calendarApiHeaders(includeSession),
+    body: JSON.stringify(body),
+  });
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    throw new Error("応答の解析に失敗しました");
+  }
+  return { res, data };
+}
+
+async function ensureEditSession(forcePrompt) {
+  loadEditSessionFromStorage();
+  if (!forcePrompt && isEditSessionValid()) return true;
+  const pin = prompt("予定を編集するには PIN を入力してください");
+  if (pin === null) return false;
+  const { res, data } = await calendarPost({ action: "authenticate", editPin: pin }, false);
+  if (!res.ok || !data.ok) {
+    const msg =
+      data.error === "invalid_pin"
+        ? "PIN が正しくありません"
+        : data.error === "pin_not_configured"
+          ? "サーバー側の PIN 設定がありません"
+          : "認証に失敗しました";
+    alert(msg);
+    return false;
+  }
+  saveEditSessionToStorage(data.editSessionToken, data.expiresAt);
+  return true;
+}
+
+function mergeMonthEvents(year, month, monthEvents) {
+  const prefix = year + "-" + String(month).padStart(2, "0");
+  const kept = events.filter((e) => !String(e.dateStart || "").startsWith(prefix));
+  events = kept.concat(monthEvents);
+  recomputeNextId();
+}
+
+async function refreshCurrentMonthFromSupabase() {
+  if (!CALENDAR_SUPABASE_ENABLED || !CALENDAR_API_ENDPOINT) return false;
+  try {
+    const monthEvents = await calendarGetMonth(currentYear, currentMonth + 1);
+    mergeMonthEvents(currentYear, currentMonth + 1, monthEvents);
+    supabaseLoadError = null;
+    return true;
+  } catch (err) {
+    supabaseLoadError = err.message || String(err);
+    return false;
+  }
+}
+
 async function maybeLoadFromSupabase() {
   if (!CALENDAR_SUPABASE_ENABLED || !CALENDAR_API_ENDPOINT) return false;
-  // Phase 3: Edge Function から月範囲取得（未実装・deploy 前は呼ばない）
-  return false;
+  loadEditSessionFromStorage();
+  const ok = await refreshCurrentMonthFromSupabase();
+  updateStorageModeLabel();
+  return ok;
 }
 
 function exportEventsJson() {
@@ -995,6 +1144,10 @@ function handleImportFile(file) {
 }
 
 function resetToSeedEvents() {
+  if (CALENDAR_SUPABASE_ENABLED && CALENDAR_API_ENDPOINT) {
+    alert("Supabase接続モードでは「初期データに戻す」は使えません。管理者にデータ復旧を依頼してください。");
+    return;
+  }
   if (!confirm("初期データに戻します。現在の予定はすべて失われます。よろしいですか？")) return;
   events = cloneEvents(seedEvents);
   nextId = 15;
@@ -1075,11 +1228,16 @@ function renderCalendar() {
 }
 
 // ===== MONTH NAV =====
-function changeMonth(dir) {
+async function changeMonth(dir) {
   currentMonth += dir;
   if (currentMonth > 11) { currentMonth = 0; currentYear++; }
   if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  if (CALENDAR_SUPABASE_ENABLED && CALENDAR_API_ENDPOINT) {
+    await refreshCurrentMonthFromSupabase();
+    updateStorageModeLabel();
+  }
   renderCalendar();
+  renderList();
 }
 
 // ===== DAY MODAL =====
@@ -1148,7 +1306,7 @@ function closeAddModal() {
 
 // ★ 追加: 編集モードでモーダルを開く
 function openEditModal(id) {
-  const ev = events.find(e => e.id === id);
+  const ev = events.find(e => String(e.id) === String(id));
   if (!ev) return;
 
   editingId = id; // 編集中のIDを保持
@@ -1168,8 +1326,8 @@ function openEditModal(id) {
   document.getElementById('addModal').classList.add('open');
 }
 
-// ★ 修正: saveEvent() に編集モード対応を追加
-function saveEvent() {
+// ★ 修正: saveEvent() — Supabase / ローカル両対応
+async function saveEvent() {
   const type = document.getElementById('eventType').value;
   const dateStart = document.getElementById('eventDateStart').value;
   let dateEnd = document.getElementById('eventDateEnd').value || dateStart;
@@ -1191,8 +1349,36 @@ function saveEvent() {
     person,
   };
 
+  if (CALENDAR_SUPABASE_ENABLED && CALENDAR_API_ENDPOINT) {
+    if (!(await ensureEditSession(false))) return;
+    const body = editingId !== null
+      ? { action: "update", id: editingId, ...payload }
+      : { action: "create", ...payload };
+    const { res, data } = await calendarPost(body, true);
+    if (data.error === "session_expired" || data.error === "session_invalid" || data.error === "session_required") {
+      clearEditSession();
+      if (!(await ensureEditSession(true))) return;
+      const retry = await calendarPost(body, true);
+      if (!retry.res.ok || !retry.data.ok) {
+        alert("保存に失敗しました");
+        return;
+      }
+    } else if (!res.ok || !data.ok) {
+      alert("保存に失敗しました");
+      return;
+    }
+    editingId = null;
+    closeAddModal();
+    await refreshCurrentMonthFromSupabase();
+    updateStorageModeLabel();
+    renderCalendar();
+    renderList();
+    if (document.getElementById('manageModal').classList.contains('open')) renderManageList();
+    return;
+  }
+
   if (editingId !== null) {
-    const idx = events.findIndex(e => e.id === editingId);
+    const idx = events.findIndex(e => String(e.id) === String(editingId));
     if (idx !== -1) {
       events[idx] = { id: editingId, ...payload };
     }
@@ -1225,21 +1411,58 @@ function renderManageList() {
   list.innerHTML = sorted.map(ev => {
     const meta = getTypeMeta(ev.type);
     const dateLabel = ev.dateStart === ev.dateEnd ? ev.dateStart : `${ev.dateStart}〜${ev.dateEnd}`;
+    const safeId = encodeURIComponent(String(ev.id));
     return `<div class="event-manage-item ${ev.type}">
       <div style="flex:1">
         <div style="font-size:12px;color:#888;margin-bottom:2px">${meta.emoji} ${meta.badge} ${dateLabel}</div>
         <div style="font-size:14px;font-weight:600">${getManageLineText(ev)}</div>
       </div>
       <div class="action-btns">
-        <button class="edit-btn" onclick="openEditModal(${ev.id})" title="編集">✏️</button>
-        <button class="del-btn" onclick="deleteEvent(${ev.id})" title="削除">✕</button>
+        <button class="edit-btn" data-event-id="${safeId}" onclick="openEditModalFromBtn(this)" title="編集">✏️</button>
+        <button class="del-btn" data-event-id="${safeId}" onclick="deleteEventFromBtn(this)" title="削除">✕</button>
       </div>
     </div>`;
   }).join('');
 }
-function deleteEvent(id) {
+
+function openEditModalFromBtn(btn) {
+  const id = decodeURIComponent(btn.getAttribute("data-event-id") || "");
+  openEditModal(id);
+}
+
+function deleteEventFromBtn(btn) {
+  const id = decodeURIComponent(btn.getAttribute("data-event-id") || "");
+  deleteEvent(id);
+}
+
+async function deleteEvent(id) {
   if (!confirm("この予定を削除しますか？")) return;
-  events = events.filter(e => e.id !== id);
+
+  if (CALENDAR_SUPABASE_ENABLED && CALENDAR_API_ENDPOINT) {
+    if (!(await ensureEditSession(false))) return;
+    const body = { action: "delete", id: id };
+    const { res, data } = await calendarPost(body, true);
+    if (data.error === "session_expired" || data.error === "session_invalid" || data.error === "session_required") {
+      clearEditSession();
+      if (!(await ensureEditSession(true))) return;
+      const retry = await calendarPost(body, true);
+      if (!retry.res.ok || !retry.data.ok) {
+        alert("削除に失敗しました");
+        return;
+      }
+    } else if (!res.ok || !data.ok) {
+      alert("削除に失敗しました");
+      return;
+    }
+    await refreshCurrentMonthFromSupabase();
+    updateStorageModeLabel();
+    renderManageList();
+    renderCalendar();
+    renderList();
+    return;
+  }
+
+  events = events.filter(e => String(e.id) !== String(id));
   persistEvents();
   renderManageList();
   renderCalendar();
@@ -1308,6 +1531,10 @@ document.getElementById("importFileInput").addEventListener("change", function (
 });
 
 async function initApp() {
+  if (CALENDAR_SUPABASE_ENABLED && CALENDAR_API_ENDPOINT) {
+    currentYear = 2026;
+    currentMonth = 5;
+  }
   const loadedRemote = await maybeLoadFromSupabase();
   if (!loadedRemote) initEventsFromLocal();
   updateStorageModeLabel();
