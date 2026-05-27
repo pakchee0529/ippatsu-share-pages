@@ -12,11 +12,15 @@
     --border: #e0ddd6;
     --text: #1a1a1a;
     --text-muted: #888;
-    --green: #2d6a4f;
-    --green-light: #e8f5ee;
-    --green-mid: #52b788;
-    --red: #c0392b;
-    --red-light: #fdecea;
+    --green: #1b4332;
+    --green-light: #d8f3dc;
+    --green-mid: #40916c;
+    --red: #9d174d;
+    --red-light: #fce7f3;
+    --absent-accent: #db2777;
+    --trip: #312e81;
+    --trip-light: #e0e7ff;
+    --trip-accent: #4f46e5;
     --blue: #1a5276;
     --blue-light: #eaf2fb;
     --yellow: #b7950b;
@@ -155,7 +159,7 @@
     background: white;
     border-radius: 8px;
     padding: 6px 4px 5px;
-    min-height: 72px;
+    min-height: 74px;
     border: 1.5px solid var(--border);
     position: relative;
     transition: all 0.12s;
@@ -179,6 +183,26 @@
   }
   .day-cell.saturday .day-num { color: var(--sat); }
   .day-cell.sunday .day-num, .day-cell.holiday .day-num { color: var(--sun); }
+  .day-cell.has-multi { min-height: 80px; }
+  .day-cell.has-many { min-height: 86px; }
+
+  .day-num-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .day-event-count {
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 2px 5px;
+    border-radius: 8px;
+    background: var(--text);
+    color: white;
+    flex-shrink: 0;
+  }
 
   .day-events {
     display: flex;
@@ -200,17 +224,17 @@
   .event-tag.company {
     background: var(--green-light);
     color: var(--green);
-    border-left: 2.5px solid var(--green-mid);
+    border-left: 3px solid var(--green-mid);
   }
   .event-tag.absent {
     background: var(--red-light);
     color: var(--red);
-    border-left: 2.5px solid var(--red);
+    border-left: 3px solid var(--absent-accent);
   }
   .event-tag.business_trip {
-    background: #fdebd0;
-    color: #b45f06;
-    border-left: 2.5px solid #e67e22;
+    background: var(--trip-light);
+    color: var(--trip);
+    border-left: 3px solid var(--trip-accent);
   }
   .event-tag.holiday-tag {
     background: var(--yellow-light);
@@ -220,9 +244,14 @@
 
   .more-count {
     font-size: 9px;
-    color: var(--text-muted);
+    font-weight: 700;
+    color: var(--text);
+    background: #ebe8e0;
     text-align: center;
     margin-top: 1px;
+    padding: 2px 3px;
+    border-radius: 3px;
+    line-height: 1.2;
   }
 
   /* ===== MODAL ===== */
@@ -285,13 +314,13 @@
   }
   .event-list-item.company { background: var(--green-light); }
   .event-list-item.absent { background: var(--red-light); }
-  .event-list-item.business_trip { background: #fdebd0; }
+  .event-list-item.business_trip { background: var(--trip-light); color: var(--trip); }
   .event-list-item .dot {
     width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
   }
   .event-list-item.company .dot { background: var(--green-mid); }
-  .event-list-item.absent .dot { background: var(--red); }
-  .event-list-item.business_trip .dot { background: #e67e22; }
+  .event-list-item.absent .dot { background: var(--absent-accent); }
+  .event-list-item.business_trip .dot { background: var(--trip-accent); }
 
   .modal-add-btn {
     width: 100%;
@@ -497,9 +526,9 @@
     padding: 3px 8px;
     border-radius: 20px;
   }
-  .badge-company { background: var(--green-light); color: var(--green); }
-  .badge-absent { background: var(--red-light); color: var(--red); }
-  .badge-business_trip { background: #fdebd0; color: #b45f06; }
+  .badge-company { background: var(--green-light); color: var(--green); border: 1px solid var(--green-mid); }
+  .badge-absent { background: var(--red-light); color: var(--red); border: 1px solid var(--absent-accent); }
+  .badge-business_trip { background: var(--trip-light); color: var(--trip); border: 1px solid var(--trip-accent); }
   .badge-holiday { background: var(--yellow-light); color: var(--yellow); }
   .badge-other { background: var(--bg); color: var(--text-muted); }
 
@@ -536,6 +565,22 @@
     color: var(--text-muted);
     background: var(--bg);
     border-bottom: 1px solid var(--border);
+    line-height: 1.45;
+  }
+  .storage-hint {
+    display: block;
+    margin-top: 2px;
+    font-size: 10px;
+    color: #999;
+  }
+  .manage-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.45;
+    margin: 0 0 10px;
+    padding: 8px 10px;
+    background: var(--bg);
+    border-radius: 6px;
   }
 
   .manage-tools {
@@ -570,7 +615,7 @@
 <header>
   <h1>📅 社内カレンダー</h1>
   <div class="header-right">
-    <button class="btn btn-outline" onclick="openManageModal()">管理</button>
+    <button class="btn btn-outline" onclick="openManageModal()">予定編集</button>
   </div>
 </header>
 
@@ -589,9 +634,9 @@
     <button onclick="changeMonth(1)">›</button>
   </div>
   <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:#52b788"></div>行事</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div>不在</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div>出張</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#40916c"></div>行事</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#db2777"></div>不在</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4f46e5"></div>出張</div>
   </div>
   <div class="calendar-wrap">
     <div class="weekday-header">
@@ -660,7 +705,8 @@
 <!-- Manage Modal -->
 <div class="admin-modal-overlay" id="manageModal">
   <div class="admin-modal" style="max-height:80vh;overflow-y:auto">
-    <h3>予定の管理・削除</h3>
+    <h3>予定の編集・一覧</h3>
+    <p class="manage-hint">社員なら誰でも予定の追加・編集・削除ができます。表示が古いときは「初期データに戻す」で最新の初期データに戻せます。</p>
     <div class="manage-tools">
       <button type="button" class="btn-tool" onclick="exportEventsJson()">JSONエクスポート</button>
       <input type="file" id="importFileInput" accept=".json,application/json" hidden>
@@ -718,11 +764,26 @@ let selectedDay = null;
 let editingId = null; // ★ 追加: 編集中のイベントID（null = 新規追加モード）
 
 // ===== HELPERS =====
+const CALENDAR_CELL_MAX_TAGS = 2;
+const ABSENT_LABEL = "不在";
+
 function toYMD(d) {
-  return d.toISOString().split("T")[0];
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
+
 function getEventsForDate(ymd) {
-  return events.filter(e => e.dateStart <= ymd && ymd <= e.dateEnd);
+  return events
+    .filter((e) => e.dateStart <= ymd && ymd <= e.dateEnd)
+    .sort((a, b) => {
+      const typeOrder = { company: 0, business_trip: 1, absent: 2, holiday: 3, other: 4 };
+      const ta = typeOrder[a.type] ?? 9;
+      const tb = typeOrder[b.type] ?? 9;
+      if (ta !== tb) return ta - tb;
+      return String(a.id).localeCompare(String(b.id), undefined, { numeric: true });
+    });
 }
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
@@ -745,21 +806,39 @@ function fixDateRange(dateStart, dateEnd) {
   return { dateStart: start, dateEnd: end };
 }
 
-function getEventDisplayLabel(ev) {
-  const person = ev.person != null ? String(ev.person).trim() : "";
-  const title = ev.title != null ? String(ev.title).trim() : "";
-  if (ev.type === "absent") {
-    if (person) return person;
-    if (title) return title;
-    return "不在";
+function formatAbsentLabel(person, title, compact) {
+  const p = person != null ? String(person).trim() : "";
+  const t = title != null ? String(title).trim() : "";
+  if (p) {
+    if (compact) {
+      const parts = p.split("・");
+      const head = parts.length > 1 ? parts[0] + "ほか" : p;
+      const full = head + " " + ABSENT_LABEL;
+      if (full.length <= 9) return full;
+      return head.slice(0, 4) + "… " + ABSENT_LABEL;
+    }
+    return p + " " + ABSENT_LABEL;
   }
+  if (t) return compact && t.length > 8 ? t.slice(0, 7) + "…" : t;
+  return ABSENT_LABEL;
+}
+
+function getEventDisplayLabel(ev) {
+  if (ev.type === "absent") {
+    return formatAbsentLabel(ev.person, ev.title, false);
+  }
+  const title = ev.title != null ? String(ev.title).trim() : "";
   return title || "（無題）";
 }
 
 function getEventCellTagText(ev) {
-  const label = getEventDisplayLabel(ev);
-  if (label.length <= 6) return label;
-  return label.slice(0, 5) + "…";
+  if (ev.type === "absent") {
+    return formatAbsentLabel(ev.person, ev.title, true);
+  }
+  const title = (ev.title || "").trim();
+  if (!title) return "（無題）";
+  if (title.length <= 8) return title;
+  return title.slice(0, 7) + "…";
 }
 
 function getTypeMeta(type) {
@@ -794,8 +873,9 @@ function getManageLineText(ev) {
   if (ev.type === "absent") {
     const person = (ev.person || "").trim();
     const title = (ev.title || "").trim();
-    if (person && title) return person + " / " + title;
-    return getEventDisplayLabel(ev);
+    const main = formatAbsentLabel(person, title, false);
+    if (person && title) return main + "（" + title + "）";
+    return main;
   }
   const title = (ev.title || "").trim();
   const person = (ev.person || "").trim();
@@ -849,7 +929,9 @@ function updateStorageModeLabel() {
   if (CALENDAR_SUPABASE_ENABLED && CALENDAR_API_ENDPOINT) {
     el.textContent = "Supabase接続モード";
   } else {
-    el.textContent = "ローカル保存モード（この端末のブラウザに保存）";
+    el.innerHTML =
+      "ローカル保存モード（この端末のブラウザに保存）" +
+      '<span class="storage-hint">表示がおかしいときは「予定編集」→「初期データに戻す」</span>';
   }
 }
 
@@ -950,26 +1032,39 @@ function renderCalendar() {
     if (dow === 0) cls += ' sunday';
     else if (dow === 6) cls += ' saturday';
     if (ymd === todayYMD) cls += ' today';
+    if (dayEvents.length >= 2) cls += ' has-multi';
+    if (dayEvents.length > CALENDAR_CELL_MAX_TAGS) cls += ' has-many';
     cell.className = cls;
 
+    const numRow = document.createElement('div');
+    numRow.className = 'day-num-row';
     const num = document.createElement('span');
     num.className = 'day-num';
     num.textContent = d;
-    cell.appendChild(num);
+    numRow.appendChild(num);
+    if (dayEvents.length >= 2) {
+      const countBadge = document.createElement('span');
+      countBadge.className = 'day-event-count';
+      countBadge.textContent = String(dayEvents.length);
+      countBadge.title = dayEvents.length + '件の予定';
+      numRow.appendChild(countBadge);
+    }
+    cell.appendChild(numRow);
 
     const evWrap = document.createElement('div');
     evWrap.className = 'day-events';
-    const maxShow = 2;
+    const maxShow = CALENDAR_CELL_MAX_TAGS;
     dayEvents.slice(0, maxShow).forEach(ev => {
       const tag = document.createElement('div');
       tag.className = `event-tag ${ev.type}`;
       tag.textContent = getEventCellTagText(ev);
+      tag.title = getEventDisplayLabel(ev);
       evWrap.appendChild(tag);
     });
     if (dayEvents.length > maxShow) {
       const more = document.createElement('div');
       more.className = 'more-count';
-      more.textContent = `+${dayEvents.length - maxShow}件`;
+      more.textContent = `他${dayEvents.length - maxShow}件（全${dayEvents.length}件）`;
       evWrap.appendChild(more);
     }
     cell.appendChild(evWrap);
