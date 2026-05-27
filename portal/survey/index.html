@@ -138,6 +138,16 @@ a.portal-menu-item:focus-visible {
   border: 1px solid var(--border);
   border-radius: 8px;
 }
+.survey-overlay-warning {
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.82rem;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+}
+.survey-overlay-warning[hidden] { display: none !important; }
 .card {
   background: var(--card);
   border-radius: 10px;
@@ -380,6 +390,7 @@ a.portal-menu-item:focus-visible {
   </header>
   <p class="lead">径間ごとに地図・現場指示・報告用のリンクがあります。（表示 32 件）</p>
   <p class="report-disclaimer">「現調済みにする」を押すと交渉待ちへ即時反映します（portal status overlay）。「返却候補にする」はモック表示です。正本データにはまだ反映しません。従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。</p>
+  <p id="survey-overlay-warning" class="survey-overlay-warning" hidden role="status"></p>
   <main>
 <article class="card survey-update-card" data-card-index="0"
   data-management-no-key="51409384"
@@ -982,7 +993,8 @@ a.portal-menu-item:focus-visible {
     });
     return map;
   }
-  function applySurveyOverlay(statusMap, serverOk) {
+  function applySurveyOverlay(statusMap, serverOk, returnCandidateKeys) {
+    var returnMap = returnCandidateKeys || Object.create(null);
     document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
       var key = (card.getAttribute("data-management-no-key") || "").trim();
       if (!key) return;
@@ -1000,9 +1012,12 @@ a.portal-menu-item:focus-visible {
           }
         } catch (e) {}
       }
-      if (st === "negotiation_wait") {
+      if (st === "negotiation_wait" || returnMap[key]) {
         card.hidden = true;
-        card.setAttribute("data-portal-moved", "negotiation");
+        card.setAttribute(
+          "data-portal-moved",
+          st === "negotiation_wait" ? "negotiation" : "return_candidate",
+        );
       } else {
         card.hidden = false;
         card.removeAttribute("data-portal-moved");
@@ -1113,7 +1128,7 @@ a.portal-menu-item:focus-visible {
   }
   function fetchReturnCandidates() {
     if (!PORTAL_STATUS_API_KEY) {
-      return Promise.resolve({ ok: false, keys: Object.create(null) });
+      return Promise.resolve({ ok: false, keys: Object.create(null), reason: "apikey_missing" });
     }
     return fetch(PORTAL_STATUS_ENDPOINT + "?list=return_candidates", {
       method: "GET",
@@ -1128,7 +1143,7 @@ a.portal-menu-item:focus-visible {
       .then(function(r) {
         var keys = Object.create(null);
         if (!r.res.ok || !r.data || !r.data.ok) {
-          return { ok: false, keys: keys };
+          return { ok: false, keys: keys, reason: "fetch_failed" };
         }
         var list = r.data.return_candidates;
         if (!Array.isArray(list)) return { ok: true, keys: keys };
@@ -1138,7 +1153,7 @@ a.portal-menu-item:focus-visible {
         });
         return { ok: true, keys: keys };
       })
-      .catch(function() { return { ok: false, keys: Object.create(null) }; });
+      .catch(function() { return { ok: false, keys: Object.create(null), reason: "network_error" }; });
   }
   function refreshReturnCandidateCardState(keys) {
     document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
@@ -1171,9 +1186,40 @@ a.portal-menu-item:focus-visible {
   document.querySelectorAll("[data-survey-mark-done]").forEach(function(btn) {
     if (!PORTAL_STATUS_API_KEY) btn.disabled = true;
   });
-  applySurveyOverlay(Object.create(null), false);
+  var surveyOverlayWarningEl = document.getElementById("survey-overlay-warning");
+  var cachedReturnCandidateKeys = Object.create(null);
+  var cachedReturnCandidateFetchOk = true;
+  var cachedStatusMap = Object.create(null);
+  var cachedStatusFetchOk = false;
+  function updateSurveyOverlayWarning() {
+    if (!surveyOverlayWarningEl) return;
+    if (cachedReturnCandidateFetchOk) {
+      surveyOverlayWarningEl.hidden = true;
+      surveyOverlayWarningEl.textContent = "";
+      return;
+    }
+    surveyOverlayWarningEl.hidden = false;
+    surveyOverlayWarningEl.textContent =
+      "返却候補情報の取得に失敗したため、一部案件が現調待ちに表示される可能性があります。";
+  }
+  function syncSurveyCardVisibility() {
+    applySurveyOverlay(cachedStatusMap, cachedStatusFetchOk, cachedReturnCandidateKeys);
+  }
+  syncSurveyCardVisibility();
   fetchPortalOverrides().then(function(result) {
-    applySurveyOverlay(result.statusMap, result.ok);
+    cachedStatusMap = result.statusMap || Object.create(null);
+    cachedStatusFetchOk = !!result.ok;
+    syncSurveyCardVisibility();
+  });
+  fetchReturnCandidates().then(function(result) {
+    cachedReturnCandidateKeys = result.keys || Object.create(null);
+    cachedReturnCandidateFetchOk = !!result.ok;
+    updateSurveyOverlayWarning();
+    refreshReturnCandidateCardState(cachedReturnCandidateKeys);
+    syncSurveyCardVisibility();
+    if (!result.ok) {
+      console.warn("[portal/survey] failed to fetch return candidates");
+    }
   });
   document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
     var key = (card.getAttribute("data-management-no-key") || "").trim();
@@ -1273,6 +1319,7 @@ a.portal-menu-item:focus-visible {
           })
           .then(function(r) {
             if (r.res.ok && r.data && r.data.ok) {
+              cachedReturnCandidateKeys[key] = true;
               setReturnCandidateUi(
                 card,
                 returnBtn,
@@ -1280,6 +1327,9 @@ a.portal-menu-item:focus-visible {
                 "marked",
                 "返却候補に設定済み（交渉待ちページの返却リストに表示）",
               );
+              card.hidden = true;
+              card.setAttribute("data-portal-moved", "return_candidate");
+              syncSurveyCardVisibility();
               return;
             }
             setReturnCandidateUi(
@@ -1302,10 +1352,6 @@ a.portal-menu-item:focus-visible {
       });
     }
   });
-  fetchReturnCandidates().then(function(result) {
-    refreshReturnCandidateCardState(result.keys);
-  });
-
 })();
 
 (function () {
