@@ -196,6 +196,12 @@ a.portal-menu-item:focus-visible {
   color: #fff;
 }
 .btn-map:hover, .btn-map:focus { filter: brightness(1.05); }
+.btn.is-disabled,
+.btn[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.55;
+  cursor: default;
+}
 .btn-note {
   background: #fff;
   color: var(--accent2);
@@ -879,6 +885,16 @@ a.portal-menu-item:focus-visible {
     <p id="return-candidate-empty" class="muted-tiny">返却候補はありません。</p>
   </section>
 
+  <section class="map-section" aria-labelledby="survey-multipin-heading">
+    <h2 id="survey-multipin-heading">現調待ちマルチピン</h2>
+    <p class="muted-tiny">表示中の現調待ち案件をまとめて地図で確認できます。</p>
+    <p class="muted-tiny">
+      <a id="survey-multipin-link" class="btn btn-map" href="#share-map" aria-disabled="true">マルチピン地図を開く</a>
+    </p>
+    <p id="survey-multipin-empty" class="muted-tiny">表示対象がありません。</p>
+    <div id="share-map" role="application" aria-label="現調待ちマップ（複数ピン）"></div>
+  </section>
+
   </main>
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -954,23 +970,74 @@ a.portal-menu-item:focus-visible {
   });
   var points = [{"name": "Ｐ百谷38S10～38S11", "lat": 34.34213, "lng": 135.75069, "management_no": "514 09384"}, {"name": "Ｐ百谷38S18～38S19", "lat": 34.34049, "lng": 135.75212, "management_no": "514 09344"}, {"name": "Ｐ百谷38S19～38S20", "lat": 34.34022, "lng": 135.75258, "management_no": "514 09324"}, {"name": "Ｐ百谷49N3～49N4", "lat": 34.34412, "lng": 135.75722, "management_no": "514 00214"}, {"name": "赤松1～1G1", "lat": 34.3324, "lng": 135.7446, "management_no": "514 09097"}, {"name": "赤松23～24", "lat": 34.33462, "lng": 135.75558, "management_no": "514 09006"}, {"name": "赤松26N7～26N8", "lat": 34.33731, "lng": 135.7546, "management_no": "514 00376"}, {"name": "赤松27～28", "lat": 34.33519, "lng": 135.75636, "management_no": "514 09094"}, {"name": "赤松35～36", "lat": 34.33258, "lng": 135.76051, "management_no": "514 00361"}, {"name": "大畑7～7E1", "lat": 34.33471, "lng": 135.76237, "management_no": "514 01156"}, {"name": "柴ヶ谷2～3", "lat": 34.32942, "lng": 135.76153, "management_no": "514 03888"}, {"name": "柴ヶ谷3～3G1", "lat": 34.32879, "lng": 135.76127, "management_no": "514 09990"}, {"name": "柴ヶ谷3G1～4", "lat": 34.32879, "lng": 135.76127, "management_no": "514 09991"}, {"name": "柴ヶ谷9W1～引込", "lat": 34.32608, "lng": 135.76185, "management_no": "514 10156"}, {"name": "白銀115W6～115W6S1", "lat": 34.31784, "lng": 135.73535, "management_no": "514 09133"}, {"name": "白銀115W6S1N2～115W6S1", "lat": 34.31691, "lng": 135.73552, "management_no": "514 04189"}, {"name": "白銀115W9～115W9W1", "lat": 34.31877, "lng": 135.73439, "management_no": "514 04194"}, {"name": "慎1～2", "lat": 34.31806, "lng": 135.73273, "management_no": "514 09998"}, {"name": "西新子12N1～12N2", "lat": 34.31831, "lng": 135.74634, "management_no": "514 09459"}, {"name": "西新子14G1～14E3", "lat": 34.31702, "lng": 135.74864, "management_no": "514 09228"}, {"name": "平沼田17～18", "lat": 34.32461, "lng": 135.75285, "management_no": "514 07220"}, {"name": "平沼田18～19", "lat": 34.32473, "lng": 135.75302, "management_no": "514 07272"}, {"name": "平沼田43N4E1～43N4E2", "lat": 34.32059, "lng": 135.7605, "management_no": "514 07898"}, {"name": "湯川4E6～4E7", "lat": 34.33446, "lng": 135.74192, "management_no": "514 08008"}, {"name": "夜中8～9", "lat": 34.30406, "lng": 135.74857, "management_no": "514 08794"}, {"name": "夜中9～10", "lat": 34.30364, "lng": 135.7491, "management_no": "514 08795"}, {"name": "北宇智159～159W1", "lat": 34.37949, "lng": 135.6913, "management_no": "514 02687"}, {"name": "Ｐ奥谷11W12S1～11W12S2", "lat": 34.32353, "lng": 135.72786, "management_no": "514 00263"}, {"name": "芦ヶ瀬2～3", "lat": 34.35422, "lng": 135.72693, "management_no": "514 00395"}, {"name": "芦ヶ瀬1E6E1～1E6E2", "lat": 34.35162, "lng": 135.72766, "management_no": "514 00414"}, {"name": "芦ヶ瀬1E3～1E4", "lat": 34.35301, "lng": 135.72699, "management_no": "514 10368"}, {"name": "芦ヶ瀬1E2～1E3", "lat": 34.35337, "lng": 135.72684, "management_no": "514 10367"}];
   var mapEl = document.getElementById("share-map");
-  if (mapEl && Array.isArray(points) && points.length) {
-    var map = L.map("share-map", { scrollWheelZoom: false });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap contributors",
-    }).addTo(map);
-    var bounds = [];
+  var multipinLinkEl = document.getElementById("survey-multipin-link");
+  var multipinEmptyEl = document.getElementById("survey-multipin-empty");
+  function normalizeManagementNo(value) {
+    return String(value || "").replace(/\s+/g, "");
+  }
+  var pointMapByKey = Object.create(null);
+  if (Array.isArray(points)) {
     points.forEach(function(p) {
-      var lat = Number(p.lat), lng = Number(p.lng);
+      var k = normalizeManagementNo(p.management_no);
+      if (k) pointMapByKey[k] = p;
+    });
+  }
+  var map = null;
+  var mapMarkerLayer = null;
+  function getVisibleSurveyPoints() {
+    var visible = [];
+    document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
+      if (card.hidden) return;
+      var key = normalizeManagementNo(card.getAttribute("data-management-no-key"));
+      if (!key) return;
+      var point = pointMapByKey[key];
+      if (point) visible.push(point);
+    });
+    return visible;
+  }
+  function applySurveyMultipinState() {
+    var visiblePoints = getVisibleSurveyPoints();
+    var hasVisible = visiblePoints.length > 0;
+    if (multipinLinkEl) {
+      multipinLinkEl.setAttribute("aria-disabled", hasVisible ? "false" : "true");
+      multipinLinkEl.tabIndex = hasVisible ? 0 : -1;
+      if (hasVisible) {
+        multipinLinkEl.classList.remove("is-disabled");
+      } else {
+        multipinLinkEl.classList.add("is-disabled");
+      }
+    }
+    if (multipinEmptyEl) multipinEmptyEl.hidden = hasVisible;
+    if (!mapEl || !hasVisible) return;
+    if (!map) {
+      map = L.map("share-map", { scrollWheelZoom: false });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+      mapMarkerLayer = L.layerGroup().addTo(map);
+    }
+    if (mapMarkerLayer) mapMarkerLayer.clearLayers();
+    var bounds = [];
+    visiblePoints.forEach(function(p) {
+      var lat = Number(p.lat);
+      var lng = Number(p.lng);
       if (!isFinite(lat) || !isFinite(lng)) return;
       bounds.push([lat, lng]);
-      var m = L.marker([lat, lng]).addTo(map);
+      var marker = L.marker([lat, lng]).addTo(mapMarkerLayer);
       var label = (p.name || "現場") + (p.management_no ? (" (" + p.management_no + ")") : "");
-      m.bindTooltip(label, { permanent: false, direction: "top" });
+      marker.bindTooltip(label, { permanent: false, direction: "top" });
     });
     if (bounds.length === 1) map.setView(bounds[0], 15);
     else if (bounds.length > 1) map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
+    setTimeout(function() { map.invalidateSize(); }, 60);
+  }
+  if (multipinLinkEl) {
+    multipinLinkEl.addEventListener("click", function(ev) {
+      if (multipinLinkEl.getAttribute("aria-disabled") === "true") {
+        ev.preventDefault();
+      }
+    });
   }
   // Portal status overlay (B-plan) or legacy pending request (A-plan). Never embed service_role.
 
@@ -1204,6 +1271,7 @@ a.portal-menu-item:focus-visible {
   }
   function syncSurveyCardVisibility() {
     applySurveyOverlay(cachedStatusMap, cachedStatusFetchOk, cachedReturnCandidateKeys);
+    applySurveyMultipinState();
   }
   syncSurveyCardVisibility();
   fetchPortalOverrides().then(function(result) {
