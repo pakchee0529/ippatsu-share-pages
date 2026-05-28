@@ -118,23 +118,6 @@ a.portal-menu-item:focus-visible {
   color: var(--muted-b);
   cursor: default;
 }
-.portal-menu-item.is-current {
-  font-weight: 700;
-  background: var(--bg-b);
-}
-button.portal-menu-item {
-  cursor: pointer;
-}
-button.portal-menu-item:hover,
-button.portal-menu-item:focus-visible {
-  background: var(--bg-b);
-  outline: none;
-}
-.portal-menu-divider {
-  height: 1px;
-  margin: 0.3rem 0.5rem;
-  background: var(--border-b);
-}
 .intro {
   font-size: 0.95rem;
   color: var(--muted-b);
@@ -193,126 +176,6 @@ button.portal-menu-item:focus-visible {
   color: var(--muted-b);
   text-align: center;
 }
-/* 本日の予定（社内カレンダー API 読み取り専用） */
-.today-schedule {
-  margin-bottom: 1.25rem;
-  padding: 1rem 1rem 0.85rem;
-  background: var(--card-b);
-  border: 1px solid var(--border-b);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(20, 32, 51, 0.06);
-}
-.today-schedule-heading {
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin: 0 0 0.25rem;
-  line-height: 1.35;
-}
-.today-schedule-note {
-  margin: 0 0 0.75rem;
-  font-size: 0.82rem;
-  color: var(--muted-b);
-}
-.today-schedule-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.today-schedule-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.55rem 0.65rem;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  border-left-width: 3px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-.today-schedule-item.company {
-  background: #dbeafe;
-  border-color: rgba(37, 99, 235, 0.22);
-  border-left-color: #2563eb;
-  color: #1e3a8a;
-}
-.today-schedule-item.absent {
-  background: #ffe4e6;
-  border-color: rgba(225, 29, 72, 0.22);
-  border-left-color: #e11d48;
-  color: #9f1239;
-}
-.today-schedule-item.business_trip {
-  background: #ede9fe;
-  border-color: rgba(124, 58, 237, 0.22);
-  border-left-color: #7c3aed;
-  color: #5b21b6;
-}
-.today-schedule-item.holiday {
-  background: #fef3c7;
-  border-color: rgba(217, 119, 6, 0.25);
-  border-left-color: #d97706;
-  color: #92400e;
-}
-.today-schedule-item.other {
-  background: #e2e8f0;
-  border-color: rgba(71, 85, 105, 0.22);
-  border-left-color: #475569;
-  color: #334155;
-}
-.today-schedule-badge {
-  flex-shrink: 0;
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.55);
-  line-height: 1.2;
-}
-.today-schedule-body {
-  flex: 1;
-  min-width: 0;
-}
-.today-schedule-title {
-  font-weight: 700;
-  word-break: break-word;
-}
-.today-schedule-person {
-  font-size: 0.8rem;
-  opacity: 0.9;
-  margin-top: 0.1rem;
-}
-.today-schedule-empty,
-.today-schedule-status {
-  margin: 0;
-  padding: 0.65rem 0.5rem;
-  font-size: 0.9rem;
-  color: var(--muted-b);
-  text-align: center;
-  background: var(--bg-b);
-  border-radius: 8px;
-}
-.today-schedule-status.is-error {
-  color: #9f1239;
-  background: #fff1f2;
-}
-.today-schedule-more {
-  margin: 0.65rem 0 0;
-  font-size: 0.82rem;
-  text-align: right;
-}
-.today-schedule-more a {
-  color: var(--accent-b);
-  font-weight: 600;
-  text-decoration: none;
-}
-.today-schedule-more a:hover,
-.today-schedule-more a:focus-visible {
-  text-decoration: underline;
-  outline: none;
-}
 </style>
 </head>
 <body>
@@ -325,8 +188,7 @@ button.portal-menu-item:focus-visible {
           <span class="portal-menu-label">メニュー</span>
         </button>
         <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
-          <a class="portal-menu-item is-current" role="menuitem" href="./" aria-current="page">ポータルTOP</a>
-          <a class="portal-menu-item" role="menuitem" href="./calendar/">社内カレンダー</a>
+          <a class="portal-menu-item" role="menuitem" href="./">ポータルTOP</a>
           <a class="portal-menu-item" role="menuitem" href="./survey/">現調待ち</a>
           <a class="portal-menu-item" role="menuitem" href="./negotiation/">交渉待ち</a>
           <a class="portal-menu-item" role="menuitem" href="./archive/">アーカイブ</a>
@@ -340,18 +202,7 @@ button.portal-menu-item:focus-visible {
     <p style="margin:0">今日・今週の作業内容は、次のリンクから日付ごとの共有ページを開いて確認してください。スマホのブックマークに登録して使えます。</p>
   </div>
 
-  <section class="today-schedule" aria-labelledby="today-schedule-heading">
-    <h2 class="today-schedule-heading" id="today-schedule-heading">本日の予定</h2>
-    <p class="today-schedule-note">社内カレンダーの本日分を簡易表示</p>
-    <div id="today-schedule-root"></div>
-    <p class="today-schedule-more"><a href="./calendar/">社内カレンダーで詳細を見る</a></p>
-  </section>
-
   <div class="card-list" role="list">
-    <article class="card" role="listitem">
-      <h2 class="card-title">2026年05月28日　千股　3件　ラフター・倒木実費</h2>
-      <a class="btn" href="../share/260528/">共有ページを開く</a>
-    </article>
     <article class="card" role="listitem">
       <h2 class="card-title">2026年05月29日　大平・滝ノ肩・南出・野原　4件</h2>
       <a class="btn" href="../share/260529/">共有ページを開く</a>
@@ -384,180 +235,6 @@ button.portal-menu-item:focus-visible {
 
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
   <script>
-(function () {
-  var CALENDAR_API_ENDPOINT =
-    "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/company-calendar-events";
-  var PORTAL_CALENDAR_API_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
-  var PORTAL_ORIGIN = "https://pakchee0529.github.io";
-
-  var TODAY_SCHEDULE_TYPE_LABELS = {
-    company: "行事",
-    absent: "不在",
-    business_trip: "出張",
-    holiday: "祝日",
-    other: "その他"
-  };
-
-  var TODAY_SCHEDULE_TYPE_ORDER = {
-    company: 0,
-    business_trip: 1,
-    absent: 2,
-    holiday: 3,
-    other: 4
-  };
-
-  function toLocalYMD(d) {
-    var y = d.getFullYear();
-    var m = String(d.getMonth() + 1).padStart(2, "0");
-    var day = String(d.getDate()).padStart(2, "0");
-    return y + "-" + m + "-" + day;
-  }
-
-  function normalizeTodayEvent(raw) {
-    return {
-      type: raw.type || "other",
-      dateStart: raw.dateStart || raw.date_start || "",
-      dateEnd: raw.dateEnd || raw.date_end || raw.dateStart || raw.date_start || "",
-      title: raw.title != null ? String(raw.title).trim() : "",
-      person: raw.person != null ? String(raw.person).trim() : ""
-    };
-  }
-
-  function isEventOnDate(ev, ymd) {
-    var start = ev.dateStart;
-    var end = ev.dateEnd || start;
-    if (!start) return false;
-    return start <= ymd && ymd <= end;
-  }
-
-  function sortTodayEvents(events) {
-    return events.slice().sort(function (a, b) {
-      var ta = TODAY_SCHEDULE_TYPE_ORDER[a.type] != null ? TODAY_SCHEDULE_TYPE_ORDER[a.type] : 9;
-      var tb = TODAY_SCHEDULE_TYPE_ORDER[b.type] != null ? TODAY_SCHEDULE_TYPE_ORDER[b.type] : 9;
-      if (ta !== tb) return ta - tb;
-      return String(a.dateStart).localeCompare(String(b.dateStart));
-    });
-  }
-
-  function renderTodayScheduleStatus(message, extraClass) {
-    var root = document.getElementById("today-schedule-root");
-    if (!root) return;
-    root.innerHTML = "";
-    var el = document.createElement("p");
-    el.className = "today-schedule-status" + (extraClass ? " " + extraClass : "");
-    el.textContent = message;
-    root.appendChild(el);
-  }
-
-  function getTodayScheduleTitle(ev) {
-    if (ev.type === "absent") {
-      var person = ev.person || "";
-      var title = ev.title || "";
-      if (person) return person + " 不在";
-      if (title) return title;
-      return "不在";
-    }
-    return ev.title || "（無題）";
-  }
-
-  function renderTodaySchedule(events) {
-    var root = document.getElementById("today-schedule-root");
-    if (!root) return;
-    root.innerHTML = "";
-    if (!events || !events.length) {
-      var empty = document.createElement("p");
-      empty.className = "today-schedule-empty";
-      empty.textContent = "本日の予定はありません";
-      root.appendChild(empty);
-      return;
-    }
-    var list = document.createElement("ul");
-    list.className = "today-schedule-list";
-    list.setAttribute("role", "list");
-    events.forEach(function (ev) {
-      var type = ev.type || "other";
-      var li = document.createElement("li");
-      li.className = "today-schedule-item " + type;
-      li.setAttribute("role", "listitem");
-      var badge = document.createElement("span");
-      badge.className = "today-schedule-badge";
-      badge.textContent = TODAY_SCHEDULE_TYPE_LABELS[type] || "その他";
-      var body = document.createElement("div");
-      body.className = "today-schedule-body";
-      var titleEl = document.createElement("div");
-      titleEl.className = "today-schedule-title";
-      titleEl.textContent = getTodayScheduleTitle(ev);
-      body.appendChild(titleEl);
-      if (ev.type === "absent" && ev.title && ev.person) {
-        var sub = document.createElement("div");
-        sub.className = "today-schedule-person";
-        sub.textContent = ev.title;
-        body.appendChild(sub);
-      } else if (ev.person && ev.type !== "absent") {
-        var personEl = document.createElement("div");
-        personEl.className = "today-schedule-person";
-        personEl.textContent = ev.person;
-        body.appendChild(personEl);
-      }
-      li.appendChild(badge);
-      li.appendChild(body);
-      list.appendChild(li);
-    });
-    root.appendChild(list);
-  }
-
-  function fetchCalendarMonth(year, month) {
-    var url =
-      CALENDAR_API_ENDPOINT +
-      "?year=" +
-      encodeURIComponent(year) +
-      "&month=" +
-      encodeURIComponent(month);
-    return fetch(url, {
-      method: "GET",
-      headers: {
-        apikey: PORTAL_CALENDAR_API_KEY,
-        Origin: PORTAL_ORIGIN
-      }
-    }).then(function (res) {
-      return res.json().then(function (data) {
-        if (!res.ok || !data.ok) {
-          throw new Error(data.error || "fetch_failed");
-        }
-        return (data.events || []).map(normalizeTodayEvent);
-      });
-    });
-  }
-
-  function loadTodaySchedule() {
-    renderTodayScheduleStatus("本日の予定を読み込み中...");
-    var now = new Date();
-    var todayYmd = toLocalYMD(now);
-    var year = now.getFullYear();
-    var month = now.getMonth() + 1;
-
-    if (!PORTAL_CALENDAR_API_KEY || !CALENDAR_API_ENDPOINT) {
-      renderTodayScheduleStatus("本日の予定を取得できませんでした", "is-error");
-      return;
-    }
-
-    fetchCalendarMonth(year, month)
-      .then(function (monthEvents) {
-        var todayEvents = monthEvents.filter(function (ev) {
-          if (ev.type === "health") return false;
-          return isEventOnDate(ev, todayYmd);
-        });
-        renderTodaySchedule(sortTodayEvents(todayEvents));
-      })
-      .catch(function () {
-        renderTodayScheduleStatus("本日の予定を取得できませんでした", "is-error");
-      });
-  }
-
-  loadTodaySchedule();
-})();
-
 (function () {
   var btn = document.getElementById("portal-menu-btn");
   var panel = document.getElementById("portal-menu-panel");
