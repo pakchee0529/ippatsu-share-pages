@@ -30,98 +30,31 @@ body {
   margin-left: auto;
   margin-right: auto;
 }
-
-.portal-page-header {
-  margin-bottom: 0.35rem;
-}
-.portal-page-header-row {
+.top-bar {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-.portal-page-header-row .page-title {
-  flex: 1;
-  min-width: 0;
-  margin: 0 0 0.35rem;
-  padding: 0.5rem 0;
-  border-bottom: 2px solid var(--border);
-}
-.portal-menu-wrap {
-  position: relative;
-  flex-shrink: 0;
-}
-.portal-menu-btn {
-  display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  min-height: 48px;
-  min-width: 48px;
-  padding: 0.45rem 0.65rem;
-  font-size: 0.95rem;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.top-bar a {
+  font-size: 0.92rem;
   font-weight: 600;
-  font-family: inherit;
-  color: var(--text);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.06);
-}
-.portal-menu-btn:hover,
-.portal-menu-btn:focus-visible {
-  border-color: var(--accent);
-  outline: none;
-}
-.portal-menu-icon {
-  font-size: 1.15rem;
-  line-height: 1;
-}
-.portal-menu-label {
-  white-space: nowrap;
-}
-.portal-menu-panel {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  z-index: 30;
-  min-width: 12.5rem;
-  padding: 0.35rem 0;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(20, 32, 51, 0.12);
-}
-.portal-menu-panel[hidden] {
-  display: none !important;
-}
-.portal-menu-item {
-  display: block;
-  padding: 0.75rem 1rem;
-  font-size: 0.95rem;
-  color: var(--text);
+  color: var(--accent);
   text-decoration: none;
-  border: 0;
-  background: transparent;
-  width: 100%;
-  text-align: left;
-  font-family: inherit;
-  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
 }
-a.portal-menu-item:hover,
-a.portal-menu-item:focus-visible {
-  background: var(--bg);
+.top-bar a:hover, .top-bar a:focus-visible {
+  text-decoration: underline;
   outline: none;
 }
-.portal-menu-item.is-current {
-  font-weight: 700;
-  background: #f1f5f9;
-}
-
 .page-title {
   font-size: 1.25rem;
   font-weight: 700;
+  margin: 0 0 0.35rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
 }
 .lead {
   margin: 0 0 0.5rem;
@@ -138,16 +71,6 @@ a.portal-menu-item:focus-visible {
   border: 1px solid var(--border);
   border-radius: 8px;
 }
-.survey-overlay-warning {
-  margin: 0 0 0.75rem;
-  padding: 0.5rem 0.65rem;
-  font-size: 0.82rem;
-  color: #92400e;
-  background: #fffbeb;
-  border: 1px solid #f59e0b;
-  border-radius: 8px;
-}
-.survey-overlay-warning[hidden] { display: none !important; }
 .card {
   background: var(--card);
   border-radius: 10px;
@@ -196,12 +119,6 @@ a.portal-menu-item:focus-visible {
   color: #fff;
 }
 .btn-map:hover, .btn-map:focus { filter: brightness(1.05); }
-.btn.is-disabled,
-.btn[aria-disabled="true"] {
-  pointer-events: none;
-  opacity: 0.55;
-  cursor: default;
-}
 .btn-note {
   background: #fff;
   color: var(--accent2);
@@ -284,6 +201,39 @@ a.portal-menu-item:focus-visible {
   }
   .page-title { font-size: 1.4rem; }
 }
+.card-actions-report {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex-basis: 100%;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+}
+.card-actions-report .btn {
+  flex: 1 1 calc(50% - 0.25rem);
+  min-width: 9.5rem;
+  min-height: 44px;
+  font-size: 0.88rem;
+}
+.btn-report-done {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-report-done:hover, .btn-report-done:focus-visible {
+  filter: brightness(1.05);
+  outline: none;
+}
+.btn-report-return {
+  background: #fffbeb;
+  color: #92400e;
+  border: 2px solid #f59e0b;
+}
+.btn-report-return:hover, .btn-report-return:focus-visible {
+  background: #fef3c7;
+  outline: none;
+}
 .card-actions-portal-request {
   display: flex;
   flex-direction: column;
@@ -293,25 +243,9 @@ a.portal-menu-item:focus-visible {
   width: 100%;
   margin-top: 0.35rem;
   padding-top: 0.55rem;
-  border-top: 1px dashed var(--border);
+  border-top: 1px solid var(--border);
 }
-
-.survey-case-action-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  width: 100%;
-  align-items: stretch;
-}
-.survey-case-action-row .btn-survey-mark-done,
-.survey-case-action-row .btn-survey-mark-return-candidate {
-  flex: 1 1 calc(50% - 0.25rem);
-  min-width: 8.5rem;
-  margin: 0;
-}
-
 .btn-survey-mark-done {
-  min-height: 44px;
   background: #ecfdf5;
   color: #047857;
   border: 2px solid #6ee7b7;
@@ -324,79 +258,34 @@ a.portal-menu-item:focus-visible {
   opacity: 0.8;
   cursor: default;
 }
-.btn-survey-mark-return-candidate {
-  min-height: 44px;
-  background: #fffbeb;
-  color: #92400e;
-  border: 2px solid #f59e0b;
-}
-.btn-survey-mark-return-candidate:hover, .btn-survey-mark-return-candidate:focus-visible {
-  background: #fef3c7;
-  outline: none;
-}
-.btn-survey-mark-return-candidate:disabled {
-  opacity: 0.8;
-  cursor: default;
-}
 .survey-mark-hint {
   margin: 0;
   line-height: 1.4;
-  flex-basis: 100%;
-  width: 100%;
 }
 .survey-mark-status {
   margin: 0;
   color: #047857;
   font-weight: 600;
-  flex-basis: 100%;
-  width: 100%;
 }
 .survey-mark-status.is-error {
   color: #b45309;
 }
 .survey-mark-status[hidden] { display: none !important; }
-.return-candidate-status {
-  margin: 0;
-  color: #92400e;
-  font-weight: 600;
-  flex-basis: 100%;
-  width: 100%;
-}
-.return-candidate-status.is-error {
-  color: #b45309;
-}
-.return-candidate-status[hidden] { display: none !important; }
 .survey-update-card.survey-mark-sent {
   border-color: #a7f3d0;
-}
-.survey-update-card.return-candidate-marked {
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.18);
 }
 </style>
 </head>
 <body>
-  <header class="portal-page-header">
-    <div class="portal-page-header-row">
-      <h1 class="page-title">現調待ち一覧</h1>
-      <div class="portal-menu-wrap">
-        <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel" aria-label="サイトメニューを開く">
-          <span class="portal-menu-icon" aria-hidden="true">☰</span>
-          <span class="portal-menu-label">メニュー</span>
-        </button>
-        <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
-          <a class="portal-menu-item" role="menuitem" href="../">ポータルTOP</a>
-          <a class="portal-menu-item" role="menuitem" href="../calendar/">社内カレンダー</a>
-          <a class="portal-menu-item is-current" role="menuitem" href="./" aria-current="page">現調待ち</a>
-          <a class="portal-menu-item" role="menuitem" href="../negotiation/">交渉待ち</a>
-          <a class="portal-menu-item" role="menuitem" href="../archive/">アーカイブ</a>
-        </nav>
-      </div>
-    </div>
-  </header>
-  <p class="lead">径間ごとに地図・現場指示・報告用のリンクがあります。（表示 32 件）</p>
-  <p class="report-disclaimer">「現調済みにする」を押すと交渉待ちへ即時反映します（portal status overlay）。「返却候補にする」はモック表示です。正本データにはまだ反映しません。従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。</p>
-  <p id="survey-overlay-warning" class="survey-overlay-warning" hidden role="status"></p>
+  <nav class="top-bar" aria-label="サイト内リンク">
+    <a href="../">ポータルTOP</a>
+    <a href="./">現調待ち</a>
+    <a href="../negotiation/">交渉待ち</a>
+    <a href="../archive/">アーカイブ</a>
+  </nav>
+  <h1 class="page-title">現調待ち一覧</h1>
+  <p class="lead">径間ごとに地図・現場指示・報告用のリンクがあります。（表示 39 件）</p>
+  <p class="report-disclaimer">「現調済みを報告」「返却候補を報告」は Google フォームに送信します。「現調済みにする」は交渉待ちへ即時反映します（portal status overlay）。従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。</p>
   <main>
 <article class="card survey-update-card" data-card-index="0"
   data-management-no-key="51409384"
@@ -407,7 +296,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">Ｐ百谷38S10～38S11</h2>
     <p class="item-mgmt">514 09384</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.34204,135.75050499999998" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-0" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009384&amp;entry.1454610165=%EF%BC%B0%E7%99%BE%E8%B0%B738S10%EF%BD%9E38S11&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009384&amp;entry.1454610165=%EF%BC%B0%E7%99%BE%E8%B0%B738S10%EF%BD%9E38S11&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-0">{&quot;a&quot;: {&quot;name&quot;: &quot;P百谷38S10&quot;, &quot;lat&quot;: 34.34213, &quot;lng&quot;: 135.75069}, &quot;b&quot;: {&quot;name&quot;: &quot;38S11&quot;, &quot;lat&quot;: 34.34195, &quot;lng&quot;: 135.75032}}</script>
   <div class="two-map-wrap" id="two-wrap-0" hidden><div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -422,7 +312,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">Ｐ百谷38S18～38S19</h2>
     <p class="item-mgmt">514 09344</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.340355,135.75234999999998" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-1" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009344&amp;entry.1454610165=%EF%BC%B0%E7%99%BE%E8%B0%B738S18%EF%BD%9E38S19&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009344&amp;entry.1454610165=%EF%BC%B0%E7%99%BE%E8%B0%B738S18%EF%BD%9E38S19&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-1">{&quot;a&quot;: {&quot;name&quot;: &quot;P百谷38S18&quot;, &quot;lat&quot;: 34.34049, &quot;lng&quot;: 135.75212}, &quot;b&quot;: {&quot;name&quot;: &quot;38S19&quot;, &quot;lat&quot;: 34.34022, &quot;lng&quot;: 135.75258}}</script>
   <div class="two-map-wrap" id="two-wrap-1" hidden><div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -437,7 +328,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">Ｐ百谷38S19～38S20</h2>
     <p class="item-mgmt">514 09324</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.340090000000004,135.75269500000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-2" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009324&amp;entry.1454610165=%EF%BC%B0%E7%99%BE%E8%B0%B738S19%EF%BD%9E38S20&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009324&amp;entry.1454610165=%EF%BC%B0%E7%99%BE%E8%B0%B738S19%EF%BD%9E38S20&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-2">{&quot;a&quot;: {&quot;name&quot;: &quot;P百谷38S19&quot;, &quot;lat&quot;: 34.34022, &quot;lng&quot;: 135.75258}, &quot;b&quot;: {&quot;name&quot;: &quot;38S20&quot;, &quot;lat&quot;: 34.33996, &quot;lng&quot;: 135.75281}}</script>
   <div class="two-map-wrap" id="two-wrap-2" hidden><div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -452,7 +344,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">Ｐ百谷49N3～49N4</h2>
     <p class="item-mgmt">514 00214</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.3442,135.757005" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-3" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000214&amp;entry.1454610165=%EF%BC%B0%E7%99%BE%E8%B0%B749N3%EF%BD%9E49N4&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000214&amp;entry.1454610165=%EF%BC%B0%E7%99%BE%E8%B0%B749N3%EF%BD%9E49N4&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-3">{&quot;a&quot;: {&quot;name&quot;: &quot;P百谷49N3&quot;, &quot;lat&quot;: 34.34412, &quot;lng&quot;: 135.75722}, &quot;b&quot;: {&quot;name&quot;: &quot;49N4&quot;, &quot;lat&quot;: 34.34428, &quot;lng&quot;: 135.75679}}</script>
   <div class="two-map-wrap" id="two-wrap-3" hidden><div id="share-two-map-3" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -467,7 +360,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">赤松1～1G1</h2>
     <p class="item-mgmt">514 09097</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.332425,135.74443" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-4" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009097&amp;entry.1454610165=%E8%B5%A4%E6%9D%BE1%EF%BD%9E1G1&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009097&amp;entry.1454610165=%E8%B5%A4%E6%9D%BE1%EF%BD%9E1G1&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-4">{&quot;a&quot;: {&quot;name&quot;: &quot;赤松1&quot;, &quot;lat&quot;: 34.3324, &quot;lng&quot;: 135.7446}, &quot;b&quot;: {&quot;name&quot;: &quot;1G1&quot;, &quot;lat&quot;: 34.33245, &quot;lng&quot;: 135.74426}}</script>
   <div class="two-map-wrap" id="two-wrap-4" hidden><div id="share-two-map-4" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -482,7 +376,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">赤松23～24</h2>
     <p class="item-mgmt">514 09006</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.334775,135.75564" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-5" data-two-map="share-two-map-5" data-two-json="two-geo-5" aria-expanded="false" aria-controls="two-wrap-5">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-5" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009006&amp;entry.1454610165=%E8%B5%A4%E6%9D%BE23%EF%BD%9E24&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009006&amp;entry.1454610165=%E8%B5%A4%E6%9D%BE23%EF%BD%9E24&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-5">{&quot;a&quot;: {&quot;name&quot;: &quot;赤松23&quot;, &quot;lat&quot;: 34.33462, &quot;lng&quot;: 135.75558}, &quot;b&quot;: {&quot;name&quot;: &quot;24&quot;, &quot;lat&quot;: 34.33493, &quot;lng&quot;: 135.7557}}</script>
   <div class="two-map-wrap" id="two-wrap-5" hidden><div id="share-two-map-5" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -497,7 +392,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">赤松26N7～26N8</h2>
     <p class="item-mgmt">514 00376</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.33743,135.754795" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-6" data-two-map="share-two-map-6" data-two-json="two-geo-6" aria-expanded="false" aria-controls="two-wrap-6">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-6" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000376&amp;entry.1454610165=%E8%B5%A4%E6%9D%BE26N7%EF%BD%9E26N8&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000376&amp;entry.1454610165=%E8%B5%A4%E6%9D%BE26N7%EF%BD%9E26N8&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-6">{&quot;a&quot;: {&quot;name&quot;: &quot;赤松26N7&quot;, &quot;lat&quot;: 34.33731, &quot;lng&quot;: 135.7546}, &quot;b&quot;: {&quot;name&quot;: &quot;26N8&quot;, &quot;lat&quot;: 34.33755, &quot;lng&quot;: 135.75499}}</script>
   <div class="two-map-wrap" id="two-wrap-6" hidden><div id="share-two-map-6" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -512,7 +408,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">赤松27～28</h2>
     <p class="item-mgmt">514 09094</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.334755,135.75660499999998" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-7" data-two-map="share-two-map-7" data-two-json="two-geo-7" aria-expanded="false" aria-controls="two-wrap-7">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-7" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009094&amp;entry.1454610165=%E8%B5%A4%E6%9D%BE27%EF%BD%9E28&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009094&amp;entry.1454610165=%E8%B5%A4%E6%9D%BE27%EF%BD%9E28&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-7">{&quot;a&quot;: {&quot;name&quot;: &quot;赤松27&quot;, &quot;lat&quot;: 34.33519, &quot;lng&quot;: 135.75636}, &quot;b&quot;: {&quot;name&quot;: &quot;28&quot;, &quot;lat&quot;: 34.33432, &quot;lng&quot;: 135.75685}}</script>
   <div class="two-map-wrap" id="two-wrap-7" hidden><div id="share-two-map-7" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -527,7 +424,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">赤松35～36</h2>
     <p class="item-mgmt">514 00361</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.331959999999995,135.76093" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-8" data-two-map="share-two-map-8" data-two-json="two-geo-8" aria-expanded="false" aria-controls="two-wrap-8">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-8" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000361&amp;entry.1454610165=%E8%B5%A4%E6%9D%BE35%EF%BD%9E36&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000361&amp;entry.1454610165=%E8%B5%A4%E6%9D%BE35%EF%BD%9E36&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-8">{&quot;a&quot;: {&quot;name&quot;: &quot;赤松35&quot;, &quot;lat&quot;: 34.33258, &quot;lng&quot;: 135.76051}, &quot;b&quot;: {&quot;name&quot;: &quot;36&quot;, &quot;lat&quot;: 34.33134, &quot;lng&quot;: 135.76135}}</script>
   <div class="two-map-wrap" id="two-wrap-8" hidden><div id="share-two-map-8" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -542,7 +440,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">大畑7～7E1</h2>
     <p class="item-mgmt">514 01156</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.33471,135.762755" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-9" data-two-map="share-two-map-9" data-two-json="two-geo-9" aria-expanded="false" aria-controls="two-wrap-9">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-9" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2001156&amp;entry.1454610165=%E5%A4%A7%E7%95%917%EF%BD%9E7E1&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2001156&amp;entry.1454610165=%E5%A4%A7%E7%95%917%EF%BD%9E7E1&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-9">{&quot;a&quot;: {&quot;name&quot;: &quot;大畑7&quot;, &quot;lat&quot;: 34.33471, &quot;lng&quot;: 135.76237}, &quot;b&quot;: {&quot;name&quot;: &quot;7E1&quot;, &quot;lat&quot;: 34.33471, &quot;lng&quot;: 135.76314}}</script>
   <div class="two-map-wrap" id="two-wrap-9" hidden><div id="share-two-map-9" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -557,7 +456,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">柴ヶ谷2～3</h2>
     <p class="item-mgmt">514 03888</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.329105,135.76139999999998" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-10" data-two-map="share-two-map-10" data-two-json="two-geo-10" aria-expanded="false" aria-controls="two-wrap-10">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-10" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2003888&amp;entry.1454610165=%E6%9F%B4%E3%83%B6%E8%B0%B72%EF%BD%9E3&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2003888&amp;entry.1454610165=%E6%9F%B4%E3%83%B6%E8%B0%B72%EF%BD%9E3&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-10">{&quot;a&quot;: {&quot;name&quot;: &quot;柴ヶ谷2&quot;, &quot;lat&quot;: 34.32942, &quot;lng&quot;: 135.76153}, &quot;b&quot;: {&quot;name&quot;: &quot;3&quot;, &quot;lat&quot;: 34.32879, &quot;lng&quot;: 135.76127}}</script>
   <div class="two-map-wrap" id="two-wrap-10" hidden><div id="share-two-map-10" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -572,7 +472,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">柴ヶ谷3～3G1</h2>
     <p class="item-mgmt">514 09990</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32879,135.76127" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-11" data-two-map="share-two-map-11" data-two-json="two-geo-11" aria-expanded="false" aria-controls="two-wrap-11">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-11" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009990&amp;entry.1454610165=%E6%9F%B4%E3%83%B6%E8%B0%B73%EF%BD%9E3G1&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009990&amp;entry.1454610165=%E6%9F%B4%E3%83%B6%E8%B0%B73%EF%BD%9E3G1&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-11">{&quot;a&quot;: {&quot;name&quot;: &quot;柴ヶ谷3&quot;, &quot;lat&quot;: 34.32879, &quot;lng&quot;: 135.76127}, &quot;b&quot;: {&quot;name&quot;: &quot;3G1&quot;, &quot;lat&quot;: 34.32879, &quot;lng&quot;: 135.76127}}</script>
   <div class="two-map-wrap" id="two-wrap-11" hidden><div id="share-two-map-11" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -587,7 +488,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">柴ヶ谷3G1～4</h2>
     <p class="item-mgmt">514 09991</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32879,135.76127" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-12" data-two-map="share-two-map-12" data-two-json="two-geo-12" aria-expanded="false" aria-controls="two-wrap-12">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-12" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009991&amp;entry.1454610165=%E6%9F%B4%E3%83%B6%E8%B0%B73G1%EF%BD%9E4&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009991&amp;entry.1454610165=%E6%9F%B4%E3%83%B6%E8%B0%B73G1%EF%BD%9E4&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-12">{&quot;a&quot;: {&quot;name&quot;: &quot;柴ヶ谷3G1&quot;, &quot;lat&quot;: 34.32879, &quot;lng&quot;: 135.76127}, &quot;b&quot;: {&quot;name&quot;: &quot;4&quot;, &quot;lat&quot;: 34.32879, &quot;lng&quot;: 135.76127}}</script>
   <div class="two-map-wrap" id="two-wrap-12" hidden><div id="share-two-map-12" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -602,7 +504,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">柴ヶ谷9W1～引込</h2>
     <p class="item-mgmt">514 10156</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32608,135.76185" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-13" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010156&amp;entry.1454610165=%E6%9F%B4%E3%83%B6%E8%B0%B79W1%EF%BD%9E%E5%BC%95%E8%BE%BC&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010156&amp;entry.1454610165=%E6%9F%B4%E3%83%B6%E8%B0%B79W1%EF%BD%9E%E5%BC%95%E8%BE%BC&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   
   
@@ -617,7 +520,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">白銀115W6～115W6S1</h2>
     <p class="item-mgmt">514 09133</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.317454999999995,135.734955" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-14" data-two-map="share-two-map-14" data-two-json="two-geo-14" aria-expanded="false" aria-controls="two-wrap-14">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-14" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009133&amp;entry.1454610165=%E7%99%BD%E9%8A%80115W6%EF%BD%9E115W6S1&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009133&amp;entry.1454610165=%E7%99%BD%E9%8A%80115W6%EF%BD%9E115W6S1&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-14">{&quot;a&quot;: {&quot;name&quot;: &quot;白銀115W6&quot;, &quot;lat&quot;: 34.31784, &quot;lng&quot;: 135.73535}, &quot;b&quot;: {&quot;name&quot;: &quot;115W6S1&quot;, &quot;lat&quot;: 34.31707, &quot;lng&quot;: 135.73456}}</script>
   <div class="two-map-wrap" id="two-wrap-14" hidden><div id="share-two-map-14" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -632,7 +536,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">白銀115W6S1N2～115W6S1</h2>
     <p class="item-mgmt">514 04189</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.316990000000004,135.73504" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-15" data-two-map="share-two-map-15" data-two-json="two-geo-15" aria-expanded="false" aria-controls="two-wrap-15">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-15" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2004189&amp;entry.1454610165=%E7%99%BD%E9%8A%80115W6S1N2%EF%BD%9E115W6S1&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2004189&amp;entry.1454610165=%E7%99%BD%E9%8A%80115W6S1N2%EF%BD%9E115W6S1&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-15">{&quot;a&quot;: {&quot;name&quot;: &quot;白銀115W6S1N2&quot;, &quot;lat&quot;: 34.31691, &quot;lng&quot;: 135.73552}, &quot;b&quot;: {&quot;name&quot;: &quot;115W6S1&quot;, &quot;lat&quot;: 34.31707, &quot;lng&quot;: 135.73456}}</script>
   <div class="two-map-wrap" id="two-wrap-15" hidden><div id="share-two-map-15" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -647,7 +552,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">白銀115W9～115W9W1</h2>
     <p class="item-mgmt">514 04194</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.318715,135.734275" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-16" data-two-map="share-two-map-16" data-two-json="two-geo-16" aria-expanded="false" aria-controls="two-wrap-16">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-16" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2004194&amp;entry.1454610165=%E7%99%BD%E9%8A%80115W9%EF%BD%9E115W9W1&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2004194&amp;entry.1454610165=%E7%99%BD%E9%8A%80115W9%EF%BD%9E115W9W1&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-16">{&quot;a&quot;: {&quot;name&quot;: &quot;白銀115W9&quot;, &quot;lat&quot;: 34.31877, &quot;lng&quot;: 135.73439}, &quot;b&quot;: {&quot;name&quot;: &quot;115W9W1&quot;, &quot;lat&quot;: 34.31866, &quot;lng&quot;: 135.73416}}</script>
   <div class="two-map-wrap" id="two-wrap-16" hidden><div id="share-two-map-16" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -662,7 +568,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">慎1～2</h2>
     <p class="item-mgmt">514 09998</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.317775,135.732255" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-17" data-two-map="share-two-map-17" data-two-json="two-geo-17" aria-expanded="false" aria-controls="two-wrap-17">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-17" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009998&amp;entry.1454610165=%E6%85%8E1%EF%BD%9E2&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009998&amp;entry.1454610165=%E6%85%8E1%EF%BD%9E2&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-17">{&quot;a&quot;: {&quot;name&quot;: &quot;慎1&quot;, &quot;lat&quot;: 34.31806, &quot;lng&quot;: 135.73273}, &quot;b&quot;: {&quot;name&quot;: &quot;2&quot;, &quot;lat&quot;: 34.31749, &quot;lng&quot;: 135.73178}}</script>
   <div class="two-map-wrap" id="two-wrap-17" hidden><div id="share-two-map-17" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -677,7 +584,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">西新子12N1～12N2</h2>
     <p class="item-mgmt">514 09459</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.318434999999994,135.74634500000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-18" data-two-map="share-two-map-18" data-two-json="two-geo-18" aria-expanded="false" aria-controls="two-wrap-18">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-18" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009459&amp;entry.1454610165=%E8%A5%BF%E6%96%B0%E5%AD%9012N1%EF%BD%9E12N2&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009459&amp;entry.1454610165=%E8%A5%BF%E6%96%B0%E5%AD%9012N1%EF%BD%9E12N2&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-18">{&quot;a&quot;: {&quot;name&quot;: &quot;西新子12N1&quot;, &quot;lat&quot;: 34.31831, &quot;lng&quot;: 135.74634}, &quot;b&quot;: {&quot;name&quot;: &quot;12N2&quot;, &quot;lat&quot;: 34.31856, &quot;lng&quot;: 135.74635}}</script>
   <div class="two-map-wrap" id="two-wrap-18" hidden><div id="share-two-map-18" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -692,7 +600,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">西新子14G1～14E3</h2>
     <p class="item-mgmt">514 09228</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.31668,135.74864" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-19" data-two-map="share-two-map-19" data-two-json="two-geo-19" aria-expanded="false" aria-controls="two-wrap-19">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-19" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009228&amp;entry.1454610165=%E8%A5%BF%E6%96%B0%E5%AD%9014G1%EF%BD%9E14E3&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2009228&amp;entry.1454610165=%E8%A5%BF%E6%96%B0%E5%AD%9014G1%EF%BD%9E14E3&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-19">{&quot;a&quot;: {&quot;name&quot;: &quot;西新子14G1&quot;, &quot;lat&quot;: 34.31702, &quot;lng&quot;: 135.74864}, &quot;b&quot;: {&quot;name&quot;: &quot;14E3&quot;, &quot;lat&quot;: 34.31634, &quot;lng&quot;: 135.74864}}</script>
   <div class="two-map-wrap" id="two-wrap-19" hidden><div id="share-two-map-19" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -707,7 +616,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">平沼田17～18</h2>
     <p class="item-mgmt">514 07220</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32467,135.75293499999998" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-20" data-two-map="share-two-map-20" data-two-json="two-geo-20" aria-expanded="false" aria-controls="two-wrap-20">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-20" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2007220&amp;entry.1454610165=%E5%B9%B3%E6%B2%BC%E7%94%B017%EF%BD%9E18&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2007220&amp;entry.1454610165=%E5%B9%B3%E6%B2%BC%E7%94%B017%EF%BD%9E18&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-20">{&quot;a&quot;: {&quot;name&quot;: &quot;平沼田17&quot;, &quot;lat&quot;: 34.32461, &quot;lng&quot;: 135.75285}, &quot;b&quot;: {&quot;name&quot;: &quot;18&quot;, &quot;lat&quot;: 34.32473, &quot;lng&quot;: 135.75302}}</script>
   <div class="two-map-wrap" id="two-wrap-20" hidden><div id="share-two-map-20" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -722,7 +632,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">平沼田18～19</h2>
     <p class="item-mgmt">514 07272</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32491,135.753685" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-21" data-two-map="share-two-map-21" data-two-json="two-geo-21" aria-expanded="false" aria-controls="two-wrap-21">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-21" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2007272&amp;entry.1454610165=%E5%B9%B3%E6%B2%BC%E7%94%B018%EF%BD%9E19&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2007272&amp;entry.1454610165=%E5%B9%B3%E6%B2%BC%E7%94%B018%EF%BD%9E19&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-21">{&quot;a&quot;: {&quot;name&quot;: &quot;平沼田18&quot;, &quot;lat&quot;: 34.32473, &quot;lng&quot;: 135.75302}, &quot;b&quot;: {&quot;name&quot;: &quot;19&quot;, &quot;lat&quot;: 34.32509, &quot;lng&quot;: 135.75435}}</script>
   <div class="two-map-wrap" id="two-wrap-21" hidden><div id="share-two-map-21" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -737,7 +648,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">平沼田43N4E1～43N4E2</h2>
     <p class="item-mgmt">514 07898</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.320660000000004,135.760605" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-22" data-two-map="share-two-map-22" data-two-json="two-geo-22" aria-expanded="false" aria-controls="two-wrap-22">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-22" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2007898&amp;entry.1454610165=%E5%B9%B3%E6%B2%BC%E7%94%B043N4E1%EF%BD%9E43N4E2&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2007898&amp;entry.1454610165=%E5%B9%B3%E6%B2%BC%E7%94%B043N4E1%EF%BD%9E43N4E2&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-22">{&quot;a&quot;: {&quot;name&quot;: &quot;平沼田43N4E1&quot;, &quot;lat&quot;: 34.32059, &quot;lng&quot;: 135.7605}, &quot;b&quot;: {&quot;name&quot;: &quot;43N4E2&quot;, &quot;lat&quot;: 34.32073, &quot;lng&quot;: 135.76071}}</script>
   <div class="two-map-wrap" id="two-wrap-22" hidden><div id="share-two-map-22" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -752,7 +664,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">湯川4E6～4E7</h2>
     <p class="item-mgmt">514 08008</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.33458,135.741905" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-23" data-two-map="share-two-map-23" data-two-json="two-geo-23" aria-expanded="false" aria-controls="two-wrap-23">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-23" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2008008&amp;entry.1454610165=%E6%B9%AF%E5%B7%9D4E6%EF%BD%9E4E7&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2008008&amp;entry.1454610165=%E6%B9%AF%E5%B7%9D4E6%EF%BD%9E4E7&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-23">{&quot;a&quot;: {&quot;name&quot;: &quot;湯川4E6&quot;, &quot;lat&quot;: 34.33446, &quot;lng&quot;: 135.74192}, &quot;b&quot;: {&quot;name&quot;: &quot;4E7&quot;, &quot;lat&quot;: 34.3347, &quot;lng&quot;: 135.74189}}</script>
   <div class="two-map-wrap" id="two-wrap-23" hidden><div id="share-two-map-23" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -767,7 +680,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">夜中8～9</h2>
     <p class="item-mgmt">514 08794</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.30385,135.74883499999999" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-24" data-two-map="share-two-map-24" data-two-json="two-geo-24" aria-expanded="false" aria-controls="two-wrap-24">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-24" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2008794&amp;entry.1454610165=%E5%A4%9C%E4%B8%AD8%EF%BD%9E9&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2008794&amp;entry.1454610165=%E5%A4%9C%E4%B8%AD8%EF%BD%9E9&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-24">{&quot;a&quot;: {&quot;name&quot;: &quot;夜中8&quot;, &quot;lat&quot;: 34.30406, &quot;lng&quot;: 135.74857}, &quot;b&quot;: {&quot;name&quot;: &quot;9&quot;, &quot;lat&quot;: 34.30364, &quot;lng&quot;: 135.7491}}</script>
   <div class="two-map-wrap" id="two-wrap-24" hidden><div id="share-two-map-24" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -782,7 +696,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">夜中9～10</h2>
     <p class="item-mgmt">514 08795</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.303444999999996,135.749315" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-25" data-two-map="share-two-map-25" data-two-json="two-geo-25" aria-expanded="false" aria-controls="two-wrap-25">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-25" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2008795&amp;entry.1454610165=%E5%A4%9C%E4%B8%AD9%EF%BD%9E10&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2008795&amp;entry.1454610165=%E5%A4%9C%E4%B8%AD9%EF%BD%9E10&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-25">{&quot;a&quot;: {&quot;name&quot;: &quot;夜中9&quot;, &quot;lat&quot;: 34.30364, &quot;lng&quot;: 135.7491}, &quot;b&quot;: {&quot;name&quot;: &quot;10&quot;, &quot;lat&quot;: 34.30325, &quot;lng&quot;: 135.74953}}</script>
   <div class="two-map-wrap" id="two-wrap-25" hidden><div id="share-two-map-25" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -797,7 +712,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">北宇智159～159W1</h2>
     <p class="item-mgmt">514 02687</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.37886,135.69056" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-26" data-two-map="share-two-map-26" data-two-json="two-geo-26" aria-expanded="false" aria-controls="two-wrap-26">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-26" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2002687&amp;entry.1454610165=%E5%8C%97%E5%AE%87%E6%99%BA159%EF%BD%9E159W1&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2002687&amp;entry.1454610165=%E5%8C%97%E5%AE%87%E6%99%BA159%EF%BD%9E159W1&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-26">{&quot;a&quot;: {&quot;name&quot;: &quot;北宇智159&quot;, &quot;lat&quot;: 34.37949, &quot;lng&quot;: 135.6913}, &quot;b&quot;: {&quot;name&quot;: &quot;159W1&quot;, &quot;lat&quot;: 34.37823, &quot;lng&quot;: 135.68982}}</script>
   <div class="two-map-wrap" id="two-wrap-26" hidden><div id="share-two-map-26" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -812,7 +728,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">Ｐ奥谷11W12S1～11W12S2</h2>
     <p class="item-mgmt">514 00263</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32346,135.727655" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-27" data-two-map="share-two-map-27" data-two-json="two-geo-27" aria-expanded="false" aria-controls="two-wrap-27">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-27" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000263&amp;entry.1454610165=%EF%BC%B0%E5%A5%A5%E8%B0%B711W12S1%EF%BD%9E11W12S2&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000263&amp;entry.1454610165=%EF%BC%B0%E5%A5%A5%E8%B0%B711W12S1%EF%BD%9E11W12S2&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-27">{&quot;a&quot;: {&quot;name&quot;: &quot;P奥谷11W12S1&quot;, &quot;lat&quot;: 34.32353, &quot;lng&quot;: 135.72786}, &quot;b&quot;: {&quot;name&quot;: &quot;11W12S2&quot;, &quot;lat&quot;: 34.32339, &quot;lng&quot;: 135.72745}}</script>
   <div class="two-map-wrap" id="two-wrap-27" hidden><div id="share-two-map-27" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -827,7 +744,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">芦ヶ瀬2～3</h2>
     <p class="item-mgmt">514 00395</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.35455,135.72771" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-28" data-two-map="share-two-map-28" data-two-json="two-geo-28" aria-expanded="false" aria-controls="two-wrap-28">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-28" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000395&amp;entry.1454610165=%E8%8A%A6%E3%83%B6%E7%80%AC2%EF%BD%9E3&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000395&amp;entry.1454610165=%E8%8A%A6%E3%83%B6%E7%80%AC2%EF%BD%9E3&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-28">{&quot;a&quot;: {&quot;name&quot;: &quot;芦ヶ瀬2&quot;, &quot;lat&quot;: 34.35422, &quot;lng&quot;: 135.72693}, &quot;b&quot;: {&quot;name&quot;: &quot;3&quot;, &quot;lat&quot;: 34.35488, &quot;lng&quot;: 135.72849}}</script>
   <div class="two-map-wrap" id="two-wrap-28" hidden><div id="share-two-map-28" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -842,7 +760,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">芦ヶ瀬1E6E1～1E6E2</h2>
     <p class="item-mgmt">514 00414</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.35142,135.72771" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-29" data-two-map="share-two-map-29" data-two-json="two-geo-29" aria-expanded="false" aria-controls="two-wrap-29">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-29" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000414&amp;entry.1454610165=%E8%8A%A6%E3%83%B6%E7%80%AC1E6E1%EF%BD%9E1E6E2&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000414&amp;entry.1454610165=%E8%8A%A6%E3%83%B6%E7%80%AC1E6E1%EF%BD%9E1E6E2&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-29">{&quot;a&quot;: {&quot;name&quot;: &quot;芦ヶ瀬1E6E1&quot;, &quot;lat&quot;: 34.35162, &quot;lng&quot;: 135.72766}, &quot;b&quot;: {&quot;name&quot;: &quot;1E6E2&quot;, &quot;lat&quot;: 34.35122, &quot;lng&quot;: 135.72776}}</script>
   <div class="two-map-wrap" id="two-wrap-29" hidden><div id="share-two-map-29" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -857,7 +776,8 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">芦ヶ瀬1E3～1E4</h2>
     <p class="item-mgmt">514 10368</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.352855,135.72714000000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-30" data-two-map="share-two-map-30" data-two-json="two-geo-30" aria-expanded="false" aria-controls="two-wrap-30">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-30" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010368&amp;entry.1454610165=%E8%8A%A6%E3%83%B6%E7%80%AC1E3%EF%BD%9E1E4&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010368&amp;entry.1454610165=%E8%8A%A6%E3%83%B6%E7%80%AC1E3%EF%BD%9E1E4&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-30">{&quot;a&quot;: {&quot;name&quot;: &quot;芦ヶ瀬1E3&quot;, &quot;lat&quot;: 34.35301, &quot;lng&quot;: 135.72699}, &quot;b&quot;: {&quot;name&quot;: &quot;1E4&quot;, &quot;lat&quot;: 34.3527, &quot;lng&quot;: 135.72729}}</script>
   <div class="two-map-wrap" id="two-wrap-30" hidden><div id="share-two-map-30" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
@@ -872,27 +792,128 @@ a.portal-menu-item:focus-visible {
     <h2 class="card-title">芦ヶ瀬1E2～1E3</h2>
     <p class="item-mgmt">514 10367</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.35319,135.72691500000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-31" data-two-map="share-two-map-31" data-two-json="two-geo-31" aria-expanded="false" aria-controls="two-wrap-31">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-31" data-note-toggle>現場指示</button></div>
-    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調待ちから交渉待ちへ反映"><div class="survey-case-action-row" role="group" aria-label="案件操作"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-return-candidate-mark>返却候補にする</button></div><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p><p class="return-candidate-status muted-tiny" data-return-candidate-status hidden role="status"></p></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010367&amp;entry.1454610165=%E8%8A%A6%E3%83%B6%E7%80%AC1E2%EF%BD%9E1E3&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010367&amp;entry.1454610165=%E8%8A%A6%E3%83%B6%E7%80%AC1E2%EF%BD%9E1E3&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
   </div>
   <script type="application/json" id="two-geo-31">{&quot;a&quot;: {&quot;name&quot;: &quot;芦ヶ瀬1E2&quot;, &quot;lat&quot;: 34.35337, &quot;lng&quot;: 135.72684}, &quot;b&quot;: {&quot;name&quot;: &quot;1E3&quot;, &quot;lat&quot;: 34.35301, &quot;lng&quot;: 135.72699}}</script>
   <div class="two-map-wrap" id="two-wrap-31" hidden><div id="share-two-map-31" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
   <div class="note-panel" id="note-31" hidden>備考: —</div>
 </article>
-  <section class="return-candidate-section" aria-labelledby="return-candidate-heading">
-    <h2 id="return-candidate-heading">返却待ちリスト</h2>
-    <p class="muted-tiny return-candidate-note">※ モック表示です。返却待ちの正本反映は未実装です。</p>
-    <div id="return-candidate-list" class="return-candidate-list" role="list"></div>
-    <p id="return-candidate-empty" class="muted-tiny">返却候補はありません。</p>
-  </section>
-
-  <section class="map-section" aria-labelledby="survey-multipin-heading">
-    <h2 id="survey-multipin-heading">現調待ちマルチピン</h2>
-    <p class="muted-tiny">表示中の現調待ち案件をまとめて地図で確認できます。</p>
-    <p class="muted-tiny">
-      <a id="survey-multipin-link" class="btn btn-map" href="#share-map" aria-disabled="true">マルチピン地図を開く</a>
-    </p>
-    <p id="survey-multipin-empty" class="muted-tiny">表示対象がありません。</p>
-    <div id="share-map" role="application" aria-label="現調待ちマップ（複数ピン）"></div>
+<article class="card survey-update-card" data-card-index="32"
+  data-management-no-key="51404162"
+  data-management-no="514 04162"
+  data-label="白銀63N5W3～63N5W4"
+  data-requested-action="mark_survey_done">
+  <div class="card-head">
+    <h2 class="card-title">白銀63N5W3～63N5W4</h2>
+    <p class="item-mgmt">514 04162</p>
+    <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.341995,135.73373500000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-32" data-two-map="share-two-map-32" data-two-json="two-geo-32" aria-expanded="false" aria-controls="two-wrap-32">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-32" data-note-toggle>現場指示</button></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2004162&amp;entry.1454610165=%E7%99%BD%E9%8A%8063N5W3%EF%BD%9E63N5W4&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2004162&amp;entry.1454610165=%E7%99%BD%E9%8A%8063N5W3%EF%BD%9E63N5W4&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
+  </div>
+  <script type="application/json" id="two-geo-32">{&quot;a&quot;: {&quot;name&quot;: &quot;白銀63N5W3&quot;, &quot;lat&quot;: 34.34186, &quot;lng&quot;: 135.73373}, &quot;b&quot;: {&quot;name&quot;: &quot;63N5W4&quot;, &quot;lat&quot;: 34.34213, &quot;lng&quot;: 135.73374}}</script>
+  <div class="two-map-wrap" id="two-wrap-32" hidden><div id="share-two-map-32" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+  <div class="note-panel" id="note-32" hidden>備考: —</div>
+</article>
+<article class="card survey-update-card" data-card-index="33"
+  data-management-no-key="51402038"
+  data-management-no="514 02038"
+  data-label="上之4W4～4W5"
+  data-requested-action="mark_survey_done">
+  <div class="card-head">
+    <h2 class="card-title">上之4W4～4W5</h2>
+    <p class="item-mgmt">514 02038</p>
+    <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.363,135.67864" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-33" data-two-map="share-two-map-33" data-two-json="two-geo-33" aria-expanded="false" aria-controls="two-wrap-33">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-33" data-note-toggle>現場指示</button></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2002038&amp;entry.1454610165=%E4%B8%8A%E4%B9%8B4W4%EF%BD%9E4W5&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2002038&amp;entry.1454610165=%E4%B8%8A%E4%B9%8B4W4%EF%BD%9E4W5&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
+  </div>
+  <script type="application/json" id="two-geo-33">{&quot;a&quot;: {&quot;name&quot;: &quot;上之4W4&quot;, &quot;lat&quot;: 34.36296, &quot;lng&quot;: 135.67868}, &quot;b&quot;: {&quot;name&quot;: &quot;4W5&quot;, &quot;lat&quot;: 34.36304, &quot;lng&quot;: 135.6786}}</script>
+  <div class="two-map-wrap" id="two-wrap-33" hidden><div id="share-two-map-33" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+  <div class="note-panel" id="note-33" hidden>備考: —</div>
+</article>
+<article class="card survey-update-card" data-card-index="34"
+  data-management-no-key="51410139"
+  data-management-no="514 10139"
+  data-label="江出2N14～生子93E1"
+  data-requested-action="mark_survey_done">
+  <div class="card-head">
+    <h2 class="card-title">江出2N14～生子93E1</h2>
+    <p class="item-mgmt">514 10139</p>
+    <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32011,135.704065" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-34" data-two-map="share-two-map-34" data-two-json="two-geo-34" aria-expanded="false" aria-controls="two-wrap-34">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-34" data-note-toggle>現場指示</button></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010139&amp;entry.1454610165=%E6%B1%9F%E5%87%BA2N14%EF%BD%9E%E7%94%9F%E5%AD%9093E1&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010139&amp;entry.1454610165=%E6%B1%9F%E5%87%BA2N14%EF%BD%9E%E7%94%9F%E5%AD%9093E1&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
+  </div>
+  <script type="application/json" id="two-geo-34">{&quot;a&quot;: {&quot;name&quot;: &quot;江出2N14&quot;, &quot;lat&quot;: 34.32005, &quot;lng&quot;: 135.70484}, &quot;b&quot;: {&quot;name&quot;: &quot;生子93E1&quot;, &quot;lat&quot;: 34.32017, &quot;lng&quot;: 135.70329}}</script>
+  <div class="two-map-wrap" id="two-wrap-34" hidden><div id="share-two-map-34" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+  <div class="note-panel" id="note-34" hidden>備考: —</div>
+</article>
+<article class="card survey-update-card" data-card-index="35"
+  data-management-no-key="51410418"
+  data-management-no="514 10418"
+  data-label="向山7S1～7S2"
+  data-requested-action="mark_survey_done">
+  <div class="card-head">
+    <h2 class="card-title">向山7S1～7S2</h2>
+    <p class="item-mgmt">514 10418</p>
+    <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.378445,135.713015" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-35" data-two-map="share-two-map-35" data-two-json="two-geo-35" aria-expanded="false" aria-controls="two-wrap-35">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-35" data-note-toggle>現場指示</button></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010418&amp;entry.1454610165=%E5%90%91%E5%B1%B17S1%EF%BD%9E7S2&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010418&amp;entry.1454610165=%E5%90%91%E5%B1%B17S1%EF%BD%9E7S2&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
+  </div>
+  <script type="application/json" id="two-geo-35">{&quot;a&quot;: {&quot;name&quot;: &quot;向山7S1&quot;, &quot;lat&quot;: 34.37851, &quot;lng&quot;: 135.71279}, &quot;b&quot;: {&quot;name&quot;: &quot;7S2&quot;, &quot;lat&quot;: 34.37838, &quot;lng&quot;: 135.71324}}</script>
+  <div class="two-map-wrap" id="two-wrap-35" hidden><div id="share-two-map-35" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+  <div class="note-panel" id="note-35" hidden>備考: —</div>
+</article>
+<article class="card survey-update-card" data-card-index="36"
+  data-management-no-key="51410417"
+  data-management-no="514 10417"
+  data-label="城戸11W1～大日川2"
+  data-requested-action="mark_survey_done">
+  <div class="card-head">
+    <h2 class="card-title">城戸11W1～大日川2</h2>
+    <p class="item-mgmt">514 10417</p>
+    <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.28636,135.725395" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-36" data-two-map="share-two-map-36" data-two-json="two-geo-36" aria-expanded="false" aria-controls="two-wrap-36">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-36" data-note-toggle>現場指示</button></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010417&amp;entry.1454610165=%E5%9F%8E%E6%88%B811W1%EF%BD%9E%E5%A4%A7%E6%97%A5%E5%B7%9D2&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2010417&amp;entry.1454610165=%E5%9F%8E%E6%88%B811W1%EF%BD%9E%E5%A4%A7%E6%97%A5%E5%B7%9D2&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
+  </div>
+  <script type="application/json" id="two-geo-36">{&quot;a&quot;: {&quot;name&quot;: &quot;城戸11W1&quot;, &quot;lat&quot;: 34.28639, &quot;lng&quot;: 135.72521}, &quot;b&quot;: {&quot;name&quot;: &quot;大日川2&quot;, &quot;lat&quot;: 34.28633, &quot;lng&quot;: 135.72558}}</script>
+  <div class="two-map-wrap" id="two-wrap-36" hidden><div id="share-two-map-36" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+  <div class="note-panel" id="note-36" hidden>備考: —</div>
+</article>
+<article class="card survey-update-card" data-card-index="37"
+  data-management-no-key="51400394"
+  data-management-no="514 00394"
+  data-label="芦ヶ瀬1～2"
+  data-requested-action="mark_survey_done">
+  <div class="card-head">
+    <h2 class="card-title">芦ヶ瀬1～2</h2>
+    <p class="item-mgmt">514 00394</p>
+    <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.354169999999996,135.726595" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-37" data-two-map="share-two-map-37" data-two-json="two-geo-37" aria-expanded="false" aria-controls="two-wrap-37">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-37" data-note-toggle>現場指示</button></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000394&amp;entry.1454610165=%E8%8A%A6%E3%83%B6%E7%80%AC1%EF%BD%9E2&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2000394&amp;entry.1454610165=%E8%8A%A6%E3%83%B6%E7%80%AC1%EF%BD%9E2&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
+  </div>
+  <script type="application/json" id="two-geo-37">{&quot;a&quot;: {&quot;name&quot;: &quot;芦ヶ瀬1&quot;, &quot;lat&quot;: 34.35412, &quot;lng&quot;: 135.72626}, &quot;b&quot;: {&quot;name&quot;: &quot;2&quot;, &quot;lat&quot;: 34.35422, &quot;lng&quot;: 135.72693}}</script>
+  <div class="two-map-wrap" id="two-wrap-37" hidden><div id="share-two-map-37" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+  <div class="note-panel" id="note-37" hidden>備考: —</div>
+</article>
+<article class="card survey-update-card" data-card-index="38"
+  data-management-no-key="51403794"
+  data-management-no="514 03794"
+  data-label="鹿場16W7～16W8"
+  data-requested-action="mark_survey_done">
+  <div class="card-head">
+    <h2 class="card-title">鹿場16W7～16W8</h2>
+    <p class="item-mgmt">514 03794</p>
+    <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.298495,135.752205" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-38" data-two-map="share-two-map-38" data-two-json="two-geo-38" aria-expanded="false" aria-controls="two-wrap-38">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-38" data-note-toggle>現場指示</button></div>
+    <div class="card-actions card-actions-report" role="group" aria-label="現調結果の報告"><a class="btn btn-report-done" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2003794&amp;entry.1454610165=%E9%B9%BF%E5%A0%B416W7%EF%BD%9E16W8&amp;entry.1400430047=%E7%8F%BE%E8%AA%BF%E6%B8%88%E3%81%BF&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">現調済みを報告</a><a class="btn btn-report-return" href="https://docs.google.com/forms/d/e/1FAIpQLSdhZ7Za1KRpTGVM9odxKbNKfG7rosHWAaTEBHVSIHZsfQiKZQ/viewform?entry.1264151869=514%2003794&amp;entry.1454610165=%E9%B9%BF%E5%A0%B416W7%EF%BD%9E16W8&amp;entry.1400430047=%E8%BF%94%E5%8D%B4%E5%80%99%E8%A3%9C&amp;entry.983859884=2026-05-29" target="_blank" rel="noopener noreferrer">返却候補を報告</a></div>
+    <div class="card-actions card-actions-portal-request" role="group" aria-label="現調済み（PC承認待ち）"><button type="button" class="btn btn-survey-mark-done" data-survey-mark-done>現調済みにする</button><p class="survey-mark-hint muted-tiny">押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）</p><p class="survey-mark-status muted-tiny" data-survey-mark-status hidden role="status"></p></div>
+  </div>
+  <script type="application/json" id="two-geo-38">{&quot;a&quot;: {&quot;name&quot;: &quot;鹿場16W7&quot;, &quot;lat&quot;: 34.29858, &quot;lng&quot;: 135.75317}, &quot;b&quot;: {&quot;name&quot;: &quot;16W8&quot;, &quot;lat&quot;: 34.29841, &quot;lng&quot;: 135.75124}}</script>
+  <div class="two-map-wrap" id="two-wrap-38" hidden><div id="share-two-map-38" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+  <div class="note-panel" id="note-38" hidden>備考: —</div>
+</article>
+  <section class="map-section" aria-labelledby="map-heading">
+    <h2 id="map-heading">全体地図</h2>
+    <div id="share-map" role="application" aria-label="全径間の位置"></div>
   </section>
 
   </main>
@@ -968,82 +989,32 @@ a.portal-menu-item:focus-visible {
       setTimeout(function() { mmap.invalidateSize(); }, 60);
     });
   });
-  var points = [{"name": "Ｐ百谷38S10～38S11", "lat": 34.34213, "lng": 135.75069, "management_no": "514 09384"}, {"name": "Ｐ百谷38S18～38S19", "lat": 34.34049, "lng": 135.75212, "management_no": "514 09344"}, {"name": "Ｐ百谷38S19～38S20", "lat": 34.34022, "lng": 135.75258, "management_no": "514 09324"}, {"name": "Ｐ百谷49N3～49N4", "lat": 34.34412, "lng": 135.75722, "management_no": "514 00214"}, {"name": "赤松1～1G1", "lat": 34.3324, "lng": 135.7446, "management_no": "514 09097"}, {"name": "赤松23～24", "lat": 34.33462, "lng": 135.75558, "management_no": "514 09006"}, {"name": "赤松26N7～26N8", "lat": 34.33731, "lng": 135.7546, "management_no": "514 00376"}, {"name": "赤松27～28", "lat": 34.33519, "lng": 135.75636, "management_no": "514 09094"}, {"name": "赤松35～36", "lat": 34.33258, "lng": 135.76051, "management_no": "514 00361"}, {"name": "大畑7～7E1", "lat": 34.33471, "lng": 135.76237, "management_no": "514 01156"}, {"name": "柴ヶ谷2～3", "lat": 34.32942, "lng": 135.76153, "management_no": "514 03888"}, {"name": "柴ヶ谷3～3G1", "lat": 34.32879, "lng": 135.76127, "management_no": "514 09990"}, {"name": "柴ヶ谷3G1～4", "lat": 34.32879, "lng": 135.76127, "management_no": "514 09991"}, {"name": "柴ヶ谷9W1～引込", "lat": 34.32608, "lng": 135.76185, "management_no": "514 10156"}, {"name": "白銀115W6～115W6S1", "lat": 34.31784, "lng": 135.73535, "management_no": "514 09133"}, {"name": "白銀115W6S1N2～115W6S1", "lat": 34.31691, "lng": 135.73552, "management_no": "514 04189"}, {"name": "白銀115W9～115W9W1", "lat": 34.31877, "lng": 135.73439, "management_no": "514 04194"}, {"name": "慎1～2", "lat": 34.31806, "lng": 135.73273, "management_no": "514 09998"}, {"name": "西新子12N1～12N2", "lat": 34.31831, "lng": 135.74634, "management_no": "514 09459"}, {"name": "西新子14G1～14E3", "lat": 34.31702, "lng": 135.74864, "management_no": "514 09228"}, {"name": "平沼田17～18", "lat": 34.32461, "lng": 135.75285, "management_no": "514 07220"}, {"name": "平沼田18～19", "lat": 34.32473, "lng": 135.75302, "management_no": "514 07272"}, {"name": "平沼田43N4E1～43N4E2", "lat": 34.32059, "lng": 135.7605, "management_no": "514 07898"}, {"name": "湯川4E6～4E7", "lat": 34.33446, "lng": 135.74192, "management_no": "514 08008"}, {"name": "夜中8～9", "lat": 34.30406, "lng": 135.74857, "management_no": "514 08794"}, {"name": "夜中9～10", "lat": 34.30364, "lng": 135.7491, "management_no": "514 08795"}, {"name": "北宇智159～159W1", "lat": 34.37949, "lng": 135.6913, "management_no": "514 02687"}, {"name": "Ｐ奥谷11W12S1～11W12S2", "lat": 34.32353, "lng": 135.72786, "management_no": "514 00263"}, {"name": "芦ヶ瀬2～3", "lat": 34.35422, "lng": 135.72693, "management_no": "514 00395"}, {"name": "芦ヶ瀬1E6E1～1E6E2", "lat": 34.35162, "lng": 135.72766, "management_no": "514 00414"}, {"name": "芦ヶ瀬1E3～1E4", "lat": 34.35301, "lng": 135.72699, "management_no": "514 10368"}, {"name": "芦ヶ瀬1E2～1E3", "lat": 34.35337, "lng": 135.72684, "management_no": "514 10367"}];
+  var points = [{"name": "Ｐ百谷38S10～38S11", "lat": 34.34213, "lng": 135.75069, "management_no": "514 09384"}, {"name": "Ｐ百谷38S18～38S19", "lat": 34.34049, "lng": 135.75212, "management_no": "514 09344"}, {"name": "Ｐ百谷38S19～38S20", "lat": 34.34022, "lng": 135.75258, "management_no": "514 09324"}, {"name": "Ｐ百谷49N3～49N4", "lat": 34.34412, "lng": 135.75722, "management_no": "514 00214"}, {"name": "赤松1～1G1", "lat": 34.3324, "lng": 135.7446, "management_no": "514 09097"}, {"name": "赤松23～24", "lat": 34.33462, "lng": 135.75558, "management_no": "514 09006"}, {"name": "赤松26N7～26N8", "lat": 34.33731, "lng": 135.7546, "management_no": "514 00376"}, {"name": "赤松27～28", "lat": 34.33519, "lng": 135.75636, "management_no": "514 09094"}, {"name": "赤松35～36", "lat": 34.33258, "lng": 135.76051, "management_no": "514 00361"}, {"name": "大畑7～7E1", "lat": 34.33471, "lng": 135.76237, "management_no": "514 01156"}, {"name": "柴ヶ谷2～3", "lat": 34.32942, "lng": 135.76153, "management_no": "514 03888"}, {"name": "柴ヶ谷3～3G1", "lat": 34.32879, "lng": 135.76127, "management_no": "514 09990"}, {"name": "柴ヶ谷3G1～4", "lat": 34.32879, "lng": 135.76127, "management_no": "514 09991"}, {"name": "柴ヶ谷9W1～引込", "lat": 34.32608, "lng": 135.76185, "management_no": "514 10156"}, {"name": "白銀115W6～115W6S1", "lat": 34.31784, "lng": 135.73535, "management_no": "514 09133"}, {"name": "白銀115W6S1N2～115W6S1", "lat": 34.31691, "lng": 135.73552, "management_no": "514 04189"}, {"name": "白銀115W9～115W9W1", "lat": 34.31877, "lng": 135.73439, "management_no": "514 04194"}, {"name": "慎1～2", "lat": 34.31806, "lng": 135.73273, "management_no": "514 09998"}, {"name": "西新子12N1～12N2", "lat": 34.31831, "lng": 135.74634, "management_no": "514 09459"}, {"name": "西新子14G1～14E3", "lat": 34.31702, "lng": 135.74864, "management_no": "514 09228"}, {"name": "平沼田17～18", "lat": 34.32461, "lng": 135.75285, "management_no": "514 07220"}, {"name": "平沼田18～19", "lat": 34.32473, "lng": 135.75302, "management_no": "514 07272"}, {"name": "平沼田43N4E1～43N4E2", "lat": 34.32059, "lng": 135.7605, "management_no": "514 07898"}, {"name": "湯川4E6～4E7", "lat": 34.33446, "lng": 135.74192, "management_no": "514 08008"}, {"name": "夜中8～9", "lat": 34.30406, "lng": 135.74857, "management_no": "514 08794"}, {"name": "夜中9～10", "lat": 34.30364, "lng": 135.7491, "management_no": "514 08795"}, {"name": "北宇智159～159W1", "lat": 34.37949, "lng": 135.6913, "management_no": "514 02687"}, {"name": "Ｐ奥谷11W12S1～11W12S2", "lat": 34.32353, "lng": 135.72786, "management_no": "514 00263"}, {"name": "芦ヶ瀬2～3", "lat": 34.35422, "lng": 135.72693, "management_no": "514 00395"}, {"name": "芦ヶ瀬1E6E1～1E6E2", "lat": 34.35162, "lng": 135.72766, "management_no": "514 00414"}, {"name": "芦ヶ瀬1E3～1E4", "lat": 34.35301, "lng": 135.72699, "management_no": "514 10368"}, {"name": "芦ヶ瀬1E2～1E3", "lat": 34.35337, "lng": 135.72684, "management_no": "514 10367"}, {"name": "白銀63N5W3～63N5W4", "lat": 34.34186, "lng": 135.73373, "management_no": "514 04162"}, {"name": "上之4W4～4W5", "lat": 34.36296, "lng": 135.67868, "management_no": "514 02038"}, {"name": "江出2N14～生子93E1", "lat": 34.32005, "lng": 135.70484, "management_no": "514 10139"}, {"name": "向山7S1～7S2", "lat": 34.37851, "lng": 135.71279, "management_no": "514 10418"}, {"name": "城戸11W1～大日川2", "lat": 34.28639, "lng": 135.72521, "management_no": "514 10417"}, {"name": "芦ヶ瀬1～2", "lat": 34.35412, "lng": 135.72626, "management_no": "514 00394"}, {"name": "鹿場16W7～16W8", "lat": 34.29858, "lng": 135.75317, "management_no": "514 03794"}];
   var mapEl = document.getElementById("share-map");
-  var multipinLinkEl = document.getElementById("survey-multipin-link");
-  var multipinEmptyEl = document.getElementById("survey-multipin-empty");
-  function normalizeManagementNo(value) {
-    return String(value || "").replace(/\s+/g, "");
-  }
-  var pointMapByKey = Object.create(null);
-  if (Array.isArray(points)) {
-    points.forEach(function(p) {
-      var k = normalizeManagementNo(p.management_no);
-      if (k) pointMapByKey[k] = p;
-    });
-  }
-  var map = null;
-  var mapMarkerLayer = null;
-  function getVisibleSurveyPoints() {
-    var visible = [];
-    document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
-      if (card.hidden) return;
-      var key = normalizeManagementNo(card.getAttribute("data-management-no-key"));
-      if (!key) return;
-      var point = pointMapByKey[key];
-      if (point) visible.push(point);
-    });
-    return visible;
-  }
-  function applySurveyMultipinState() {
-    var visiblePoints = getVisibleSurveyPoints();
-    var hasVisible = visiblePoints.length > 0;
-    if (multipinLinkEl) {
-      multipinLinkEl.setAttribute("aria-disabled", hasVisible ? "false" : "true");
-      multipinLinkEl.tabIndex = hasVisible ? 0 : -1;
-      if (hasVisible) {
-        multipinLinkEl.classList.remove("is-disabled");
-      } else {
-        multipinLinkEl.classList.add("is-disabled");
-      }
-    }
-    if (multipinEmptyEl) multipinEmptyEl.hidden = hasVisible;
-    if (!mapEl || !hasVisible) return;
-    if (!map) {
-      map = L.map("share-map", { scrollWheelZoom: false });
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors",
-      }).addTo(map);
-      mapMarkerLayer = L.layerGroup().addTo(map);
-    }
-    if (mapMarkerLayer) mapMarkerLayer.clearLayers();
+  if (mapEl && Array.isArray(points) && points.length) {
+    var map = L.map("share-map", { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
     var bounds = [];
-    visiblePoints.forEach(function(p) {
-      var lat = Number(p.lat);
-      var lng = Number(p.lng);
+    points.forEach(function(p) {
+      var lat = Number(p.lat), lng = Number(p.lng);
       if (!isFinite(lat) || !isFinite(lng)) return;
       bounds.push([lat, lng]);
-      var marker = L.marker([lat, lng]).addTo(mapMarkerLayer);
+      var m = L.marker([lat, lng]).addTo(map);
       var label = (p.name || "現場") + (p.management_no ? (" (" + p.management_no + ")") : "");
-      marker.bindTooltip(label, { permanent: false, direction: "top" });
+      m.bindTooltip(label, { permanent: false, direction: "top" });
     });
     if (bounds.length === 1) map.setView(bounds[0], 15);
     else if (bounds.length > 1) map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
-    setTimeout(function() { map.invalidateSize(); }, 60);
-  }
-  if (multipinLinkEl) {
-    multipinLinkEl.addEventListener("click", function(ev) {
-      if (multipinLinkEl.getAttribute("aria-disabled") === "true") {
-        ev.preventDefault();
-      }
-    });
   }
   // Portal status overlay (B-plan) or legacy pending request (A-plan). Never embed service_role.
 
   var PORTAL_STATUS_ENDPOINT = "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request";
-  var PORTAL_STATUS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
+  var PORTAL_STATUS_API_KEY = "";
   var PORTAL_STATUS_LS_PREFIX = "portal_case_status:";
+  var RETURN_CANDIDATE_LS_KEY = "portalReturnCandidates";
   var SURVEY_MARK_CONFIRM =
     "この案件を「現調済み」として交渉待ちへ移動しますか？\n\n即時に交渉待ちページへ表示されます。誤操作は交渉待ちページの「現調待ちに戻す」で取り消せます。";
   var RETURN_CANDIDATE_MARK_CONFIRM = "この案件を返却候補にしますか？";
@@ -1060,8 +1031,7 @@ a.portal-menu-item:focus-visible {
     });
     return map;
   }
-  function applySurveyOverlay(statusMap, serverOk, returnCandidateKeys) {
-    var returnMap = returnCandidateKeys || Object.create(null);
+  function applySurveyOverlay(statusMap, serverOk) {
     document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
       var key = (card.getAttribute("data-management-no-key") || "").trim();
       if (!key) return;
@@ -1079,12 +1049,9 @@ a.portal-menu-item:focus-visible {
           }
         } catch (e) {}
       }
-      if (st === "negotiation_wait" || returnMap[key]) {
+      if (st === "negotiation_wait") {
         card.hidden = true;
-        card.setAttribute(
-          "data-portal-moved",
-          st === "negotiation_wait" ? "negotiation" : "return_candidate",
-        );
+        card.setAttribute("data-portal-moved", "negotiation");
       } else {
         card.hidden = false;
         card.removeAttribute("data-portal-moved");
@@ -1137,101 +1104,53 @@ a.portal-menu-item:focus-visible {
     btn.textContent = "現調済みにする";
     card.classList.remove("survey-mark-sent");
   }
-  function mapReturnCandidateError(httpStatus, body) {
-    var err = "";
-    if (body && typeof body === "object") {
-      err = String(body.error || body.message || "");
+  function loadReturnCandidates() {
+    try {
+      var raw = localStorage.getItem(RETURN_CANDIDATE_LS_KEY);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
     }
-    if (httpStatus === 401 || err === "invalid_api_key") {
-      return "送信に失敗しました（APIキーが無効です）";
-    }
-    if (httpStatus === 503 || err === "server_not_configured") {
-      return "送信機能がサーバ側で未設定です";
-    }
-    if (httpStatus === 409 && err === "overlay_status_conflict") {
-      return "交渉待ちに移動済みのため返却候補にできません";
-    }
-    return "送信に失敗しました。通信状態を確認して再試行してください";
   }
-  function setReturnCandidateUi(card, btn, statusEl, state, message) {
+  function saveReturnCandidates(items) {
+    try {
+      localStorage.setItem(RETURN_CANDIDATE_LS_KEY, JSON.stringify(items));
+    } catch (e) {}
+  }
+  function setReturnCandidateUi(card, statusEl, state, message) {
     statusEl.classList.remove("is-error");
     if (state === "marked") {
       statusEl.hidden = false;
-      statusEl.textContent = message || "返却候補に設定済み";
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = "返却候補済み";
-      }
+      statusEl.textContent = message || "返却候補に設定済み（モック）";
       card.classList.add("return-candidate-marked");
-      return;
-    }
-    if (state === "sending") {
-      statusEl.hidden = false;
-      statusEl.textContent = "送信中...";
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = "送信中...";
-      }
       return;
     }
     if (state === "error") {
       statusEl.hidden = false;
       statusEl.classList.add("is-error");
       statusEl.textContent = message || "返却候補の設定に失敗しました";
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = "返却候補にする";
-      }
-      card.classList.remove("return-candidate-marked");
       return;
     }
     statusEl.hidden = true;
     statusEl.textContent = "";
-    if (btn) {
-      btn.disabled = !PORTAL_STATUS_API_KEY;
-      btn.textContent = "返却候補にする";
-    }
     card.classList.remove("return-candidate-marked");
   }
-  function fetchReturnCandidates() {
-    if (!PORTAL_STATUS_API_KEY) {
-      return Promise.resolve({ ok: false, keys: Object.create(null), reason: "apikey_missing" });
-    }
-    return fetch(PORTAL_STATUS_ENDPOINT + "?list=return_candidates", {
-      method: "GET",
-      headers: { apikey: PORTAL_STATUS_API_KEY },
-    })
-      .then(function(res) {
-        return res
-          .json()
-          .catch(function() { return {}; })
-          .then(function(data) { return { res: res, data: data }; });
-      })
-      .then(function(r) {
-        var keys = Object.create(null);
-        if (!r.res.ok || !r.data || !r.data.ok) {
-          return { ok: false, keys: keys, reason: "fetch_failed" };
-        }
-        var list = r.data.return_candidates;
-        if (!Array.isArray(list)) return { ok: true, keys: keys };
-        list.forEach(function(it) {
-          var k = String(it.management_no_key || "").trim();
-          if (k) keys[k] = true;
-        });
-        return { ok: true, keys: keys };
-      })
-      .catch(function() { return { ok: false, keys: Object.create(null), reason: "network_error" }; });
-  }
-  function refreshReturnCandidateCardState(keys) {
+  function refreshReturnCandidateCardState() {
+    var map = Object.create(null);
+    loadReturnCandidates().forEach(function(it) {
+      var key = String(it.management_no_key || "").trim();
+      if (key) map[key] = true;
+    });
     document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
       var key = (card.getAttribute("data-management-no-key") || "").trim();
-      var btn = card.querySelector("[data-return-candidate-mark]");
       var statusEl = card.querySelector("[data-return-candidate-status]");
       if (!key || !statusEl) return;
-      if (keys[key]) {
-        setReturnCandidateUi(card, btn, statusEl, "marked");
+      if (map[key]) {
+        setReturnCandidateUi(card, statusEl, "marked");
       } else {
-        setReturnCandidateUi(card, btn, statusEl, "idle");
+        setReturnCandidateUi(card, statusEl, "idle");
       }
     });
   }
@@ -1253,41 +1172,9 @@ a.portal-menu-item:focus-visible {
   document.querySelectorAll("[data-survey-mark-done]").forEach(function(btn) {
     if (!PORTAL_STATUS_API_KEY) btn.disabled = true;
   });
-  var surveyOverlayWarningEl = document.getElementById("survey-overlay-warning");
-  var cachedReturnCandidateKeys = Object.create(null);
-  var cachedReturnCandidateFetchOk = true;
-  var cachedStatusMap = Object.create(null);
-  var cachedStatusFetchOk = false;
-  function updateSurveyOverlayWarning() {
-    if (!surveyOverlayWarningEl) return;
-    if (cachedReturnCandidateFetchOk) {
-      surveyOverlayWarningEl.hidden = true;
-      surveyOverlayWarningEl.textContent = "";
-      return;
-    }
-    surveyOverlayWarningEl.hidden = false;
-    surveyOverlayWarningEl.textContent =
-      "返却候補情報の取得に失敗したため、一部案件が現調待ちに表示される可能性があります。";
-  }
-  function syncSurveyCardVisibility() {
-    applySurveyOverlay(cachedStatusMap, cachedStatusFetchOk, cachedReturnCandidateKeys);
-    applySurveyMultipinState();
-  }
-  syncSurveyCardVisibility();
+  applySurveyOverlay(Object.create(null), false);
   fetchPortalOverrides().then(function(result) {
-    cachedStatusMap = result.statusMap || Object.create(null);
-    cachedStatusFetchOk = !!result.ok;
-    syncSurveyCardVisibility();
-  });
-  fetchReturnCandidates().then(function(result) {
-    cachedReturnCandidateKeys = result.keys || Object.create(null);
-    cachedReturnCandidateFetchOk = !!result.ok;
-    updateSurveyOverlayWarning();
-    refreshReturnCandidateCardState(cachedReturnCandidateKeys);
-    syncSurveyCardVisibility();
-    if (!result.ok) {
-      console.warn("[portal/survey] failed to fetch return candidates");
-    }
+    applySurveyOverlay(result.statusMap, result.ok);
   });
   document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
     var key = (card.getAttribute("data-management-no-key") || "").trim();
@@ -1360,89 +1247,28 @@ a.portal-menu-item:focus-visible {
       });
     }
     if (returnBtn && returnStatusEl) {
-      if (!PORTAL_STATUS_API_KEY) returnBtn.disabled = true;
       returnBtn.addEventListener("click", function() {
-        if (returnBtn.disabled) return;
         if (!window.confirm(RETURN_CANDIDATE_MARK_CONFIRM)) return;
-        setReturnCandidateUi(card, returnBtn, returnStatusEl, "sending");
-        fetch(PORTAL_STATUS_ENDPOINT, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: PORTAL_STATUS_API_KEY,
-          },
-          body: JSON.stringify({
+        var items = loadReturnCandidates();
+        var found = items.some(function(it) {
+          return String(it.management_no_key || "").trim() === key;
+        });
+        if (!found) {
+          items.push({
             management_no_key: key,
             management_no: (card.getAttribute("data-management-no") || "").trim(),
             label: (card.getAttribute("data-label") || "").trim(),
-            action: "mark_return_candidate",
-            source: "portal_survey",
-          }),
-        })
-          .then(function(res) {
-            return res
-              .json()
-              .catch(function() { return {}; })
-              .then(function(data) { return { res: res, data: data }; });
-          })
-          .then(function(r) {
-            if (r.res.ok && r.data && r.data.ok) {
-              cachedReturnCandidateKeys[key] = true;
-              setReturnCandidateUi(
-                card,
-                returnBtn,
-                returnStatusEl,
-                "marked",
-                "返却候補に設定済み（交渉待ちページの返却リストに表示）",
-              );
-              card.hidden = true;
-              card.setAttribute("data-portal-moved", "return_candidate");
-              syncSurveyCardVisibility();
-              return;
-            }
-            setReturnCandidateUi(
-              card,
-              returnBtn,
-              returnStatusEl,
-              "error",
-              mapReturnCandidateError(r.res.status, r.data),
-            );
-          })
-          .catch(function() {
-            setReturnCandidateUi(
-              card,
-              returnBtn,
-              returnStatusEl,
-              "error",
-              "送信に失敗しました。通信状態を確認して再試行してください",
-            );
+            marked_at: new Date().toISOString(),
           });
+          saveReturnCandidates(items);
+        }
+        setReturnCandidateUi(card, returnStatusEl, "marked", "返却候補に設定済み（モック）");
+        window.alert("返却候補に設定しました");
       });
     }
   });
-})();
+  refreshReturnCandidateCardState();
 
-(function () {
-  var btn = document.getElementById("portal-menu-btn");
-  var panel = document.getElementById("portal-menu-panel");
-  if (!btn || !panel) return;
-  function setOpen(open) {
-    panel.hidden = !open;
-    btn.setAttribute("aria-expanded", open ? "true" : "false");
-  }
-  btn.addEventListener("click", function (ev) {
-    ev.stopPropagation();
-    setOpen(panel.hidden);
-  });
-  document.addEventListener("click", function () {
-    setOpen(false);
-  });
-  panel.addEventListener("click", function (ev) {
-    ev.stopPropagation();
-  });
-  document.addEventListener("keydown", function (ev) {
-    if (ev.key === "Escape") setOpen(false);
-  });
 })();
   </script>
 </body>
