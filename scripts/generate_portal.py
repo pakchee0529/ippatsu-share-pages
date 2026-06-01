@@ -48,6 +48,7 @@ from pathlib import Path
 
 from portal_immediate_status_client import (
     PORTAL_CASE_STATUS_ENDPOINT_DEFAULT,
+    fetch_portal_negotiation_wait_keys,
     portal_immediate_status_enabled,
     render_negotiation_immediate_status_js,
     render_survey_immediate_status_js,
@@ -121,9 +122,13 @@ def _jwt_role_from_api_key(key: str) -> str | None:
         return None
 
 
-def survey_status_request_api_key() -> str:
+def survey_status_request_api_key(repo_root: Path | None = None) -> str:
     """ポータル HTML 用 apikey（publishable/anon のみ）。service_role は使わない。"""
-    for name in ("PORTAL_SURVEY_REQUEST_API_KEY", "SUPABASE_ANON_KEY"):
+    for name in (
+        "PORTAL_SURVEY_REQUEST_API_KEY",
+        "PORTAL_STATUS_API_KEY",
+        "SUPABASE_ANON_KEY",
+    ):
         raw = (os.environ.get(name) or "").strip()
         if not raw:
             continue
@@ -135,6 +140,23 @@ def survey_status_request_api_key() -> str:
             )
             continue
         return raw
+    if repo_root is not None:
+        for rel in (
+            "portal/negotiation/index.html",
+            "portal/survey/index.html",
+            "portal/calendar/index.html",
+        ):
+            path = repo_root / rel
+            if not path.is_file():
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            m = _PORTAL_STATUS_API_KEY_RE.search(text)
+            if not m:
+                m = _PORTAL_CALENDAR_API_KEY_RE.search(text)
+            if m:
+                key = m.group(1)
+                if _jwt_role_from_api_key(key) != "service_role":
+                    return key
     return ""
 
 
@@ -145,6 +167,9 @@ PORTAL_ORIGIN = "https://pakchee0529.github.io"
 
 _PORTAL_CALENDAR_API_KEY_RE = re.compile(
     r'const PORTAL_CALENDAR_API_KEY = "([^"]+)"'
+)
+_PORTAL_STATUS_API_KEY_RE = re.compile(
+    r'var PORTAL_STATUS_API_KEY = "([^"]+)"'
 )
 
 
@@ -810,6 +835,185 @@ def build_portal_heading(
 
 def escape_html(s: str) -> str:
     return html_lib.escape(s, quote=True)
+
+
+def survey_case_action_row_css() -> str:
+    """案件操作ボタン横並び（survey カード用）。"""
+    return """
+.survey-case-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+  align-items: stretch;
+}
+.survey-case-action-row .btn-survey-mark-done,
+.survey-case-action-row .btn-survey-mark-return-candidate {
+  flex: 1 1 calc(50% - 0.25rem);
+  min-width: 8.5rem;
+  margin: 0;
+}
+"""
+
+
+def render_portal_subpage_menu_css(*, archive: bool = False) -> str:
+    """ハンバーガーメニュー（survey / archive / negotiation 下位ページ共通）。"""
+    if archive:
+        t, c, b, a = "--text-b", "--card-b", "--border-b", "--accent-b"
+    else:
+        t, c, b, a = "--text", "--card", "--border", "--accent"
+    return f"""
+.portal-page-header {{
+  margin-bottom: 0.35rem;
+}}
+.portal-page-header-row {{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}}
+.portal-page-header-row .page-title {{
+  flex: 1;
+  min-width: 0;
+  margin: 0 0 0.35rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var({b});
+}}
+.portal-menu-wrap {{
+  position: relative;
+  flex-shrink: 0;
+}}
+.portal-menu-btn {{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var({t});
+  background: var({c});
+  border: 1px solid var({b});
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.06);
+}}
+.portal-menu-btn:hover,
+.portal-menu-btn:focus-visible {{
+  border-color: var({a});
+  outline: none;
+}}
+.portal-menu-icon {{
+  font-size: 1.15rem;
+  line-height: 1;
+}}
+.portal-menu-label {{
+  white-space: nowrap;
+}}
+.portal-menu-panel {{
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 12.5rem;
+  padding: 0.35rem 0;
+  background: var({c});
+  border: 1px solid var({b});
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(20, 32, 51, 0.12);
+}}
+.portal-menu-panel[hidden] {{
+  display: none !important;
+}}
+.portal-menu-item {{
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var({t});
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}}
+a.portal-menu-item:hover,
+a.portal-menu-item:focus-visible {{
+  background: #f1f5f9;
+  outline: none;
+}}
+.portal-menu-item.is-current {{
+  font-weight: 700;
+  background: #f1f5f9;
+}}
+"""
+
+
+def render_portal_subpage_header(page_title: str, *, page: str) -> str:
+    """page: survey | negotiation | archive"""
+    items: list[tuple[str, str, str | None]] = [
+        ("../", "ポータルTOP", None),
+        ("../calendar/", "社内カレンダー", None),
+        ("../survey/", "現調待ち", "survey"),
+        ("../negotiation/", "交渉待ち", "negotiation"),
+        ("../archive/", "アーカイブ", "archive"),
+    ]
+    link_lines: list[str] = []
+    for href, label, page_id in items:
+        is_current = page_id == page
+        href_use = "./" if is_current else href
+        cls = "portal-menu-item is-current" if is_current else "portal-menu-item"
+        current_attr = ' aria-current="page"' if is_current else ""
+        link_lines.append(
+            f'          <a class="{cls}" role="menuitem" href="{escape_html(href_use)}"'
+            f'{current_attr}>{escape_html(label)}</a>'
+        )
+    links = "\n".join(link_lines)
+    return f"""  <header class="portal-page-header">
+    <div class="portal-page-header-row">
+      <h1 class="page-title">{escape_html(page_title)}</h1>
+      <div class="portal-menu-wrap">
+        <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel" aria-label="サイトメニューを開く">
+          <span class="portal-menu-icon" aria-hidden="true">☰</span>
+          <span class="portal-menu-label">メニュー</span>
+        </button>
+        <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
+{links}
+        </nav>
+      </div>
+    </div>
+  </header>"""
+
+
+def render_portal_subpage_menu_js() -> str:
+    return """
+(function () {
+  var btn = document.getElementById("portal-menu-btn");
+  var panel = document.getElementById("portal-menu-panel");
+  if (!btn || !panel) return;
+  function setOpen(open) {
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  btn.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    setOpen(panel.hidden);
+  });
+  document.addEventListener("click", function () {
+    setOpen(false);
+  });
+  panel.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") setOpen(false);
+  });
+})();
+"""
 
 
 def normalize_management_no(raw: str) -> str | None:
@@ -2322,6 +2526,10 @@ def build_archive_html(
             "月別アーカイブに表示する現場はありません。</p>\n"
         )
 
+    subpage_header = render_portal_subpage_header("現場共有アーカイブ", page="archive")
+    subpage_menu_css = render_portal_subpage_menu_css(archive=True)
+    subpage_menu_js = render_portal_subpage_menu_js()
+
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -2351,30 +2559,7 @@ body {{
   margin-left: auto;
   margin-right: auto;
 }}
-.top-bar {{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-}}
-.top-bar a {{
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--accent-b);
-  text-decoration: none;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
-}}
-.top-bar a:hover, .top-bar a:focus-visible {{
-  text-decoration: underline;
-  outline: none;
-}}
-h1 {{
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 0.5rem;
-}}
+{subpage_menu_css}
 .lead {{
   font-size: 0.92rem;
   color: var(--muted-b);
@@ -2541,13 +2726,7 @@ a.btn-archive:hover, a.btn-archive:active {{
 </style>
 </head>
 <body>
-  <nav class="top-bar" aria-label="サイト内リンク">
-    <a href="../">ポータルTOP</a>
-    <a href="../survey/">現調待ち</a>
-    <a href="../negotiation/">交渉待ち</a>
-    <a href="./">アーカイブ</a>
-  </nav>
-  <h1>現場共有アーカイブ</h1>
+{subpage_header}
   <p class="disclaimer-note">表示対象は <code>portal/archive_manifest.json</code> の <code>entries</code> に登録した6桁日付のみです。個人情報・次回確認メモ・地主情報などはマニフェストに書き込まないでください。</p>
   <p class="lead">冠称名・径間名・管理番号で過去現場を検索できます。直近7日分は「最近1週間」、それ以前は月別に表示します。</p>
   <div class="search-wrap">
@@ -2621,6 +2800,9 @@ a.btn-archive:hover, a.btn-archive:active {{
   input.addEventListener("input", apply);
   input.addEventListener("search", apply);
 }})();
+  </script>
+  <script>
+{subpage_menu_js}
   </script>
 </body>
 </html>
@@ -3160,20 +3342,23 @@ def build_survey_html(
     status_request_api_key: str = "",
     portal_status_endpoint: str = PORTAL_CASE_STATUS_ENDPOINT,
     immediate_status: bool | None = None,
+    initial_hidden_overlay_keys: set[str] | None = None,
 ) -> str:
     use_immediate = (
         immediate_status
         if immediate_status is not None
         else portal_immediate_status_enabled()
     )
+    hidden_overlay_keys = initial_hidden_overlay_keys or set()
     if use_immediate:
         survey_mark_hint = (
             "押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）"
         )
         survey_requested_action = "mark_survey_done"
         survey_disclaimer = (
-            "「現調済みを報告」「返却候補を報告」は Google フォームに送信します。"
-            "「現調済みにする」は交渉待ちへ即時反映します（portal status overlay）。"
+            "「現調済みにする」で交渉待ちへ即時反映します（portal status overlay）。"
+            "「返却候補にする」はサーバーに登録し、この一覧から非表示になります。"
+            "誤操作は交渉待ちページの「現調待ちに戻す」で取り消せます。"
             "従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。"
         )
     else:
@@ -3235,49 +3420,74 @@ def build_survey_html(
         )
         note_body = f"備考: {escape_html(it.note)}"
         actions = "".join(x for x in [map_btn, two_btn, note_btn] if x)
-        url_done = build_survey_report_url(
-            form_base_url,
-            it.management_no,
-            it.label,
-            SURVEY_REPORT_TYPE_JP_COMPLETED,
-            report_date_iso,
-        )
-        url_return = build_survey_report_url(
-            form_base_url,
-            it.management_no,
-            it.label,
-            SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE,
-            report_date_iso,
-        )
-        report_btns = (
-            f'<div class="card-actions card-actions-report" role="group" '
-            f'aria-label="現調結果の報告">'
-            f'<a class="btn btn-report-done" href="{escape_html(url_done)}" '
-            f'target="_blank" rel="noopener noreferrer">現調済みを報告</a>'
-            f'<a class="btn btn-report-return" href="{escape_html(url_return)}" '
-            f'target="_blank" rel="noopener noreferrer">返却候補を報告</a>'
-            f"</div>"
-        )
+        report_btns = ""
+        if not use_immediate:
+            url_done = build_survey_report_url(
+                form_base_url,
+                it.management_no,
+                it.label,
+                SURVEY_REPORT_TYPE_JP_COMPLETED,
+                report_date_iso,
+            )
+            url_return = build_survey_report_url(
+                form_base_url,
+                it.management_no,
+                it.label,
+                SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE,
+                report_date_iso,
+            )
+            report_btns = (
+                f'<div class="card-actions card-actions-report" role="group" '
+                f'aria-label="現調結果の報告">'
+                f'<a class="btn btn-report-done" href="{escape_html(url_done)}" '
+                f'target="_blank" rel="noopener noreferrer">現調済みを報告</a>'
+                f'<a class="btn btn-report-return" href="{escape_html(url_return)}" '
+                f'target="_blank" rel="noopener noreferrer">返却候補を報告</a>'
+                f"</div>"
+            )
         portal_request_btns = ""
         if it.management_no_key:
-            portal_request_btns = (
-                '<div class="card-actions card-actions-portal-request" role="group" '
-                'aria-label="現調済み（PC承認待ち）">'
-                '<button type="button" class="btn btn-survey-mark-done" '
-                'data-survey-mark-done>現調済みにする</button>'
-                '<p class="survey-mark-hint muted-tiny">'
-                f"{survey_mark_hint}"
-                "</p>"
-                '<p class="survey-mark-status muted-tiny" data-survey-mark-status '
-                'hidden role="status"></p>'
-                "</div>"
-            )
+            if use_immediate:
+                portal_request_btns = (
+                    '<div class="card-actions card-actions-portal-request" role="group" '
+                    'aria-label="案件操作">'
+                    '<div class="survey-case-action-row" role="group" aria-label="案件操作">'
+                    '<button type="button" class="btn btn-survey-mark-done" '
+                    'data-survey-mark-done>現調済みにする</button>'
+                    '<button type="button" class="btn btn-survey-mark-return-candidate" '
+                    'data-return-candidate-mark>返却候補にする</button>'
+                    "</div>"
+                    '<p class="survey-mark-hint muted-tiny">'
+                    f"{survey_mark_hint}"
+                    "</p>"
+                    '<p class="survey-mark-status muted-tiny" data-survey-mark-status '
+                    'hidden role="status"></p>'
+                    '<p class="return-candidate-status muted-tiny" data-return-candidate-status '
+                    'hidden role="status"></p>'
+                    "</div>"
+                )
+            else:
+                portal_request_btns = (
+                    '<div class="card-actions card-actions-portal-request" role="group" '
+                    'aria-label="現調済み（PC承認待ち）">'
+                    '<button type="button" class="btn btn-survey-mark-done" '
+                    'data-survey-mark-done>現調済みにする</button>'
+                    '<p class="survey-mark-hint muted-tiny">'
+                    f"{survey_mark_hint}"
+                    "</p>"
+                    '<p class="survey-mark-status muted-tiny" data-survey-mark-status '
+                    'hidden role="status"></p>'
+                    "</div>"
+                )
+        hidden_attr = ""
+        if it.management_no_key and it.management_no_key in hidden_overlay_keys:
+            hidden_attr = ' hidden data-portal-moved="negotiation"'
         cards.append(
             f"""<article class="card survey-update-card" data-card-index="{idx}"
   data-management-no-key="{escape_html(it.management_no_key)}"
   data-management-no="{escape_html(it.management_no)}"
   data-label="{escape_html(it.label)}"
-  data-requested-action="{survey_requested_action}">
+  data-requested-action="{survey_requested_action}"{hidden_attr}>
   <div class="card-head">
     <h2 class="card-title">{escape_html(it.label)}</h2>
     <p class="item-mgmt">{escape_html(it.management_no)}</p>
@@ -3326,6 +3536,10 @@ def build_survey_html(
         survey_portal_js = render_survey_legacy_request_js(
             status_request_endpoint, status_request_api_key
         )
+    subpage_header = render_portal_subpage_header("現調待ち一覧", page="survey")
+    subpage_menu_css = render_portal_subpage_menu_css()
+    subpage_menu_js = render_portal_subpage_menu_js()
+    survey_action_css = survey_case_action_row_css() if use_immediate else ""
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -3358,32 +3572,8 @@ body {{
   margin-left: auto;
   margin-right: auto;
 }}
-.top-bar {{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-}}
-.top-bar a {{
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--accent);
-  text-decoration: none;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
-}}
-.top-bar a:hover, .top-bar a:focus-visible {{
-  text-decoration: underline;
-  outline: none;
-}}
-.page-title {{
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 0.35rem;
-  padding: 0.5rem 0;
-  border-bottom: 2px solid var(--border);
-}}
+{subpage_menu_css}
+{survey_action_css}
 .lead {{
   margin: 0 0 0.5rem;
   font-size: 0.9rem;
@@ -3599,21 +3789,55 @@ body {{
   color: #b45309;
 }}
 .survey-mark-status[hidden] {{ display: none !important; }}
+.survey-overlay-warning {{
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.82rem;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+}}
+.survey-overlay-warning[hidden] {{ display: none !important; }}
+.btn-survey-mark-return-candidate {{
+  min-height: 44px;
+  background: #fffbeb;
+  color: #92400e;
+  border: 2px solid #f59e0b;
+}}
+.btn-survey-mark-return-candidate:hover, .btn-survey-mark-return-candidate:focus-visible {{
+  background: #fef3c7;
+  outline: none;
+}}
+.btn-survey-mark-return-candidate:disabled {{
+  opacity: 0.8;
+  cursor: default;
+}}
+.return-candidate-status {{
+  margin: 0;
+  color: #92400e;
+  font-weight: 600;
+  flex-basis: 100%;
+  width: 100%;
+}}
+.return-candidate-status.is-error {{
+  color: #b45309;
+}}
+.return-candidate-status[hidden] {{ display: none !important; }}
 .survey-update-card.survey-mark-sent {{
   border-color: #a7f3d0;
+}}
+.survey-update-card.return-candidate-marked {{
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.18);
 }}
 </style>
 </head>
 <body>
-  <nav class="top-bar" aria-label="サイト内リンク">
-    <a href="../">ポータルTOP</a>
-    <a href="./">現調待ち</a>
-    <a href="../negotiation/">交渉待ち</a>
-    <a href="../archive/">アーカイブ</a>
-  </nav>
-  <h1 class="page-title">現調待ち一覧</h1>
-  <p class="lead">径間ごとに地図・現場指示・報告用のリンクがあります。（表示 {len(items)} 件）</p>
+{subpage_header}
+  <p class="lead">径間ごとに地図・現場指示・操作ボタンがあります。（表示 {len(items)} 件）</p>
   <p class="report-disclaimer">{survey_disclaimer}</p>
+  <p id="survey-overlay-warning" class="survey-overlay-warning" hidden role="status"></p>
   <main>
 {items_html}
 {map_block}
@@ -3713,6 +3937,9 @@ body {{
   // Portal status overlay (B-plan) or legacy pending request (A-plan). Never embed service_role.
 {survey_portal_js}
 }})();
+  </script>
+  <script>
+{subpage_menu_js}
   </script>
 </body>
 </html>
@@ -5258,7 +5485,7 @@ def main() -> int:
         survey_items, survey_empty_note, survey_stats = load_survey_public_items(
             repo_root
         )
-        portal_api_key = survey_status_request_api_key()
+        portal_api_key = survey_status_request_api_key(repo_root)
         if not portal_api_key:
             print(
                 "warning: survey portal apikey not set; "
@@ -5266,12 +5493,16 @@ def main() -> int:
                 "when generating (送信ボタンは無効化されます).",
                 file=sys.stderr,
             )
+        overlay_neg_keys = fetch_portal_negotiation_wait_keys(
+            PORTAL_CASE_STATUS_ENDPOINT, portal_api_key
+        )
         survey_html = build_survey_html(
             survey_items,
             survey_empty_note,
             date.today().isoformat(),
             status_request_api_key=portal_api_key,
             portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+            initial_hidden_overlay_keys=overlay_neg_keys,
         )
         survey_path = repo_root / "portal" / "survey" / "index.html"
         survey_path.parent.mkdir(parents=True, exist_ok=True)

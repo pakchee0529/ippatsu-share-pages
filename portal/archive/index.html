@@ -27,30 +27,95 @@ body {
   margin-left: auto;
   margin-right: auto;
 }
-.top-bar {
+
+.portal-page-header {
+  margin-bottom: 0.35rem;
+}
+.portal-page-header-row {
   display: flex;
-  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.portal-page-header-row .page-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0 0 0.35rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border-b);
+}
+.portal-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.portal-menu-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-}
-.top-bar a {
-  font-size: 0.92rem;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: var(--accent-b);
-  text-decoration: none;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
+  font-family: inherit;
+  color: var(--text-b);
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.06);
 }
-.top-bar a:hover, .top-bar a:focus-visible {
-  text-decoration: underline;
+.portal-menu-btn:hover,
+.portal-menu-btn:focus-visible {
+  border-color: var(--accent-b);
   outline: none;
 }
-h1 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 0.5rem;
+.portal-menu-icon {
+  font-size: 1.15rem;
+  line-height: 1;
 }
+.portal-menu-label {
+  white-space: nowrap;
+}
+.portal-menu-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 12.5rem;
+  padding: 0.35rem 0;
+  background: var(--card-b);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(20, 32, 51, 0.12);
+}
+.portal-menu-panel[hidden] {
+  display: none !important;
+}
+.portal-menu-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text-b);
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+a.portal-menu-item:hover,
+a.portal-menu-item:focus-visible {
+  background: #f1f5f9;
+  outline: none;
+}
+.portal-menu-item.is-current {
+  font-weight: 700;
+  background: #f1f5f9;
+}
+
 .lead {
   font-size: 0.92rem;
   color: var(--muted-b);
@@ -217,13 +282,24 @@ a.btn-archive:hover, a.btn-archive:active {
 </style>
 </head>
 <body>
-  <nav class="top-bar" aria-label="サイト内リンク">
-    <a href="../">ポータルTOP</a>
-    <a href="../survey/">現調待ち</a>
-    <a href="../negotiation/">交渉待ち</a>
-    <a href="./">アーカイブ</a>
-  </nav>
-  <h1>現場共有アーカイブ</h1>
+  <header class="portal-page-header">
+    <div class="portal-page-header-row">
+      <h1 class="page-title">現場共有アーカイブ</h1>
+      <div class="portal-menu-wrap">
+        <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel" aria-label="サイトメニューを開く">
+          <span class="portal-menu-icon" aria-hidden="true">☰</span>
+          <span class="portal-menu-label">メニュー</span>
+        </button>
+        <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
+          <a class="portal-menu-item" role="menuitem" href="../">ポータルTOP</a>
+          <a class="portal-menu-item" role="menuitem" href="../calendar/">社内カレンダー</a>
+          <a class="portal-menu-item" role="menuitem" href="../survey/">現調待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="../negotiation/">交渉待ち</a>
+          <a class="portal-menu-item is-current" role="menuitem" href="./" aria-current="page">アーカイブ</a>
+        </nav>
+      </div>
+    </div>
+  </header>
   <p class="disclaimer-note">表示対象は <code>portal/archive_manifest.json</code> の <code>entries</code> に登録した6桁日付のみです。個人情報・次回確認メモ・地主情報などはマニフェストに書き込まないでください。</p>
   <p class="lead">冠称名・径間名・管理番号で過去現場を検索できます。直近7日分は「最近1週間」、それ以前は月別に表示します。</p>
   <div class="search-wrap">
@@ -269,15 +345,6 @@ a.btn-archive:hover, a.btn-archive:active {
       <div class="archive-status">完了3 / 未完了2</div>
       <a class="btn btn-archive" href="./260526/">アーカイブ詳細を開く</a>
     </article>
-    <article class="archive-row" data-search="260525 2026年05月25日 良峯25E9G2～25E9G3, 良峯25E9G1～25E9G2, 良峯25E20～25E22, 良峯25E19～25E20 ほか2件 完了5 / 未完了1 良峯25E9G2～25E9G3 良峯25E9G2-25E9G3 514 08781 51408781 完了 良峯25E9G1～25E9G2 良峯25E9G1-25E9G2 514 08780 51408780 完了 良峯25E20～25E22 良峯25E20-25E22 514 10413 51410413 完了 良峯25E19～25E20 良峯25E19-25E20 514 10412 51410412 完了 良峯25E18～25E19 良峯25E18-25E19 514 10049 51410049 完了 良峯32～32E1 良峯32-32E1 514 08762 51408762 未完了 時間切れ">
-      <div class="archive-row-top">
-        <div class="archive-main">良峯25E9G2～25E9G3, 良峯25E9G1～25E9G2, 良峯25E20～25E22, 良峯25E19～25E20 ほか2件</div>
-        <div class="archive-count">6件</div>
-      </div>
-      <div class="archive-meta">2026年05月25日 <span class="archive-dkey">(260525)</span></div>
-      <div class="archive-status">完了5 / 未完了1</div>
-      <a class="btn btn-archive" href="./260525/">アーカイブ詳細を開く</a>
-    </article>
     </div>
     <p id="recent-empty-build" class="empty-note" hidden>最近1週間の現場はありません。</p>
     <p id="recent-search-empty" class="empty-note" hidden>最近1週間の範囲に、検索に一致する現場はありません。</p>
@@ -288,6 +355,15 @@ a.btn-archive:hover, a.btn-archive:active {
     <details class="month-archive" id="m-2026-05">
       <summary class="month-summary">2026年05月</summary>
       <div class="archive-list" role="list">
+    <article class="archive-row" data-search="260525 2026年05月25日 良峯25E9G2～25E9G3, 良峯25E9G1～25E9G2, 良峯25E20～25E22, 良峯25E19～25E20 ほか2件 完了5 / 未完了1 良峯25E9G2～25E9G3 良峯25E9G2-25E9G3 514 08781 51408781 完了 良峯25E9G1～25E9G2 良峯25E9G1-25E9G2 514 08780 51408780 完了 良峯25E20～25E22 良峯25E20-25E22 514 10413 51410413 完了 良峯25E19～25E20 良峯25E19-25E20 514 10412 51410412 完了 良峯25E18～25E19 良峯25E18-25E19 514 10049 51410049 完了 良峯32～32E1 良峯32-32E1 514 08762 51408762 未完了 時間切れ">
+      <div class="archive-row-top">
+        <div class="archive-main">良峯25E9G2～25E9G3, 良峯25E9G1～25E9G2, 良峯25E20～25E22, 良峯25E19～25E20 ほか2件</div>
+        <div class="archive-count">6件</div>
+      </div>
+      <div class="archive-meta">2026年05月25日 <span class="archive-dkey">(260525)</span></div>
+      <div class="archive-status">完了5 / 未完了1</div>
+      <a class="btn btn-archive" href="./260525/">アーカイブ詳細を開く</a>
+    </article>
     <article class="archive-row" data-search="260522 2026年05月22日 片川52N5～52N6, 片川16～17, 片川12～13, 片川6～8 完了4 / 未完了0 片川52N5～52N6 片川52N5-52N6 514 01977 51401977 完了 片川16～17 片川16-17 514 01850 51401850 完了 片川12～13 片川12-13 514 01846 51401846 完了 片川6～8 片川6-8 514 01841 51401841 完了">
       <div class="archive-row-top">
         <div class="archive-main">片川52N5～52N6, 片川16～17, 片川12～13, 片川6～8</div>
@@ -462,6 +538,32 @@ a.btn-archive:hover, a.btn-archive:active {
   input.addEventListener("input", apply);
   input.addEventListener("search", apply);
 })();
+  </script>
+  <script>
+
+(function () {
+  var btn = document.getElementById("portal-menu-btn");
+  var panel = document.getElementById("portal-menu-panel");
+  if (!btn || !panel) return;
+  function setOpen(open) {
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  btn.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    setOpen(panel.hidden);
+  });
+  document.addEventListener("click", function () {
+    setOpen(false);
+  });
+  panel.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") setOpen(false);
+  });
+})();
+
   </script>
 </body>
 </html>

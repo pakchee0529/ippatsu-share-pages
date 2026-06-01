@@ -86,7 +86,6 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
   var PORTAL_STATUS_ENDPOINT = {ep};
   var PORTAL_STATUS_API_KEY = {key};
   var PORTAL_STATUS_LS_PREFIX = "portal_case_status:";
-  var RETURN_CANDIDATE_LS_KEY = "portalReturnCandidates";
   var SURVEY_MARK_CONFIRM =
     "この案件を「現調済み」として交渉待ちへ移動しますか？\\n\\n即時に交渉待ちページへ表示されます。誤操作は交渉待ちページの「現調待ちに戻す」で取り消せます。";
   var RETURN_CANDIDATE_MARK_CONFIRM = "この案件を返却候補にしますか？";
@@ -103,7 +102,8 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
     }});
     return map;
   }}
-  function applySurveyOverlay(statusMap, serverOk) {{
+﻿function applySurveyOverlay(statusMap, serverOk, returnCandidateKeys) {{
+    var returnMap = returnCandidateKeys || Object.create(null);
     document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {{
       var key = (card.getAttribute("data-management-no-key") || "").trim();
       if (!key) return;
@@ -121,9 +121,12 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
           }}
         }} catch (e) {{}}
       }}
-      if (st === "negotiation_wait") {{
+      if (st === "negotiation_wait" || returnMap[key]) {{
         card.hidden = true;
-        card.setAttribute("data-portal-moved", "negotiation");
+        card.setAttribute(
+          "data-portal-moved",
+          st === "negotiation_wait" ? "negotiation" : "return_candidate",
+        );
       }} else {{
         card.hidden = false;
         card.removeAttribute("data-portal-moved");
@@ -176,53 +179,101 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
     btn.textContent = "現調済みにする";
     card.classList.remove("survey-mark-sent");
   }}
-  function loadReturnCandidates() {{
-    try {{
-      var raw = localStorage.getItem(RETURN_CANDIDATE_LS_KEY);
-      if (!raw) return [];
-      var arr = JSON.parse(raw);
-      return Array.isArray(arr) ? arr : [];
-    }} catch (e) {{
-      return [];
+  function mapReturnCandidateError(httpStatus, body) {{
+    var err = "";
+    if (body && typeof body === "object") {{
+      err = String(body.error || body.message || "");
     }}
+    if (httpStatus === 401 || err === "invalid_api_key") {{
+      return "送信に失敗しました（APIキーが無効です）";
+    }}
+    if (httpStatus === 503 || err === "server_not_configured") {{
+      return "送信機能がサーバ側で未設定です";
+    }}
+    if (httpStatus === 409 && err === "overlay_status_conflict") {{
+      return "交渉待ちに移動済みのため返却候補にできません";
+    }}
+    return "送信に失敗しました。通信状態を確認して再試行してください";
   }}
-  function saveReturnCandidates(items) {{
-    try {{
-      localStorage.setItem(RETURN_CANDIDATE_LS_KEY, JSON.stringify(items));
-    }} catch (e) {{}}
-  }}
-  function setReturnCandidateUi(card, statusEl, state, message) {{
+  function setReturnCandidateUi(card, btn, statusEl, state, message) {{
     statusEl.classList.remove("is-error");
     if (state === "marked") {{
       statusEl.hidden = false;
-      statusEl.textContent = message || "返却候補に設定済み（モック）";
+      statusEl.textContent = message || "返却候補に設定済み";
+      if (btn) {{
+        btn.disabled = true;
+        btn.textContent = "返却候補済み";
+      }}
       card.classList.add("return-candidate-marked");
+      return;
+    }}
+    if (state === "sending") {{
+      statusEl.hidden = false;
+      statusEl.textContent = "送信中...";
+      if (btn) {{
+        btn.disabled = true;
+        btn.textContent = "送信中...";
+      }}
       return;
     }}
     if (state === "error") {{
       statusEl.hidden = false;
       statusEl.classList.add("is-error");
       statusEl.textContent = message || "返却候補の設定に失敗しました";
+      if (btn) {{
+        btn.disabled = false;
+        btn.textContent = "返却候補にする";
+      }}
+      card.classList.remove("return-candidate-marked");
       return;
     }}
     statusEl.hidden = true;
     statusEl.textContent = "";
+    if (btn) {{
+      btn.disabled = !PORTAL_STATUS_API_KEY;
+      btn.textContent = "返却候補にする";
+    }}
     card.classList.remove("return-candidate-marked");
   }}
-  function refreshReturnCandidateCardState() {{
-    var map = Object.create(null);
-    loadReturnCandidates().forEach(function(it) {{
-      var key = String(it.management_no_key || "").trim();
-      if (key) map[key] = true;
-    }});
+  function fetchReturnCandidates() {{
+    if (!PORTAL_STATUS_API_KEY) {{
+      return Promise.resolve({{ ok: false, keys: Object.create(null), reason: "apikey_missing" }});
+    }}
+    return fetch(PORTAL_STATUS_ENDPOINT + "?list=return_candidates", {{
+      method: "GET",
+      headers: {{ apikey: PORTAL_STATUS_API_KEY }},
+    }})
+      .then(function(res) {{
+        return res
+          .json()
+          .catch(function() {{ return {{}}; }})
+          .then(function(data) {{ return {{ res: res, data: data }}; }});
+      }})
+      .then(function(r) {{
+        var keys = Object.create(null);
+        if (!r.res.ok || !r.data || !r.data.ok) {{
+          return {{ ok: false, keys: keys, reason: "fetch_failed" }};
+        }}
+        var list = r.data.return_candidates;
+        if (!Array.isArray(list)) return {{ ok: true, keys: keys }};
+        list.forEach(function(it) {{
+          var k = String(it.management_no_key || "").trim();
+          if (k) keys[k] = true;
+        }});
+        return {{ ok: true, keys: keys }};
+      }})
+      .catch(function() {{ return {{ ok: false, keys: Object.create(null), reason: "network_error" }}; }});
+  }}
+  function refreshReturnCandidateCardState(keys) {{
     document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {{
       var key = (card.getAttribute("data-management-no-key") || "").trim();
+      var btn = card.querySelector("[data-return-candidate-mark]");
       var statusEl = card.querySelector("[data-return-candidate-status]");
       if (!key || !statusEl) return;
-      if (map[key]) {{
-        setReturnCandidateUi(card, statusEl, "marked");
+      if (keys[key]) {{
+        setReturnCandidateUi(card, btn, statusEl, "marked");
       }} else {{
-        setReturnCandidateUi(card, statusEl, "idle");
+        setReturnCandidateUi(card, btn, statusEl, "idle");
       }}
     }});
   }}
@@ -244,9 +295,41 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
   document.querySelectorAll("[data-survey-mark-done]").forEach(function(btn) {{
     if (!PORTAL_STATUS_API_KEY) btn.disabled = true;
   }});
-  applySurveyOverlay(Object.create(null), false);
+  var surveyOverlayWarningEl = document.getElementById("survey-overlay-warning");
+  var cachedReturnCandidateKeys = Object.create(null);
+  var cachedReturnCandidateFetchOk = true;
+  var cachedStatusMap = Object.create(null);
+  var cachedStatusFetchOk = false;
+  function updateSurveyOverlayWarning() {{
+    if (!surveyOverlayWarningEl) return;
+    if (cachedReturnCandidateFetchOk) {{
+      surveyOverlayWarningEl.hidden = true;
+      surveyOverlayWarningEl.textContent = "";
+      return;
+    }}
+    surveyOverlayWarningEl.hidden = false;
+    surveyOverlayWarningEl.textContent =
+      "返却候補情報の取得に失敗したため、一部案件が現調待ちに表示される可能性があります。";
+  }}
+  function syncSurveyCardVisibility() {{
+    applySurveyOverlay(cachedStatusMap, cachedStatusFetchOk, cachedReturnCandidateKeys);
+    if (typeof applySurveyMultipinState === "function") applySurveyMultipinState();
+  }}
+  syncSurveyCardVisibility();
   fetchPortalOverrides().then(function(result) {{
-    applySurveyOverlay(result.statusMap, result.ok);
+    cachedStatusMap = result.statusMap || Object.create(null);
+    cachedStatusFetchOk = !!result.ok;
+    syncSurveyCardVisibility();
+  }});
+  fetchReturnCandidates().then(function(result) {{
+    cachedReturnCandidateKeys = result.keys || Object.create(null);
+    cachedReturnCandidateFetchOk = !!result.ok;
+    updateSurveyOverlayWarning();
+    refreshReturnCandidateCardState(cachedReturnCandidateKeys);
+    syncSurveyCardVisibility();
+    if (!result.ok) {{
+      console.warn("[portal/survey] failed to fetch return candidates");
+    }}
   }});
   document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {{
     var key = (card.getAttribute("data-management-no-key") || "").trim();
@@ -319,29 +402,68 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
       }});
     }}
     if (returnBtn && returnStatusEl) {{
+      if (!PORTAL_STATUS_API_KEY) returnBtn.disabled = true;
       returnBtn.addEventListener("click", function() {{
+        if (returnBtn.disabled) return;
         if (!window.confirm(RETURN_CANDIDATE_MARK_CONFIRM)) return;
-        var items = loadReturnCandidates();
-        var found = items.some(function(it) {{
-          return String(it.management_no_key || "").trim() === key;
-        }});
-        if (!found) {{
-          items.push({{
+        setReturnCandidateUi(card, returnBtn, returnStatusEl, "sending");
+        fetch(PORTAL_STATUS_ENDPOINT, {{
+          method: "POST",
+          headers: {{
+            "Content-Type": "application/json",
+            apikey: PORTAL_STATUS_API_KEY,
+          }},
+          body: JSON.stringify({{
             management_no_key: key,
             management_no: (card.getAttribute("data-management-no") || "").trim(),
             label: (card.getAttribute("data-label") || "").trim(),
-            marked_at: new Date().toISOString(),
+            action: "mark_return_candidate",
+            source: "portal_survey",
+          }}),
+        }})
+          .then(function(res) {{
+            return res
+              .json()
+              .catch(function() {{ return {{}}; }})
+              .then(function(data) {{ return {{ res: res, data: data }}; }});
+          }})
+          .then(function(r) {{
+            if (r.res.ok && r.data && r.data.ok) {{
+              cachedReturnCandidateKeys[key] = true;
+              setReturnCandidateUi(
+                card,
+                returnBtn,
+                returnStatusEl,
+                "marked",
+                "返却候補に設定済み（交渉待ちページの返却リストに表示）",
+              );
+              card.hidden = true;
+              card.setAttribute("data-portal-moved", "return_candidate");
+              syncSurveyCardVisibility();
+              return;
+            }}
+            setReturnCandidateUi(
+              card,
+              returnBtn,
+              returnStatusEl,
+              "error",
+              mapReturnCandidateError(r.res.status, r.data),
+            );
+          }})
+          .catch(function() {{
+            setReturnCandidateUi(
+              card,
+              returnBtn,
+              returnStatusEl,
+              "error",
+              "送信に失敗しました。通信状態を確認して再試行してください",
+            );
           }});
-          saveReturnCandidates(items);
-        }}
-        setReturnCandidateUi(card, returnStatusEl, "marked", "返却候補に設定済み（モック）");
-        window.alert("返却候補に設定しました");
       }});
     }}
   }});
-  refreshReturnCandidateCardState();
-"""
 
+"""
 
 def render_survey_legacy_request_js(endpoint: str, api_key: str) -> str:
     ep = json.dumps(endpoint, ensure_ascii=False)
