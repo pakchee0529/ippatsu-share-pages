@@ -807,20 +807,41 @@ def render_negotiation_immediate_status_js(
       }})
       .catch(function() {{ return Object.create(null); }});
   }}
-  function loadReturnCandidates() {{
-    try {{
-      var raw = localStorage.getItem(RETURN_CANDIDATE_LS_KEY);
-      if (!raw) return [];
-      var arr = JSON.parse(raw);
-      return Array.isArray(arr) ? arr : [];
-    }} catch (e) {{
-      return [];
+  function mapReturnCandidateError(httpStatus, body) {{
+    var err = "";
+    if (body && typeof body === "object") {{
+      err = String(body.error || body.message || "");
     }}
+    if (httpStatus === 401 || err === "invalid_api_key") {{
+      return "解除に失敗しました（APIキーが無効です）";
+    }}
+    if (httpStatus === 404 || err === "return_candidate_not_found") {{
+      return "返却候補が見つかりません";
+    }}
+    return "解除に失敗しました。通信状態を確認して再試行してください";
   }}
-  function saveReturnCandidates(items) {{
-    try {{
-      localStorage.setItem(RETURN_CANDIDATE_LS_KEY, JSON.stringify(items));
-    }} catch (e) {{}}
+  function fetchReturnCandidates() {{
+    if (!PORTAL_STATUS_API_KEY) {{
+      return Promise.resolve({{ ok: false, items: [] }});
+    }}
+    return fetch(PORTAL_STATUS_ENDPOINT + "?list=return_candidates", {{
+      method: "GET",
+      headers: {{ apikey: PORTAL_STATUS_API_KEY }},
+    }})
+      .then(function(res) {{
+        return res
+          .json()
+          .catch(function() {{ return {{}}; }})
+          .then(function(data) {{ return {{ res: res, data: data }}; }});
+      }})
+      .then(function(r) {{
+        if (!r.res.ok || !r.data || !r.data.ok) {{
+          return {{ ok: false, items: [] }};
+        }}
+        var list = r.data.return_candidates;
+        return {{ ok: true, items: Array.isArray(list) ? list : [] }};
+      }})
+      .catch(function() {{ return {{ ok: false, items: [] }}; }});
   }}
   function fmtMarkedAt(iso) {{
     var s = String(iso || "").trim();
@@ -835,18 +856,17 @@ def render_negotiation_immediate_status_js(
       String(d.getMinutes()).padStart(2, "0")
     );
   }}
-  function renderReturnCandidateList() {{
+  function renderReturnCandidateList(items) {{
     var listEl = document.getElementById("return-candidate-list");
     var emptyEl = document.getElementById("return-candidate-empty");
     if (!listEl || !emptyEl) return;
-    var items = loadReturnCandidates();
     listEl.innerHTML = "";
-    if (!items.length) {{
+    if (!items || !items.length) {{
       emptyEl.hidden = false;
       return;
     }}
     emptyEl.hidden = true;
-    items.forEach(function(it, i) {{
+    items.forEach(function(it) {{
       var key = String(it.management_no_key || "").trim();
       if (!key) return;
       var html =
@@ -858,7 +878,8 @@ def render_negotiation_immediate_status_js(
         "</div>" +
         '<button type="button" class="btn btn-return-candidate-clear" data-return-candidate-clear="' + escHtml(key) + '">返却候補を解除</button>' +
         "</div>" +
-        '<p class="return-candidate-item-meta">返却候補（モック） / marked_at: ' + escHtml(fmtMarkedAt(it.marked_at)) + "</p>" +
+        '<p class="return-candidate-item-meta">返却候補（overlay） / ' + escHtml(fmtMarkedAt(it.marked_at || it.updated_at)) + "</p>" +
+        '<p class="return-candidate-clear-status muted-tiny" data-return-clear-status hidden role="status"></p>' +
         "</article>";
       listEl.insertAdjacentHTML("beforeend", html);
     }});
@@ -867,19 +888,62 @@ def render_negotiation_immediate_status_js(
       btn.setAttribute("data-clear-bound", "1");
       btn.addEventListener("click", function() {{
         var key = (btn.getAttribute("data-return-candidate-clear") || "").trim();
-        if (!key) return;
+        if (!key || !PORTAL_STATUS_API_KEY) return;
         if (!window.confirm(RETURN_CANDIDATE_CLEAR_CONFIRM)) return;
-        var next = loadReturnCandidates().filter(function(it) {{
-          return String(it.management_no_key || "").trim() !== key;
-        }});
-        saveReturnCandidates(next);
-        renderReturnCandidateList();
+        var itemEl = btn.closest(".return-candidate-item");
+        var statusEl = itemEl
+          ? itemEl.querySelector("[data-return-clear-status]")
+          : null;
+        btn.disabled = true;
+        if (statusEl) {{
+          statusEl.hidden = false;
+          statusEl.textContent = "解除中...";
+        }}
+        fetch(PORTAL_STATUS_ENDPOINT, {{
+          method: "POST",
+          headers: {{
+            "Content-Type": "application/json",
+            apikey: PORTAL_STATUS_API_KEY,
+          }},
+          body: JSON.stringify({{
+            management_no_key: key,
+            action: "unmark_return_candidate",
+            source: "portal_negotiation",
+          }}),
+        }})
+          .then(function(res) {{
+            return res
+              .json()
+              .catch(function() {{ return {{}}; }})
+              .then(function(data) {{ return {{ res: res, data: data }}; }});
+          }})
+          .then(function(r) {{
+            if (r.res.ok && r.data && r.data.ok) {{
+              fetchReturnCandidates().then(function(result) {{
+                renderReturnCandidateList(result.items);
+              }});
+              return;
+            }}
+            btn.disabled = false;
+            if (statusEl) {{
+              statusEl.textContent = mapReturnCandidateError(r.res.status, r.data);
+            }}
+          }})
+          .catch(function() {{
+            btn.disabled = false;
+            if (statusEl) {{
+              statusEl.textContent =
+                "解除に失敗しました。通信状態を確認して再試行してください";
+            }}
+          }});
       }});
     }});
   }}
   fetchPortalOverrides().then(function(statusMap) {{
     appendPromotedCards(statusMap);
     bindRevertButtons();
-    renderReturnCandidateList();
+    fetchReturnCandidates().then(function(result) {{
+      renderReturnCandidateList(result.items);
+    }});
   }});
 """

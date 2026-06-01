@@ -28,6 +28,15 @@ survey・share 注入・他日付のアーカイブ詳細は触らない。
 ``--mode share-update --date YYMMDD``: 共有モードの公開・差し替え向けの最小生成。
 ``portal/index.html`` と **当該日のみ** ``share/<date>/index.html`` の inject のみ。
 survey・アーカイブ一覧・全 archive 詳細・他日付 share inject は触らない。
+
+限定再生成（いずれも ``--data-root`` 可。CLI 起動時に ``.env`` を読み込む）:
+
+``--mode survey-only``: ``portal/survey/index.html`` のみ。
+``--mode archive-only``: ``portal/archive/index.html`` のみ。
+``--mode portal-top-only``: ``portal/index.html`` のみ。
+``--mode negotiation-only``: ``portal/negotiation/index.html`` のみ。
+
+各限定 mode は生成後に HTML スモーク検証を行い、想定外の portal HTML 変更を検出する。
 """
 
 from __future__ import annotations
@@ -1256,6 +1265,81 @@ def render_portal_subpage_header(page_title: str, *, page: str) -> str:
       </div>
     </div>
   </header>"""
+
+
+def render_negotiation_return_candidate_css() -> str:
+    return """
+.return-candidate-section {
+  margin-top: 1.0rem;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 0.85rem;
+}
+.return-candidate-section h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+.return-candidate-note {
+  margin: 0 0 0.55rem;
+}
+.return-candidate-list {
+  display: grid;
+  gap: 0.55rem;
+}
+.return-candidate-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.6rem;
+  background: #fffef8;
+}
+.return-candidate-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+}
+.return-candidate-item-title {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+.return-candidate-item-mgmt {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.return-candidate-item-meta {
+  margin: 0.35rem 0 0;
+  font-size: 0.79rem;
+  color: #92400e;
+}
+.btn-return-candidate-clear {
+  background: #fff;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  min-height: 36px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.82rem;
+}
+.btn-return-candidate-clear:hover,
+.btn-return-candidate-clear:focus-visible {
+  background: #fef3c7;
+  outline: none;
+}
+"""
+
+
+def render_negotiation_return_candidate_section() -> str:
+    return """
+  <section class="return-candidate-section" aria-labelledby="return-candidate-heading">
+    <h2 id="return-candidate-heading">返却待ちリスト</h2>
+    <p class="muted-tiny return-candidate-note">返却候補（overlay）。PCでの返却待ち正本化は未実施です。</p>
+    <div id="return-candidate-list" class="return-candidate-list" role="list"></div>
+    <p id="return-candidate-empty" class="muted-tiny">返却候補はありません。</p>
+  </section>
+"""
 
 
 def render_portal_subpage_menu_js() -> str:
@@ -4169,6 +4253,7 @@ def build_negotiation_html(
     portal_status_endpoint: str = PORTAL_CASE_STATUS_ENDPOINT,
     status_request_api_key: str = "",
     immediate_status: bool | None = None,
+    repo_root: Path | None = None,
 ) -> str:
     """交渉待ちページ（M11 + B-plan immediate status draft）。
 
@@ -4192,6 +4277,7 @@ def build_negotiation_html(
             "このページは閲覧用です。状態を変更するボタン（Supabase送信・Googleフォーム）はありません。"
             "「現調待ちに戻す」は未実装のため無効化しています。"
         )
+    gps_poles = load_gps_poles(repo_root) if repo_root is not None else None
     cards: list[str] = []
     points: list[dict] = []
     for idx, it in enumerate(items):
@@ -4230,7 +4316,7 @@ def build_negotiation_html(
                 b_name=it.end_label or it.label,
                 b_lat=end_lat,
                 b_lng=end_lng,
-                gps_poles=None,
+                gps_poles=gps_poles,
             )
             two_json = format_two_geo_script(two_json_id, two_geo)
             two_wrap = (
@@ -4323,6 +4409,11 @@ def build_negotiation_html(
             status_request_api_key,
             candidates_json,
         )
+    subpage_header = render_portal_subpage_header("交渉待ち一覧", page="negotiation")
+    subpage_menu_css = render_portal_subpage_menu_css()
+    subpage_menu_js = render_portal_subpage_menu_js()
+    return_candidate_section = render_negotiation_return_candidate_section()
+    return_candidate_css = render_negotiation_return_candidate_css()
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -4355,32 +4446,8 @@ body {{
   margin-left: auto;
   margin-right: auto;
 }}
-.top-bar {{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-}}
-.top-bar a {{
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--accent);
-  text-decoration: none;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
-}}
-.top-bar a:hover, .top-bar a:focus-visible {{
-  text-decoration: underline;
-  outline: none;
-}}
-.page-title {{
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 0.35rem;
-  padding: 0.5rem 0;
-  border-bottom: 2px solid var(--border);
-}}
+{subpage_menu_css}
+{return_candidate_css}
 .lead {{
   margin: 0 0 0.5rem;
   font-size: 0.9rem;
@@ -4556,17 +4623,12 @@ body {{
 </style>
 </head>
 <body>
-  <nav class="top-bar" aria-label="サイト内リンク">
-    <a href="../">ポータルTOP</a>
-    <a href="../survey/">現調待ち</a>
-    <a href="./">交渉待ち</a>
-    <a href="../archive/">アーカイブ</a>
-  </nav>
-  <h1 class="page-title">交渉待ち一覧</h1>
+{subpage_header}
   <p class="lead">現調済み・対応中の案件です。地主交渉に進む案件を確認します。（表示 {len(items)} 件）</p>
   <p class="report-disclaimer">{negotiation_disclaimer}</p>
   <main>
 {items_html}
+{return_candidate_section}
 {map_block}
   </main>
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
@@ -4612,6 +4674,9 @@ body {{
   // Portal status overlay (B-plan immediate). Never embed service_role.
 {negotiation_portal_js}
 }})();
+  </script>
+  <script>
+{subpage_menu_js}
   </script>
 </body>
 </html>
@@ -5392,6 +5457,524 @@ a.portal-menu-item:focus-visible {{
 PORTAL_MODE_FULL = "full"
 PORTAL_MODE_COMPLETION_ARCHIVE = "completion-archive"
 PORTAL_MODE_SHARE_UPDATE = "share-update"
+PORTAL_MODE_SURVEY_ONLY = "survey-only"
+PORTAL_MODE_ARCHIVE_ONLY = "archive-only"
+PORTAL_MODE_PORTAL_TOP_ONLY = "portal-top-only"
+PORTAL_MODE_NEGOTIATION_ONLY = "negotiation-only"
+
+FOCUSED_PORTAL_MODES = frozenset(
+    {
+        PORTAL_MODE_SURVEY_ONLY,
+        PORTAL_MODE_ARCHIVE_ONLY,
+        PORTAL_MODE_PORTAL_TOP_ONLY,
+        PORTAL_MODE_NEGOTIATION_ONLY,
+    }
+)
+
+PORTAL_GUARD_REL_PATHS: tuple[str, ...] = (
+    "portal/index.html",
+    "portal/survey/index.html",
+    "portal/archive/index.html",
+    "portal/negotiation/index.html",
+)
+
+MODE_ALLOWED_PORTAL_OUTPUTS: dict[str, frozenset[str]] = {
+    PORTAL_MODE_SURVEY_ONLY: frozenset({"portal/survey/index.html"}),
+    PORTAL_MODE_ARCHIVE_ONLY: frozenset({"portal/archive/index.html"}),
+    PORTAL_MODE_PORTAL_TOP_ONLY: frozenset({"portal/index.html"}),
+    PORTAL_MODE_NEGOTIATION_ONLY: frozenset({"portal/negotiation/index.html"}),
+}
+
+
+@dataclass
+class FocusedGenerateResult:
+    mode: str
+    output_rel: str
+    stats: dict[str, Any]
+    apikey_nonempty: bool
+
+
+def _portal_data_root_display(repo_root: Path) -> str:
+    return str(_portal_data_root_default(repo_root))
+
+
+def _portal_data_root_default(repo_root: Path) -> Path:
+    if _DATA_ROOT_OVERRIDE is not None:
+        return _DATA_ROOT_OVERRIDE
+    return (repo_root.parent / "ippatsu-pc" / "data").resolve()
+
+
+def _load_env_file_minimal(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        s = line.strip()
+        if not s or s.startswith("#"):
+            continue
+        if s.startswith("export "):
+            s = s[7:].strip()
+        if "=" not in s:
+            continue
+        key, _, val = s.partition("=")
+        key = key.strip()
+        if not key:
+            continue
+        val = val.strip()
+        if len(val) >= 2 and val[0] == val[-1] and val[0] in "\"'":
+            val = val[1:-1]
+        if key not in os.environ:
+            os.environ[key] = val
+    return True
+
+
+def load_portal_dotenv(repo_root: Path) -> list[str]:
+    """share-pages / ippatsu-pc の .env を読む（既存の環境変数は上書きしない）。"""
+    loaded: list[str] = []
+    candidates = [
+        repo_root / ".env",
+        repo_root.parent / "ippatsu-pc" / ".env",
+    ]
+    try:
+        from dotenv import load_dotenv  # type: ignore[import-untyped]
+
+        for path in candidates:
+            if path.is_file():
+                load_dotenv(path, override=False)
+                loaded.append(str(path.resolve()))
+    except ImportError:
+        for path in candidates:
+            if _load_env_file_minimal(path):
+                loaded.append(str(path.resolve()))
+    return loaded
+
+
+def _snapshot_portal_guard_files(repo_root: Path) -> dict[str, bytes | None]:
+    snap: dict[str, bytes | None] = {}
+    for rel in PORTAL_GUARD_REL_PATHS:
+        p = repo_root / rel
+        snap[rel] = p.read_bytes() if p.is_file() else None
+    return snap
+
+
+def _portal_guard_violations(
+    repo_root: Path,
+    before: dict[str, bytes | None],
+    allowed: frozenset[str],
+) -> list[str]:
+    violations: list[str] = []
+    for rel in PORTAL_GUARD_REL_PATHS:
+        p = repo_root / rel
+        after = p.read_bytes() if p.is_file() else None
+        if before.get(rel) != after and rel not in allowed:
+            violations.append(rel)
+    return violations
+
+
+def _iter_share_index_rows(repo_root: Path) -> list[tuple[str, Path]]:
+    share_dir = repo_root / "share"
+    if not share_dir.is_dir():
+        return []
+    rows: list[tuple[str, Path]] = []
+    for sub in sorted(share_dir.iterdir(), key=lambda p: p.name):
+        if not sub.is_dir():
+            continue
+        if sub.name.lower() == "sample":
+            continue
+        idx = sub / "index.html"
+        if not idx.is_file():
+            continue
+        rows.append((sub.name, idx))
+    rows.sort(key=lambda x: sort_key(x[0]))
+    return rows
+
+
+def _build_portal_top_entries(
+    repo_root: Path,
+    *,
+    exclude_folder: str | None = None,
+) -> list[tuple[str, str]]:
+    manifest_entries = load_archive_manifest_entries(repo_root)
+    archived = {e.date for e in manifest_entries}
+    entries: list[tuple[str, str]] = []
+    for folder, path in _iter_share_index_rows(repo_root):
+        if folder in archived:
+            continue
+        if exclude_folder is not None and folder == exclude_folder:
+            continue
+        html_text = path.read_text(encoding="utf-8", errors="replace")
+        date_line = card_heading(folder, path)
+        summary = summarize_share_html(html_text, folder)
+        heading = build_portal_heading(date_line, summary)
+        entries.append((folder, heading))
+    return entries
+
+
+def _build_archive_index_parts(
+    repo_root: Path,
+) -> tuple[
+    list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
+    list,
+    list[ManifestEntry],
+    dict[str, int],
+]:
+    manifest_entries = load_archive_manifest_entries(repo_root)
+    share_by_folder = {f: p for f, p in _iter_share_index_rows(repo_root)}
+    archive_parts: list[
+        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
+    ] = []
+    for ment in manifest_entries:
+        path = share_by_folder.get(ment.date)
+        summary: ShareSummary | None = None
+        if path is not None:
+            html_text = path.read_text(encoding="utf-8", errors="replace")
+            summary = summarize_share_html(html_text, ment.date)
+        else:
+            print(
+                f"Warning: archive manifest lists '{ment.date}' but share/{ment.date}/ "
+                "has no index.html; archive list/detail use manifest fields only",
+                file=sys.stderr,
+            )
+        public_items, _ = load_archive_public_items(repo_root, ment.date)
+        archive_parts.append((ment, summary, public_items))
+    today = date.today()
+    recent_parts: list[
+        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
+    ] = []
+    monthly_parts: list[
+        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
+    ] = []
+    for ment, summary, public_items in archive_parts:
+        if is_in_last_seven_days(ment.date, today):
+            recent_parts.append((ment, summary, public_items))
+        else:
+            monthly_parts.append((ment, summary, public_items))
+    recent_parts.sort(key=lambda t: sort_key(t[0].date), reverse=True)
+    sections = group_archive_sections(monthly_parts)
+    stats = {
+        "manifest": len(manifest_entries),
+        "archive_rows": len(archive_parts),
+        "recent": len(recent_parts),
+        "months": len(sections),
+    }
+    return recent_parts, sections, manifest_entries, stats
+
+
+def _write_portal_html(repo_root: Path, rel: str, html: str) -> Path:
+    out_path = repo_root / rel
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(html, encoding="utf-8", newline="\n")
+    return out_path
+
+
+def run_survey_only(repo_root: Path) -> FocusedGenerateResult:
+    survey_items, survey_empty_note, survey_stats = load_survey_public_items(repo_root)
+    portal_api_key = survey_status_request_api_key(repo_root)
+    if not portal_api_key:
+        print(
+            "warning: survey portal apikey not set; "
+            "set PORTAL_SURVEY_REQUEST_API_KEY or SUPABASE_ANON_KEY "
+            "when generating (送信ボタンは無効化されます).",
+            file=sys.stderr,
+        )
+    overlay_neg_keys = fetch_portal_negotiation_wait_keys(
+        PORTAL_CASE_STATUS_ENDPOINT, portal_api_key
+    )
+    survey_html = build_survey_html(
+        survey_items,
+        survey_empty_note,
+        date.today().isoformat(),
+        status_request_api_key=portal_api_key,
+        portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+        initial_hidden_overlay_keys=overlay_neg_keys,
+        repo_root=repo_root,
+    )
+    rel = "portal/survey/index.html"
+    out_path = _write_portal_html(repo_root, rel, survey_html)
+    stats = dict(survey_stats)
+    stats["survey_items"] = len(survey_items)
+    print(
+        f"Wrote {out_path} (survey_items={len(survey_items)}, "
+        f"survey_items_total={survey_stats['total']}, "
+        f"visible={survey_stats['visible']}, "
+        f"filtered={survey_stats['filtered']})"
+    )
+    if survey_stats.get("exclude_reasons"):
+        print(f"  survey_exclude_reasons: {survey_stats['exclude_reasons']}")
+    return FocusedGenerateResult(
+        mode=PORTAL_MODE_SURVEY_ONLY,
+        output_rel=rel,
+        stats=stats,
+        apikey_nonempty=bool(portal_api_key),
+    )
+
+
+def run_archive_only(repo_root: Path) -> FocusedGenerateResult:
+    recent_parts, sections, manifest_entries, arch_stats = _build_archive_index_parts(
+        repo_root
+    )
+    arch_html = build_archive_html(recent_parts, sections)
+    rel = "portal/archive/index.html"
+    out_path = _write_portal_html(repo_root, rel, arch_html)
+    print(
+        f"Wrote {out_path} (manifest={arch_stats['manifest']}, "
+        f"archive_rows={arch_stats['archive_rows']}, recent={arch_stats['recent']}, "
+        f"months={arch_stats['months']})"
+    )
+    stats = dict(arch_stats)
+    stats["manifest_entries"] = len(manifest_entries)
+    return FocusedGenerateResult(
+        mode=PORTAL_MODE_ARCHIVE_ONLY,
+        output_rel=rel,
+        stats=stats,
+        apikey_nonempty=False,
+    )
+
+
+def run_portal_top_only(repo_root: Path) -> FocusedGenerateResult:
+    entries = _build_portal_top_entries(repo_root)
+    manifest_entries = load_archive_manifest_entries(repo_root)
+    archived = len({e.date for e in manifest_entries})
+    out_html = build_html(entries, calendar_api_key=portal_calendar_api_key(repo_root))
+    rel = "portal/index.html"
+    out_path = _write_portal_html(repo_root, rel, out_html)
+    print(
+        f"Wrote {out_path} ({len(entries)} cards, "
+        f"{archived} date(s) hidden on top per manifest)"
+    )
+    stats = {"portal_cards": len(entries), "archived_dates_hidden": archived}
+    cal_key = portal_calendar_api_key(repo_root)
+    return FocusedGenerateResult(
+        mode=PORTAL_MODE_PORTAL_TOP_ONLY,
+        output_rel=rel,
+        stats=stats,
+        apikey_nonempty=bool(cal_key),
+    )
+
+
+def run_negotiation_only(repo_root: Path) -> FocusedGenerateResult:
+    negotiation_items, negotiation_empty_note, negotiation_stats = (
+        load_negotiation_public_items(repo_root)
+    )
+    portal_api_key = survey_status_request_api_key(repo_root)
+    if not portal_api_key:
+        print(
+            "warning: negotiation portal apikey not set; "
+            "set PORTAL_SURVEY_REQUEST_API_KEY or SUPABASE_ANON_KEY "
+            "when generating.",
+            file=sys.stderr,
+        )
+    survey_items, _, _ = load_survey_public_items(repo_root)
+    negotiation_html = build_negotiation_html(
+        negotiation_items,
+        negotiation_empty_note,
+        promoted_candidates=survey_items,
+        status_request_api_key=portal_api_key,
+        portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+        repo_root=repo_root,
+    )
+    rel = "portal/negotiation/index.html"
+    out_path = _write_portal_html(repo_root, rel, negotiation_html)
+    print(
+        f"Wrote {out_path} (negotiation_items={len(negotiation_items)}, "
+        f"negotiation_items_total={negotiation_stats['total']}, "
+        f"visible={negotiation_stats['visible']}, "
+        f"filtered={negotiation_stats['filtered']})"
+    )
+    stats = dict(negotiation_stats)
+    stats["negotiation_items"] = len(negotiation_items)
+    return FocusedGenerateResult(
+        mode=PORTAL_MODE_NEGOTIATION_ONLY,
+        output_rel=rel,
+        stats=stats,
+        apikey_nonempty=bool(portal_api_key),
+    )
+
+
+def _require_html_substrings(html: str, checks: list[tuple[str, str]]) -> list[str]:
+    failures: list[str] = []
+    for label, needle in checks:
+        if needle not in html:
+            failures.append(label)
+    return failures
+
+
+def _validate_two_geo_script(html: str, script_id: str = "two-geo-0") -> list[str]:
+    failures: list[str] = []
+    m = re.search(rf'id="{re.escape(script_id)}">([^<]+)<', html)
+    if not m:
+        failures.append(f"{script_id} script block missing")
+        return failures
+    raw = m.group(1)
+    if "&quot;" in raw:
+        failures.append(f"{script_id} contains HTML-escaped quotes")
+    try:
+        geo = json.loads(raw)
+    except json.JSONDecodeError:
+        failures.append(f"{script_id} json.loads failed")
+        return failures
+    if not isinstance(geo.get("nearby"), list):
+        failures.append(f"{script_id} missing nearby array")
+    return failures
+
+
+def validate_survey_only_output(
+    repo_root: Path, *, apikey_nonempty: bool
+) -> list[str]:
+    path = repo_root / "portal" / "survey" / "index.html"
+    if not path.is_file():
+        return ["portal/survey/index.html missing"]
+    html = path.read_text(encoding="utf-8", errors="replace")
+    failures = _require_html_substrings(
+        html,
+        [
+            ("51404162", "51404162"),
+            ("白銀63N5W3～63N5W4", "白銀63N5W3～63N5W4"),
+            ("51403794", "51403794"),
+            ("現調済みにする", "現調済みにする"),
+            ("返却候補にする", "返却候補にする"),
+            ("survey-overlay-warning", "survey-overlay-warning"),
+            ("fetchReturnCandidates", "fetchReturnCandidates"),
+            ("portal-menu-btn", "portal-menu-btn"),
+            ("two-geo-0", 'id="two-geo-0"'),
+            ("var points", "var points = "),
+        ],
+    )
+    failures.extend(_validate_two_geo_script(html, "two-geo-0"))
+    if not apikey_nonempty:
+        failures.append("survey apikey empty")
+    return failures
+
+
+def validate_archive_only_output(repo_root: Path) -> list[str]:
+    path = repo_root / "portal" / "archive" / "index.html"
+    if not path.is_file():
+        return ["portal/archive/index.html missing"]
+    html = path.read_text(encoding="utf-8", errors="replace")
+    return _require_html_substrings(
+        html,
+        [
+            ("portal-menu-btn", "portal-menu-btn"),
+            ("ポータルTOP", 'href="../"'),
+            ("現調待ち", 'href="../survey/"'),
+            ("交渉待ち", 'href="../negotiation/"'),
+            ("社内カレンダー", 'href="../calendar/"'),
+            ("アーカイブ current", 'aria-current="page"'),
+        ],
+    )
+
+
+def validate_portal_top_only_output(repo_root: Path) -> list[str]:
+    path = repo_root / "portal" / "index.html"
+    if not path.is_file():
+        return ["portal/index.html missing"]
+    html = path.read_text(encoding="utf-8", errors="replace")
+    return _require_html_substrings(
+        html,
+        [
+            ("today-schedule", "today-schedule"),
+            ("loadTodaySchedule", "function loadTodaySchedule"),
+            ("company-calendar-events", "company-calendar-events"),
+            ("calendar link", 'href="./calendar/"'),
+            ("portal-menu-btn", "portal-menu-btn"),
+        ],
+    )
+
+
+def validate_negotiation_only_output(repo_root: Path) -> list[str]:
+    path = repo_root / "portal" / "negotiation" / "index.html"
+    if not path.is_file():
+        return ["portal/negotiation/index.html missing"]
+    html = path.read_text(encoding="utf-8", errors="replace")
+    return _require_html_substrings(
+        html,
+        [
+            ("portal-menu-btn", "portal-menu-btn"),
+            ("return-candidate-section", "return-candidate-section"),
+            ("返却待ちリスト", "返却待ちリスト"),
+            ("fetchReturnCandidates", "fetchReturnCandidates"),
+            ("negotiation-card", "negotiation-card"),
+            ("data-negotiation-revert", "data-negotiation-revert"),
+            ("現調待ちに戻す", "現調待ちに戻す"),
+        ],
+    )
+
+
+def validate_focused_mode(
+    mode: str, repo_root: Path, result: FocusedGenerateResult
+) -> list[str]:
+    if mode == PORTAL_MODE_SURVEY_ONLY:
+        return validate_survey_only_output(
+            repo_root, apikey_nonempty=result.apikey_nonempty
+        )
+    if mode == PORTAL_MODE_ARCHIVE_ONLY:
+        return validate_archive_only_output(repo_root)
+    if mode == PORTAL_MODE_PORTAL_TOP_ONLY:
+        return validate_portal_top_only_output(repo_root)
+    if mode == PORTAL_MODE_NEGOTIATION_ONLY:
+        return validate_negotiation_only_output(repo_root)
+    return [f"unknown focused mode: {mode}"]
+
+
+def _print_focused_cli_summary(
+    result: FocusedGenerateResult,
+    *,
+    data_root: str,
+    env_loaded: list[str],
+    validation_ok: bool,
+    validation_failures: list[str],
+) -> None:
+    print(f"mode: {result.mode}")
+    print(f"data_root: {data_root}")
+    if env_loaded:
+        print(f"env_loaded: {len(env_loaded)} file(s)")
+    print(f"changed_target: {result.output_rel}")
+    print(f"output file: {result.output_rel}")
+    if "visible" in result.stats:
+        print(f"visible: {result.stats['visible']}")
+    if "portal_cards" in result.stats:
+        print(f"portal_cards: {result.stats['portal_cards']}")
+    if "negotiation_items" in result.stats:
+        print(f"negotiation_items: {result.stats['negotiation_items']}")
+    if "manifest" in result.stats:
+        print(f"manifest_entries: {result.stats['manifest']}")
+    print(f"apikey_nonempty: {str(result.apikey_nonempty).lower()}")
+    if validation_ok:
+        print("validation: OK")
+    else:
+        print("validation: NG")
+        for item in validation_failures:
+            print(f"  - {item}")
+
+
+def run_focused_portal_mode(mode: str, repo_root: Path) -> int:
+    env_loaded = load_portal_dotenv(repo_root)
+    allowed = MODE_ALLOWED_PORTAL_OUTPUTS[mode]
+    before = _snapshot_portal_guard_files(repo_root)
+    runners = {
+        PORTAL_MODE_SURVEY_ONLY: run_survey_only,
+        PORTAL_MODE_ARCHIVE_ONLY: run_archive_only,
+        PORTAL_MODE_PORTAL_TOP_ONLY: run_portal_top_only,
+        PORTAL_MODE_NEGOTIATION_ONLY: run_negotiation_only,
+    }
+    result = runners[mode](repo_root)
+    guard_hits = _portal_guard_violations(repo_root, before, allowed)
+    if guard_hits:
+        print(
+            "Error: portal file guard detected unexpected changes: "
+            + ", ".join(guard_hits),
+            file=sys.stderr,
+        )
+        return 1
+    failures = validate_focused_mode(mode, repo_root, result)
+    validation_ok = not failures
+    _print_focused_cli_summary(
+        result,
+        data_root=_portal_data_root_display(repo_root),
+        env_loaded=env_loaded,
+        validation_ok=validation_ok,
+        validation_failures=failures,
+    )
+    return 0 if validation_ok else 1
 
 
 def _parse_six_digit_date(value: str) -> str | None:
@@ -5426,13 +6009,19 @@ def main() -> int:
             PORTAL_MODE_FULL,
             PORTAL_MODE_COMPLETION_ARCHIVE,
             PORTAL_MODE_SHARE_UPDATE,
+            PORTAL_MODE_SURVEY_ONLY,
+            PORTAL_MODE_ARCHIVE_ONLY,
+            PORTAL_MODE_PORTAL_TOP_ONLY,
+            PORTAL_MODE_NEGOTIATION_ONLY,
         ),
         default=PORTAL_MODE_FULL,
         help=(
             "full: full portal regen (default). "
             "completion-archive: minimal regen for completion report archive sync "
             "(requires --date). "
-            "share-update: minimal regen for share-mode publish (requires --date)."
+            "share-update: minimal regen for share-mode publish (requires --date). "
+            "survey-only / archive-only / portal-top-only / negotiation-only: "
+            "single HTML output with post-generate validation."
         ),
     )
     parser.add_argument(
@@ -5468,6 +6057,16 @@ def main() -> int:
     )
 
     repo_root = Path(__file__).resolve().parent.parent
+    load_portal_dotenv(repo_root)
+
+    if mode in FOCUSED_PORTAL_MODES:
+        if mode in (PORTAL_MODE_PORTAL_TOP_ONLY,):
+            share_dir = repo_root / "share"
+            if not share_dir.is_dir():
+                print(f"Missing directory: {share_dir}", file=sys.stderr)
+                return 1
+        return run_focused_portal_mode(mode, repo_root)
+
     share_dir = repo_root / "share"
     if not share_dir.is_dir():
         print(f"Missing directory: {share_dir}", file=sys.stderr)
@@ -5477,53 +6076,15 @@ def main() -> int:
         # ippatsu-pc からの HTML コピー直後でも、ポータル生成前に必ず注入する。
         inject_share_detail_edit_into_share_pages(repo_root)
 
-    rows: list[tuple[str, Path]] = []
-    for sub in sorted(share_dir.iterdir(), key=lambda p: p.name):
-        if not sub.is_dir():
-            continue
-        if sub.name.lower() == "sample":
-            continue
-        idx = sub / "index.html"
-        if not idx.is_file():
-            continue
-        rows.append((sub.name, idx))
-
-    rows.sort(key=lambda x: sort_key(x[0]))
-
     manifest_entries = load_archive_manifest_entries(repo_root)
-    manifest_dates = [e.date for e in manifest_entries]
-    archived = set(manifest_dates)
+    archived = {e.date for e in manifest_entries}
 
-    entries: list[tuple[str, str]] = []
-    for folder, path in rows:
-        if folder in archived:
-            continue
-        if mode == PORTAL_MODE_COMPLETION_ARCHIVE and folder == target_date:
-            continue
-        html_text = path.read_text(encoding="utf-8", errors="replace")
-        date_line = card_heading(folder, path)
-        summary = summarize_share_html(html_text, folder)
-        heading = build_portal_heading(date_line, summary)
-        entries.append((folder, heading))
-
-    share_by_folder: dict[str, Path] = {f: p for f, p in rows}
-    archive_parts: list[
-        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
-    ] = []
-    for ment in manifest_entries:
-        path = share_by_folder.get(ment.date)
-        summary: ShareSummary | None = None
-        if path is not None:
-            html_text = path.read_text(encoding="utf-8", errors="replace")
-            summary = summarize_share_html(html_text, ment.date)
-        else:
-            print(
-                f"Warning: archive manifest lists '{ment.date}' but share/{ment.date}/ "
-                "has no index.html; archive list/detail use manifest fields only",
-                file=sys.stderr,
-            )
-        public_items, _ = load_archive_public_items(repo_root, ment.date)
-        archive_parts.append((ment, summary, public_items))
+    exclude_folder = (
+        target_date if mode == PORTAL_MODE_COMPLETION_ARCHIVE else None
+    )
+    entries = _build_portal_top_entries(
+        repo_root, exclude_folder=exclude_folder
+    )
 
     out = build_html(entries, calendar_api_key=portal_calendar_api_key(repo_root))
     out_path = repo_root / "portal" / "index.html"
@@ -5547,20 +6108,7 @@ def main() -> int:
         )
         return 0
 
-    today = date.today()
-    recent_parts: list[
-        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
-    ] = []
-    monthly_parts: list[
-        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
-    ] = []
-    for ment, summary, public_items in archive_parts:
-        if is_in_last_seven_days(ment.date, today):
-            recent_parts.append((ment, summary, public_items))
-        else:
-            monthly_parts.append((ment, summary, public_items))
-    recent_parts.sort(key=lambda t: sort_key(t[0].date), reverse=True)
-    sections = group_archive_sections(monthly_parts)
+    recent_parts, sections, _, arch_index_stats = _build_archive_index_parts(repo_root)
     arch_html = build_archive_html(recent_parts, sections)
     arch_path = repo_root / "portal" / "archive" / "index.html"
     arch_path.parent.mkdir(parents=True, exist_ok=True)
@@ -5580,8 +6128,9 @@ def main() -> int:
     for dp in detail_paths:
         print(f"Wrote {dp}")
     print(
-        f"Wrote {arch_path} (manifest={len(manifest_entries)}, "
-        f"archive_rows={len(archive_parts)}, recent={len(recent_parts)}, months={len(sections)}, "
+        f"Wrote {arch_path} (manifest={arch_index_stats['manifest']}, "
+        f"archive_rows={arch_index_stats['archive_rows']}, "
+        f"recent={arch_index_stats['recent']}, months={arch_index_stats['months']}, "
         f"archive_details={len(detail_paths)})"
     )
     if mode == PORTAL_MODE_FULL:
@@ -5629,6 +6178,7 @@ def main() -> int:
             promoted_candidates=survey_items,
             status_request_api_key=portal_api_key,
             portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+            repo_root=repo_root,
         )
         negotiation_path = repo_root / "portal" / "negotiation" / "index.html"
         negotiation_path.parent.mkdir(parents=True, exist_ok=True)
