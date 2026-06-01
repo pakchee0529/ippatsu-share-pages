@@ -36,6 +36,7 @@ import argparse
 import base64
 import html as html_lib
 import json
+import math
 import os
 import re
 import sys
@@ -835,6 +836,274 @@ def build_portal_heading(
 
 def escape_html(s: str) -> str:
     return html_lib.escape(s, quote=True)
+
+
+# 2点地図: 周辺電柱（GPS.json）— 生成時に1回だけ読み込む
+_GPS_POLES_CACHE: list[tuple[str, float, float]] | None = None
+_NEARBY_POLE_RADIUS_M = 160.0
+_NEARBY_POLE_ENDPOINT_EXCLUDE_M = 3.0
+_NEARBY_POLE_BBOX_PAD_DEG = 0.003
+
+
+def gps_json_path(repo_root: Path) -> Path:
+    return repo_root.parent / "ippatsu-pc" / "app" / "resources" / "data" / "GPS.json"
+
+
+def load_gps_poles(repo_root: Path) -> list[tuple[str, float, float]]:
+    """GPS.json を name, lat, lng のリストに展開（キャッシュ付き）。"""
+    global _GPS_POLES_CACHE
+    if _GPS_POLES_CACHE is not None:
+        return _GPS_POLES_CACHE
+    path = gps_json_path(repo_root)
+    if not path.is_file():
+        raise FileNotFoundError(f"GPS.json not found: {path}")
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise ValueError(f"GPS.json must be a JSON object, got {type(raw).__name__}")
+    poles: list[tuple[str, float, float]] = []
+    for name, coord in raw.items():
+        if not isinstance(name, str) or not isinstance(coord, str):
+            continue
+        parts = coord.split(",")
+        if len(parts) != 2:
+            continue
+        lat = _to_float(parts[0].strip())
+        lng = _to_float(parts[1].strip())
+        if lat is None or lng is None:
+            continue
+        poles.append((name.strip(), lat, lng))
+    _GPS_POLES_CACHE = poles
+    return poles
+
+
+def haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    r = 6371000.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlmb = math.radians(lng2 - lng1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlmb / 2) ** 2
+    return 2 * r * math.asin(min(1.0, math.sqrt(a)))
+
+
+def nearby_poles_for_two_point(
+    poles: list[tuple[str, float, float]],
+    a_lat: float,
+    a_lng: float,
+    b_lat: float,
+    b_lng: float,
+    *,
+    radius_m: float = _NEARBY_POLE_RADIUS_M,
+) -> list[dict[str, Any]]:
+    """始点・終点・中点のいずれかから radius_m 以内の電柱（端点±3m は除外）。"""
+    mid_lat = (a_lat + b_lat) / 2.0
+    mid_lng = (a_lng + b_lng) / 2.0
+    anchors = ((a_lat, a_lng), (b_lat, b_lng), (mid_lat, mid_lng))
+    pad = _NEARBY_POLE_BBOX_PAD_DEG
+    min_lat = min(a_lat, b_lat, mid_lat) - pad
+    max_lat = max(a_lat, b_lat, mid_lat) + pad
+    min_lng = min(a_lng, b_lng, mid_lng) - pad
+    max_lng = max(a_lng, b_lng, mid_lng) + pad
+    seen: set[tuple[str, float, float]] = set()
+    out: list[dict[str, Any]] = []
+    for name, lat, lng in poles:
+        if lat < min_lat or lat > max_lat or lng < min_lng or lng > max_lng:
+            continue
+        if (
+            min(haversine_m(lat, lng, a_lat, a_lng), haversine_m(lat, lng, b_lat, b_lng))
+            <= _NEARBY_POLE_ENDPOINT_EXCLUDE_M
+        ):
+            continue
+        dist = min(haversine_m(lat, lng, al, ag) for al, ag in anchors)
+        if dist > radius_m:
+            continue
+        key = (name, round(lat, 5), round(lng, 5))
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(
+            {
+                "name": name,
+                "lat": lat,
+                "lng": lng,
+                "distance_m": round(dist, 1),
+            }
+        )
+    out.sort(key=lambda row: float(row["distance_m"]))
+    return out
+
+
+def json_for_script_tag(data: Any) -> str:
+    """application/json 用（HTML エスケープせず、< のみ \\u003c）。"""
+    return json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
+
+
+def format_two_geo_script(two_json_id: str, two_geo: dict[str, Any]) -> str:
+    return (
+        f'<script type="application/json" id="{two_json_id}">'
+        f"{json_for_script_tag(two_geo)}</script>"
+    )
+
+
+def build_two_geo_payload(
+    *,
+    a_name: str,
+    a_lat: float,
+    a_lng: float,
+    b_name: str,
+    b_lat: float,
+    b_lng: float,
+    gps_poles: list[tuple[str, float, float]] | None = None,
+) -> dict[str, Any]:
+    geo: dict[str, Any] = {
+        "a": {"name": a_name, "lat": a_lat, "lng": a_lng},
+        "b": {"name": b_name, "lat": b_lat, "lng": b_lng},
+    }
+    if gps_poles is not None:
+        geo["nearby"] = nearby_poles_for_two_point(
+            gps_poles, a_lat, a_lng, b_lat, b_lng
+        )
+    return geo
+
+
+def two_map_click_handler_js() -> str:
+    """Leaflet 2点地図 + 周辺電柱（geo.nearby 任意）。"""
+    return """
+  var twoMaps = Object.create(null);
+  document.querySelectorAll("[data-two-open]").forEach(function(btn) {
+    var wrapId = btn.getAttribute("data-two-wrap");
+    var mapId = btn.getAttribute("data-two-map");
+    var jsonId = btn.getAttribute("data-two-json");
+    var wrap = wrapId ? document.getElementById(wrapId) : null;
+    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
+    if (!wrap || !jsonEl) return;
+    btn.addEventListener("click", function() {
+      var nowOpen = btn.getAttribute("aria-expanded") === "true";
+      wrap.hidden = nowOpen;
+      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
+      btn.textContent = nowOpen ? "2点地図を開く" : "2点地図を閉じる";
+      if (nowOpen) return;
+      var geo = null;
+      try {
+        geo = JSON.parse(jsonEl.textContent || "{}");
+      } catch (e) {
+        return;
+      }
+      if (!geo || !geo.a || !geo.b) return;
+      var key = mapId;
+      if (!twoMaps[key]) {
+        var mmap = L.map(mapId, { scrollWheelZoom: false });
+        twoMaps[key] = mmap;
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(mmap);
+      }
+      var mmap = twoMaps[key];
+      mmap.eachLayer(function(layer) {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
+          mmap.removeLayer(layer);
+        }
+      });
+      function addEndpoint(p, cls) {
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.marker([lat, lng]).addTo(mmap);
+        if (p.name) {
+          m.bindTooltip(String(p.name), {
+            permanent: true,
+            direction: "top",
+            className: cls,
+            offset: [0, -6],
+          });
+        }
+        m.on("click", function() {
+          window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer");
+        });
+        return [lat, lng];
+      }
+      function addNearbyPole(p) {
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.circleMarker([lat, lng], {
+          radius: 5,
+          weight: 2,
+          opacity: 0.9,
+          fillOpacity: 0.75,
+          color: "#64748b",
+          fillColor: "#94a3b8",
+        }).addTo(mmap);
+        if (p.name) {
+          m.bindTooltip(String(p.name), {
+            permanent: true,
+            direction: "top",
+            className: "two-tip-nearby",
+            offset: [0, -4],
+          });
+        }
+        m.on("click", function() {
+          window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer");
+        });
+        return [lat, lng];
+      }
+      var aPt = addEndpoint(geo.a, "two-tip-endpoint");
+      var bPt = addEndpoint(geo.b, "two-tip-endpoint");
+      var boundsPts = [];
+      if (aPt) boundsPts.push(aPt);
+      if (bPt) boundsPts.push(bPt);
+      if (aPt && bPt) {
+        L.polyline([aPt, bPt], { weight: 3, opacity: 0.85, color: "#2563eb" }).addTo(mmap);
+      }
+      if (Array.isArray(geo.nearby)) {
+        geo.nearby.forEach(function(p) {
+          var pt = addNearbyPole(p);
+          if (pt) boundsPts.push(pt);
+        });
+      }
+      if (boundsPts.length === 1) {
+        mmap.setView(boundsPts[0], 17);
+      } else if (boundsPts.length > 1) {
+        mmap.fitBounds(boundsPts, {
+          paddingTopLeft: [40, 70],
+          paddingBottomRight: [40, 70],
+          maxZoom: 18,
+        });
+      }
+      setTimeout(function() { mmap.invalidateSize(); }, 60);
+    });
+  });
+"""
+
+
+def two_map_tooltip_css() -> str:
+    return """
+.leaflet-tooltip.two-tip-endpoint {
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 3px 8px;
+  border: 1px solid #2563eb;
+  background: #eff6ff;
+  color: #1e3a8a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+}
+.leaflet-tooltip.two-tip-nearby {
+  font-weight: 500;
+  font-size: 0.76rem;
+  padding: 2px 6px;
+  border: 1px solid #94a3b8;
+  background: #f8fafc;
+  color: #334155;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+}
+.leaflet-tooltip.two-tip {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+"""
 
 
 def survey_case_action_row_css() -> str:
@@ -3343,7 +3612,10 @@ def build_survey_html(
     portal_status_endpoint: str = PORTAL_CASE_STATUS_ENDPOINT,
     immediate_status: bool | None = None,
     initial_hidden_overlay_keys: set[str] | None = None,
+    repo_root: Path | None = None,
 ) -> str:
+    root = repo_root or Path(__file__).resolve().parent.parent
+    gps_poles = load_gps_poles(root)
     use_immediate = (
         immediate_status
         if immediate_status is not None
@@ -3400,14 +3672,16 @@ def build_survey_html(
                 f'data-two-json="{two_json_id}" aria-expanded="false" '
                 f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
             )
-            two_geo = {
-                "a": {"name": it.start_label or it.label, "lat": start_lat, "lng": start_lng},
-                "b": {"name": it.end_label or it.label, "lat": end_lat, "lng": end_lng},
-            }
-            two_json = (
-                f'<script type="application/json" id="{two_json_id}">'
-                f'{escape_html(json.dumps(two_geo, ensure_ascii=False))}</script>'
+            two_geo = build_two_geo_payload(
+                a_name=it.start_label or it.label,
+                a_lat=start_lat,
+                a_lng=start_lng,
+                b_name=it.end_label or it.label,
+                b_lat=end_lat,
+                b_lng=end_lng,
+                gps_poles=gps_poles,
             )
+            two_json = format_two_geo_script(two_json_id, two_geo)
             two_wrap = (
                 f'<div class="two-map-wrap" id="{two_wrap_id}" hidden>'
                 f'<div id="{two_map_id}" class="share-two-map-canvas" '
@@ -3668,13 +3942,7 @@ body {{
   height: min(45vh, 320px);
   min-height: 200px;
 }}
-.leaflet-tooltip.two-tip {{
-  font-weight: 600;
-  font-size: 0.85rem;
-  padding: 2px 6px;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,.2);
-}}
+{two_map_tooltip_css()}
 .map-section {{
   margin-top: 1.0rem;
   background: var(--card);
@@ -3861,59 +4129,7 @@ body {{
   function gmaps(lat, lng) {{
     return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
   }}
-  var twoMaps = Object.create(null);
-  document.querySelectorAll("[data-two-open]").forEach(function(btn) {{
-    var wrapId = btn.getAttribute("data-two-wrap");
-    var mapId = btn.getAttribute("data-two-map");
-    var jsonId = btn.getAttribute("data-two-json");
-    var wrap = wrapId ? document.getElementById(wrapId) : null;
-    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
-    if (!wrap || !jsonEl) return;
-    btn.addEventListener("click", function() {{
-      var nowOpen = btn.getAttribute("aria-expanded") === "true";
-      wrap.hidden = nowOpen;
-      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
-      btn.textContent = nowOpen ? "2点地図を開く" : "2点地図を閉じる";
-      if (nowOpen) return;
-      var geo = null;
-      try {{
-        geo = JSON.parse(jsonEl.textContent || "{{}}");
-      }} catch (e) {{
-        return;
-      }}
-      if (!geo || !geo.a || !geo.b) return;
-      var key = mapId;
-      if (!twoMaps[key]) {{
-        var mmap = L.map(mapId, {{ scrollWheelZoom: false }});
-        twoMaps[key] = mmap;
-        L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
-          maxZoom: 19,
-          attribution: "&copy; OpenStreetMap contributors",
-        }}).addTo(mmap);
-      }}
-      var mmap = twoMaps[key];
-      mmap.eachLayer(function(layer) {{
-        if (layer instanceof L.Marker || layer instanceof L.Polyline) mmap.removeLayer(layer);
-      }});
-      function addPoint(p, cls) {{
-        var lat = Number(p.lat), lng = Number(p.lng);
-        if (!isFinite(lat) || !isFinite(lng)) return null;
-        var m = L.marker([lat, lng]).addTo(mmap);
-        if (p.name) m.bindTooltip(String(p.name), {{ permanent: true, direction: "top", className: cls }});
-        m.on("click", function() {{ window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer"); }});
-        return [lat, lng];
-      }}
-      var a = addPoint(geo.a, "two-tip");
-      var b = addPoint(geo.b, "two-tip");
-      var pts = [];
-      if (a) pts.push(a);
-      if (b) pts.push(b);
-      if (pts.length === 2) L.polyline(pts, {{ weight: 3, opacity: 0.8 }}).addTo(mmap);
-      if (pts.length === 1) mmap.setView(pts[0], 15);
-      else if (pts.length > 1) mmap.fitBounds(pts, {{ padding: [24, 24], maxZoom: 16 }});
-      setTimeout(function() {{ mmap.invalidateSize(); }}, 60);
-    }});
-  }});
+{two_map_click_handler_js()}
   var points = {points_js};
   var mapEl = document.getElementById("share-map");
   if (mapEl && Array.isArray(points) && points.length) {{
@@ -4007,14 +4223,16 @@ def build_negotiation_html(
                 f'data-two-json="{two_json_id}" aria-expanded="false" '
                 f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
             )
-            two_geo = {
-                "a": {"name": it.start_label or it.label, "lat": start_lat, "lng": start_lng},
-                "b": {"name": it.end_label or it.label, "lat": end_lat, "lng": end_lng},
-            }
-            two_json = (
-                f'<script type="application/json" id="{two_json_id}">'
-                f'{escape_html(json.dumps(two_geo, ensure_ascii=False))}</script>'
+            two_geo = build_two_geo_payload(
+                a_name=it.start_label or it.label,
+                a_lat=start_lat,
+                a_lng=start_lng,
+                b_name=it.end_label or it.label,
+                b_lat=end_lat,
+                b_lng=end_lng,
+                gps_poles=None,
             )
+            two_json = format_two_geo_script(two_json_id, two_geo)
             two_wrap = (
                 f'<div class="two-map-wrap" id="{two_wrap_id}" hidden>'
                 f'<div id="{two_map_id}" class="share-two-map-canvas" '
@@ -4257,13 +4475,7 @@ body {{
   height: min(45vh, 320px);
   min-height: 200px;
 }}
-.leaflet-tooltip.two-tip {{
-  font-weight: 600;
-  font-size: 0.85rem;
-  padding: 2px 6px;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,.2);
-}}
+{two_map_tooltip_css()}
 .map-section {{
   margin-top: 1.0rem;
   background: var(--card);
@@ -4376,59 +4588,7 @@ body {{
   function gmaps(lat, lng) {{
     return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
   }}
-  var twoMaps = Object.create(null);
-  document.querySelectorAll("[data-two-open]").forEach(function(btn) {{
-    var wrapId = btn.getAttribute("data-two-wrap");
-    var mapId = btn.getAttribute("data-two-map");
-    var jsonId = btn.getAttribute("data-two-json");
-    var wrap = wrapId ? document.getElementById(wrapId) : null;
-    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
-    if (!wrap || !jsonEl) return;
-    btn.addEventListener("click", function() {{
-      var nowOpen = btn.getAttribute("aria-expanded") === "true";
-      wrap.hidden = nowOpen;
-      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
-      btn.textContent = nowOpen ? "2点地図を開く" : "2点地図を閉じる";
-      if (nowOpen) return;
-      var geo = null;
-      try {{
-        geo = JSON.parse(jsonEl.textContent || "{{}}");
-      }} catch (e) {{
-        return;
-      }}
-      if (!geo || !geo.a || !geo.b) return;
-      var key = mapId;
-      if (!twoMaps[key]) {{
-        var mmap = L.map(mapId, {{ scrollWheelZoom: false }});
-        twoMaps[key] = mmap;
-        L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
-          maxZoom: 19,
-          attribution: "&copy; OpenStreetMap contributors",
-        }}).addTo(mmap);
-      }}
-      var mmap = twoMaps[key];
-      mmap.eachLayer(function(layer) {{
-        if (layer instanceof L.Marker || layer instanceof L.Polyline) mmap.removeLayer(layer);
-      }});
-      function addPoint(p, cls) {{
-        var lat = Number(p.lat), lng = Number(p.lng);
-        if (!isFinite(lat) || !isFinite(lng)) return null;
-        var m = L.marker([lat, lng]).addTo(mmap);
-        if (p.name) m.bindTooltip(String(p.name), {{ permanent: true, direction: "top", className: cls }});
-        m.on("click", function() {{ window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer"); }});
-        return [lat, lng];
-      }}
-      var a = addPoint(geo.a, "two-tip");
-      var b = addPoint(geo.b, "two-tip");
-      var pts = [];
-      if (a) pts.push(a);
-      if (b) pts.push(b);
-      if (pts.length === 2) L.polyline(pts, {{ weight: 3, opacity: 0.8 }}).addTo(mmap);
-      if (pts.length === 1) mmap.setView(pts[0], 15);
-      else if (pts.length > 1) mmap.fitBounds(pts, {{ padding: [24, 24], maxZoom: 16 }});
-      setTimeout(function() {{ mmap.invalidateSize(); }}, 60);
-    }});
-  }});
+{two_map_click_handler_js()}
   var points = {points_js};
   var mapEl = document.getElementById("share-map");
   if (mapEl && Array.isArray(points) && points.length) {{
@@ -4502,14 +4662,16 @@ def build_archive_detail_html(
                     f'data-two-json="{two_json_id}" aria-expanded="false" '
                     f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
                 )
-                two_geo = {
-                    "a": {"name": it.label, "lat": start_lat, "lng": start_lng},
-                    "b": {"name": it.label, "lat": end_lat, "lng": end_lng},
-                }
-                two_json = (
-                    f'<script type="application/json" id="{two_json_id}">'
-                    f'{escape_html(json.dumps(two_geo, ensure_ascii=False))}</script>'
+                two_geo = build_two_geo_payload(
+                    a_name=it.label,
+                    a_lat=start_lat,
+                    a_lng=start_lng,
+                    b_name=it.label,
+                    b_lat=end_lat,
+                    b_lng=end_lng,
+                    gps_poles=None,
                 )
+                two_json = format_two_geo_script(two_json_id, two_geo)
                 two_wrap = (
                     f'<div class="two-map-wrap" id="{two_wrap_id}" hidden>'
                     f'<div id="{two_map_id}" class="share-two-map-canvas" '
@@ -4836,13 +4998,7 @@ body {{
   height: min(45vh, 320px);
   min-height: 200px;
 }}
-.leaflet-tooltip.two-tip {{
-  font-weight: 600;
-  font-size: 0.85rem;
-  padding: 2px 6px;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,.2);
-}}
+{two_map_tooltip_css()}
 .map-section {{
   margin-top: 1.0rem;
   background: var(--card);
@@ -4916,60 +5072,7 @@ body {{
   function gmaps(lat, lng) {{
     return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
   }}
-
-  var twoMaps = Object.create(null);
-  document.querySelectorAll("[data-two-open]").forEach(function(btn) {{
-    var wrapId = btn.getAttribute("data-two-wrap");
-    var mapId = btn.getAttribute("data-two-map");
-    var jsonId = btn.getAttribute("data-two-json");
-    var wrap = wrapId ? document.getElementById(wrapId) : null;
-    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
-    if (!wrap || !jsonEl) return;
-    btn.addEventListener("click", function() {{
-      var nowOpen = btn.getAttribute("aria-expanded") === "true";
-      wrap.hidden = nowOpen;
-      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
-      btn.textContent = nowOpen ? "2点地図を開く" : "2点地図を閉じる";
-      if (nowOpen) return;
-      var geo = null;
-      try {{
-        geo = JSON.parse(jsonEl.textContent || "{{}}");
-      }} catch (e) {{
-        return;
-      }}
-      if (!geo || !geo.a || !geo.b) return;
-      var key = mapId;
-      if (!twoMaps[key]) {{
-        var mmap = L.map(mapId, {{ scrollWheelZoom: false }});
-        twoMaps[key] = mmap;
-        L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
-          maxZoom: 19,
-          attribution: "&copy; OpenStreetMap contributors",
-        }}).addTo(mmap);
-      }}
-      var mmap = twoMaps[key];
-      mmap.eachLayer(function(layer) {{
-        if (layer instanceof L.Marker || layer instanceof L.Polyline) mmap.removeLayer(layer);
-      }});
-      function addPoint(p, cls) {{
-        var lat = Number(p.lat), lng = Number(p.lng);
-        if (!isFinite(lat) || !isFinite(lng)) return null;
-        var m = L.marker([lat, lng]).addTo(mmap);
-        if (p.name) m.bindTooltip(String(p.name), {{ permanent: true, direction: "top", className: cls }});
-        m.on("click", function() {{ window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer"); }});
-        return [lat, lng];
-      }}
-      var a = addPoint(geo.a, "two-tip");
-      var b = addPoint(geo.b, "two-tip");
-      var pts = [];
-      if (a) pts.push(a);
-      if (b) pts.push(b);
-      if (pts.length === 2) L.polyline(pts, {{ weight: 3, opacity: 0.8 }}).addTo(mmap);
-      if (pts.length === 1) mmap.setView(pts[0], 15);
-      else if (pts.length > 1) mmap.fitBounds(pts, {{ padding: [24, 24], maxZoom: 16 }});
-      setTimeout(function() {{ mmap.invalidateSize(); }}, 60);
-    }});
-  }});
+{two_map_click_handler_js()}
 
   var points = {points_js};
   var mapEl = document.getElementById("share-map");
@@ -5503,6 +5606,7 @@ def main() -> int:
             status_request_api_key=portal_api_key,
             portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
             initial_hidden_overlay_keys=overlay_neg_keys,
+            repo_root=repo_root,
         )
         survey_path = repo_root / "portal" / "survey" / "index.html"
         survey_path.parent.mkdir(parents=True, exist_ok=True)

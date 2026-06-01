@@ -102,7 +102,7 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
     }});
     return map;
   }}
-﻿function applySurveyOverlay(statusMap, serverOk, returnCandidateKeys) {{
+  function applySurveyOverlay(statusMap, serverOk, returnCandidateKeys) {{
     var returnMap = returnCandidateKeys || Object.create(null);
     document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {{
       var key = (card.getAttribute("data-management-no-key") || "").trim();
