@@ -3943,6 +3943,18 @@ body {{
   font-size: 0.9rem;
   color: var(--muted);
 }}
+.survey-visible-count-line {{
+  font-weight: 600;
+  color: var(--text);
+}}
+.survey-visible-count-line strong {{
+  font-weight: 700;
+}}
+.survey-count-hint {{
+  display: inline;
+  margin-left: 0.35rem;
+  font-size: 0.82rem;
+}}
 .report-disclaimer {{
   margin: 0 0 0.75rem;
   padding: 0.55rem 0.65rem;
@@ -4193,7 +4205,7 @@ body {{
 </head>
 <body>
 {subpage_header}
-  <p class="lead">径間ごとに地図・現場指示・操作ボタンがあります。（表示 {len(items)} 件）</p>
+  <p class="lead" id="survey-count-lead" data-survey-candidate-total="{len(items)}">径間ごとに地図・現場指示・操作ボタンがあります。<span class="survey-visible-count-line">表示中 <strong id="survey-visible-count">{len(items)}</strong> 件</span><span class="survey-count-hint muted-tiny" id="survey-count-hint" hidden>（候補 {len(items)} 件・交渉待ち・返却候補は除く）</span></p>
   <p class="report-disclaimer">{survey_disclaimer}</p>
   <p id="survey-overlay-warning" class="survey-overlay-warning" hidden role="status"></p>
   <main>
@@ -5825,6 +5837,9 @@ def validate_survey_only_output(
             ("two-geo-0", 'id="two-geo-0"'),
             ("applySurveyMultipinState", "function applySurveyMultipinState"),
             ("collectVisibleSurveyMultipinPoints", "collectVisibleSurveyMultipinPoints"),
+            ("updateSurveyVisibleCount", "function updateSurveyVisibleCount"),
+            ("survey-visible-count", 'id="survey-visible-count"'),
+            ("survey-count-lead", 'id="survey-count-lead"'),
             ("data-multipin-lat", "data-multipin-lat"),
         ],
     )

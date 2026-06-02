@@ -80,15 +80,44 @@ def serialize_promoted_candidates(items: list[Any]) -> str:
 
 
 def render_survey_multipin_js() -> str:
-    """下部マルチピン地図: 表示中の現調待ちカードから points を再構築する。"""
+    """下部マルチピン地図・上部件数: 表示中の現調待ちカード基準で同期する。"""
     return """
   var surveyMultipinMap = null;
   var surveyMultipinLayer = null;
+  function isSurveyCardVisible(card) {
+    if (!card || card.hidden) return false;
+    if (card.getAttribute("data-portal-moved")) return false;
+    return true;
+  }
+  function getVisibleSurveyCardCount() {
+    var n = 0;
+    document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
+      if (isSurveyCardVisible(card)) n += 1;
+    });
+    return n;
+  }
+  function updateSurveyVisibleCount() {
+    var countEl = document.getElementById("survey-visible-count");
+    var leadEl = document.getElementById("survey-count-lead");
+    var hintEl = document.getElementById("survey-count-hint");
+    if (!countEl) return;
+    var visible = getVisibleSurveyCardCount();
+    countEl.textContent = String(visible);
+    var total = leadEl
+      ? Number(leadEl.getAttribute("data-survey-candidate-total"))
+      : visible;
+    if (hintEl && isFinite(total) && total > visible) {
+      hintEl.textContent =
+        "（候補 " + total + " 件・交渉待ち・返却候補は除く）";
+      hintEl.hidden = false;
+    } else if (hintEl) {
+      hintEl.hidden = true;
+    }
+  }
   function collectVisibleSurveyMultipinPoints() {
     var out = [];
     document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
-      if (card.hidden) return;
-      if (card.getAttribute("data-portal-moved")) return;
+      if (!isSurveyCardVisible(card)) return;
       var lat = Number(card.getAttribute("data-multipin-lat"));
       var lng = Number(card.getAttribute("data-multipin-lng"));
       if (!isFinite(lat) || !isFinite(lng)) return;
@@ -144,6 +173,7 @@ def render_survey_multipin_js() -> str:
     }, 60);
   }
   function applySurveyMultipinState() {
+    updateSurveyVisibleCount();
     renderSurveyMultipinMap(collectVisibleSurveyMultipinPoints());
   }
 """

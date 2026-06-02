@@ -139,6 +139,18 @@ a.portal-menu-item:focus-visible {
   font-size: 0.9rem;
   color: var(--muted);
 }
+.survey-visible-count-line {
+  font-weight: 600;
+  color: var(--text);
+}
+.survey-visible-count-line strong {
+  font-weight: 700;
+}
+.survey-count-hint {
+  display: inline;
+  margin-left: 0.35rem;
+  font-size: 0.82rem;
+}
 .report-disclaimer {
   margin: 0 0 0.75rem;
   padding: 0.55rem 0.65rem;
@@ -434,7 +446,7 @@ a.portal-menu-item:focus-visible {
       </div>
     </div>
   </header>
-  <p class="lead">径間ごとに地図・現場指示・操作ボタンがあります。（表示 39 件）</p>
+  <p class="lead" id="survey-count-lead" data-survey-candidate-total="39">径間ごとに地図・現場指示・操作ボタンがあります。<span class="survey-visible-count-line">表示中 <strong id="survey-visible-count">39</strong> 件</span><span class="survey-count-hint muted-tiny" id="survey-count-hint" hidden>（候補 39 件・交渉待ち・返却候補は除く）</span></p>
   <p class="report-disclaimer">「現調済みにする」で交渉待ちへ即時反映します（portal status overlay）。「返却候補にする」はサーバーに登録し、この一覧から非表示になります。誤操作は交渉待ちページの「現調待ちに戻す」で取り消せます。従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。</p>
   <p id="survey-overlay-warning" class="survey-overlay-warning" hidden role="status"></p>
   <main>
@@ -1196,11 +1208,40 @@ a.portal-menu-item:focus-visible {
 
   var surveyMultipinMap = null;
   var surveyMultipinLayer = null;
+  function isSurveyCardVisible(card) {
+    if (!card || card.hidden) return false;
+    if (card.getAttribute("data-portal-moved")) return false;
+    return true;
+  }
+  function getVisibleSurveyCardCount() {
+    var n = 0;
+    document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
+      if (isSurveyCardVisible(card)) n += 1;
+    });
+    return n;
+  }
+  function updateSurveyVisibleCount() {
+    var countEl = document.getElementById("survey-visible-count");
+    var leadEl = document.getElementById("survey-count-lead");
+    var hintEl = document.getElementById("survey-count-hint");
+    if (!countEl) return;
+    var visible = getVisibleSurveyCardCount();
+    countEl.textContent = String(visible);
+    var total = leadEl
+      ? Number(leadEl.getAttribute("data-survey-candidate-total"))
+      : visible;
+    if (hintEl && isFinite(total) && total > visible) {
+      hintEl.textContent =
+        "（候補 " + total + " 件・交渉待ち・返却候補は除く）";
+      hintEl.hidden = false;
+    } else if (hintEl) {
+      hintEl.hidden = true;
+    }
+  }
   function collectVisibleSurveyMultipinPoints() {
     var out = [];
     document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
-      if (card.hidden) return;
-      if (card.getAttribute("data-portal-moved")) return;
+      if (!isSurveyCardVisible(card)) return;
       var lat = Number(card.getAttribute("data-multipin-lat"));
       var lng = Number(card.getAttribute("data-multipin-lng"));
       if (!isFinite(lat) || !isFinite(lng)) return;
@@ -1256,6 +1297,7 @@ a.portal-menu-item:focus-visible {
     }, 60);
   }
   function applySurveyMultipinState() {
+    updateSurveyVisibleCount();
     renderSurveyMultipinMap(collectVisibleSurveyMultipinPoints());
   }
 
