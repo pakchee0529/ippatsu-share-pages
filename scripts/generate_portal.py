@@ -50,6 +50,8 @@ import os
 import re
 import sys
 import unicodedata
+import urllib.error
+import urllib.request
 from urllib.parse import parse_qs, quote, urlencode, urlparse
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -1335,10 +1337,47 @@ def render_negotiation_return_candidate_css() -> str:
 def render_negotiation_return_candidate_section() -> str:
     return """
   <section class="return-candidate-section" aria-labelledby="return-candidate-heading">
-    <h2 id="return-candidate-heading">返却待ちリスト</h2>
-    <p class="muted-tiny return-candidate-note">返却候補（overlay）。PCでの返却待ち正本化は未実施です。</p>
+    <h2 id="return-candidate-heading">返却候補（overlay補助）</h2>
+    <p class="muted-tiny return-candidate-note">補助情報です。返却待ちの正本表示は上段の Supabase return_wait を参照してください。</p>
     <div id="return-candidate-list" class="return-candidate-list" role="list"></div>
     <p id="return-candidate-empty" class="muted-tiny">返却候補はありません。</p>
+  </section>
+"""
+
+
+def render_negotiation_return_wait_section(
+    items: list[SurveyPublicItem],
+    smoke: ReturnWaitSmoke,
+) -> str:
+    cards: list[str] = []
+    for it in items:
+        cards.append(
+            f"""    <article class="return-candidate-item" role="listitem" data-management-no-key="{escape_html(it.management_no_key)}">
+      <div class="return-candidate-item-head">
+        <div>
+          <p class="return-candidate-item-title">{escape_html(it.label or "—")}</p>
+          <p class="return-candidate-item-mgmt">{escape_html(it.management_no or "—")}</p>
+        </div>
+      </div>
+      <p class="return-candidate-item-meta">正本: cases.status=return_wait</p>
+    </article>"""
+        )
+    cards_html = (
+        "\n".join(cards)
+        if cards
+        else '    <p class="muted-tiny">Supabase正本の返却待ちはありません。</p>'
+    )
+    summary = (
+        f"DB {smoke.db_return_wait_count} 件 / 表示 {smoke.displayed_return_wait_count} 件 / "
+        f"overlay補助 {smoke.overlay_return_candidate_count} 件"
+    )
+    return f"""
+  <section class="return-candidate-section" aria-labelledby="return-wait-heading">
+    <h2 id="return-wait-heading">返却待ち（正本）</h2>
+    <p class="muted-tiny return-candidate-note">{escape_html(summary)}</p>
+    <div class="return-candidate-list" role="list">
+{cards_html}
+    </div>
   </section>
 """
 
@@ -2638,6 +2677,17 @@ class SurveyPublicItem:
 
 
 @dataclass(frozen=True)
+class ReturnWaitSmoke:
+    db_return_wait_count: int
+    displayed_return_wait_count: int
+    overlay_return_candidate_count: int
+    duplicate_management_no_count: int
+    warnings_count: int
+    db_return_wait_management_no_keys: list[str]
+    displayed_management_no_keys: list[str]
+
+
+@dataclass(frozen=True)
 class ArchiveRowContext:
     span_summary: str
     status_summary: str
@@ -3687,6 +3737,157 @@ def load_negotiation_public_items(
     return out, "", stats
 
 
+def _supabase_rest_ready() -> tuple[str, str] | None:
+    url = (os.environ.get("SUPABASE_URL") or "").strip()
+    key = (os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
+    if not url or not key:
+        return None
+    return url, key
+
+
+def _fetch_return_wait_cases_from_supabase() -> list[dict[str, Any]] | None:
+    creds = _supabase_rest_ready()
+    if creds is None:
+        return None
+    url, key = creds
+    endpoint = (
+        f"{url.rstrip('/')}/rest/v1/cases"
+        "?select=*"
+        "&status=eq.return_wait"
+        "&active=eq.true"
+        "&archive_state=is.null"
+        "&returned_at=is.null"
+        "&completed_at=is.null"
+        "&order=management_no_key.asc"
+    )
+    req = urllib.request.Request(
+        endpoint,
+        method="GET",
+        headers={
+            "apikey": key,
+            "Authorization": f"Bearer {key}",
+            "Accept": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            body = resp.read().decode("utf-8", errors="replace")
+    except (urllib.error.URLError, OSError, TimeoutError) as e:
+        print(f"warning: return_wait fetch failed: {e}", file=sys.stderr)
+        return []
+    try:
+        data = json.loads(body)
+    except json.JSONDecodeError:
+        print("warning: return_wait fetch invalid JSON", file=sys.stderr)
+        return []
+    if not isinstance(data, list):
+        print("warning: return_wait fetch response is not a list", file=sys.stderr)
+        return []
+    out: list[dict[str, Any]] = []
+    for row in data:
+        if not isinstance(row, dict):
+            continue
+        out.append(row)
+    return out
+
+
+def _fetch_overlay_return_candidate_count(endpoint: str, api_key: str) -> int:
+    ep = (endpoint or "").strip()
+    key = (api_key or "").strip()
+    if not ep or not key:
+        return 0
+    req = urllib.request.Request(
+        ep + "?list=return_candidates",
+        method="GET",
+        headers={"apikey": key, "Accept": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            body = resp.read().decode("utf-8", errors="replace")
+    except (urllib.error.URLError, OSError, TimeoutError):
+        return 0
+    try:
+        data = json.loads(body)
+    except json.JSONDecodeError:
+        return 0
+    if not isinstance(data, dict):
+        return 0
+    rows = data.get("return_candidates")
+    if not isinstance(rows, list):
+        return 0
+    return sum(1 for r in rows if isinstance(r, dict))
+
+
+def load_return_wait_public_items(
+    *,
+    portal_status_endpoint: str,
+    portal_api_key: str,
+) -> tuple[list[SurveyPublicItem], ReturnWaitSmoke]:
+    rows = _fetch_return_wait_cases_from_supabase()
+    if rows is None:
+        smoke = ReturnWaitSmoke(
+            db_return_wait_count=0,
+            displayed_return_wait_count=0,
+            overlay_return_candidate_count=_fetch_overlay_return_candidate_count(
+                portal_status_endpoint, portal_api_key
+            ),
+            duplicate_management_no_count=0,
+            warnings_count=1,
+            db_return_wait_management_no_keys=[],
+            displayed_management_no_keys=[],
+        )
+        print(
+            "warning: return_wait primary source unavailable "
+            "(SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing)",
+            file=sys.stderr,
+        )
+        return [], smoke
+
+    items: list[SurveyPublicItem] = []
+    db_keys: list[str] = []
+    for row in rows:
+        mno = _to_str(row.get("management_no")) or "—"
+        key = _to_str(row.get("management_no_key")) or (management_no_key(mno) or "")
+        db_keys.append(key)
+        items.append(
+            SurveyPublicItem(
+                management_no=mno,
+                management_no_key=key,
+                label=_to_str(row.get("label")) or "—",
+                map_url=_to_str(row.get("map_url")),
+                start_label="",
+                start_lat=_to_str(row.get("start_lat")),
+                start_lng=_to_str(row.get("start_lng")),
+                end_label="",
+                end_lat=_to_str(row.get("end_lat")),
+                end_lng=_to_str(row.get("end_lng")),
+                note=_to_str(row.get("note")) or "—",
+            )
+        )
+
+    db_keys_sorted = sorted(k for k in db_keys if k)
+    shown_keys_sorted = sorted(
+        {str(it.management_no_key or "").strip() for it in items if str(it.management_no_key or "").strip()}
+    )
+    dup_count = max(len(db_keys_sorted) - len(shown_keys_sorted), 0)
+    overlay_cnt = _fetch_overlay_return_candidate_count(
+        portal_status_endpoint, portal_api_key
+    )
+    warnings = 0
+    if dup_count > 0:
+        warnings += 1
+    smoke = ReturnWaitSmoke(
+        db_return_wait_count=len(db_keys_sorted),
+        displayed_return_wait_count=len(shown_keys_sorted),
+        overlay_return_candidate_count=overlay_cnt,
+        duplicate_management_no_count=dup_count,
+        warnings_count=warnings,
+        db_return_wait_management_no_keys=db_keys_sorted,
+        displayed_management_no_keys=shown_keys_sorted,
+    )
+    return items, smoke
+
+
 def build_survey_html(
     items: list[SurveyPublicItem],
     empty_note: str,
@@ -4249,6 +4450,8 @@ def build_negotiation_html(
     items: list[SurveyPublicItem],
     empty_note: str,
     promoted_candidates: list[SurveyPublicItem] | None = None,
+    return_wait_items: list[SurveyPublicItem] | None = None,
+    return_wait_smoke: ReturnWaitSmoke | None = None,
     portal_status_endpoint: str = PORTAL_CASE_STATUS_ENDPOINT,
     status_request_api_key: str = "",
     immediate_status: bool | None = None,
@@ -4411,6 +4614,20 @@ def build_negotiation_html(
     subpage_header = render_portal_subpage_header("交渉待ち一覧", page="negotiation")
     subpage_menu_css = render_portal_subpage_menu_css()
     subpage_menu_js = render_portal_subpage_menu_js()
+    if return_wait_smoke is None:
+        return_wait_smoke = ReturnWaitSmoke(
+            db_return_wait_count=0,
+            displayed_return_wait_count=0,
+            overlay_return_candidate_count=0,
+            duplicate_management_no_count=0,
+            warnings_count=0,
+            db_return_wait_management_no_keys=[],
+            displayed_management_no_keys=[],
+        )
+    return_wait_section = render_negotiation_return_wait_section(
+        return_wait_items or [],
+        return_wait_smoke,
+    )
     return_candidate_section = render_negotiation_return_candidate_section()
     return_candidate_css = render_negotiation_return_candidate_css()
     return f"""<!DOCTYPE html>
@@ -4627,6 +4844,7 @@ body {{
   <p class="report-disclaimer">{negotiation_disclaimer}</p>
   <main>
 {items_html}
+{return_wait_section}
 {return_candidate_section}
 {map_block}
   </main>
@@ -5769,10 +5987,16 @@ def run_negotiation_only(repo_root: Path) -> FocusedGenerateResult:
             file=sys.stderr,
         )
     survey_items, _, _ = load_survey_public_items(repo_root)
+    return_wait_items, return_wait_smoke = load_return_wait_public_items(
+        portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+        portal_api_key=portal_api_key,
+    )
     negotiation_html = build_negotiation_html(
         negotiation_items,
         negotiation_empty_note,
         promoted_candidates=survey_items,
+        return_wait_items=return_wait_items,
+        return_wait_smoke=return_wait_smoke,
         status_request_api_key=portal_api_key,
         portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
         repo_root=repo_root,
@@ -5783,10 +6007,30 @@ def run_negotiation_only(repo_root: Path) -> FocusedGenerateResult:
         f"Wrote {out_path} (negotiation_items={len(negotiation_items)}, "
         f"negotiation_items_total={negotiation_stats['total']}, "
         f"visible={negotiation_stats['visible']}, "
-        f"filtered={negotiation_stats['filtered']})"
+        f"filtered={negotiation_stats['filtered']}, "
+        f"db_return_wait={return_wait_smoke.db_return_wait_count}, "
+        f"displayed_return_wait={return_wait_smoke.displayed_return_wait_count}, "
+        f"overlay_return_candidate={return_wait_smoke.overlay_return_candidate_count}, "
+        f"dup={return_wait_smoke.duplicate_management_no_count}, "
+        f"warn={return_wait_smoke.warnings_count})"
     )
     stats = dict(negotiation_stats)
     stats["negotiation_items"] = len(negotiation_items)
+    stats["db_return_wait_count"] = return_wait_smoke.db_return_wait_count
+    stats["displayed_return_wait_count"] = return_wait_smoke.displayed_return_wait_count
+    stats["overlay_return_candidate_count"] = (
+        return_wait_smoke.overlay_return_candidate_count
+    )
+    stats["duplicate_management_no_count"] = (
+        return_wait_smoke.duplicate_management_no_count
+    )
+    stats["warnings_count"] = return_wait_smoke.warnings_count
+    stats["db_return_wait_management_no_keys"] = (
+        return_wait_smoke.db_return_wait_management_no_keys
+    )
+    stats["displayed_management_no_keys"] = (
+        return_wait_smoke.displayed_management_no_keys
+    )
     return FocusedGenerateResult(
         mode=PORTAL_MODE_NEGOTIATION_ONLY,
         output_rel=rel,
@@ -5900,7 +6144,7 @@ def validate_negotiation_only_output(repo_root: Path) -> list[str]:
         [
             ("portal-menu-btn", "portal-menu-btn"),
             ("return-candidate-section", "return-candidate-section"),
-            ("返却待ちリスト", "返却待ちリスト"),
+            ("返却待ち（正本）", "返却待ち（正本）"),
             ("fetchReturnCandidates", "fetchReturnCandidates"),
             ("negotiation-card", "negotiation-card"),
             ("data-negotiation-revert", "data-negotiation-revert"),
@@ -6182,10 +6426,16 @@ def main() -> int:
         negotiation_items, negotiation_empty_note, negotiation_stats = (
             load_negotiation_public_items(repo_root)
         )
+        return_wait_items, return_wait_smoke = load_return_wait_public_items(
+            portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+            portal_api_key=portal_api_key,
+        )
         negotiation_html = build_negotiation_html(
             negotiation_items,
             negotiation_empty_note,
             promoted_candidates=survey_items,
+            return_wait_items=return_wait_items,
+            return_wait_smoke=return_wait_smoke,
             status_request_api_key=portal_api_key,
             portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
             repo_root=repo_root,
@@ -6200,7 +6450,12 @@ def main() -> int:
             f"(negotiation_items={len(negotiation_items)}, "
             f"negotiation_items_total={negotiation_stats['total']}, "
             f"visible={negotiation_stats['visible']}, "
-            f"filtered={negotiation_stats['filtered']})"
+            f"filtered={negotiation_stats['filtered']}, "
+            f"db_return_wait={return_wait_smoke.db_return_wait_count}, "
+            f"displayed_return_wait={return_wait_smoke.displayed_return_wait_count}, "
+            f"overlay_return_candidate={return_wait_smoke.overlay_return_candidate_count}, "
+            f"dup={return_wait_smoke.duplicate_management_no_count}, "
+            f"warn={return_wait_smoke.warnings_count})"
         )
         inject_share_detail_edit_into_share_pages(repo_root)
     else:
