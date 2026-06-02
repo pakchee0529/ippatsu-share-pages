@@ -4060,102 +4060,47 @@ def _load_status_public_items(
     return items, "", stats, smoke
 
 
-def _merge_legacy_map_fields(
+def _legacy_queue_item_keys(items: list[SurveyPublicItem]) -> set[str]:
+    return {
+        str(it.management_no_key or "").strip()
+        for it in items
+        if str(it.management_no_key or "").strip()
+    }
+
+
+def _record_legacy_queue_audit(
     primary_items: list[SurveyPublicItem],
     legacy_items: list[SurveyPublicItem],
-) -> list[SurveyPublicItem]:
-    """Supabase正本を維持しつつ、地図表示用フィールドのみ legacy から安全に補完する。
-
-    安全条件:
-      - management_no_key が完全一致する legacy 候補が **ちょうど1件** のときのみ補完。
-      - 両者に label がある場合は NFKC 正規化一致を要求（不一致なら補完しない）。
-      - 座標は start/end ペアが妥当 JP 範囲のときのみ採用（lat/lng取り違え・0・国外は捨てる）。
-    """
-
-    def _norm_label(s: str) -> str:
-        return re.sub(r"\s+", "", unicodedata.normalize("NFKC", (s or "").strip()))
-
-    def _norm_mno(s: str) -> str:
-        return re.sub(r"\s+", "", unicodedata.normalize("NFKC", (s or "").strip()))
-
-    legacy_by_key: dict[str, list[SurveyPublicItem]] = {}
-    for it in legacy_items:
-        key = (it.management_no_key or "").strip()
-        if key:
-            legacy_by_key.setdefault(key, []).append(it)
-    out: list[SurveyPublicItem] = []
-    for it in primary_items:
-        key = (it.management_no_key or "").strip()
-        candidates = legacy_by_key.get(key, [])
-        if len(candidates) != 1:
-            if len(candidates) > 1:
-                _record_map_coord_warning(
-                    it.management_no, "legacy_merge_skipped_multiple_candidates"
-                )
-            out.append(it)
-            continue
-        lg = candidates[0]
-        if _norm_mno(it.management_no) and _norm_mno(lg.management_no):
-            if _norm_mno(it.management_no) != _norm_mno(lg.management_no):
-                _record_map_coord_warning(
-                    it.management_no, "legacy_merge_skipped_management_no_mismatch"
-                )
-                out.append(it)
-                continue
-        if (
-            it.label
-            and lg.label
-            and _norm_label(it.label) != _norm_label(lg.label)
-        ):
-            _record_map_coord_warning(
-                it.management_no, "legacy_merge_skipped_label_mismatch"
-            )
-            out.append(it)
-            continue
-        # 座標は妥当ペアのみ採用。
-        s_lat = _to_float(it.start_lat or lg.start_lat)
-        s_lng = _to_float(it.start_lng or lg.start_lng)
-        e_lat = _to_float(it.end_lat or lg.end_lat)
-        e_lng = _to_float(it.end_lng or lg.end_lng)
-        if _valid_jp_latlng(s_lat, s_lng) and _valid_jp_latlng(e_lat, e_lng):
-            new_start_lat = it.start_lat or lg.start_lat
-            new_start_lng = it.start_lng or lg.start_lng
-            new_end_lat = it.end_lat or lg.end_lat
-            new_end_lng = it.end_lng or lg.end_lng
-            new_start_label = it.start_label or lg.start_label
-            new_end_label = it.end_label or lg.end_label
-        else:
-            if (s_lat is not None or e_lat is not None):
-                _record_map_coord_warning(
-                    it.management_no,
-                    "legacy_merge_coords_rejected_out_of_range "
-                    f"start=({s_lat},{s_lng}) end=({e_lat},{e_lng})",
-                )
-            new_start_lat = new_start_lng = ""
-            new_end_lat = new_end_lng = ""
-            new_start_label = new_end_label = ""
-        out.append(
-            SurveyPublicItem(
-                management_no=it.management_no,
-                management_no_key=it.management_no_key,
-                label=it.label,
-                map_url="",
-                start_label=new_start_label,
-                start_lat=new_start_lat,
-                start_lng=new_start_lng,
-                end_label=new_end_label,
-                end_lat=new_end_lat,
-                end_lng=new_end_lng,
-                note=it.note if it.note and it.note != "—" else (lg.note or it.note),
-            )
+) -> tuple[list[SurveyPublicItem], dict[str, Any]]:
+    """queue.json は件数比較・差分警告のみ。座標・カード表示フィールドは変更しない。"""
+    primary_keys = _legacy_queue_item_keys(primary_items)
+    legacy_keys = _legacy_queue_item_keys(legacy_items)
+    queue_only = sorted(legacy_keys - primary_keys)
+    primary_only = sorted(primary_keys - legacy_keys)
+    if queue_only:
+        sample = ",".join(queue_only[:8])
+        _record_map_coord_warning(
+            "",
+            f"legacy_queue_keys_not_in_supabase count={len(queue_only)} sample={sample}",
         )
-    return out
+    if legacy_keys and len(legacy_keys) != len(primary_keys):
+        _record_map_coord_warning(
+            "",
+            "legacy_queue_key_count_mismatch "
+            f"legacy={len(legacy_keys)} supabase={len(primary_keys)}",
+        )
+    audit: dict[str, Any] = {
+        "legacy_queue_key_count": len(legacy_keys),
+        "legacy_queue_keys_only_in_queue": queue_only,
+        "legacy_queue_keys_only_in_primary": primary_only,
+    }
+    return primary_items, audit
 
 
 def _supplement_map_fields_from_gps(
     items: list[SurveyPublicItem], repo_root: Path
 ) -> list[SurveyPublicItem]:
-    """queue 補完後も座標が無い案件は GPS.json のみで補完（GUI と同じ解決ロジック）。"""
+    """地図座標の主ソース: GPS.json（Supabase 行に座標が無い案件を label で補完）。"""
     gps_path = gps_json_path(repo_root)
     pc_root = repo_root.parent / "ippatsu-pc"
     if not gps_path.is_file() or not pc_root.is_dir():
@@ -4224,12 +4169,13 @@ def load_survey_public_items(
         legacy_count=len(legacy_items),
         empty_msg="現調待ちリストはまだありません。",
     )
-    items = _merge_legacy_map_fields(items, legacy_items)
+    items, legacy_audit = _record_legacy_queue_audit(items, legacy_items)
     items = _supplement_map_fields_from_gps(items, repo_root)
-    stats["legacy_source"] = "queue.json (supplemental)"
-    stats["gps_map_field_fallback_enabled"] = True
+    stats.update(legacy_audit)
+    stats["legacy_source"] = "queue.json (audit only)"
+    stats["gps_map_field_primary"] = True
     stats["source_of_truth"] = "supabase cases.status=survey_wait"
-    stats["legacy_map_field_fallback_enabled"] = True
+    stats["legacy_map_field_fallback_enabled"] = False
     stats["duplicate_management_no_count"] = smoke.duplicate_management_no_count
     return items, empty, stats
 
@@ -4245,10 +4191,11 @@ def load_negotiation_public_items(
         legacy_count=len(legacy_items),
         empty_msg="交渉待ちリストはまだありません。",
     )
-    items = _merge_legacy_map_fields(items, legacy_items)
-    stats["legacy_source"] = "queue.json (supplemental)"
+    items, legacy_audit = _record_legacy_queue_audit(items, legacy_items)
+    stats.update(legacy_audit)
+    stats["legacy_source"] = "queue.json (audit only)"
     stats["source_of_truth"] = "supabase cases.status=negotiation_wait"
-    stats["legacy_map_field_fallback_enabled"] = True
+    stats["legacy_map_field_fallback_enabled"] = False
     stats["duplicate_management_no_count"] = smoke.duplicate_management_no_count
     return items, empty, stats
 
