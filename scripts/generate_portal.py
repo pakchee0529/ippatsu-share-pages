@@ -971,9 +971,18 @@ def build_two_geo_payload(
         "b": {"name": b_name, "lat": b_lat, "lng": b_lng},
     }
     if gps_poles is not None:
-        geo["nearby"] = nearby_poles_for_two_point(
-            gps_poles, a_lat, a_lng, b_lat, b_lng
-        )
+        nearby = nearby_poles_for_two_point(gps_poles, a_lat, a_lng, b_lat, b_lng)
+        filtered_nearby: list[dict[str, Any]] = []
+        for p in nearby:
+            if not isinstance(p, dict):
+                continue
+            plat = p.get("lat")
+            plng = p.get("lng")
+            lat_v = plat if isinstance(plat, (int, float)) else _to_float(plat)
+            lng_v = plng if isinstance(plng, (int, float)) else _to_float(plng)
+            if _valid_jp_latlng(lat_v, lng_v):
+                filtered_nearby.append(p)
+        geo["nearby"] = filtered_nearby
     return geo
 
 
@@ -3694,6 +3703,82 @@ def _valid_jp_latlng(lat: float | None, lng: float | None) -> bool:
     return True
 
 
+_SURVEY_ARTICLE_MULTIPIN_RE = re.compile(
+    r'(<article[^>]*data-management-no-key="([^"]+)"[^>]*?)'
+    r'data-multipin-lat="([^"]+)"([^>]*?)data-multipin-lng="([^"]+)"',
+    re.MULTILINE | re.DOTALL,
+)
+
+
+def _multipin_data_attrs(lat: float, lng: float) -> str:
+    """HTML 出力直前の最終ガード。範囲外なら空文字（属性を出さない）。"""
+    if not _valid_jp_latlng(lat, lng):
+        return ""
+    return f' data-multipin-lat="{lat}" data-multipin-lng="{lng}"'
+
+
+def find_survey_html_multipin_violations(html: str) -> list[dict[str, Any]]:
+    """生成済み survey HTML 内の #share-map 用 multipin 座標を検査。"""
+    violations: list[dict[str, Any]] = []
+    for m in _SURVEY_ARTICLE_MULTIPIN_RE.finditer(html):
+        key = m.group(2)
+        try:
+            lat = float(m.group(3))
+            lng = float(m.group(5))
+        except ValueError:
+            violations.append(
+                {
+                    "management_no_key": key,
+                    "lat": m.group(3),
+                    "lng": m.group(5),
+                    "reason": "non_numeric",
+                    "html_line": html[: m.start()].count("\n") + 1,
+                }
+            )
+            continue
+        if not _valid_jp_latlng(lat, lng):
+            chunk = html[max(0, m.start() - 500) : m.end()]
+            label_m = re.search(r'data-label="([^"]*)"', chunk)
+            mgmt_m = re.search(r'data-management-no="([^"]*)"', chunk)
+            violations.append(
+                {
+                    "management_no_key": key,
+                    "management_no": mgmt_m.group(1) if mgmt_m else "",
+                    "label": label_m.group(1) if label_m else "",
+                    "lat": lat,
+                    "lng": lng,
+                    "reason": "out_of_jp_portal_bounds",
+                    "html_line": html[: m.start()].count("\n") + 1,
+                }
+            )
+    return violations
+
+
+def finalize_survey_map_html(html: str) -> str:
+    """HTML 書き込み直前: 範囲外 multipin 属性を除去（二重ガード）。"""
+    violations = find_survey_html_multipin_violations(html)
+    if not violations:
+        return html
+    for v in violations:
+        _record_map_coord_warning(
+            str(v.get("management_no") or v.get("management_no_key") or "?"),
+            "html_output_stripped_invalid_multipin "
+            f"lat={v.get('lat')} lng={v.get('lng')} line={v.get('html_line')}",
+        )
+
+    def _strip_bad(match: re.Match[str]) -> str:
+        try:
+            lat = float(match.group(3))
+            lng = float(match.group(5))
+        except ValueError:
+            return match.group(1) + match.group(4)
+        if _valid_jp_latlng(lat, lng):
+            return match.group(0)
+        return match.group(1) + match.group(4)
+
+    return _SURVEY_ARTICLE_MULTIPIN_RE.sub(_strip_bad, html)
+
+
 def _validated_single_latlng(
     item: "SurveyPublicItem", *, record: bool = True
 ) -> tuple[float, float] | None:
@@ -4414,9 +4499,13 @@ def build_survey_html(
         f_lat_mp = f_lng_mp = None
         if mp is not None:
             f_lat_mp, f_lng_mp = mp
-            multipin_attr = (
-                f' data-multipin-lat="{f_lat_mp}" data-multipin-lng="{f_lng_mp}"'
-            )
+            multipin_attr = _multipin_data_attrs(f_lat_mp, f_lng_mp)
+            if not multipin_attr:
+                f_lat_mp = f_lng_mp = None
+                _record_map_coord_warning(
+                    it.management_no,
+                    "multipin_attr_rejected_at_html_emit",
+                )
         cards.append(
             f"""<article class="card survey-update-card" data-card-index="{idx}"
   data-management-no-key="{escape_html(it.management_no_key)}"
@@ -4472,7 +4561,7 @@ def build_survey_html(
     subpage_menu_css = render_portal_subpage_menu_css()
     subpage_menu_js = render_portal_subpage_menu_js()
     survey_action_css = survey_case_action_row_css() if use_immediate else ""
-    return f"""<!DOCTYPE html>
+    html_body = f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="utf-8">
@@ -4811,6 +4900,7 @@ body {{
 </body>
 </html>
 """
+    return finalize_survey_map_html(html_body)
 
 
 def build_negotiation_html(
@@ -6363,6 +6453,15 @@ def validate_survey_only_output(
         ],
     )
     failures.extend(_validate_two_geo_script(html, "two-geo-0"))
+    multipin_violations = find_survey_html_multipin_violations(html)
+    if multipin_violations:
+        failures.append(
+            "survey multipin out_of_jp_bounds: "
+            + ", ".join(
+                f"{v.get('management_no_key')}@{v.get('html_line')}"
+                for v in multipin_violations[:5]
+            )
+        )
     if not apikey_nonempty:
         failures.append("survey apikey empty")
     return failures

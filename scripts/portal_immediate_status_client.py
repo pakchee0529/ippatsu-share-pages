@@ -96,6 +96,11 @@ def render_survey_multipin_js() -> str:
     });
     return n;
   }
+  function isPortalJpLatLng(lat, lng) {
+    if (!isFinite(lat) || !isFinite(lng)) return false;
+    if (lat === 0 || lng === 0) return false;
+    return lat >= 33.0 && lat <= 36.0 && lng >= 134.0 && lng <= 137.0;
+  }
   function updateSurveyVisibleCount() {
     var countEl = document.getElementById("survey-visible-count");
     var leadEl = document.getElementById("survey-count-lead");
@@ -120,7 +125,7 @@ def render_survey_multipin_js() -> str:
       if (!isSurveyCardVisible(card)) return;
       var lat = Number(card.getAttribute("data-multipin-lat"));
       var lng = Number(card.getAttribute("data-multipin-lng"));
-      if (!isFinite(lat) || !isFinite(lng)) return;
+      if (!isPortalJpLatLng(lat, lng)) return;
       out.push({
         name: (card.getAttribute("data-label") || "").trim(),
         lat: lat,
@@ -155,7 +160,7 @@ def render_survey_multipin_js() -> str:
     var bounds = [];
     points.forEach(function(p) {
       var lat = Number(p.lat), lng = Number(p.lng);
-      if (!isFinite(lat) || !isFinite(lng)) return;
+      if (!isPortalJpLatLng(lat, lng)) return;
       bounds.push([lat, lng]);
       var m = L.marker([lat, lng]);
       var label =
