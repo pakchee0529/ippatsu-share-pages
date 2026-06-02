@@ -992,7 +992,7 @@ def two_map_click_handler_js() -> str:
       var nowOpen = btn.getAttribute("aria-expanded") === "true";
       wrap.hidden = nowOpen;
       btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
-      btn.textContent = nowOpen ? "2点地図を開く" : "2点地図を閉じる";
+      btn.textContent = nowOpen ? "2点地図を表示" : "2点地図を閉じる";
       if (nowOpen) return;
       var geo = null;
       try {
@@ -1348,16 +1348,45 @@ def render_negotiation_return_candidate_section() -> str:
 def render_negotiation_return_wait_section(
     items: list[SurveyPublicItem],
     smoke: ReturnWaitSmoke,
+    *,
+    use_immediate: bool,
 ) -> str:
     cards: list[str] = []
     for it in items:
+        if use_immediate and (it.management_no_key or "").strip():
+            revert_block = (
+                '<div class="card-actions card-actions-revert" role="group" '
+                'aria-label="現調待ちに戻す">'
+                '<button type="button" class="btn btn-revert" data-negotiation-revert>'
+                "現調待ちに戻す"
+                "</button>"
+                '<p class="revert-hint muted-tiny">返却待ちから現調待ち一覧へ戻せます。</p>'
+                '<p class="negotiation-revert-status muted-tiny" '
+                'data-negotiation-revert-status hidden role="status"></p>'
+                "</div>"
+            )
+        else:
+            revert_block = (
+                '<div class="card-actions card-actions-revert" role="group" '
+                'aria-label="現調待ちに戻す（未実装）">'
+                '<button type="button" class="btn btn-revert-disabled" '
+                'disabled aria-disabled="true" '
+                'title="現調待ちへ戻す機能は未実装です">'
+                "現調待ちに戻す（未実装）"
+                "</button>"
+                "</div>"
+            )
         cards.append(
-            f"""    <article class="return-candidate-item" role="listitem" data-management-no-key="{escape_html(it.management_no_key)}">
-      <div class="return-candidate-item-head">
+            f"""    <article class="card negotiation-card return-wait-card" role="listitem"
+      data-management-no-key="{escape_html(it.management_no_key)}"
+      data-management-no="{escape_html(it.management_no)}"
+      data-label="{escape_html(it.label or '—')}">
+      <div class="card-head">
         <div>
-          <p class="return-candidate-item-title">{escape_html(it.label or "—")}</p>
-          <p class="return-candidate-item-mgmt">{escape_html(it.management_no or "—")}</p>
+          <h3 class="card-title">{escape_html(it.label or "—")}</h3>
+          <p class="item-mgmt">{escape_html(it.management_no or "—")}</p>
         </div>
+        {revert_block}
       </div>
       <p class="return-candidate-item-meta">正本: cases.status=return_wait</p>
     </article>"""
@@ -3867,6 +3896,41 @@ def _load_status_public_items(
     return items, "", stats, smoke
 
 
+def _merge_legacy_map_fields(
+    primary_items: list[SurveyPublicItem],
+    legacy_items: list[SurveyPublicItem],
+) -> list[SurveyPublicItem]:
+    """Supabase正本を維持しつつ、地図表示用フィールドのみ legacy から補完する。"""
+    legacy_by_key: dict[str, SurveyPublicItem] = {}
+    for it in legacy_items:
+        key = (it.management_no_key or "").strip()
+        if key and key not in legacy_by_key:
+            legacy_by_key[key] = it
+    out: list[SurveyPublicItem] = []
+    for it in primary_items:
+        key = (it.management_no_key or "").strip()
+        lg = legacy_by_key.get(key)
+        if lg is None:
+            out.append(it)
+            continue
+        out.append(
+            SurveyPublicItem(
+                management_no=it.management_no,
+                management_no_key=it.management_no_key,
+                label=it.label,
+                map_url=it.map_url or lg.map_url,
+                start_label=it.start_label or lg.start_label,
+                start_lat=it.start_lat or lg.start_lat,
+                start_lng=it.start_lng or lg.start_lng,
+                end_label=it.end_label or lg.end_label,
+                end_lat=it.end_lat or lg.end_lat,
+                end_lng=it.end_lng or lg.end_lng,
+                note=it.note if it.note and it.note != "—" else (lg.note or it.note),
+            )
+        )
+    return out
+
+
 def load_survey_public_items(
     repo_root: Path,
 ) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
@@ -3877,8 +3941,10 @@ def load_survey_public_items(
         legacy_count=len(legacy_items),
         empty_msg="現調待ちリストはまだありません。",
     )
+    items = _merge_legacy_map_fields(items, legacy_items)
     stats["legacy_source"] = "queue.json (supplemental)"
     stats["source_of_truth"] = "supabase cases.status=survey_wait"
+    stats["legacy_map_field_fallback_enabled"] = True
     stats["duplicate_management_no_count"] = smoke.duplicate_management_no_count
     return items, empty, stats
 
@@ -3893,8 +3959,10 @@ def load_negotiation_public_items(
         legacy_count=len(legacy_items),
         empty_msg="交渉待ちリストはまだありません。",
     )
+    items = _merge_legacy_map_fields(items, legacy_items)
     stats["legacy_source"] = "queue.json (supplemental)"
     stats["source_of_truth"] = "supabase cases.status=negotiation_wait"
+    stats["legacy_map_field_fallback_enabled"] = True
     stats["duplicate_management_no_count"] = smoke.duplicate_management_no_count
     return items, empty, stats
 
@@ -4096,7 +4164,7 @@ def build_survey_html(
         if it.map_url and it.map_url.startswith(("http://", "https://")):
             map_btn = (
                 f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
-                'target="_blank" rel="noopener noreferrer">地図を開く</a>'
+                'target="_blank" rel="noopener noreferrer">地図を表示</a>'
             )
         two_btn = ""
         two_json = ""
@@ -4118,7 +4186,7 @@ def build_survey_html(
                 f'<button type="button" class="btn btn-map" data-two-open '
                 f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
                 f'data-two-json="{two_json_id}" aria-expanded="false" '
-                f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
+                f'aria-controls="{two_wrap_id}">2点地図を表示</button>'
             )
             two_geo = build_two_geo_payload(
                 a_name=it.start_label or it.label,
@@ -4649,7 +4717,7 @@ def build_negotiation_html(
         if it.map_url and it.map_url.startswith(("http://", "https://")):
             map_btn = (
                 f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
-                'target="_blank" rel="noopener noreferrer">地図を開く</a>'
+                'target="_blank" rel="noopener noreferrer">地図を表示</a>'
             )
         two_btn = ""
         two_json = ""
@@ -4671,7 +4739,7 @@ def build_negotiation_html(
                 f'<button type="button" class="btn btn-map" data-two-open '
                 f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
                 f'data-two-json="{two_json_id}" aria-expanded="false" '
-                f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
+                f'aria-controls="{two_wrap_id}">2点地図を表示</button>'
             )
             two_geo = build_two_geo_payload(
                 a_name=it.start_label or it.label,
@@ -4688,13 +4756,7 @@ def build_negotiation_html(
                 f'<div id="{two_map_id}" class="share-two-map-canvas" '
                 'role="application" aria-label="2点地図"></div></div>'
             )
-        note_id = f"neg-note-{idx}"
-        note_btn = (
-            f'<button type="button" class="btn btn-note" aria-expanded="false" '
-            f'aria-controls="{note_id}" data-note-toggle>現場指示</button>'
-        )
-        note_body = f"備考: {escape_html(it.note)}"
-        actions = "".join(x for x in [map_btn, two_btn, note_btn] if x)
+        actions = "".join(x for x in [map_btn, two_btn] if x)
         if use_immediate and it.management_no_key:
             revert_block = (
                 '<div class="card-actions card-actions-revert" role="group" '
@@ -4734,7 +4796,6 @@ def build_negotiation_html(
   </div>
   {two_json}
   {two_wrap}
-  <div class="note-panel" id="{note_id}" hidden>{note_body}</div>
 </article>"""
         )
         p_lat, p_lng = _pick_survey_item_latlng(it)
@@ -4752,18 +4813,7 @@ def build_negotiation_html(
     items_html = "\n".join(cards)
     if not items_html:
         items_html = f'<p class="muted-tiny">{escape_html(empty_note)}</p>'
-    if points:
-        map_block = """  <section class="map-section" aria-labelledby="map-heading">
-    <h2 id="map-heading">全体地図</h2>
-    <div id="share-map" role="application" aria-label="全径間の位置"></div>
-  </section>
-"""
-    else:
-        map_block = """  <section class="map-section map-empty" aria-labelledby="map-heading">
-    <h2 id="map-heading">全体地図</h2>
-    <p class="muted-tiny">まとめて表示できる位置情報がありません。</p>
-  </section>
-"""
+    map_block = ""
     points_js = json.dumps(points, ensure_ascii=False)
     candidates_json = serialize_promoted_candidates(promoted_candidates or [])
     negotiation_portal_js = ""
@@ -4789,8 +4839,9 @@ def build_negotiation_html(
     return_wait_section = render_negotiation_return_wait_section(
         return_wait_items or [],
         return_wait_smoke,
+        use_immediate=use_immediate,
     )
-    return_candidate_section = render_negotiation_return_candidate_section()
+    return_candidate_section = ""
     return_candidate_css = render_negotiation_return_candidate_css()
     return f"""<!DOCTYPE html>
 <html lang="ja">
@@ -5007,7 +5058,6 @@ body {{
   <main>
 {items_html}
 {return_wait_section}
-{return_candidate_section}
 {map_block}
   </main>
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
