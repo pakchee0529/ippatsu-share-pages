@@ -79,6 +79,76 @@ def serialize_promoted_candidates(items: list[Any]) -> str:
     return json.dumps(out, ensure_ascii=False)
 
 
+def render_survey_multipin_js() -> str:
+    """下部マルチピン地図: 表示中の現調待ちカードから points を再構築する。"""
+    return """
+  var surveyMultipinMap = null;
+  var surveyMultipinLayer = null;
+  function collectVisibleSurveyMultipinPoints() {
+    var out = [];
+    document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
+      if (card.hidden) return;
+      if (card.getAttribute("data-portal-moved")) return;
+      var lat = Number(card.getAttribute("data-multipin-lat"));
+      var lng = Number(card.getAttribute("data-multipin-lng"));
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      out.push({
+        name: (card.getAttribute("data-label") || "").trim(),
+        lat: lat,
+        lng: lng,
+        management_no: (card.getAttribute("data-management-no") || "").trim(),
+      });
+    });
+    return out;
+  }
+  function renderSurveyMultipinMap(points) {
+    var mapEl = document.getElementById("share-map");
+    var section = mapEl ? mapEl.closest(".map-section") : null;
+    var emptyEl = section ? section.querySelector(".survey-multipin-empty") : null;
+    if (!mapEl) return;
+    if (!points || !points.length) {
+      if (surveyMultipinLayer) surveyMultipinLayer.clearLayers();
+      mapEl.style.display = "none";
+      if (emptyEl) emptyEl.hidden = false;
+      return;
+    }
+    if (emptyEl) emptyEl.hidden = true;
+    mapEl.style.display = "";
+    if (!surveyMultipinMap) {
+      surveyMultipinMap = L.map("share-map", { scrollWheelZoom: false });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(surveyMultipinMap);
+      surveyMultipinLayer = L.layerGroup().addTo(surveyMultipinMap);
+    }
+    surveyMultipinLayer.clearLayers();
+    var bounds = [];
+    points.forEach(function(p) {
+      var lat = Number(p.lat), lng = Number(p.lng);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      bounds.push([lat, lng]);
+      var m = L.marker([lat, lng]);
+      var label =
+        (p.name || "現場") + (p.management_no ? " (" + p.management_no + ")" : "");
+      m.bindTooltip(label, { permanent: false, direction: "top" });
+      surveyMultipinLayer.addLayer(m);
+    });
+    if (bounds.length === 1) {
+      surveyMultipinMap.setView(bounds[0], 15);
+    } else if (bounds.length > 1) {
+      surveyMultipinMap.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
+    }
+    setTimeout(function() {
+      if (surveyMultipinMap) surveyMultipinMap.invalidateSize();
+    }, 60);
+  }
+  function applySurveyMultipinState() {
+    renderSurveyMultipinMap(collectVisibleSurveyMultipinPoints());
+  }
+"""
+
+
 def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
     ep = json.dumps(endpoint, ensure_ascii=False)
     key = json.dumps(api_key, ensure_ascii=False)
@@ -380,6 +450,7 @@ def render_survey_immediate_status_js(endpoint: str, api_key: str) -> str:
               card.hidden = true;
               card.setAttribute("data-portal-moved", "negotiation");
               setSurveyMarkUi(card, btn, statusEl, "sent", "交渉待ちへ移動済み（この一覧から非表示）");
+              syncSurveyCardVisibility();
               return;
             }}
             setSurveyMarkUi(
@@ -654,6 +725,7 @@ def render_survey_legacy_request_js(endpoint: str, api_key: str) -> str:
         }});
     }});
   }});
+  if (typeof applySurveyMultipinState === "function") applySurveyMultipinState();
 """
 
 

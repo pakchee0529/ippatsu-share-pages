@@ -63,6 +63,7 @@ from portal_immediate_status_client import (
     render_negotiation_immediate_status_js,
     render_survey_immediate_status_js,
     render_survey_legacy_request_js,
+    render_survey_multipin_js,
     serialize_promoted_candidates,
 )
 from typing import Any
@@ -3840,12 +3841,20 @@ def build_survey_html(
         hidden_attr = ""
         if it.management_no_key and it.management_no_key in hidden_overlay_keys:
             hidden_attr = ' hidden data-portal-moved="negotiation"'
+        multipin_attr = ""
+        p_lat, p_lng = _pick_survey_item_latlng(it)
+        f_lat_mp = _to_float(p_lat)
+        f_lng_mp = _to_float(p_lng)
+        if f_lat_mp is not None and f_lng_mp is not None:
+            multipin_attr = (
+                f' data-multipin-lat="{f_lat_mp}" data-multipin-lng="{f_lng_mp}"'
+            )
         cards.append(
             f"""<article class="card survey-update-card" data-card-index="{idx}"
   data-management-no-key="{escape_html(it.management_no_key)}"
   data-management-no="{escape_html(it.management_no)}"
   data-label="{escape_html(it.label)}"
-  data-requested-action="{survey_requested_action}"{hidden_attr}>
+  data-requested-action="{survey_requested_action}"{multipin_attr}{hidden_attr}>
   <div class="card-head">
     <h2 class="card-title">{escape_html(it.label)}</h2>
     <p class="item-mgmt">{escape_html(it.management_no)}</p>
@@ -3858,15 +3867,12 @@ def build_survey_html(
   <div class="note-panel" id="{note_id}" hidden>{note_body}</div>
 </article>"""
         )
-        p_lat, p_lng = _pick_survey_item_latlng(it)
-        f_lat = _to_float(p_lat)
-        f_lng = _to_float(p_lng)
-        if f_lat is not None and f_lng is not None:
+        if f_lat_mp is not None and f_lng_mp is not None:
             points.append(
                 {
                     "name": it.label,
-                    "lat": f_lat,
-                    "lng": f_lng,
+                    "lat": f_lat_mp,
+                    "lng": f_lng_mp,
                     "management_no": it.management_no,
                 }
             )
@@ -3876,6 +3882,7 @@ def build_survey_html(
     if points:
         map_block = """  <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
+    <p class="muted-tiny survey-multipin-empty" hidden role="status">表示対象の位置情報がありません。</p>
     <div id="share-map" role="application" aria-label="全径間の位置"></div>
   </section>
 """
@@ -3885,7 +3892,6 @@ def build_survey_html(
     <p class="muted-tiny">まとめて表示できる位置情報がありません。</p>
   </section>
 """
-    points_js = json.dumps(points, ensure_ascii=False)
     if use_immediate:
         survey_portal_js = render_survey_immediate_status_js(
             portal_status_endpoint, status_request_api_key
@@ -4214,26 +4220,7 @@ body {{
     return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
   }}
 {two_map_click_handler_js()}
-  var points = {points_js};
-  var mapEl = document.getElementById("share-map");
-  if (mapEl && Array.isArray(points) && points.length) {{
-    var map = L.map("share-map", {{ scrollWheelZoom: false }});
-    L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap contributors",
-    }}).addTo(map);
-    var bounds = [];
-    points.forEach(function(p) {{
-      var lat = Number(p.lat), lng = Number(p.lng);
-      if (!isFinite(lat) || !isFinite(lng)) return;
-      bounds.push([lat, lng]);
-      var m = L.marker([lat, lng]).addTo(map);
-      var label = (p.name || "現場") + (p.management_no ? (" (" + p.management_no + ")") : "");
-      m.bindTooltip(label, {{ permanent: false, direction: "top" }});
-    }});
-    if (bounds.length === 1) map.setView(bounds[0], 15);
-    else if (bounds.length > 1) map.fitBounds(bounds, {{ padding: [28, 28], maxZoom: 16 }});
-  }}
+{render_survey_multipin_js()}
   // Portal status overlay (B-plan) or legacy pending request (A-plan). Never embed service_role.
 {survey_portal_js}
 }})();
@@ -5836,7 +5823,9 @@ def validate_survey_only_output(
             ("fetchReturnCandidates", "fetchReturnCandidates"),
             ("portal-menu-btn", "portal-menu-btn"),
             ("two-geo-0", 'id="two-geo-0"'),
-            ("var points", "var points = "),
+            ("applySurveyMultipinState", "function applySurveyMultipinState"),
+            ("collectVisibleSurveyMultipinPoints", "collectVisibleSurveyMultipinPoints"),
+            ("data-multipin-lat", "data-multipin-lat"),
         ],
     )
     failures.extend(_validate_two_geo_script(html, "two-geo-0"))
