@@ -3473,7 +3473,7 @@ def _completion_reports_root(repo_root: Path) -> Path:
 
 
 def _survey_source_path(repo_root: Path) -> Path:
-    """現調待ちポータル用。正本は data/survey/queue.json（261231.json は参照しない）。"""
+    """現調待ちポータル用 legacy/cache パス（正本は Supabase + GPS.json。261231.json は参照しない）。"""
     if _DATA_ROOT_OVERRIDE is not None:
         return _DATA_ROOT_OVERRIDE / "survey" / "queue.json"
     return repo_root.parent / "ippatsu-pc" / "data" / "survey" / "queue.json"
