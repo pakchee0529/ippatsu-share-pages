@@ -2688,6 +2688,18 @@ class ReturnWaitSmoke:
 
 
 @dataclass(frozen=True)
+class StatusSmoke:
+    db_count: int
+    displayed_count: int
+    legacy_count: int
+    duplicate_management_no_count: int
+    warnings_count: int
+    db_management_no_keys: list[str]
+    displayed_management_no_keys: list[str]
+    status: str
+
+
+@dataclass(frozen=True)
 class ArchiveRowContext:
     span_summary: str
     status_summary: str
@@ -3623,10 +3635,10 @@ def _empty_survey_load_stats() -> dict[str, Any]:
     }
 
 
-def load_survey_public_items(
+def _load_survey_public_items_legacy(
     repo_root: Path,
 ) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
-    """ippatsu-pc 側 data/survey/queue.json を読み、現調待ち表示対象だけ抽出する。"""
+    """legacy: queue.json 由来の現調待ち抽出（補助件数比較のみ）。"""
     path = _survey_source_path(repo_root)
     empty_msg = "現調待ちリストはまだありません。"
     if not path.is_file():
@@ -3679,15 +3691,10 @@ def load_survey_public_items(
     return out, "", stats
 
 
-def load_negotiation_public_items(
+def _load_negotiation_public_items_legacy(
     repo_root: Path,
 ) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
-    """ippatsu-pc 側 data/survey/queue.json を読み、交渉待ち表示対象だけ抽出する（M11）。
-
-    SurveyPublicItem を再利用する。判定は is_negotiation_wait_item に委譲する。
-    現調待ちローダ（load_survey_public_items）と並行して queue.json を読み直すが、
-    stdlib・小ファイル前提なので I/O 重複は許容する。M8 ローダを壊さないこと優先。
-    """
+    """legacy: queue.json 由来の交渉待ち抽出（補助件数比較のみ）。"""
     path = _survey_source_path(repo_root)
     empty_msg = "交渉待ちリストはまだありません。"
     if not path.is_file():
@@ -3735,6 +3742,161 @@ def load_negotiation_public_items(
     if not out:
         return [], empty_msg, stats
     return out, "", stats
+
+
+def _fetch_cases_by_status_from_supabase(status: str) -> list[dict[str, Any]] | None:
+    creds = _supabase_rest_ready()
+    if creds is None:
+        return None
+    url, key = creds
+    endpoint = (
+        f"{url.rstrip('/')}/rest/v1/cases"
+        "?select=*"
+        f"&status=eq.{quote(status, safe='')}"
+        "&active=eq.true"
+        "&order=management_no_key.asc"
+    )
+    req = urllib.request.Request(
+        endpoint,
+        method="GET",
+        headers={
+            "apikey": key,
+            "Authorization": f"Bearer {key}",
+            "Accept": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            body = resp.read().decode("utf-8", errors="replace")
+    except (urllib.error.URLError, OSError, TimeoutError) as e:
+        print(f"warning: {status} fetch failed: {e}", file=sys.stderr)
+        return []
+    try:
+        data = json.loads(body)
+    except json.JSONDecodeError:
+        print(f"warning: {status} fetch invalid JSON", file=sys.stderr)
+        return []
+    if not isinstance(data, list):
+        print(f"warning: {status} fetch response is not a list", file=sys.stderr)
+        return []
+    out: list[dict[str, Any]] = []
+    for row in data:
+        if isinstance(row, dict):
+            out.append(row)
+    return out
+
+
+def _load_status_public_items(
+    *,
+    status: str,
+    legacy_count: int,
+    empty_msg: str,
+) -> tuple[list[SurveyPublicItem], str, dict[str, Any], StatusSmoke]:
+    rows = _fetch_cases_by_status_from_supabase(status)
+    if rows is None:
+        smoke = StatusSmoke(
+            db_count=0,
+            displayed_count=0,
+            legacy_count=legacy_count,
+            duplicate_management_no_count=0,
+            warnings_count=1,
+            db_management_no_keys=[],
+            displayed_management_no_keys=[],
+            status=status,
+        )
+        print(
+            f"warning: {status} primary source unavailable "
+            "(SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing)",
+            file=sys.stderr,
+        )
+        return [], empty_msg, _empty_survey_load_stats(), smoke
+    items: list[SurveyPublicItem] = []
+    db_keys: list[str] = []
+    for row in rows:
+        mno = _to_str(row.get("management_no")) or "—"
+        key = _to_str(row.get("management_no_key")) or (management_no_key(mno) or "")
+        db_keys.append(key)
+        items.append(
+            SurveyPublicItem(
+                management_no=mno,
+                management_no_key=key,
+                label=_to_str(row.get("label")) or "—",
+                map_url=_to_str(row.get("map_url")),
+                start_label=_to_str(row.get("start_label")),
+                start_lat=_to_str(row.get("start_lat")),
+                start_lng=_to_str(row.get("start_lng")),
+                end_label=_to_str(row.get("end_label")),
+                end_lat=_to_str(row.get("end_lat")),
+                end_lng=_to_str(row.get("end_lng")),
+                note=_to_str(row.get("note")) or "—",
+            )
+        )
+    db_keys_sorted = sorted(k for k in db_keys if k)
+    shown_keys_sorted = sorted(
+        {
+            str(it.management_no_key or "").strip()
+            for it in items
+            if str(it.management_no_key or "").strip()
+        }
+    )
+    dup_count = max(len(db_keys_sorted) - len(shown_keys_sorted), 0)
+    warnings = 1 if dup_count > 0 else 0
+    smoke = StatusSmoke(
+        db_count=len(db_keys_sorted),
+        displayed_count=len(shown_keys_sorted),
+        legacy_count=legacy_count,
+        duplicate_management_no_count=dup_count,
+        warnings_count=warnings,
+        db_management_no_keys=db_keys_sorted,
+        displayed_management_no_keys=shown_keys_sorted,
+        status=status,
+    )
+    stats: dict[str, Any] = {
+        "total": len(rows),
+        "visible": len(items),
+        "filtered": max(len(rows) - len(items), 0),
+        "exclude_reasons": {},
+        "db_count": smoke.db_count,
+        "displayed_count": smoke.displayed_count,
+        "legacy_count": smoke.legacy_count,
+        "db_management_no_keys": smoke.db_management_no_keys,
+        "displayed_management_no_keys": smoke.displayed_management_no_keys,
+    }
+    if not items:
+        return [], empty_msg, stats, smoke
+    return items, "", stats, smoke
+
+
+def load_survey_public_items(
+    repo_root: Path,
+) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
+    """現調待ち主ソース: Supabase cases.status=survey_wait。queue.json は補助件数。"""
+    legacy_items, _, _legacy_stats = _load_survey_public_items_legacy(repo_root)
+    items, empty, stats, smoke = _load_status_public_items(
+        status="survey_wait",
+        legacy_count=len(legacy_items),
+        empty_msg="現調待ちリストはまだありません。",
+    )
+    stats["legacy_source"] = "queue.json (supplemental)"
+    stats["source_of_truth"] = "supabase cases.status=survey_wait"
+    stats["duplicate_management_no_count"] = smoke.duplicate_management_no_count
+    return items, empty, stats
+
+
+def load_negotiation_public_items(
+    repo_root: Path,
+) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
+    """交渉待ち主ソース: Supabase cases.status=negotiation_wait。queue.json は補助件数。"""
+    legacy_items, _, _legacy_stats = _load_negotiation_public_items_legacy(repo_root)
+    items, empty, stats, smoke = _load_status_public_items(
+        status="negotiation_wait",
+        legacy_count=len(legacy_items),
+        empty_msg="交渉待ちリストはまだありません。",
+    )
+    stats["legacy_source"] = "queue.json (supplemental)"
+    stats["source_of_truth"] = "supabase cases.status=negotiation_wait"
+    stats["duplicate_management_no_count"] = smoke.duplicate_management_no_count
+    return items, empty, stats
 
 
 def _supabase_rest_ready() -> tuple[str, str] | None:
