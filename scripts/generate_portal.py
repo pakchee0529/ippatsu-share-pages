@@ -6488,6 +6488,61 @@ def _validate_two_geo_script(html: str, script_id: str = "two-geo-0") -> list[st
     return failures
 
 
+_SURVEY_CARD_RE = re.compile(
+    r'<article class="card survey-update-card"[^>]*data-management-no-key="([^"]+)"',
+)
+_EXPECTED_SURVEY_WAIT_COUNT = 19
+_EXPECTED_SURVEY_MULTIPIN_COUNT = 19
+_EXPECTED_NEGOTIATION_WAIT_COUNT = 30
+_EXPECTED_RETURN_WAIT_COUNT = 3
+_SURVEY_NEGOTIATION_KEY = "51403794"
+_SURVEY_GPS_SUPPLEMENT_KEY = "51410418"
+
+
+def _count_survey_multipin_markers(html: str) -> int:
+    return len(_SURVEY_ARTICLE_MULTIPIN_RE.findall(html))
+
+
+def _survey_card_has_multipin(html: str, management_no_key: str) -> bool:
+    pat = (
+        rf'<article[^>]*data-management-no-key="{re.escape(management_no_key)}"'
+        rf'[^>]*data-multipin-lat="'
+    )
+    return bool(re.search(pat, html))
+
+
+def _parse_survey_candidate_total(html: str) -> int | None:
+    m = re.search(r'data-survey-candidate-total="(\d+)"', html)
+    if not m:
+        return None
+    try:
+        return int(m.group(1))
+    except ValueError:
+        return None
+
+
+def _count_survey_cards(html: str) -> int:
+    return len(_SURVEY_CARD_RE.findall(html))
+
+
+def _count_negotiation_wait_cards(html: str) -> int:
+    return len(
+        re.findall(
+            r'<article class="card negotiation-card" data-card-index=',
+            html,
+        )
+    )
+
+
+def _count_return_wait_cards(html: str) -> int:
+    return len(
+        re.findall(
+            r'<article class="card negotiation-card return-wait-card"',
+            html,
+        )
+    )
+
+
 def validate_survey_only_output(
     repo_root: Path, *, apikey_nonempty: bool
 ) -> list[str]:
@@ -6498,9 +6553,6 @@ def validate_survey_only_output(
     failures = _require_html_substrings(
         html,
         [
-            ("51404162", "51404162"),
-            ("白銀63N5W3～63N5W4", "白銀63N5W3～63N5W4"),
-            ("51403794", "51403794"),
             ("現調済みにする", "現調済みにする"),
             ("返却候補にする", "返却候補にする"),
             ("survey-overlay-warning", "survey-overlay-warning"),
@@ -6512,10 +6564,35 @@ def validate_survey_only_output(
             ("updateSurveyVisibleCount", "function updateSurveyVisibleCount"),
             ("survey-visible-count", 'id="survey-visible-count"'),
             ("survey-count-lead", 'id="survey-count-lead"'),
-            ("data-multipin-lat", "data-multipin-lat"),
+            ("share-map", 'id="share-map"'),
+            (_SURVEY_GPS_SUPPLEMENT_KEY, _SURVEY_GPS_SUPPLEMENT_KEY),
         ],
     )
     failures.extend(_validate_two_geo_script(html, "two-geo-0"))
+
+    total = _parse_survey_candidate_total(html)
+    if total != _EXPECTED_SURVEY_WAIT_COUNT:
+        failures.append(
+            f"survey_wait_count expected {_EXPECTED_SURVEY_WAIT_COUNT} got {total}"
+        )
+    card_count = _count_survey_cards(html)
+    if card_count != _EXPECTED_SURVEY_WAIT_COUNT:
+        failures.append(
+            f"survey_card_count expected {_EXPECTED_SURVEY_WAIT_COUNT} got {card_count}"
+        )
+    multipin_count = _count_survey_multipin_markers(html)
+    if multipin_count != _EXPECTED_SURVEY_MULTIPIN_COUNT:
+        failures.append(
+            f"survey_multipin_count expected {_EXPECTED_SURVEY_MULTIPIN_COUNT} "
+            f"got {multipin_count}"
+        )
+    if not _survey_card_has_multipin(html, _SURVEY_GPS_SUPPLEMENT_KEY):
+        failures.append(f"survey_multipin missing for {_SURVEY_GPS_SUPPLEMENT_KEY}")
+    if re.search(rf'data-management-no-key="{_SURVEY_NEGOTIATION_KEY}"', html):
+        failures.append(
+            f"survey must not list negotiation_wait key {_SURVEY_NEGOTIATION_KEY}"
+        )
+
     multipin_violations = find_survey_html_multipin_violations(html)
     if multipin_violations:
         failures.append(
@@ -6570,7 +6647,7 @@ def validate_negotiation_only_output(repo_root: Path) -> list[str]:
     if not path.is_file():
         return ["portal/negotiation/index.html missing"]
     html = path.read_text(encoding="utf-8", errors="replace")
-    return _require_html_substrings(
+    failures = _require_html_substrings(
         html,
         [
             ("portal-menu-btn", "portal-menu-btn"),
@@ -6580,8 +6657,27 @@ def validate_negotiation_only_output(repo_root: Path) -> list[str]:
             ("negotiation-card", "negotiation-card"),
             ("data-negotiation-revert", "data-negotiation-revert"),
             ("現調待ちに戻す", "現調待ちに戻す"),
+            (_SURVEY_NEGOTIATION_KEY, _SURVEY_NEGOTIATION_KEY),
         ],
     )
+    neg_count = _count_negotiation_wait_cards(html)
+    if neg_count != _EXPECTED_NEGOTIATION_WAIT_COUNT:
+        failures.append(
+            f"negotiation_wait_count expected {_EXPECTED_NEGOTIATION_WAIT_COUNT} "
+            f"got {neg_count}"
+        )
+    ret_count = _count_return_wait_cards(html)
+    if ret_count != _EXPECTED_RETURN_WAIT_COUNT:
+        failures.append(
+            f"return_wait_count expected {_EXPECTED_RETURN_WAIT_COUNT} got {ret_count}"
+        )
+    if "地図を表示" in html:
+        failures.append("negotiation must not contain 地図を表示")
+    if "2点地図を表示" in html:
+        failures.append("negotiation must not contain 2点地図を表示")
+    if 'id="share-map"' in html:
+        failures.append('negotiation must not contain id="share-map"')
+    return failures
 
 
 def validate_focused_mode(
