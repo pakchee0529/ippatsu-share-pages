@@ -1352,6 +1352,7 @@ def render_negotiation_return_wait_section(
     use_immediate: bool,
 ) -> str:
     cards: list[str] = []
+    points: list[dict] = []
     for it in items:
         if use_immediate and (it.management_no_key or "").strip():
             revert_block = (
@@ -3655,6 +3656,84 @@ def _to_float(v: str) -> float | None:
         return None
 
 
+# 業務対象範囲（奈良/和歌山/三重周辺）を広めに取った妥当緯度経度。
+# この範囲外（国外・0,0・lat/lng取り違え等）は地図UIへ出さない。
+_PORTAL_LAT_MIN = 33.0
+_PORTAL_LAT_MAX = 36.0
+_PORTAL_LNG_MIN = 134.0
+_PORTAL_LNG_MAX = 137.0
+
+# 不正座標の警告を生成中に収集する（management_no, 理由）。
+_MAP_COORD_WARNINGS: list[tuple[str, str]] = []
+
+
+def _reset_map_coord_warnings() -> None:
+    _MAP_COORD_WARNINGS.clear()
+
+
+def _record_map_coord_warning(management_no: str, reason: str) -> None:
+    _MAP_COORD_WARNINGS.append((management_no or "—", reason))
+
+
+def _drain_map_coord_warnings() -> list[tuple[str, str]]:
+    out = list(_MAP_COORD_WARNINGS)
+    _MAP_COORD_WARNINGS.clear()
+    return out
+
+
+def _valid_jp_latlng(lat: float | None, lng: float | None) -> bool:
+    """日本国内・業務範囲の妥当な緯度経度か。None/0/範囲外は False。"""
+    if lat is None or lng is None:
+        return False
+    if lat == 0.0 or lng == 0.0:
+        return False
+    if not (_PORTAL_LAT_MIN <= lat <= _PORTAL_LAT_MAX):
+        return False
+    if not (_PORTAL_LNG_MIN <= lng <= _PORTAL_LNG_MAX):
+        return False
+    return True
+
+
+def _validated_single_latlng(
+    item: "SurveyPublicItem", *, record: bool = True
+) -> tuple[float, float] | None:
+    """カードの単点座標を妥当性チェック付きで返す。不正なら None。"""
+    a, b = _pick_survey_item_latlng(item)
+    lat = _to_float(a)
+    lng = _to_float(b)
+    if lat is None and lng is None:
+        return None
+    if _valid_jp_latlng(lat, lng):
+        return (lat, lng)  # type: ignore[return-value]
+    if record:
+        _record_map_coord_warning(
+            item.management_no,
+            f"single_latlng_out_of_range lat={lat} lng={lng}",
+        )
+    return None
+
+
+def _validated_two_latlng(
+    item: "SurveyPublicItem", *, record: bool = True
+) -> tuple[float, float, float, float] | None:
+    """開始/終了の2点座標を妥当性チェック付きで返す。どちらか不正なら None。"""
+    s_lat = _to_float(item.start_lat)
+    s_lng = _to_float(item.start_lng)
+    e_lat = _to_float(item.end_lat)
+    e_lng = _to_float(item.end_lng)
+    if s_lat is None and s_lng is None and e_lat is None and e_lng is None:
+        return None
+    if _valid_jp_latlng(s_lat, s_lng) and _valid_jp_latlng(e_lat, e_lng):
+        return (s_lat, s_lng, e_lat, e_lng)  # type: ignore[return-value]
+    if record:
+        _record_map_coord_warning(
+            item.management_no,
+            "two_point_latlng_out_of_range "
+            f"start=({s_lat},{s_lng}) end=({e_lat},{e_lng})",
+        )
+    return None
+
+
 def _empty_survey_load_stats() -> dict[str, Any]:
     return {
         "total": 0,
@@ -3900,31 +3979,88 @@ def _merge_legacy_map_fields(
     primary_items: list[SurveyPublicItem],
     legacy_items: list[SurveyPublicItem],
 ) -> list[SurveyPublicItem]:
-    """Supabase正本を維持しつつ、地図表示用フィールドのみ legacy から補完する。"""
-    legacy_by_key: dict[str, SurveyPublicItem] = {}
+    """Supabase正本を維持しつつ、地図表示用フィールドのみ legacy から安全に補完する。
+
+    安全条件:
+      - management_no_key が完全一致する legacy 候補が **ちょうど1件** のときのみ補完。
+      - 両者に label がある場合は NFKC 正規化一致を要求（不一致なら補完しない）。
+      - 座標は start/end ペアが妥当 JP 範囲のときのみ採用（lat/lng取り違え・0・国外は捨てる）。
+    """
+
+    def _norm_label(s: str) -> str:
+        return re.sub(r"\s+", "", unicodedata.normalize("NFKC", (s or "").strip()))
+
+    def _norm_mno(s: str) -> str:
+        return re.sub(r"\s+", "", unicodedata.normalize("NFKC", (s or "").strip()))
+
+    legacy_by_key: dict[str, list[SurveyPublicItem]] = {}
     for it in legacy_items:
         key = (it.management_no_key or "").strip()
-        if key and key not in legacy_by_key:
-            legacy_by_key[key] = it
+        if key:
+            legacy_by_key.setdefault(key, []).append(it)
     out: list[SurveyPublicItem] = []
     for it in primary_items:
         key = (it.management_no_key or "").strip()
-        lg = legacy_by_key.get(key)
-        if lg is None:
+        candidates = legacy_by_key.get(key, [])
+        if len(candidates) != 1:
+            if len(candidates) > 1:
+                _record_map_coord_warning(
+                    it.management_no, "legacy_merge_skipped_multiple_candidates"
+                )
             out.append(it)
             continue
+        lg = candidates[0]
+        if _norm_mno(it.management_no) and _norm_mno(lg.management_no):
+            if _norm_mno(it.management_no) != _norm_mno(lg.management_no):
+                _record_map_coord_warning(
+                    it.management_no, "legacy_merge_skipped_management_no_mismatch"
+                )
+                out.append(it)
+                continue
+        if (
+            it.label
+            and lg.label
+            and _norm_label(it.label) != _norm_label(lg.label)
+        ):
+            _record_map_coord_warning(
+                it.management_no, "legacy_merge_skipped_label_mismatch"
+            )
+            out.append(it)
+            continue
+        # 座標は妥当ペアのみ採用。
+        s_lat = _to_float(it.start_lat or lg.start_lat)
+        s_lng = _to_float(it.start_lng or lg.start_lng)
+        e_lat = _to_float(it.end_lat or lg.end_lat)
+        e_lng = _to_float(it.end_lng or lg.end_lng)
+        if _valid_jp_latlng(s_lat, s_lng) and _valid_jp_latlng(e_lat, e_lng):
+            new_start_lat = it.start_lat or lg.start_lat
+            new_start_lng = it.start_lng or lg.start_lng
+            new_end_lat = it.end_lat or lg.end_lat
+            new_end_lng = it.end_lng or lg.end_lng
+            new_start_label = it.start_label or lg.start_label
+            new_end_label = it.end_label or lg.end_label
+        else:
+            if (s_lat is not None or e_lat is not None):
+                _record_map_coord_warning(
+                    it.management_no,
+                    "legacy_merge_coords_rejected_out_of_range "
+                    f"start=({s_lat},{s_lng}) end=({e_lat},{e_lng})",
+                )
+            new_start_lat = new_start_lng = ""
+            new_end_lat = new_end_lng = ""
+            new_start_label = new_end_label = ""
         out.append(
             SurveyPublicItem(
                 management_no=it.management_no,
                 management_no_key=it.management_no_key,
                 label=it.label,
-                map_url=it.map_url or lg.map_url,
-                start_label=it.start_label or lg.start_label,
-                start_lat=it.start_lat or lg.start_lat,
-                start_lng=it.start_lng or lg.start_lng,
-                end_label=it.end_label or lg.end_label,
-                end_lat=it.end_lat or lg.end_lat,
-                end_lng=it.end_lng or lg.end_lng,
+                map_url="",
+                start_label=new_start_label,
+                start_lat=new_start_lat,
+                start_lng=new_start_lng,
+                end_label=new_end_label,
+                end_lat=new_end_lat,
+                end_lng=new_end_lng,
                 note=it.note if it.note and it.note != "—" else (lg.note or it.note),
             )
         )
@@ -3935,6 +4071,7 @@ def load_survey_public_items(
     repo_root: Path,
 ) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
     """現調待ち主ソース: Supabase cases.status=survey_wait。queue.json は補助件数。"""
+    _reset_map_coord_warnings()
     legacy_items, _, _legacy_stats = _load_survey_public_items_legacy(repo_root)
     items, empty, stats, smoke = _load_status_public_items(
         status="survey_wait",
@@ -3953,6 +4090,7 @@ def load_negotiation_public_items(
     repo_root: Path,
 ) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
     """交渉待ち主ソース: Supabase cases.status=negotiation_wait。queue.json は補助件数。"""
+    _reset_map_coord_warnings()
     legacy_items, _, _legacy_stats = _load_negotiation_public_items_legacy(repo_root)
     items, empty, stats, smoke = _load_status_public_items(
         status="negotiation_wait",
@@ -4160,25 +4298,23 @@ def build_survey_html(
     cards: list[str] = []
     points: list[dict] = []
     for idx, it in enumerate(items):
+        # 単点地図ボタン: 妥当な単点座標があるときだけ。map_url は信用せず座標から生成。
         map_btn = ""
-        if it.map_url and it.map_url.startswith(("http://", "https://")):
+        single = _validated_single_latlng(it)
+        if single is not None:
+            s_lat, s_lng = single
             map_btn = (
-                f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
+                f'<a class="btn btn-map" '
+                f'href="https://www.google.com/maps?q={s_lat},{s_lng}" '
                 'target="_blank" rel="noopener noreferrer">地図を表示</a>'
             )
+        # 2点地図ボタン: 開始/終了の2点がどちらも妥当なときだけ。
         two_btn = ""
         two_json = ""
         two_wrap = ""
-        start_lat = _to_float(it.start_lat)
-        start_lng = _to_float(it.start_lng)
-        end_lat = _to_float(it.end_lat)
-        end_lng = _to_float(it.end_lng)
-        if (
-            start_lat is not None
-            and start_lng is not None
-            and end_lat is not None
-            and end_lng is not None
-        ):
+        two = _validated_two_latlng(it)
+        if two is not None:
+            start_lat, start_lng, end_lat, end_lng = two
             two_json_id = f"two-geo-{idx}"
             two_wrap_id = f"two-wrap-{idx}"
             two_map_id = f"share-two-map-{idx}"
@@ -4272,11 +4408,12 @@ def build_survey_html(
         hidden_attr = ""
         if it.management_no_key and it.management_no_key in hidden_overlay_keys:
             hidden_attr = ' hidden data-portal-moved="negotiation"'
+        # マルチピンも妥当 JP 座標のときだけ載せる（国外/0/取り違えは除外）。
         multipin_attr = ""
-        p_lat, p_lng = _pick_survey_item_latlng(it)
-        f_lat_mp = _to_float(p_lat)
-        f_lng_mp = _to_float(p_lng)
-        if f_lat_mp is not None and f_lng_mp is not None:
+        mp = _validated_single_latlng(it, record=False)
+        f_lat_mp = f_lng_mp = None
+        if mp is not None:
+            f_lat_mp, f_lng_mp = mp
             multipin_attr = (
                 f' data-multipin-lat="{f_lat_mp}" data-multipin-lng="{f_lng_mp}"'
             )
@@ -4709,54 +4846,13 @@ def build_negotiation_html(
             "このページは閲覧用です。状態を変更するボタン（Supabase送信・Googleフォーム）はありません。"
             "「現調待ちに戻す」は未実装のため無効化しています。"
         )
-    gps_poles = load_gps_poles(repo_root) if repo_root is not None else None
     cards: list[str] = []
     points: list[dict] = []
     for idx, it in enumerate(items):
-        map_btn = ""
-        if it.map_url and it.map_url.startswith(("http://", "https://")):
-            map_btn = (
-                f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
-                'target="_blank" rel="noopener noreferrer">地図を表示</a>'
-            )
-        two_btn = ""
+        # 交渉待ちページは地図UI不要。地図/2点地図ボタンは出さない。
         two_json = ""
         two_wrap = ""
-        start_lat = _to_float(it.start_lat)
-        start_lng = _to_float(it.start_lng)
-        end_lat = _to_float(it.end_lat)
-        end_lng = _to_float(it.end_lng)
-        if (
-            start_lat is not None
-            and start_lng is not None
-            and end_lat is not None
-            and end_lng is not None
-        ):
-            two_json_id = f"two-geo-{idx}"
-            two_wrap_id = f"two-wrap-{idx}"
-            two_map_id = f"share-two-map-{idx}"
-            two_btn = (
-                f'<button type="button" class="btn btn-map" data-two-open '
-                f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
-                f'data-two-json="{two_json_id}" aria-expanded="false" '
-                f'aria-controls="{two_wrap_id}">2点地図を表示</button>'
-            )
-            two_geo = build_two_geo_payload(
-                a_name=it.start_label or it.label,
-                a_lat=start_lat,
-                a_lng=start_lng,
-                b_name=it.end_label or it.label,
-                b_lat=end_lat,
-                b_lng=end_lng,
-                gps_poles=gps_poles,
-            )
-            two_json = format_two_geo_script(two_json_id, two_geo)
-            two_wrap = (
-                f'<div class="two-map-wrap" id="{two_wrap_id}" hidden>'
-                f'<div id="{two_map_id}" class="share-two-map-canvas" '
-                'role="application" aria-label="2点地図"></div></div>'
-            )
-        actions = "".join(x for x in [map_btn, two_btn] if x)
+        actions = ""
         if use_immediate and it.management_no_key:
             revert_block = (
                 '<div class="card-actions card-actions-revert" role="group" '
@@ -4798,23 +4894,10 @@ def build_negotiation_html(
   {two_wrap}
 </article>"""
         )
-        p_lat, p_lng = _pick_survey_item_latlng(it)
-        f_lat = _to_float(p_lat)
-        f_lng = _to_float(p_lng)
-        if f_lat is not None and f_lng is not None:
-            points.append(
-                {
-                    "name": it.label,
-                    "lat": f_lat,
-                    "lng": f_lng,
-                    "management_no": it.management_no,
-                }
-            )
     items_html = "\n".join(cards)
     if not items_html:
         items_html = f'<p class="muted-tiny">{escape_html(empty_note)}</p>'
     map_block = ""
-    points_js = json.dumps(points, ensure_ascii=False)
     candidates_json = serialize_promoted_candidates(promoted_candidates or [])
     negotiation_portal_js = ""
     if use_immediate:
@@ -5066,40 +5149,6 @@ body {{
     crossorigin=""></script>
   <script>
 (function () {{
-  document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {{
-    var id = btn.getAttribute("aria-controls");
-    var panel = id ? document.getElementById(id) : null;
-    if (!panel) return;
-    btn.addEventListener("click", function() {{
-      var open = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", open ? "false" : "true");
-      panel.hidden = open;
-    }});
-  }});
-  function gmaps(lat, lng) {{
-    return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
-  }}
-{two_map_click_handler_js()}
-  var points = {points_js};
-  var mapEl = document.getElementById("share-map");
-  if (mapEl && Array.isArray(points) && points.length) {{
-    var map = L.map("share-map", {{ scrollWheelZoom: false }});
-    L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap contributors",
-    }}).addTo(map);
-    var bounds = [];
-    points.forEach(function(p) {{
-      var lat = Number(p.lat), lng = Number(p.lng);
-      if (!isFinite(lat) || !isFinite(lng)) return;
-      bounds.push([lat, lng]);
-      var m = L.marker([lat, lng]).addTo(map);
-      var label = (p.name || "現場") + (p.management_no ? (" (" + p.management_no + ")") : "");
-      m.bindTooltip(label, {{ permanent: false, direction: "top" }});
-    }});
-    if (bounds.length === 1) map.setView(bounds[0], 15);
-    else if (bounds.length > 1) map.fitBounds(bounds, {{ padding: [28, 28], maxZoom: 16 }});
-  }}
   // Portal status overlay (B-plan immediate). Never embed service_role.
 {negotiation_portal_js}
 }})();
@@ -6135,6 +6184,10 @@ def run_survey_only(repo_root: Path) -> FocusedGenerateResult:
     )
     if survey_stats.get("exclude_reasons"):
         print(f"  survey_exclude_reasons: {survey_stats['exclude_reasons']}")
+    coord_warnings = _drain_map_coord_warnings()
+    if coord_warnings:
+        print(f"  map_coord_warnings: {coord_warnings}")
+    stats["map_coord_warnings"] = coord_warnings
     return FocusedGenerateResult(
         mode=PORTAL_MODE_SURVEY_ONLY,
         output_rel=rel,
@@ -6243,6 +6296,10 @@ def run_negotiation_only(repo_root: Path) -> FocusedGenerateResult:
     stats["displayed_management_no_keys"] = (
         return_wait_smoke.displayed_management_no_keys
     )
+    coord_warnings = _drain_map_coord_warnings()
+    if coord_warnings:
+        print(f"  map_coord_warnings: {coord_warnings}")
+    stats["map_coord_warnings"] = coord_warnings
     return FocusedGenerateResult(
         mode=PORTAL_MODE_NEGOTIATION_ONLY,
         output_rel=rel,
@@ -6634,6 +6691,9 @@ def main() -> int:
         )
         if survey_stats.get("exclude_reasons"):
             print(f"  survey_exclude_reasons: {survey_stats['exclude_reasons']}")
+        survey_coord_warnings = _drain_map_coord_warnings()
+        if survey_coord_warnings:
+            print(f"  survey_map_coord_warnings: {survey_coord_warnings}")
         # M11 + B-plan: 交渉待ちページ。即時 status overlay（apikey は publishable/anon のみ）。
         negotiation_items, negotiation_empty_note, negotiation_stats = (
             load_negotiation_public_items(repo_root)
@@ -6669,6 +6729,9 @@ def main() -> int:
             f"dup={return_wait_smoke.duplicate_management_no_count}, "
             f"warn={return_wait_smoke.warnings_count})"
         )
+        negotiation_coord_warnings = _drain_map_coord_warnings()
+        if negotiation_coord_warnings:
+            print(f"  negotiation_map_coord_warnings: {negotiation_coord_warnings}")
         inject_share_detail_edit_into_share_pages(repo_root)
     else:
         print(
