@@ -5461,6 +5461,10 @@ PORTAL_MODE_ARCHIVE_ONLY = "archive-only"
 PORTAL_MODE_PORTAL_TOP_ONLY = "portal-top-only"
 PORTAL_MODE_NEGOTIATION_ONLY = "negotiation-only"
 
+# Legacy share pages that should remain accessible by direct URL,
+# but no longer appear on portal top cards.
+RETIRED_SHARE_DATE_KEYS = frozenset({"261231"})
+
 FOCUSED_PORTAL_MODES = frozenset(
     {
         PORTAL_MODE_SURVEY_ONLY,
@@ -5596,6 +5600,8 @@ def _build_portal_top_entries(
     archived = {e.date for e in manifest_entries}
     entries: list[tuple[str, str]] = []
     for folder, path in _iter_share_index_rows(repo_root):
+        if folder in RETIRED_SHARE_DATE_KEYS:
+            continue
         if folder in archived:
             continue
         if exclude_folder is not None and folder == exclude_folder:
