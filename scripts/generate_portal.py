@@ -4152,6 +4152,67 @@ def _merge_legacy_map_fields(
     return out
 
 
+def _supplement_map_fields_from_gps(
+    items: list[SurveyPublicItem], repo_root: Path
+) -> list[SurveyPublicItem]:
+    """queue 補完後も座標が無い案件は GPS.json のみで補完（GUI と同じ解決ロジック）。"""
+    gps_path = gps_json_path(repo_root)
+    pc_root = repo_root.parent / "ippatsu-pc"
+    if not gps_path.is_file() or not pc_root.is_dir():
+        return items
+    try:
+        if str(pc_root) not in sys.path:
+            sys.path.insert(0, str(pc_root))
+        from app.core.loader import load_pole_coords  # noqa: PLC0415
+        from tools.preview_survey_wait_additions_20260529 import (  # noqa: PLC0415
+            share_gps_autofill,
+        )
+    except ImportError:
+        return items
+    pole_coords, _ = load_pole_coords(gps_path)
+    if not pole_coords:
+        return items
+    out: list[SurveyPublicItem] = []
+    for it in items:
+        if _validated_two_latlng(it, record=False) is not None:
+            out.append(it)
+            continue
+        label = (it.label or "").strip()
+        if not label or label == "—":
+            out.append(it)
+            continue
+        gps = share_gps_autofill(label, pole_coords)
+
+        def _gps_num(v: object) -> float | None:
+            if isinstance(v, (int, float)):
+                return float(v)
+            return _to_float(v)
+
+        s_lat = _gps_num(gps.get("start_lat"))
+        s_lng = _gps_num(gps.get("start_lng"))
+        e_lat = _gps_num(gps.get("end_lat"))
+        e_lng = _gps_num(gps.get("end_lng"))
+        if not (_valid_jp_latlng(s_lat, s_lng) and _valid_jp_latlng(e_lat, e_lng)):
+            out.append(it)
+            continue
+        out.append(
+            SurveyPublicItem(
+                management_no=it.management_no,
+                management_no_key=it.management_no_key,
+                label=it.label,
+                map_url=_to_str(gps.get("map_url")) or "",
+                start_label=_to_str(gps.get("start_label")) or "",
+                start_lat=str(s_lat),
+                start_lng=str(s_lng),
+                end_label=_to_str(gps.get("end_label")) or "",
+                end_lat=str(e_lat),
+                end_lng=str(e_lng),
+                note=it.note,
+            )
+        )
+    return out
+
+
 def load_survey_public_items(
     repo_root: Path,
 ) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
@@ -4164,7 +4225,9 @@ def load_survey_public_items(
         empty_msg="現調待ちリストはまだありません。",
     )
     items = _merge_legacy_map_fields(items, legacy_items)
+    items = _supplement_map_fields_from_gps(items, repo_root)
     stats["legacy_source"] = "queue.json (supplemental)"
+    stats["gps_map_field_fallback_enabled"] = True
     stats["source_of_truth"] = "supabase cases.status=survey_wait"
     stats["legacy_map_field_fallback_enabled"] = True
     stats["duplicate_management_no_count"] = smoke.duplicate_management_no_count
