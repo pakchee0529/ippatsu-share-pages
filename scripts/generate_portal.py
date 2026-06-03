@@ -3998,14 +3998,13 @@ def build_planned_incomplete_section_html(
         <p class="item-mgmt">{escape_html(it.management_no)}</p>
         <div class="card-actions">{map_btn}</div>
       </div>
-      <p class="archive-status-line">現在状態: {escape_html(it.current_status)} / active: {escape_html(it.active_display)}</p>
       {reason_line}
 </article>"""
         )
     cards_str = "\n".join(cards)
     return f"""  <section class="planned-incomplete-section" aria-labelledby="planned-incomplete-heading">
     <h2 id="planned-incomplete-heading" class="archive-section-heading">当日予定・未完了</h2>
-    <p class="disclaimer-note">この枠は、当日予定に含まれていたが完了報告されていない案件です。現在の案件状態は各ポータル一覧の正本を参照してください。</p>
+    <p class="disclaimer-note">この枠は、当日予定に含まれていたが完了しなかった案件です。現在の進行状況は各ポータル一覧の正本を参照してください。</p>
 {cards_str}
   </section>
 """
