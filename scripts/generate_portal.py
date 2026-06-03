@@ -6957,12 +6957,28 @@ def _parse_six_digit_date(value: str) -> str | None:
     return None
 
 
+def _configure_stdio_encoding() -> None:
+    """Windows cp932 コンソールで診断 print が落ちないよう stdout/stderr を緩和する。
+
+    HTML 書き込みは常に UTF-8。本関数は末尾ログ用のみ。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (AttributeError, OSError, ValueError):
+                pass
+
+
 def main() -> int:
     global _DATA_ROOT_OVERRIDE
     global _COMPLETION_REPORTS_ROOT_OVERRIDE
     global _STRICT_COMPLETION_REPORTS_ROOT
     global _STRICT_COMPLETION_REPORTS_MISSING
     global _STRICT_COMPLETION_REPORTS_SUMMARY_MISMATCH
+
+    _configure_stdio_encoding()
 
     parser = argparse.ArgumentParser(
         description=(
