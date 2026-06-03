@@ -2936,7 +2936,12 @@ def build_archive_row_context(
             completed = entry.completed_count
         if entry.incomplete_count is not None:
             incomplete = entry.incomplete_count
-    status_summary = f"完了{completed} / 未完了{incomplete}"
+    pi = entry.planned_incomplete_count
+    if pi is not None and pi > 0:
+        status_summary = f"完了 {completed}件 / 当日未完了 {pi}件"
+        tokens.append("当日未完了")
+    else:
+        status_summary = f"完了{completed} / 未完了{incomplete}"
     return ArchiveRowContext(
         span_summary=span_summary,
         status_summary=status_summary,
@@ -2967,19 +2972,22 @@ def format_archive_row_article(
     ctx = build_archive_row_context(entry, share_summary, public_items)
     search_attr = escape_html(ctx.search_blob)
     href = archive_list_detail_href(folder)
-    planned_badge = ""
-    pi = entry.planned_incomplete_count
-    if pi is not None and pi > 0:
-        planned_badge = (
-            f'<div class="archive-planned-count">+{pi} 当日未完了</div>'
+    pi = entry.planned_incomplete_count or 0
+    if pi > 0:
+        count_display = f"完了 {ctx.item_count}件 / 当日未完了 {pi}件"
+        status_block = ""
+    else:
+        count_display = f"{ctx.item_count}件"
+        status_block = (
+            f'<div class="archive-status">{escape_html(ctx.status_summary)}</div>'
         )
     return f"""    <article class="archive-row" data-search="{search_attr}">
       <div class="archive-row-top">
         <div class="archive-main">{escape_html(ctx.span_summary)}</div>
-        <div class="archive-count">{ctx.item_count}件{planned_badge}</div>
+        <div class="archive-count">{escape_html(count_display)}</div>
       </div>
       <div class="archive-meta">{escape_html(date_jp)} <span class="archive-dkey">({escape_html(folder)})</span></div>
-      <div class="archive-status">{escape_html(ctx.status_summary)}</div>
+      {status_block}
       <a class="btn btn-archive" href="{escape_html(href)}">アーカイブ詳細を開く</a>
     </article>"""
 
@@ -3977,23 +3985,27 @@ def build_planned_incomplete_section_html(
                 f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
                 'target="_blank" rel="noopener noreferrer">地図を開く</a>'
             )
+        reason_line = ""
+        if it.incomplete_reason and it.incomplete_reason != "—":
+            reason_line = (
+                f'<p class="archive-status-line">未完了理由: '
+                f"{escape_html(it.incomplete_reason)}</p>"
+            )
         cards.append(
             f"""<article class="card card-planned-incomplete" data-planned-index="{idx}">
       <div class="card-head">
-        <h2 class="card-title">{escape_html(it.label)} <span class="status-pill status-pending">未完了（記録）</span></h2>
+        <h2 class="card-title">{escape_html(it.label)} <span class="status-pill status-pending">未完了</span></h2>
         <p class="item-mgmt">{escape_html(it.management_no)}</p>
         <div class="card-actions">{map_btn}</div>
       </div>
-      <p class="archive-status-line">完了報告 ref: {escape_html(it.completion_report_ref_display)}（完了扱いではありません）</p>
-      <p class="archive-status-line">現在の案件状態: {escape_html(it.current_status)} / active: {escape_html(it.active_display)}</p>
-      <p class="archive-status-line">未完了理由: {escape_html(it.incomplete_reason)}</p>
-      <p class="muted-tiny">{escape_html(it.note)}</p>
+      <p class="archive-status-line">現在状態: {escape_html(it.current_status)} / active: {escape_html(it.active_display)}</p>
+      {reason_line}
 </article>"""
         )
     cards_str = "\n".join(cards)
     return f"""  <section class="planned-incomplete-section" aria-labelledby="planned-incomplete-heading">
-    <h2 id="planned-incomplete-heading" class="archive-section-heading">当日予定・未完了（完了扱いではありません）</h2>
-    <p class="disclaimer-note">以下は当日の報告ファイル等に載っていた未完了径間です。完了報告アーカイブの件数・完了判定には含めません。工事待ち・交渉待ち等の現在状態は各ポータル一覧の正本を参照してください。</p>
+    <h2 id="planned-incomplete-heading" class="archive-section-heading">当日予定・未完了</h2>
+    <p class="disclaimer-note">この枠は、当日予定に含まれていたが完了報告されていない案件です。現在の案件状態は各ポータル一覧の正本を参照してください。</p>
 {cards_str}
   </section>
 """
