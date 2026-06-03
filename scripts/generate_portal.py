@@ -13,8 +13,14 @@ manifest の entries[].href は **portal/archive/index.html を基準とした�
 portal/archive/<YYMMDD>/ は generate 時に manifest 済み分へ上書き生成する。manifest から date が消えた
 古い YYMMDD ディレクトリは自動では削除しない（孤立が残る）。必要なら生成前に 6 桁名フォルダだけ手で整理する。
 
-CLI では ``--data-root <path>`` に ippatsu の ``data`` ディレクトリ（``completion_reports/`` と ``survey/`` を含む）を
-渡せる。未指定時は従来どおり ``<share-pages の親>/ippatsu-pc/data`` を参照する。
+CLI では ``--data-root <path>`` に ippatsu の ``data`` ディレクトリ（``survey/`` 等）を渡せる。
+
+完了報告アーカイブ詳細は ``--completion-reports-root <path>`` で **副本 JSON のルート**
+（例: ippatsu-pc ``output/completion_reports_export``）を明示する。未指定時は
+``<data-root>/completion_reports`` または既定 ``ippatsu-pc/data/completion_reports`` に
+フォールバックし **legacy fallback** 警告を出す。Supabase 正本モードの公開前運用では
+``--completion-reports-root`` を必須にすること（``--strict-completion-reports-root`` で未指定時に停止）。
+``data/completion_reports`` の先行最新化は行わない。
 
 ``--mode full``（既定）: 従来どおり全体再生成（survey・share 注入・manifest 全日付のアーカイブ詳細を含む）。
 
@@ -72,6 +78,11 @@ from typing import Any
 
 # ippatsu-pc の data ディレクトリ（--data-root で上書き）。未指定時は sibling ippatsu-pc/data。
 _DATA_ROOT_OVERRIDE: Path | None = None
+# completion_reports 副本 JSON ルート（--completion-reports-root）。YYMMDD.json が直下にあるディレクトリ。
+_COMPLETION_REPORTS_ROOT_OVERRIDE: Path | None = None
+_STRICT_COMPLETION_REPORTS_ROOT: bool = False
+_STRICT_COMPLETION_REPORTS_MISSING: bool = False
+_STRICT_COMPLETION_REPORTS_SUMMARY_MISMATCH: bool = False
 
 # Leading Japanese run (kanji / hiragana / katakana) before span codes (digits etc.).
 _CROWN_HEAD = re.compile(
@@ -3467,9 +3478,136 @@ def build_archive_instructions_html_from_source(src: dict) -> str:
 
 
 def _completion_reports_root(repo_root: Path) -> Path:
+    if _COMPLETION_REPORTS_ROOT_OVERRIDE is not None:
+        return _COMPLETION_REPORTS_ROOT_OVERRIDE.resolve()
     if _DATA_ROOT_OVERRIDE is not None:
-        return _DATA_ROOT_OVERRIDE / "completion_reports"
-    return repo_root.parent / "ippatsu-pc" / "data" / "completion_reports"
+        return (_DATA_ROOT_OVERRIDE / "completion_reports").resolve()
+    return (
+        repo_root.parent / "ippatsu-pc" / "data" / "completion_reports"
+    ).resolve()
+
+
+def _completion_reports_root_source_label() -> str:
+    if _COMPLETION_REPORTS_ROOT_OVERRIDE is not None:
+        return "explicit"
+    if _DATA_ROOT_OVERRIDE is not None:
+        return "legacy_fallback_via_data_root"
+    return "legacy_fallback_default"
+
+
+def _print_completion_reports_root_info(
+    repo_root: Path,
+    *,
+    strict_root: bool,
+) -> int:
+    """completion_reports 読込ルートをログ出力。strict 時は明示 root 必須。"""
+    root = _completion_reports_root(repo_root)
+    source = _completion_reports_root_source_label()
+    if _COMPLETION_REPORTS_ROOT_OVERRIDE is None:
+        print(
+            "Warning: --completion-reports-root not set; using legacy fallback "
+            f"({source}): {root}",
+            file=sys.stderr,
+        )
+        print(
+            "  For Supabase SOT / pre-publish portal generation, pass "
+            "--completion-reports-root to output/completion_reports_export "
+            "(do not refresh data/completion_reports before publish).",
+            file=sys.stderr,
+        )
+        if strict_root:
+            print(
+                "Error: --strict-completion-reports-root requires "
+                "--completion-reports-root.",
+                file=sys.stderr,
+            )
+            return 1
+    else:
+        if not root.is_dir():
+            print(
+                f"Error: --completion-reports-root is not a directory: {root}",
+                file=sys.stderr,
+            )
+            return 1
+        print(f"completion_reports_root={root} (source={source})")
+    _print_export_summary_if_present(root)
+    return 0
+
+
+def _print_export_summary_if_present(cr_root: Path) -> None:
+    summary_path = cr_root / "export_summary.json"
+    if not summary_path.is_file():
+        return
+    try:
+        raw = json.loads(summary_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(
+            f"Warning: could not read export_summary.json: {exc}",
+            file=sys.stderr,
+        )
+        return
+    if not isinstance(raw, dict):
+        return
+    exported_at = raw.get("exported_at") or raw.get("generated_at")
+    if exported_at:
+        print(f"export_summary.exported_at={exported_at}")
+    dates = raw.get("dates")
+    if not isinstance(dates, list):
+        return
+    print(f"export_summary: {len(dates)} date(s) in {summary_path.name}")
+    for ent in dates:
+        if not isinstance(ent, dict):
+            continue
+        dk = ent.get("date_key") or ent.get("date") or "?"
+        ic = ent.get("item_count")
+        cc = ent.get("case_count")
+        print(f"  export_summary date={dk} item_count={ic} case_count={cc}")
+
+
+def _export_summary_item_count(cr_root: Path, date_key: str) -> int | None:
+    summary_path = cr_root / "export_summary.json"
+    if not summary_path.is_file():
+        return None
+    try:
+        raw = json.loads(summary_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    dates = raw.get("dates") if isinstance(raw, dict) else None
+    if not isinstance(dates, list):
+        return None
+    for ent in dates:
+        if not isinstance(ent, dict):
+            continue
+        dk = ent.get("date_key") or ent.get("date")
+        if str(dk) == date_key:
+            ic = ent.get("item_count")
+            if isinstance(ic, int):
+                return ic
+            if isinstance(ic, str) and ic.isdigit():
+                return int(ic)
+    return None
+
+
+def _check_archive_items_vs_export_summary(
+    repo_root: Path,
+    date_key: str,
+    item_count: int,
+    *,
+    strict_mismatch: bool,
+) -> None:
+    expected = _export_summary_item_count(_completion_reports_root(repo_root), date_key)
+    if expected is None:
+        return
+    if expected == item_count:
+        return
+    msg = (
+        f"Warning: archive {date_key} loaded {item_count} item(s) but "
+        f"export_summary item_count={expected}"
+    )
+    if strict_mismatch:
+        print(f"Error: {msg}", file=sys.stderr)
+        sys.exit(1)
+    print(msg, file=sys.stderr)
 
 
 def _survey_source_path(repo_root: Path) -> Path:
@@ -5757,6 +5895,27 @@ def write_archive_detail_pages(
         day_dir.mkdir(parents=True, exist_ok=True)
         out_path = day_dir / "index.html"
         pub_items, note = load_archive_public_items(repo_root, ent.date)
+        if pub_items is None and _STRICT_COMPLETION_REPORTS_MISSING:
+            print(
+                f"Error: completion_reports JSON missing for {ent.date} under "
+                f"{_completion_reports_root(repo_root)}",
+                file=sys.stderr,
+            )
+            raise SystemExit(1)
+        n_items = len(pub_items) if pub_items else 0
+        cr_root = _completion_reports_root(repo_root)
+        print(
+            f"archive detail {ent.date}: items={n_items}, "
+            f"completion_reports_root={cr_root} "
+            f"(source={_completion_reports_root_source_label()})"
+            + (f"; note={note}" if note else "")
+        )
+        _check_archive_items_vs_export_summary(
+            repo_root,
+            ent.date,
+            n_items,
+            strict_mismatch=_STRICT_COMPLETION_REPORTS_SUMMARY_MISMATCH,
+        )
         out_path.write_text(
             build_archive_detail_html(ent, pub_items, note),
             encoding="utf-8",
@@ -6715,6 +6874,10 @@ def _parse_six_digit_date(value: str) -> str | None:
 
 def main() -> int:
     global _DATA_ROOT_OVERRIDE
+    global _COMPLETION_REPORTS_ROOT_OVERRIDE
+    global _STRICT_COMPLETION_REPORTS_ROOT
+    global _STRICT_COMPLETION_REPORTS_MISSING
+    global _STRICT_COMPLETION_REPORTS_SUMMARY_MISMATCH
 
     parser = argparse.ArgumentParser(
         description=(
@@ -6727,8 +6890,43 @@ def main() -> int:
         default=None,
         metavar="DIR",
         help=(
-            "Path to the ippatsu-pc 'data' directory (contains completion_reports/ and survey/). "
-            "Default: <parent of this repo>/ippatsu-pc/data"
+            "Path to the ippatsu-pc 'data' directory (survey/ etc.). "
+            "Default: <parent of this repo>/ippatsu-pc/data. "
+            "Archive completion_reports use --completion-reports-root when set."
+        ),
+    )
+    parser.add_argument(
+        "--completion-reports-root",
+        type=Path,
+        default=None,
+        metavar="DIR",
+        help=(
+            "Directory containing completion report secondary JSON files "
+            "(YYMMDD.json), e.g. ippatsu-pc output/completion_reports_export. "
+            "Preferred for portal archive generation before publish. "
+            "Do not copy into data/completion_reports before portal publish."
+        ),
+    )
+    parser.add_argument(
+        "--strict-completion-reports-root",
+        action="store_true",
+        help=(
+            "Require --completion-reports-root (exit if unset). "
+            "Use for Supabase SOT / pre-publish runs."
+        ),
+    )
+    parser.add_argument(
+        "--strict-completion-reports-missing",
+        action="store_true",
+        help=(
+            "Exit if a manifest archive date has no JSON under completion_reports_root."
+        ),
+    )
+    parser.add_argument(
+        "--strict-completion-reports-summary",
+        action="store_true",
+        help=(
+            "Exit if loaded item count disagrees with export_summary.json for that date."
         ),
     )
     parser.add_argument(
@@ -6763,12 +6961,27 @@ def main() -> int:
     )
     ns = parser.parse_args()
     _DATA_ROOT_OVERRIDE = None
+    _COMPLETION_REPORTS_ROOT_OVERRIDE = None
+    _STRICT_COMPLETION_REPORTS_ROOT = bool(ns.strict_completion_reports_root)
+    _STRICT_COMPLETION_REPORTS_MISSING = bool(ns.strict_completion_reports_missing)
+    _STRICT_COMPLETION_REPORTS_SUMMARY_MISMATCH = bool(
+        ns.strict_completion_reports_summary
+    )
     if ns.data_root is not None:
         dr = ns.data_root.expanduser().resolve()
         if not dr.is_dir():
             print(f"Error: --data-root is not a directory: {dr}", file=sys.stderr)
             return 1
         _DATA_ROOT_OVERRIDE = dr
+    if ns.completion_reports_root is not None:
+        cr = ns.completion_reports_root.expanduser().resolve()
+        if not cr.is_dir():
+            print(
+                f"Error: --completion-reports-root is not a directory: {cr}",
+                file=sys.stderr,
+            )
+            return 1
+        _COMPLETION_REPORTS_ROOT_OVERRIDE = cr
 
     mode = ns.mode
     target_date: str | None = None
@@ -6786,6 +6999,11 @@ def main() -> int:
 
     repo_root = Path(__file__).resolve().parent.parent
     load_portal_dotenv(repo_root)
+
+    if _print_completion_reports_root_info(
+        repo_root, strict_root=_STRICT_COMPLETION_REPORTS_ROOT
+    ):
+        return 1
 
     if mode in FOCUSED_PORTAL_MODES:
         if mode in (PORTAL_MODE_PORTAL_TOP_ONLY,):
