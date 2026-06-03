@@ -2903,15 +2903,22 @@ def build_archive_row_context(
         span_summary = f"{head} ほか{rest}件" if rest > 0 else head
     elif share_summary and share_summary.crown_names:
         span_summary = format_crown_summary(share_summary.crown_names)
-    item_n = (
-        entry.item_count
-        if entry.item_count is not None
-        else (len(public_items) if public_items else (share_summary.item_count if share_summary else 0))
-    )
-    if entry.completed_count is not None:
-        completed = entry.completed_count
-    if entry.incomplete_count is not None:
-        incomplete = entry.incomplete_count
+    if _prefer_export_derived_manifest_counts() and public_items is not None:
+        item_n = len(public_items)
+    else:
+        item_n = (
+            entry.item_count
+            if entry.item_count is not None
+            else (
+                len(public_items)
+                if public_items
+                else (share_summary.item_count if share_summary else 0)
+            )
+        )
+        if entry.completed_count is not None:
+            completed = entry.completed_count
+        if entry.incomplete_count is not None:
+            incomplete = entry.incomplete_count
     status_summary = f"完了{completed} / 未完了{incomplete}"
     return ArchiveRowContext(
         span_summary=span_summary,
@@ -3586,6 +3593,84 @@ def _export_summary_item_count(cr_root: Path, date_key: str) -> int | None:
             if isinstance(ic, str) and ic.isdigit():
                 return int(ic)
     return None
+
+
+def _prefer_export_derived_manifest_counts() -> bool:
+    """--completion-reports-root 指定時は export 読取件数を manifest/一覧に優先。"""
+    return _COMPLETION_REPORTS_ROOT_OVERRIDE is not None
+
+
+def _refresh_manifest_title_item_suffix(title: str | None, item_n: int) -> str | None:
+    if not title:
+        return title
+    t = title.strip()
+    if re.search(r"\d+件\s*$", t):
+        return re.sub(r"\d+件\s*$", f"{item_n}件", t)
+    return title
+
+
+def sync_archive_manifest_counts_from_completion_export(
+    repo_root: Path,
+) -> list[str]:
+    """explicit completion-reports-root 時、読取副本の件数で archive_manifest.json を更新。"""
+    if not _prefer_export_derived_manifest_counts():
+        return []
+    path = repo_root / "portal" / "archive_manifest.json"
+    if not path.is_file():
+        return []
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"Warning: could not sync archive_manifest.json: {exc}", file=sys.stderr)
+        return []
+    if not isinstance(raw, dict):
+        return []
+    entries = raw.get("entries")
+    if not isinstance(entries, list):
+        return []
+    changed: list[str] = []
+    for ent in entries:
+        if not isinstance(ent, dict):
+            continue
+        date_key = ent.get("date")
+        if not isinstance(date_key, str) or not re.fullmatch(r"\d{6}", date_key.strip()):
+            continue
+        date_key = date_key.strip()
+        pub_items, _ = load_archive_public_items(repo_root, date_key)
+        if pub_items is None:
+            continue
+        item_n = len(pub_items)
+        completed = incomplete = 0
+        for it in pub_items:
+            st = (it.completion_status or "").strip()
+            if st == "completed":
+                completed += 1
+            elif st == "incomplete":
+                incomplete += 1
+        prev_item = ent.get("item_count")
+        prev_completed = ent.get("completed_count")
+        prev_incomplete = ent.get("incomplete_count")
+        if (
+            prev_item == item_n
+            and prev_completed == completed
+            and prev_incomplete == incomplete
+        ):
+            continue
+        ent["item_count"] = item_n
+        ent["completed_count"] = completed
+        ent["incomplete_count"] = incomplete
+        title = ent.get("title")
+        if isinstance(title, str):
+            ent["title"] = _refresh_manifest_title_item_suffix(title, item_n)
+        changed.append(date_key)
+    if not changed:
+        return []
+    path.write_text(
+        json.dumps(raw, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    return changed
 
 
 def _check_archive_items_vs_export_summary(
@@ -7023,6 +7108,13 @@ def main() -> int:
         inject_share_detail_edit_into_share_pages(repo_root)
 
     manifest_entries = load_archive_manifest_entries(repo_root)
+    synced_dates = sync_archive_manifest_counts_from_completion_export(repo_root)
+    if synced_dates:
+        print(
+            "synced archive_manifest.json counts from completion export: "
+            + ", ".join(synced_dates)
+        )
+        manifest_entries = load_archive_manifest_entries(repo_root)
     archived = {e.date for e in manifest_entries}
 
     exclude_folder = (
