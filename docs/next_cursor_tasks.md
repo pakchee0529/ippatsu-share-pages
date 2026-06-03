@@ -20,8 +20,8 @@
 | 11 | portal planned_but_incomplete 第 2 セクション | **dry-run 実装済** — [ログ](./work_logs/2026-06-03_portal_archive_planned_incomplete_dry_run.md) |
 | 12 | archive 再公開（260529 +3 未完了枠） | **完了** — [公開結果](./work_logs/2026-06-03_completion_archive_planned_incomplete_publish_result.md) |
 | 13 | planned_but_incomplete UI 整理（件数・文言） | **完了** — [cleanup](./work_logs/2026-06-03_planned_incomplete_ui_cleanup.md) + [公開](./work_logs/2026-06-03_planned_incomplete_ui_publish_result.md) |
-| 14 | 本番 260529 UI 目視（一覧・詳細） | 人間 — Pages 反映後 |
-| 15 | planned_but_incomplete カードから内部 status 非表示 | **コード完了** — [ログ](./work_logs/2026-06-03_planned_incomplete_status_ui_cleanup.md)。**archive HTML 公開は人間 Go** |
+| 14 | 本番 260529 UI 目視（一覧・詳細・status非表示） | 人間 — Pages 反映後 |
+| 15 | planned_but_incomplete カードから内部 status 非表示 | **完了** — [cleanup](./work_logs/2026-06-03_planned_incomplete_status_ui_cleanup.md) + [公開](./work_logs/2026-06-03_planned_incomplete_status_ui_publish_result.md) |
 | 16 | 260529 未完了3件の status 業務整合 | 人間/ippatsu-pc — 正本は `negotiation_wait`。工事待ちなら `construction_wait` 是正候補（変更は別 Go） |
 
 **運用:** `items` は completed のみ（完了件数・manifest）。260529 の 51404109/117/127 は **別枠候補**（legacy 由来・ref 付与禁止）。archive カードに英語 status は出さない。
