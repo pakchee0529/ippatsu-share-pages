@@ -84,25 +84,27 @@ python scripts/generate_portal.py --mode full \
 
 ## G. commit hash
 
-（push 後に `git log -1` で記録）
+`d91725995f04a7f77459c64dc69618a82a719438`
 
 ---
 
 ## H. push 結果
 
-`git push origin main`（push 後に記録）
+`origin/main` 成功（`2571cf2..d917259`）
 
 ---
 
 ## I. git status
 
-push 後: archive 5 ファイルは clean。`share/**` 等はローカル M のまま残る想定。
+push 後: 公開 5 archive HTML は clean。`share/**`・他 archive 日・`portal/negotiation/` はローカル M のまま（意図的に未 commit）。
 
 ---
 
 ## J. GitHub Pages 反映確認
 
-push 後に `portal/archive/260529/` 等を HTTP GET（反映遅延 1–5 分の可能性あり）。
+- URL: https://pakchee0529.github.io/ippatsu-share-pages/portal/archive/260529/
+- push 直後の GET では **旧 4 件表示の可能性**（CDN 反映遅延）。リポジトリ上の HTML は **1 カード（51404222）**。
+- 数分後に再確認推奨。
 
 ---
 
