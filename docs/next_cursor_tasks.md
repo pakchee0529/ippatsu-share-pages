@@ -17,7 +17,8 @@
 | 8 | 公開成功後 data snapshot | 任意・別 Go（ippatsu-pc timing policy） |
 | 9 | portal archive Supabase direct/fallback | 長期 |
 | 10 | 未完了別枠表示（portal 第 2 セクション） | **設計済** — ippatsu-pc [incomplete section 設計](https://github.com/pakchee0529/ippatsu-pc/blob/main/docs/work_logs/2026-06-03_completion_archive_incomplete_section_design.md) |
-| 11 | portal 表示スパイク（260529） | 次 — `planned_but_incomplete` 読取・「当日予定・未完了」セクション。公開は別 Go |
+| 11 | portal planned_but_incomplete 第 2 セクション | **dry-run 実装済** — [ログ](./work_logs/2026-06-03_portal_archive_planned_incomplete_dry_run.md) |
+| 12 | archive 再公開（260529 +3 未完了枠） | 次 — export `--attach-legacy-incomplete` → full → 目視 → Go |
 
 **運用:** `items` は completed のみ（完了件数・manifest）。260529 の 51404109/117/127 は **別枠候補**（legacy 由来・ref 付与禁止）。
 

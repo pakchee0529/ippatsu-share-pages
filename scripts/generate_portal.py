@@ -1614,9 +1614,25 @@ class ManifestEntry:
     item_count: int | None = None
     completed_count: int | None = None
     incomplete_count: int | None = None
+    planned_incomplete_count: int | None = None
     reported_at: str | None = None
     href: str | None = None
     display_suffix: str | None = None
+
+
+@dataclass(frozen=True)
+class PlannedIncompleteItem:
+    """当日予定・未完了（items とは別。完了扱いではない）。"""
+
+    key: str
+    management_no: str
+    label: str
+    incomplete_reason: str
+    current_status: str
+    active_display: str
+    completion_report_ref_display: str
+    note: str
+    map_url: str
 
 
 @dataclass(frozen=True)
@@ -2768,6 +2784,7 @@ def _manifest_entry_from_dict(d: dict) -> ManifestEntry | None:
         item_count=_coerce_manifest_int(d.get("item_count")),
         completed_count=_coerce_manifest_int(d.get("completed_count")),
         incomplete_count=_coerce_manifest_int(d.get("incomplete_count")),
+        planned_incomplete_count=_coerce_manifest_int(d.get("planned_incomplete_count")),
         reported_at=_strip_opt_str(d.get("reported_at")),
         href=_strip_opt_str(d.get("href")),
         display_suffix=_strip_opt_str(d.get("display_suffix")),
@@ -2950,10 +2967,16 @@ def format_archive_row_article(
     ctx = build_archive_row_context(entry, share_summary, public_items)
     search_attr = escape_html(ctx.search_blob)
     href = archive_list_detail_href(folder)
+    planned_badge = ""
+    pi = entry.planned_incomplete_count
+    if pi is not None and pi > 0:
+        planned_badge = (
+            f'<div class="archive-planned-count">+{pi} 当日未完了</div>'
+        )
     return f"""    <article class="archive-row" data-search="{search_attr}">
       <div class="archive-row-top">
         <div class="archive-main">{escape_html(ctx.span_summary)}</div>
-        <div class="archive-count">{ctx.item_count}件</div>
+        <div class="archive-count">{ctx.item_count}件{planned_badge}</div>
       </div>
       <div class="archive-meta">{escape_html(date_jp)} <span class="archive-dkey">({escape_html(folder)})</span></div>
       <div class="archive-status">{escape_html(ctx.status_summary)}</div>
@@ -3650,15 +3673,22 @@ def sync_archive_manifest_counts_from_completion_export(
         prev_item = ent.get("item_count")
         prev_completed = ent.get("completed_count")
         prev_incomplete = ent.get("incomplete_count")
+        planned_n = _planned_incomplete_count_for_date(repo_root, date_key)
+        prev_planned = ent.get("planned_incomplete_count")
         if (
             prev_item == item_n
             and prev_completed == completed
             and prev_incomplete == incomplete
+            and prev_planned == (planned_n if planned_n else None)
         ):
             continue
         ent["item_count"] = item_n
         ent["completed_count"] = completed
         ent["incomplete_count"] = incomplete
+        if planned_n > 0:
+            ent["planned_incomplete_count"] = planned_n
+        elif "planned_incomplete_count" in ent:
+            ent.pop("planned_incomplete_count", None)
         title = ent.get("title")
         if isinstance(title, str):
             ent["title"] = _refresh_manifest_title_item_suffix(title, item_n)
@@ -3876,6 +3906,97 @@ def load_archive_public_items(
             )
         )
     return out, ""
+
+
+def load_archive_planned_incomplete(
+    repo_root: Path, date_key: str
+) -> list[PlannedIncompleteItem]:
+    """副本 JSON の planned_but_incomplete[]（items とは別読取）。"""
+    base = _completion_reports_root(repo_root)
+    path = base / f"{date_key}.json"
+    if not path.is_file():
+        return []
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    if not isinstance(raw, dict):
+        return []
+    arr = raw.get("planned_but_incomplete")
+    if not isinstance(arr, list):
+        return []
+    out: list[PlannedIncompleteItem] = []
+    for ent in arr:
+        if not isinstance(ent, dict):
+            continue
+        key = _to_str(ent.get("key")) or _to_str(ent.get("management_no"))
+        mno = _to_str(ent.get("management_no")) or "—"
+        label = _to_str(ent.get("label")) or "—"
+        ref = ent.get("completion_report_ref")
+        ref_disp = "なし" if ref is None or not _to_str(ref) else _to_str(ref)
+        active = ent.get("active")
+        if active is True:
+            active_disp = "true"
+        elif active is False:
+            active_disp = "false"
+        else:
+            active_disp = _to_str(active) or "—"
+        src = ent.get("source_item") if isinstance(ent.get("source_item"), dict) else {}
+        map_url = _to_str(src.get("map_url"))
+        out.append(
+            PlannedIncompleteItem(
+                key=key or management_no_key(mno) or mno,
+                management_no=mno,
+                label=label,
+                incomplete_reason=_to_str(ent.get("incomplete_reason")) or "—",
+                current_status=_to_str(ent.get("current_status")) or "—",
+                active_display=active_disp,
+                completion_report_ref_display=ref_disp,
+                note=_to_str(ent.get("note"))
+                or "当日予定・未完了。完了扱いではありません。",
+                map_url=map_url,
+            )
+        )
+    return out
+
+
+def _planned_incomplete_count_for_date(repo_root: Path, date_key: str) -> int:
+    return len(load_archive_planned_incomplete(repo_root, date_key))
+
+
+def build_planned_incomplete_section_html(
+    items: list[PlannedIncompleteItem],
+) -> str:
+    if not items:
+        return ""
+    cards: list[str] = []
+    for idx, it in enumerate(items):
+        map_btn = ""
+        if it.map_url.startswith(("http://", "https://")):
+            map_btn = (
+                f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
+                'target="_blank" rel="noopener noreferrer">地図を開く</a>'
+            )
+        cards.append(
+            f"""<article class="card card-planned-incomplete" data-planned-index="{idx}">
+      <div class="card-head">
+        <h2 class="card-title">{escape_html(it.label)} <span class="status-pill status-pending">未完了（記録）</span></h2>
+        <p class="item-mgmt">{escape_html(it.management_no)}</p>
+        <div class="card-actions">{map_btn}</div>
+      </div>
+      <p class="archive-status-line">完了報告 ref: {escape_html(it.completion_report_ref_display)}（完了扱いではありません）</p>
+      <p class="archive-status-line">現在の案件状態: {escape_html(it.current_status)} / active: {escape_html(it.active_display)}</p>
+      <p class="archive-status-line">未完了理由: {escape_html(it.incomplete_reason)}</p>
+      <p class="muted-tiny">{escape_html(it.note)}</p>
+</article>"""
+        )
+    cards_str = "\n".join(cards)
+    return f"""  <section class="planned-incomplete-section" aria-labelledby="planned-incomplete-heading">
+    <h2 id="planned-incomplete-heading" class="archive-section-heading">当日予定・未完了（完了扱いではありません）</h2>
+    <p class="disclaimer-note">以下は当日の報告ファイル等に載っていた未完了径間です。完了報告アーカイブの件数・完了判定には含めません。工事待ち・交渉待ち等の現在状態は各ポータル一覧の正本を参照してください。</p>
+{cards_str}
+  </section>
+"""
 
 
 def _to_float(v: str) -> float | None:
@@ -5485,7 +5606,10 @@ body {{
 
 
 def build_archive_detail_html(
-    entry: ManifestEntry, public_items: list[ArchivePublicItem] | None, detail_note: str
+    entry: ManifestEntry,
+    public_items: list[ArchivePublicItem] | None,
+    detail_note: str,
+    planned_incomplete: list[PlannedIncompleteItem] | None = None,
 ) -> str:
     """アーカイブ詳細（公開可能項目のみ）。通常共有ページの構成へ合わせる。"""
     folder = entry.date
@@ -5493,6 +5617,12 @@ def build_archive_detail_html(
     title_disp = entry.title.strip() if entry.title else date_jp
     items_html = ""
     points: list[dict] = []
+    planned_items = planned_incomplete or []
+    completed_heading = ""
+    if planned_items:
+        completed_heading = (
+            '<h2 class="archive-section-heading">完了報告（Supabase 正本）</h2>\n'
+        )
     if public_items is None:
         items_html = f'<p class="muted-tiny">{escape_html(detail_note)}</p>'
     elif not public_items:
@@ -5618,6 +5748,7 @@ def build_archive_detail_html(
                     }
                 )
         items_html = "\n".join(cards)
+    planned_html = build_planned_incomplete_section_html(planned_items)
     map_block = ""
     if points:
         map_block = """  <section class="map-section" aria-labelledby="map-heading">
@@ -5692,6 +5823,26 @@ body {{
   color: var(--muted);
   margin: -0.35rem 0 0.85rem;
   line-height: 1.45;
+}}
+.archive-section-heading {{
+  font-size: 1.05rem;
+  margin: 1rem 0 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}}
+.planned-incomplete-section .archive-section-heading {{
+  border-top: none;
+  padding-top: 0;
+  margin-top: 1.25rem;
+}}
+.card-planned-incomplete {{
+  border-color: #e8c4a0;
+}}
+.archive-planned-count {{
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 0.15rem;
 }}
 .card {{
   background: var(--card);
@@ -5915,7 +6066,8 @@ body {{
   <h1 class="page-title">{escape_html(date_jp)}</h1>
   <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
   <main>
-{items_html}
+{completed_heading}{items_html}
+{planned_html}
 {map_block}
   </main>
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
@@ -5980,6 +6132,7 @@ def write_archive_detail_pages(
         day_dir.mkdir(parents=True, exist_ok=True)
         out_path = day_dir / "index.html"
         pub_items, note = load_archive_public_items(repo_root, ent.date)
+        planned_items = load_archive_planned_incomplete(repo_root, ent.date)
         if pub_items is None and _STRICT_COMPLETION_REPORTS_MISSING:
             print(
                 f"Error: completion_reports JSON missing for {ent.date} under "
@@ -5989,8 +6142,10 @@ def write_archive_detail_pages(
             raise SystemExit(1)
         n_items = len(pub_items) if pub_items else 0
         cr_root = _completion_reports_root(repo_root)
+        n_planned = len(planned_items)
         print(
             f"archive detail {ent.date}: items={n_items}, "
+            f"planned_but_incomplete={n_planned}, "
             f"completion_reports_root={cr_root} "
             f"(source={_completion_reports_root_source_label()})"
             + (f"; note={note}" if note else "")
@@ -6002,7 +6157,7 @@ def write_archive_detail_pages(
             strict_mismatch=_STRICT_COMPLETION_REPORTS_SUMMARY_MISMATCH,
         )
         out_path.write_text(
-            build_archive_detail_html(ent, pub_items, note),
+            build_archive_detail_html(ent, pub_items, note, planned_items),
             encoding="utf-8",
             newline="\n",
         )
