@@ -19,8 +19,8 @@
 | 10 | 未完了別枠表示（portal 第 2 セクション） | **設計済** — ippatsu-pc [incomplete section 設計](https://github.com/pakchee0529/ippatsu-pc/blob/main/docs/work_logs/2026-06-03_completion_archive_incomplete_section_design.md) |
 | 11 | portal planned_but_incomplete 第 2 セクション | **dry-run 実装済** — [ログ](./work_logs/2026-06-03_portal_archive_planned_incomplete_dry_run.md) |
 | 12 | archive 再公開（260529 +3 未完了枠） | **完了** — [公開結果](./work_logs/2026-06-03_completion_archive_planned_incomplete_publish_result.md) |
-| 13 | planned_but_incomplete UI 整理（件数・文言） | **コード完了** — [ログ](./work_logs/2026-06-03_planned_incomplete_ui_cleanup.md)。dry-run 済み。**archive HTML 再公開は人間 Go** |
-| 14 | 本番 260529 UI 目視（一覧・詳細） | 人間 — archive HTML 再公開 + Pages 反映後 |
+| 13 | planned_but_incomplete UI 整理（件数・文言） | **完了** — [cleanup](./work_logs/2026-06-03_planned_incomplete_ui_cleanup.md) + [公開](./work_logs/2026-06-03_planned_incomplete_ui_publish_result.md) |
+| 14 | 本番 260529 UI 目視（一覧・詳細） | 人間 — Pages 反映後 |
 
 **運用:** `items` は completed のみ（完了件数・manifest）。260529 の 51404109/117/127 は **別枠候補**（legacy 由来・ref 付与禁止）。
 
