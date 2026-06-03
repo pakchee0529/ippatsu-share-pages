@@ -2941,7 +2941,7 @@ def build_archive_row_context(
         status_summary = f"完了 {completed}件 / 当日未完了 {pi}件"
         tokens.append("当日未完了")
     else:
-        status_summary = f"完了{completed} / 未完了{incomplete}"
+        status_summary = f"完了 {completed}件"
     return ArchiveRowContext(
         span_summary=span_summary,
         status_summary=status_summary,
@@ -2975,12 +2975,9 @@ def format_archive_row_article(
     pi = entry.planned_incomplete_count or 0
     if pi > 0:
         count_display = f"完了 {ctx.item_count}件 / 当日未完了 {pi}件"
-        status_block = ""
     else:
-        count_display = f"{ctx.item_count}件"
-        status_block = (
-            f'<div class="archive-status">{escape_html(ctx.status_summary)}</div>'
-        )
+        count_display = f"完了 {ctx.item_count}件"
+    status_block = ""
     return f"""    <article class="archive-row" data-search="{search_attr}">
       <div class="archive-row-top">
         <div class="archive-main">{escape_html(ctx.span_summary)}</div>
@@ -4004,7 +4001,7 @@ def build_planned_incomplete_section_html(
     cards_str = "\n".join(cards)
     return f"""  <section class="planned-incomplete-section" aria-labelledby="planned-incomplete-heading">
     <h2 id="planned-incomplete-heading" class="archive-section-heading">当日予定・未完了</h2>
-    <p class="disclaimer-note">この枠は、当日予定に含まれていたが完了しなかった案件です。現在の進行状況は各ポータル一覧の正本を参照してください。</p>
+    <p class="disclaimer-note">この枠は、当日予定に含まれていたが完了しなかった案件です。現在の進行状況は各ポータル一覧を参照してください。</p>
 {cards_str}
   </section>
 """
@@ -5630,9 +5627,9 @@ def build_archive_detail_html(
     points: list[dict] = []
     planned_items = planned_incomplete or []
     completed_heading = ""
-    if planned_items:
+    if public_items and len(public_items) > 0:
         completed_heading = (
-            '<h2 class="archive-section-heading">完了報告（Supabase 正本）</h2>\n'
+            '<h2 class="archive-section-heading">完了した作業</h2>\n'
         )
     if public_items is None:
         items_html = f'<p class="muted-tiny">{escape_html(detail_note)}</p>'
