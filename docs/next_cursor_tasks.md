@@ -13,7 +13,7 @@
 | 4 | 公開 | export 再生成 → full（explicit + strict）→ 目視 → **portal/archive HTML（+必要なら index/survey/negotiation）commit/push** |
 | 5 | `export_summary` 鮮度チェック強化 | 未着手（`exported_at` トップレベル） |
 | 6 | 公開成功後 data snapshot | 任意・別 Go（ippatsu-pc timing policy） |
-| 6 | portal archive Supabase direct/fallback | 長期 |
+| 7 | portal archive Supabase direct/fallback | 長期 |
 
 **運用:** `data/completion_reports` の公開前先行更新はしない。260529 incomplete 3 件は副本 export に含めない（archive 詳細は export 件数どおり）。
 
