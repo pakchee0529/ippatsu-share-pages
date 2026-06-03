@@ -58,6 +58,26 @@ body {
   margin: -0.35rem 0 0.85rem;
   line-height: 1.45;
 }
+.archive-section-heading {
+  font-size: 1.05rem;
+  margin: 1rem 0 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.planned-incomplete-section .archive-section-heading {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 1.25rem;
+}
+.card-planned-incomplete {
+  border-color: #e8c4a0;
+}
+.archive-planned-count {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 0.15rem;
+}
 .card {
   background: var(--card);
   border-radius: 10px;
@@ -378,6 +398,7 @@ body {
       <div class="two-map-wrap" id="two-wrap-6" hidden><div id="share-two-map-6" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
       <div class="note-panel" id="note-6" hidden><p class="archive-status-line">状態: 完了</p><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>一部可能</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>11</td><td>0</td></tr><tr><th>〜20未満</th><td>3</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>14</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>1㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
 </article>
+
   <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
     <div id="share-map" role="application" aria-label="全径間の位置"></div>

@@ -16,7 +16,8 @@
       "completed_count": 1,
       "incomplete_count": 0,
       "reported_at": "2026-05-29T15:42:30",
-      "href": "../../share/260529/"
+      "href": "../../share/260529/",
+      "planned_incomplete_count": 3
     },
     {
       "date": "260528",
