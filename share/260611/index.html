@@ -186,9 +186,24 @@ body {
 #share-map {
   width: 100%;
   height: min(55vh, 420px);
-  min-height: 220px;
+  min-height: 240px;
   border-radius: 8px;
   border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+#share-map.map-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+}
+.map-empty-msg {
+  margin: 0;
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-align: center;
 }
 .leaflet-container { font-family: inherit; }
 @media (min-width: 480px) {
@@ -200,170 +215,126 @@ body {
   }
   .page-title { font-size: 1.4rem; }
 }
-
-.detail-edit-footer {
-  margin-top: 0.75rem;
-  padding-top: 0.55rem;
-  border-top: 1px dashed var(--border);
-}
-.detail-edit-footer--fallback {
-  margin: 0.5rem 0 0;
-  padding-top: 0.45rem;
-  border-top: 1px dashed var(--border);
-}
-.btn-detail-edit--panel {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  padding: 0.42rem 0.65rem;
-  min-height: 44px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  text-decoration: none;
-  touch-action: manipulation;
-  background: #f8fafc;
-  color: #334155;
-  border: 1px solid #94a3b8;
-  line-height: 1.25;
-  max-width: min(100%, 280px);
-}
-.btn-detail-edit--panel:hover,
-.btn-detail-edit--panel:focus-visible {
-  background: #f1f5f9;
-  outline: none;
-}
-.note-panel .btn-detail-edit--panel {
-  width: 100%;
-  max-width: 100%;
-}
-.detail-edit-footer--fallback .btn-detail-edit--panel {
-  font-size: 0.8rem;
-  min-height: 44px;
-}
-
 </style>
 </head>
-<body data-share-page-date="260611">
+<body>
 <header>
   <h1 class="page-title">2026年06月11日</h1>
 </header>
 <main>
-<article class="card" data-card-index="0" data-date="260611" data-management-no-key="51405397" data-management-no="514 05397">
+<article class="card" data-card-index="0">
   <div class="card-head">
-    <h2 class="card-title">玉置山82N2～82N3</h2>
-    <p class="item-mgmt">514 05397</p>
+    <h2 class="card-title">北宇智146N7N2E4～146N7N2E5</h2>
+    <p class="item-mgmt">514 10041</p>
     
     <div class="card-actions">
-      <a class="btn btn-map" href="https://www.google.com/maps?q=33.9366,135.794825" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <a class="btn btn-map" href="https://www.google.com/maps?q=34.386055,135.69454000000002" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-0" data-note-toggle>現場指示</button>
     </div>
   </div>
-  <script type="application/json" id="two-geo-0">{"a":{"name":"玉置山82N2","lat":33.93641,"lng":135.79501},"b":{"name":"82N3","lat":33.93679,"lng":135.79464}}</script>
+  <script type="application/json" id="two-geo-0">{"a":{"name":"北宇智146N7N2E4","lat":34.38611,"lng":135.69458},"b":{"name":"146N7N2E5","lat":34.386,"lng":135.6945}}</script>
   
   <div class="two-map-wrap" id="two-wrap-0" hidden>
     <div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-0" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 05397</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>不可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>28</td></tr><tr><th>〜20未満</th><td>0</td><td>3</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>0</td><td>31</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>18㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>人力</div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260611&amp;entry.2102936974=514%2005397&amp;entry.932009684=%E7%8E%89%E7%BD%AE%E5%B1%B182N2%EF%BD%9E82N3&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E4%B8%8D%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=&amp;entry.948358914=0&amp;entry.740813394=0&amp;entry.74377314=0&amp;entry.957344080=0&amp;entry.382023163=0&amp;entry.288483164=0&amp;entry.1467113295=28&amp;entry.108281366=3&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=18%E3%8E%A1&amp;entry.1908811234=0%E6%9C%AC&amp;entry.1406858047=0%E7%AE%87%E6%89%80&amp;entry.1367667439=%E5%82%99%E8%80%83%20%E4%BA%BA%E5%8A%9B" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
+  <div class="note-panel" id="note-0" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 10041</td></tr><tr><th>処理方法</th><td>持ち出し</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>2.5m</td></tr><tr><th>傾斜</th><td>平</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>4</td><td>0</td></tr><tr><th>〜20未満</th><td>7</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>11</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>E4側写真要？ [2c2-verify]</div></div>
 </article>
-<article class="card" data-card-index="1" data-date="260611" data-management-no-key="51405247" data-management-no="514 05247">
-  <div class="card-head">
-    <h2 class="card-title">玉置山76～77</h2>
-    <p class="item-mgmt">514 05247</p>
-    
-    <div class="card-actions">
-      <a class="btn btn-map" href="https://www.google.com/maps?q=33.936930000000004,135.797165" target="_blank" rel="noopener noreferrer">地図を開く</a>
-      <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button>
-      <button type="button" class="btn btn-note" aria-expanded="false"
-        aria-controls="note-1" data-note-toggle>現場指示</button>
-    </div>
-  </div>
-  <script type="application/json" id="two-geo-1">{"a":{"name":"玉置山76","lat":33.93686,"lng":135.79722},"b":{"name":"77","lat":33.937,"lng":135.79711}}</script>
-  
-  <div class="two-map-wrap" id="two-wrap-1" hidden>
-    <div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
-  </div>
-  <div class="note-panel" id="note-1" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 05247</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>1</td><td>0</td></tr><tr><th>〜20未満</th><td>3</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>1</td><td>0</td></tr><tr><th>〜50未満</th><td>1</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>6</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260611&amp;entry.2102936974=514%2005247&amp;entry.932009684=%E7%8E%89%E7%BD%AE%E5%B1%B176%EF%BD%9E77&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=&amp;entry.948358914=1&amp;entry.740813394=3&amp;entry.74377314=0&amp;entry.957344080=1&amp;entry.382023163=1&amp;entry.288483164=0&amp;entry.1467113295=0&amp;entry.108281366=0&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=0%E3%8E%A1&amp;entry.1908811234=0%E6%9C%AC&amp;entry.1406858047=0%E7%AE%87%E6%89%80&amp;entry.1367667439=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
-</article>
-<article class="card" data-card-index="2" data-date="260611" data-management-no-key="51405245" data-management-no="514 05245">
-  <div class="card-head">
-    <h2 class="card-title">玉置山75～76</h2>
-    <p class="item-mgmt">514 05245</p>
-    
-    <div class="card-actions">
-      <a class="btn btn-map" href="https://www.google.com/maps?q=33.936615,135.797285" target="_blank" rel="noopener noreferrer">地図を開く</a>
-      <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button>
-      <button type="button" class="btn btn-note" aria-expanded="false"
-        aria-controls="note-2" data-note-toggle>現場指示</button>
-    </div>
-  </div>
-  <script type="application/json" id="two-geo-2">{"a":{"name":"玉置山75","lat":33.93637,"lng":135.79735},"b":{"name":"76","lat":33.93686,"lng":135.79722}}</script>
-  
-  <div class="two-map-wrap" id="two-wrap-2" hidden>
-    <div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
-  </div>
-  <div class="note-panel" id="note-2" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 05245</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>1</td><td>0</td></tr><tr><th>〜20未満</th><td>3</td><td>0</td></tr><tr><th>〜30未満</th><td>4</td><td>0</td></tr><tr><th>〜40未満</th><td>2</td><td>0</td></tr><tr><th>〜50未満</th><td>1</td><td>0</td></tr><tr><th>50以上</th><td>1</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>12</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>両サイド</div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260611&amp;entry.2102936974=514%2005245&amp;entry.932009684=%E7%8E%89%E7%BD%AE%E5%B1%B175%EF%BD%9E76&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=&amp;entry.948358914=1&amp;entry.740813394=3&amp;entry.74377314=4&amp;entry.957344080=2&amp;entry.382023163=1&amp;entry.288483164=1&amp;entry.1467113295=0&amp;entry.108281366=0&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=0%E3%8E%A1&amp;entry.1908811234=0%E6%9C%AC&amp;entry.1406858047=0%E7%AE%87%E6%89%80&amp;entry.1367667439=%E5%82%99%E8%80%83%20%E4%B8%A1%E3%82%B5%E3%82%A4%E3%83%89" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
-</article>
-<article class="card" data-card-index="3" data-date="260611" data-management-no-key="51410041" data-management-no="514 10041">
-  <div class="card-head">
-    <h2 class="card-title">玉置山74～75</h2>
-    <p class="item-mgmt">514 10041</p>
-    
-    <div class="card-actions">
-      <a class="btn btn-map" href="https://www.google.com/maps?q=34.386055,135.69454000000002" target="_blank" rel="noopener noreferrer">地図を開く</a>
-      <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button>
-      <button type="button" class="btn btn-note" aria-expanded="false"
-        aria-controls="note-3" data-note-toggle>現場指示</button>
-    </div>
-  </div>
-  <script type="application/json" id="two-geo-3">{"a":{"name":"北宇智146N7N2E4","lat":34.38611,"lng":135.69458},"b":{"name":"146N7N2E5","lat":34.386,"lng":135.6945}}</script>
-  
-  <div class="two-map-wrap" id="two-wrap-3" hidden>
-    <div id="share-two-map-3" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
-  </div>
-  <div class="note-panel" id="note-3" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 10041</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>1</td></tr><tr><th>〜20未満</th><td>5</td><td>8</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>1</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>6</td><td>9</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260611&amp;entry.2102936974=514%2010041&amp;entry.932009684=%E7%8E%89%E7%BD%AE%E5%B1%B174%EF%BD%9E75&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=&amp;entry.948358914=0&amp;entry.740813394=5&amp;entry.74377314=0&amp;entry.957344080=0&amp;entry.382023163=1&amp;entry.288483164=0&amp;entry.1467113295=1&amp;entry.108281366=8&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=0%E3%8E%A1&amp;entry.1908811234=0%E6%9C%AC&amp;entry.1406858047=0%E7%AE%87%E6%89%80&amp;entry.1367667439=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
-</article>
-<article class="card" data-card-index="4" data-date="260611" data-management-no-key="51405231" data-management-no="514 05231">
-  <div class="card-head">
-    <h2 class="card-title">玉置山61～62</h2>
-    <p class="item-mgmt">514 05231</p>
-    
-    <div class="card-actions">
-      <a class="btn btn-map" href="https://www.google.com/maps?q=33.93531,135.80251" target="_blank" rel="noopener noreferrer">地図を開く</a>
-      <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を開く</button>
-      <button type="button" class="btn btn-note" aria-expanded="false"
-        aria-controls="note-4" data-note-toggle>現場指示</button>
-    </div>
-  </div>
-  <script type="application/json" id="two-geo-4">{"a":{"name":"玉置山61","lat":33.93547,"lng":135.80269},"b":{"name":"62","lat":33.93515,"lng":135.80233}}</script>
-  
-  <div class="two-map-wrap" id="two-wrap-4" hidden>
-    <div id="share-two-map-4" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
-  </div>
-  <div class="note-panel" id="note-4" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 05231</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>1</td><td>22</td></tr><tr><th>〜20未満</th><td>2</td><td>3</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>3</td><td>25</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>27㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>63付近の橋のところに軽トラで指定場所運搬予定。</div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260611&amp;entry.2102936974=514%2005231&amp;entry.932009684=%E7%8E%89%E7%BD%AE%E5%B1%B161%EF%BD%9E62&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=&amp;entry.948358914=1&amp;entry.740813394=2&amp;entry.74377314=0&amp;entry.957344080=0&amp;entry.382023163=0&amp;entry.288483164=0&amp;entry.1467113295=22&amp;entry.108281366=3&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=27%E3%8E%A1&amp;entry.1908811234=0%E6%9C%AC&amp;entry.1406858047=0%E7%AE%87%E6%89%80&amp;entry.1367667439=%E5%82%99%E8%80%83%2063%E4%BB%98%E8%BF%91%E3%81%AE%E6%A9%8B%E3%81%AE%E3%81%A8%E3%81%93%E3%82%8D%E3%81%AB%E8%BB%BD%E3%83%88%E3%83%A9%E3%81%A7%E6%8C%87%E5%AE%9A%E5%A0%B4%E6%89%80%E9%81%8B%E6%90%AC%E4%BA%88%E5%AE%9A%E3%80%82" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
-</article>
-<article class="card" data-card-index="5" data-date="260611" data-management-no-key="51405219" data-management-no="514 05219">
+<article class="card" data-card-index="1">
   <div class="card-head">
     <h2 class="card-title">玉置山48～49</h2>
     <p class="item-mgmt">514 05219</p>
     
     <div class="card-actions">
       <a class="btn btn-map" href="https://www.google.com/maps?q=33.938715,135.805525" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button>
+      <button type="button" class="btn btn-note" aria-expanded="false"
+        aria-controls="note-1" data-note-toggle>現場指示</button>
+    </div>
+  </div>
+  <script type="application/json" id="two-geo-1">{"a":{"name":"玉置山48","lat":33.93855,"lng":135.80575},"b":{"name":"49","lat":33.93888,"lng":135.8053}}</script>
+  
+  <div class="two-map-wrap" id="two-wrap-1" hidden>
+    <div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
+  </div>
+  <div class="note-panel" id="note-1" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 05219</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>1</td><td>9</td></tr><tr><th>〜20未満</th><td>2</td><td>3</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>3</td><td>12</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>36㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+</article>
+<article class="card" data-card-index="2">
+  <div class="card-head">
+    <h2 class="card-title">玉置山61～62</h2>
+    <p class="item-mgmt">514 05231</p>
+    
+    <div class="card-actions">
+      <a class="btn btn-map" href="https://www.google.com/maps?q=33.93531,135.80251" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button>
+      <button type="button" class="btn btn-note" aria-expanded="false"
+        aria-controls="note-2" data-note-toggle>現場指示</button>
+    </div>
+  </div>
+  <script type="application/json" id="two-geo-2">{"a":{"name":"玉置山61","lat":33.93547,"lng":135.80269},"b":{"name":"62","lat":33.93515,"lng":135.80233}}</script>
+  
+  <div class="two-map-wrap" id="two-wrap-2" hidden>
+    <div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
+  </div>
+  <div class="note-panel" id="note-2" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 05231</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>1</td><td>22</td></tr><tr><th>〜20未満</th><td>2</td><td>3</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>3</td><td>25</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>27㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>63付近の橋のところに軽トラで指定場所運搬予定。</div></div>
+</article>
+<article class="card" data-card-index="3">
+  <div class="card-head">
+    <h2 class="card-title">玉置山75～76</h2>
+    <p class="item-mgmt">514 05245</p>
+    
+    <div class="card-actions">
+      <a class="btn btn-map" href="https://www.google.com/maps?q=33.936615,135.797285" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button>
+      <button type="button" class="btn btn-note" aria-expanded="false"
+        aria-controls="note-3" data-note-toggle>現場指示</button>
+    </div>
+  </div>
+  <script type="application/json" id="two-geo-3">{"a":{"name":"玉置山75","lat":33.93637,"lng":135.79735},"b":{"name":"76","lat":33.93686,"lng":135.79722}}</script>
+  
+  <div class="two-map-wrap" id="two-wrap-3" hidden>
+    <div id="share-two-map-3" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
+  </div>
+  <div class="note-panel" id="note-3" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 05245</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>1</td><td>0</td></tr><tr><th>〜20未満</th><td>3</td><td>0</td></tr><tr><th>〜30未満</th><td>4</td><td>0</td></tr><tr><th>〜40未満</th><td>2</td><td>0</td></tr><tr><th>〜50未満</th><td>1</td><td>0</td></tr><tr><th>50以上</th><td>1</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>12</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>両サイド</div></div>
+</article>
+<article class="card" data-card-index="4">
+  <div class="card-head">
+    <h2 class="card-title">玉置山76～77</h2>
+    <p class="item-mgmt">514 05247</p>
+    
+    <div class="card-actions">
+      <a class="btn btn-map" href="https://www.google.com/maps?q=33.936930000000004,135.797165" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を開く</button>
+      <button type="button" class="btn btn-note" aria-expanded="false"
+        aria-controls="note-4" data-note-toggle>現場指示</button>
+    </div>
+  </div>
+  <script type="application/json" id="two-geo-4">{"a":{"name":"玉置山76","lat":33.93686,"lng":135.79722},"b":{"name":"77","lat":33.937,"lng":135.79711}}</script>
+  
+  <div class="two-map-wrap" id="two-wrap-4" hidden>
+    <div id="share-two-map-4" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
+  </div>
+  <div class="note-panel" id="note-4" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 05247</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>1</td><td>0</td></tr><tr><th>〜20未満</th><td>3</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>1</td><td>0</td></tr><tr><th>〜50未満</th><td>1</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>6</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+</article>
+<article class="card" data-card-index="5">
+  <div class="card-head">
+    <h2 class="card-title">玉置山82N2～82N3</h2>
+    <p class="item-mgmt">514 05397</p>
+    
+    <div class="card-actions">
+      <a class="btn btn-map" href="https://www.google.com/maps?q=33.9366,135.794825" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-5" data-two-map="share-two-map-5" data-two-json="two-geo-5" aria-expanded="false" aria-controls="two-wrap-5">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-5" data-note-toggle>現場指示</button>
     </div>
   </div>
-  <script type="application/json" id="two-geo-5">{"a":{"name":"玉置山48","lat":33.93855,"lng":135.80575},"b":{"name":"49","lat":33.93888,"lng":135.8053}}</script>
+  <script type="application/json" id="two-geo-5">{"a":{"name":"玉置山82N2","lat":33.93641,"lng":135.79501},"b":{"name":"82N3","lat":33.93679,"lng":135.79464}}</script>
   
   <div class="two-map-wrap" id="two-wrap-5" hidden>
     <div id="share-two-map-5" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-5" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 05219</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>1</td><td>9</td></tr><tr><th>〜20未満</th><td>2</td><td>3</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>3</td><td>12</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>36㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260611&amp;entry.2102936974=514%2005219&amp;entry.932009684=%E7%8E%89%E7%BD%AE%E5%B1%B148%EF%BD%9E49&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=&amp;entry.948358914=1&amp;entry.740813394=2&amp;entry.74377314=0&amp;entry.957344080=0&amp;entry.382023163=0&amp;entry.288483164=0&amp;entry.1467113295=9&amp;entry.108281366=3&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=36%E3%8E%A1&amp;entry.1908811234=0%E6%9C%AC&amp;entry.1406858047=0%E7%AE%87%E6%89%80&amp;entry.1367667439=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
+  <div class="note-panel" id="note-5" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>514 05397</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>不可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>28</td></tr><tr><th>〜20未満</th><td>0</td><td>3</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>0</td><td>31</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>18㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>人力</div></div>
 </article>
   <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
@@ -375,38 +346,64 @@ body {
   crossorigin=""></script>
 <script>
 (function() {
-  var POINTS = [{"name":"玉置山82N2～82N3","lat":33.9366,"lng":135.794825},{"name":"玉置山76～77","lat":33.936930000000004,"lng":135.797165},{"name":"玉置山75～76","lat":33.936615,"lng":135.797285},{"name":"玉置山74～75","lat":34.386055,"lng":135.69454000000002},{"name":"玉置山61～62","lat":33.93531,"lng":135.80251},{"name":"玉置山48～49","lat":33.938715,"lng":135.805525}];
-  document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
-    var id = btn.getAttribute("aria-controls");
-    var panel = id && document.getElementById(id);
-    if (!panel) return;
-    btn.addEventListener("click", function() {
-      var open = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", open ? "false" : "true");
-      panel.hidden = open;
+  function initShareMultipinMap() {
+    var POINTS = [{"name":"北宇智146N7N2E4～146N7N2E5","lat":34.386055,"lng":135.69454000000002},{"name":"玉置山48～49","lat":33.938715,"lng":135.805525},{"name":"玉置山61～62","lat":33.93531,"lng":135.80251},{"name":"玉置山75～76","lat":33.936615,"lng":135.797285},{"name":"玉置山76～77","lat":33.936930000000004,"lng":135.797165},{"name":"玉置山82N2～82N3","lat":33.9366,"lng":135.794825}];
+    document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
+      var id = btn.getAttribute("aria-controls");
+      var panel = id && document.getElementById(id);
+      if (!panel) return;
+      btn.addEventListener("click", function() {
+        var open = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", open ? "false" : "true");
+        panel.hidden = open;
+      });
     });
-  });
-  if (!window.L || !POINTS.length) return;
-  var map = L.map("share-map", { scrollWheelZoom: false });
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap"
-  }).addTo(map);
-  var bounds = [];
-  function escHtml(t) {
-    var d = document.createElement("div");
-    d.textContent = t == null ? "" : String(t);
-    return d.innerHTML;
+    var mapEl = document.getElementById("share-map");
+    if (!mapEl || !window.L) return;
+    function usable(p) {
+      if (!p || typeof p.lat !== "number" || typeof p.lng !== "number") return false;
+      return Math.abs(p.lat) > 1e-6 || Math.abs(p.lng) > 1e-6;
+    }
+    var valid = POINTS.filter(usable);
+    if (!valid.length) {
+      mapEl.classList.add("map-empty");
+      mapEl.innerHTML = "<p class=\"map-empty-msg\">全体地図の座標がありません（地図URLまたは2点座標を確認してください）</p>";
+      return;
+    }
+    var map = L.map(mapEl, { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+    var bounds = [];
+    function escHtml(t) {
+      var d = document.createElement("div");
+      d.textContent = t == null ? "" : String(t);
+      return d.innerHTML;
+    }
+    valid.forEach(function(p) {
+      var m = L.marker([p.lat, p.lng]).addTo(map);
+      if (p.name) m.bindPopup(escHtml(p.name));
+      bounds.push([p.lat, p.lng]);
+    });
+    function layoutMap() {
+      try {
+        map.invalidateSize();
+      } catch (e) {}
+    }
+    if (bounds.length === 1) {
+      map.setView(bounds[0], 15);
+    } else if (bounds.length > 1) {
+      map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
+    }
+    requestAnimationFrame(layoutMap);
+    setTimeout(layoutMap, 120);
+    window.addEventListener("resize", layoutMap);
   }
-  POINTS.forEach(function(p) {
-    var m = L.marker([p.lat, p.lng]).addTo(map);
-    if (p.name) m.bindPopup(escHtml(p.name));
-    bounds.push([p.lat, p.lng]);
-  });
-  if (bounds.length === 1) {
-    map.setView(bounds[0], 15);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initShareMultipinMap);
   } else {
-    map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
+    initShareMultipinMap();
   }
 })();
 (function() {
@@ -476,515 +473,5 @@ body {
   });
 })();
 </script>
-<!-- share-live-edit-inject:begin -->
-<!-- share-live-edit: JSONP load (CORS-safe); Apps Script must echo callback when token=...&callback=... -->
-<style>
-
-.share-pending-overlay-banner {
-  margin: 0 0 0.55rem;
-  padding: 0.45rem 0.55rem;
-  font-size: 0.8rem;
-  line-height: 1.45;
-  color: #92400e;
-  background: #fffbeb;
-  border: 1px solid #fcd34d;
-  border-radius: 8px;
-}
-.share-pending-overlay-banner[hidden] { display: none !important; }
-.share-pending-overlay-title {
-  display: block;
-  font-weight: 700;
-}
-.share-pending-overlay-sub {
-  display: block;
-  margin-top: 0.15rem;
-  font-size: 0.76rem;
-  color: #a16207;
-  font-weight: 500;
-}
-.instr-cut-pending-total th,
-.instr-cut-pending-total td {
-  background: #fffbeb;
-  font-weight: 600;
-}
-
-</style>
-<script type="application/json" id="share-detail-edit-api-config">
-{"url": "https://script.google.com/macros/s/AKfycbzLtv-yZP5QNjXQSEybhxBTmWrNaujJJfyb_okMcuSzjKyREFthJTwI_Y5fc0PKfGuOnA/exec", "token": "ippatsu_share_detail_edit_202605_long_token"}
-</script>
-<script>
-
-(function () {
-  function esc(t) {
-    var d = document.createElement("div");
-    d.textContent = t == null ? "" : String(t);
-    return d.innerHTML;
-  }
-  function normKey(s) {
-    return String(s || "").replace(/\s+/g, "");
-  }
-  function cfg() {
-    var el = document.getElementById("share-detail-edit-api-config");
-    if (!el) return null;
-    try {
-      return JSON.parse(el.textContent || "{}");
-    } catch (e) {
-      return null;
-    }
-  }
-  function setSummaryCell(panel, label, value) {
-    var rows = panel.querySelectorAll(".instr-summary tbody tr");
-    for (var i = 0; i < rows.length; i++) {
-      var th = rows[i].querySelector("th");
-      var td = rows[i].querySelector("td");
-      if (!th || !td) continue;
-      if (String(th.textContent || "").trim() === label) {
-        td.textContent = value == null ? "" : String(value);
-        return;
-      }
-    }
-  }
-  function setOtherCell(panel, label, value) {
-    var rows = panel.querySelectorAll(".instr-other tbody tr");
-    for (var i = 0; i < rows.length; i++) {
-      var th = rows[i].querySelector("th");
-      var td = rows[i].querySelector("td");
-      if (!th || !td) continue;
-      if (String(th.textContent || "").trim() === label) {
-        td.textContent = value == null ? "" : String(value);
-        return;
-      }
-    }
-  }
-  function applyCutTotals(panel, branch, root) {
-    var tb = panel.querySelector(".instr-cut tbody");
-    if (!tb) return;
-    var prev = tb.querySelectorAll("tr.instr-cut-pending-total");
-    for (var i = 0; i < prev.length; i++) {
-      prev[i].parentNode.removeChild(prev[i]);
-    }
-    var bStr = branch != null && String(branch).length ? String(branch) : "";
-    var rStr = root != null && String(root).length ? String(root) : "";
-    if (!bStr && !rStr) return;
-    var bCell = bStr ? esc(bStr) : "\u2014";
-    var rCell = rStr ? esc(rStr) : "\u2014";
-    var tr = document.createElement("tr");
-    tr.className = "instr-cut-pending-total";
-    tr.innerHTML =
-      '<th scope="row">\u5408\u8a08\uff08\u672a\u78ba\u5b9a\u4fee\u6b63\uff09</th><td>' +
-      bCell +
-      "</td><td>" +
-      rCell +
-      "</td>";
-    tb.appendChild(tr);
-  }
-  function ensureBanner(article) {
-    var b = article.querySelector(".share-pending-overlay-banner");
-    if (!b) {
-      b = document.createElement("div");
-      b.className = "share-pending-overlay-banner";
-      b.setAttribute("role", "status");
-      b.innerHTML =
-        '<span class="share-pending-overlay-title">\u73fe\u5834\u4fee\u6b63\u3042\u308a\uff08\u672a\u78ba\u5b9a\uff09</span>' +
-        '<span class="share-pending-overlay-sub">\u4f1a\u793e\u78ba\u8a8d\u524d\u306e\u4fee\u6b63\u5185\u5bb9\u3092\u8868\u793a\u4e2d</span>';
-      var head = article.querySelector(".card-head");
-      if (head && head.parentNode === article) {
-        article.insertBefore(b, head);
-      } else {
-        article.insertBefore(b, article.firstChild);
-      }
-    }
-    b.hidden = false;
-  }
-  var V2_BRANCH_KEYS = [
-    "branch_cut_under_10",
-    "branch_cut_10_20",
-    "branch_cut_20_30",
-    "branch_cut_30_40",
-    "branch_cut_40_50",
-    "branch_cut_over_50",
-  ];
-  var V2_ROOT_KEYS = [
-    "root_cut_under_10",
-    "root_cut_10_20",
-    "root_cut_20_30",
-    "root_cut_30_40",
-    "root_cut_40_50",
-    "root_cut_over_50",
-  ];
-  function hasV2CutFields(f) {
-    if (!f || typeof f !== "object") return false;
-    var i;
-    for (i = 0; i < V2_BRANCH_KEYS.length; i++) {
-      if (V2_BRANCH_KEYS[i] in f) return true;
-    }
-    for (i = 0; i < V2_ROOT_KEYS.length; i++) {
-      if (V2_ROOT_KEYS[i] in f) return true;
-    }
-    return false;
-  }
-  function parseInt0(s) {
-    var t = String(s == null ? "" : s)
-      .trim()
-      .replace(/[^\d-]/g, "");
-    if (!t) return 0;
-    var n = parseInt(t, 10);
-    return isNaN(n) ? 0 : n;
-  }
-  var CUT_LABELS = [
-    "\u301c10\u672a\u6e80",
-    "\u301c20\u672a\u6e80",
-    "\u301c30\u672a\u6e80",
-    "\u301c40\u672a\u6e80",
-    "\u301c50\u672a\u6e80",
-    "50\u4ee5\u4e0a",
-  ];
-  var CUT_B_BY_LABEL = {
-    "\u301c10\u672a\u6e80": "branch_cut_under_10",
-    "\u301c20\u672a\u6e80": "branch_cut_10_20",
-    "\u301c30\u672a\u6e80": "branch_cut_20_30",
-    "\u301c40\u672a\u6e80": "branch_cut_30_40",
-    "\u301c50\u672a\u6e80": "branch_cut_40_50",
-    "50\u4ee5\u4e0a": "branch_cut_over_50",
-  };
-  var CUT_R_BY_LABEL = {
-    "\u301c10\u672a\u6e80": "root_cut_under_10",
-    "\u301c20\u672a\u6e80": "root_cut_10_20",
-    "\u301c30\u672a\u6e80": "root_cut_20_30",
-    "\u301c40\u672a\u6e80": "root_cut_30_40",
-    "\u301c50\u672a\u6e80": "root_cut_40_50",
-    "50\u4ee5\u4e0a": "root_cut_over_50",
-  };
-  function applyCutBandsFromFields(panel, f) {
-    var tb = panel.querySelector(".instr-cut tbody");
-    if (!tb) return;
-    var prev = tb.querySelectorAll("tr.instr-cut-pending-total");
-    for (var i = 0; i < prev.length; i++) {
-      prev[i].parentNode.removeChild(prev[i]);
-    }
-    var trs = tb.getElementsByTagName("tr");
-    var j, tr, th, tds, lab, bk, rk;
-    for (j = 0; j < trs.length; j++) {
-      tr = trs[j];
-      if (tr.classList.contains("instr-cut-total")) continue;
-      if (tr.classList.contains("instr-cut-pending-total")) continue;
-      th = tr.querySelector("th");
-      tds = tr.querySelectorAll("td");
-      if (!th || tds.length < 2) continue;
-      lab = String(th.textContent || "").trim();
-      bk = CUT_B_BY_LABEL[lab];
-      rk = CUT_R_BY_LABEL[lab];
-      if (bk && bk in f) tds[0].textContent = String(f[bk] == null ? "" : f[bk]);
-      if (rk && rk in f) tds[1].textContent = String(f[rk] == null ? "" : f[rk]);
-    }
-    recalcInstrCutTotal(panel);
-  }
-  function recalcInstrCutTotal(panel) {
-    var tb = panel.querySelector(".instr-cut tbody");
-    if (!tb) return;
-    var totalRow = tb.querySelector("tr.instr-cut-total");
-    if (!totalRow) return;
-    var sumB = 0;
-    var sumR = 0;
-    var trs = tb.getElementsByTagName("tr");
-    var li, j, tr, th, tds, lab;
-    for (li = 0; li < CUT_LABELS.length; li++) {
-      lab = CUT_LABELS[li];
-      for (j = 0; j < trs.length; j++) {
-        tr = trs[j];
-        if (tr.classList.contains("instr-cut-total")) continue;
-        if (tr.classList.contains("instr-cut-pending-total")) continue;
-        th = tr.querySelector("th");
-        tds = tr.querySelectorAll("td");
-        if (!th || tds.length < 2) continue;
-        if (String(th.textContent || "").trim() !== lab) continue;
-        sumB += parseInt0(tds[0].textContent);
-        sumR += parseInt0(tds[1].textContent);
-      }
-    }
-    var tdt = totalRow.querySelectorAll("td");
-    if (tdt.length >= 2) {
-      tdt[0].textContent = String(sumB);
-      tdt[1].textContent = String(sumR);
-    }
-  }
-  function applyNoteHtml(panel, htmlStr) {
-    var n = panel.querySelector(".instr-note");
-    if (!n) return;
-    n.innerHTML = "<strong>\u5099\u8003</strong><br>" + (htmlStr || "");
-  }
-  function logWarn(msg, detail) {
-    try {
-      if (detail !== undefined) {
-        console.warn("[share-live-edit]", msg, detail);
-      } else {
-        console.warn("[share-live-edit]", msg);
-      }
-    } catch (e) {}
-  }
-  function logInfo(msg, detail) {
-    try {
-      if (detail !== undefined) {
-        console.info("[share-live-edit]", msg, detail);
-      } else {
-        console.info("[share-live-edit]", msg);
-      }
-    } catch (e) {}
-  }
-  function isApiOk(v) {
-    if (v === true || v === 1) return true;
-    if (typeof v === "string") {
-      var t = v.trim().toLowerCase();
-      return t === "true" || t === "yes" || t === "1";
-    }
-    return false;
-  }
-  function editsArray(data) {
-    var e = data && data.edits;
-    if (Array.isArray(e)) return e;
-    if (e && typeof e === "object") {
-      try {
-        return Object.keys(e).map(function (k) {
-          return e[k];
-        });
-      } catch (err) {
-        return [];
-      }
-    }
-    return [];
-  }
-  function pickEditsByKey(data, pageDate) {
-    var best = {};
-    var list = editsArray(data);
-    var pd = String(pageDate || "").trim();
-    for (var i = 0; i < list.length; i++) {
-      var ed = list[i];
-      if (!ed) continue;
-      var d = String(ed.date != null ? ed.date : "").trim();
-      if (d !== pd) continue;
-      var k = normKey(ed.management_no_key || ed.management_no || "");
-      if (!k) continue;
-      var ts = String(ed.timestamp || ed.id || "");
-      if (!best[k] || ts > String(best[k].timestamp || best[k].id || "")) {
-        best[k] = ed;
-      }
-    }
-    return best;
-  }
-  function applyEditToArticle(article, ed) {
-    var panel = article.querySelector(".note-panel");
-    if (!panel) {
-      logWarn("note-panel missing on card; cannot apply overlay", article);
-      return;
-    }
-    ensureBanner(article);
-    var f = ed.fields || {};
-    if ("work_method" in f) setSummaryCell(panel, "\u51e6\u7406\u65b9\u6cd5", f.work_method);
-    if ("bucket_truck" in f) setSummaryCell(panel, "B\u8eca", f.bucket_truck);
-    if ("road_width" in f) setSummaryCell(panel, "\u9053\u5e45", f.road_width);
-    if ("slope" in f) setSummaryCell(panel, "\u50be\u659c", f.slope);
-    if (hasV2CutFields(f)) {
-      applyCutBandsFromFields(panel, f);
-    } else if ("branch_count" in f || "root_count" in f) {
-      applyCutTotals(
-        panel,
-        "branch_count" in f ? f.branch_count : "",
-        "root_count" in f ? f.root_count : ""
-      );
-    }
-    if ("bush_area" in f) {
-      setOtherCell(panel, "\u67f4\u4f10\u63a1\u9762\u7a4d", f.bush_area);
-    }
-    if ("bamboo_count" in f) {
-      setOtherCell(panel, "\u7af9\u4f10\u63a1\u672c\u6570", f.bamboo_count);
-    }
-    if ("vine_count" in f) {
-      setOtherCell(panel, "\u3064\u308b\u4f10\u63a1\u7b87\u6240\u6570", f.vine_count);
-    }
-    if ("note" in f) applyNoteHtml(panel, esc(f.note));
-  }
-  function handlePayload(data, pageDate) {
-    var pd = String(pageDate || "").trim();
-    if (!data || typeof data !== "object") {
-      logWarn("JSONP payload is not an object", data);
-      return;
-    }
-    if (!isApiOk(data.ok)) {
-      logWarn("API ok flag is false or missing", { ok: data.ok, keys: Object.keys(data) });
-      return;
-    }
-    var byKey = pickEditsByKey(data, pd);
-    var list = editsArray(data);
-    var forPage = 0;
-    for (var j = 0; j < list.length; j++) {
-      var ed0 = list[j];
-      if (ed0 && String(ed0.date != null ? ed0.date : "").trim() === pd) forPage++;
-    }
-    var cardKeys = [];
-    document.querySelectorAll("article.card[data-management-no-key]").forEach(function (a) {
-      var kk = normKey(a.getAttribute("data-management-no-key"));
-      if (kk) cardKeys.push(kk);
-    });
-    if (forPage > 0 && Object.keys(byKey).length === 0) {
-      var rel0 = list
-        .filter(function (e) {
-          return e && String(e.date != null ? e.date : "").trim() === pd;
-        })
-        .slice(0, 6)
-        .map(function (e) {
-          return {
-            date: e.date,
-            management_no_key: e.management_no_key,
-            management_no: e.management_no
-          };
-        });
-      logWarn("edits for page date but no usable management_no_key", {
-        pageDate: pd,
-        editsForPageSample: rel0
-      });
-    }
-    var applied = 0;
-    document.querySelectorAll("article.card[data-management-no-key]").forEach(function (article) {
-      var k = normKey(article.getAttribute("data-management-no-key"));
-      if (!k || !byKey[k]) return;
-      try {
-        applyEditToArticle(article, byKey[k]);
-        applied++;
-      } catch (e) {
-        logWarn("applyEditToArticle threw", e);
-      }
-    });
-    if (forPage > 0 && applied === 0) {
-      var rel = list
-        .filter(function (e) {
-          return e && String(e.date != null ? e.date : "").trim() === pd;
-        })
-        .slice(0, 8)
-        .map(function (e) {
-          return {
-            date: e.date,
-            management_no_key: e.management_no_key,
-            management_no: e.management_no
-          };
-        });
-      logWarn("No card matched API edits for this page", {
-        pageDate: pd,
-        cardKeys: cardKeys.slice(0, 12),
-        apiKeysFromPicker: Object.keys(byKey),
-        editsForPageSample: rel
-      });
-    }
-    try {
-      logInfo("jsonp payload handled", {
-        pageDate: pd,
-        editsTotal: list.length,
-        forPage: forPage,
-        applied: applied
-      });
-    } catch (e3) {}
-  }
-  function run() {
-    var c = cfg();
-    if (!c) {
-      logWarn("share-detail-edit-api-config missing or invalid JSON");
-      return;
-    }
-    var apiUrl = (c && c.url) || "";
-    if (!String(apiUrl).trim()) {
-      logWarn("API URL empty in config; skip JSONP load");
-      return;
-    }
-    var token = (c && c.token) || "";
-    var pageDate = String(document.body.getAttribute("data-share-page-date") || "").trim();
-    if (!pageDate) {
-      logWarn("body[data-share-page-date] missing; skip");
-      return;
-    }
-    var sep = apiUrl.indexOf("?") >= 0 ? "&" : "?";
-    var handlerId =
-      "h" + String(Date.now()) + "_" + String(Math.floor(Math.random() * 1e9));
-    var cbName = "__ippatsuShareLiveEditNs." + handlerId;
-    window.__ippatsuShareLiveEditNs = window.__ippatsuShareLiveEditNs || {};
-    var s = document.createElement("script");
-    var tid = 0;
-    var done = false;
-    function finish() {
-      if (done) return;
-      done = true;
-      if (tid) clearTimeout(tid);
-      try {
-        delete window.__ippatsuShareLiveEditNs[handlerId];
-      } catch (e2) {}
-      if (s && s.parentNode) s.parentNode.removeChild(s);
-    }
-    window.__ippatsuShareLiveEditNs[handlerId] = function (data) {
-      if (done) return;
-      try {
-        handlePayload(data, pageDate);
-      } catch (e) {
-        logWarn("JSONP callback threw", e);
-      } finally {
-        var fin = function () {
-          finish();
-        };
-        if (typeof requestAnimationFrame === "function") {
-          requestAnimationFrame(fin);
-        } else {
-          setTimeout(fin, 0);
-        }
-      }
-    };
-    var url =
-      apiUrl +
-      sep +
-      "token=" +
-      encodeURIComponent(token) +
-      "&callback=" +
-      encodeURIComponent(cbName) +
-      "&_ts=" +
-      String(Date.now());
-    s.async = true;
-    s.src = url;
-    s.charset = "utf-8";
-    tid = setTimeout(function () {
-      logWarn("JSONP timeout (check Apps Script JSONP deploy + callback param)");
-      finish();
-    }, 30000);
-    s.onerror = function () {
-      logWarn("JSONP script failed to load (network, 404, or non-JavaScript response)");
-      finish();
-    };
-    var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
-    head.appendChild(s);
-  }
-  function scheduleRun() {
-    function go() {
-      try {
-        run();
-      } catch (e) {
-        logWarn("run threw", e);
-      }
-    }
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function () {
-        if (typeof requestAnimationFrame === "function") {
-          requestAnimationFrame(go);
-        } else {
-          setTimeout(go, 0);
-        }
-      });
-    } else {
-      if (typeof requestAnimationFrame === "function") {
-        requestAnimationFrame(go);
-      } else {
-        setTimeout(go, 0);
-      }
-    }
-  }
-  scheduleRun();
-})();
-
-</script>
-<!-- share-live-edit-inject:end -->
 </body>
 </html>
