@@ -186,9 +186,24 @@ body {
 #share-map {
   width: 100%;
   height: min(55vh, 420px);
-  min-height: 220px;
+  min-height: 240px;
   border-radius: 8px;
   border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+#share-map.map-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+}
+.map-empty-msg {
+  margin: 0;
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-align: center;
 }
 .leaflet-container { font-family: inherit; }
 @media (min-width: 480px) {
@@ -274,38 +289,64 @@ body {
   crossorigin=""></script>
 <script>
 (function() {
-  var POINTS = [{"name":"南千股6～7","lat":34.406745,"lng":135.86825},{"name":"南千股18～19","lat":0.0,"lng":0.0},{"name":"南千股19～20","lat":0.0,"lng":0.0}];
-  document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
-    var id = btn.getAttribute("aria-controls");
-    var panel = id && document.getElementById(id);
-    if (!panel) return;
-    btn.addEventListener("click", function() {
-      var open = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", open ? "false" : "true");
-      panel.hidden = open;
+  function initShareMultipinMap() {
+    var POINTS = [{"name":"南千股6～7","lat":34.406745,"lng":135.86825},{"name":"南千股18～19","lat":34.405185,"lng":135.86879},{"name":"南千股19～20","lat":34.404815,"lng":135.86879}];
+    document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
+      var id = btn.getAttribute("aria-controls");
+      var panel = id && document.getElementById(id);
+      if (!panel) return;
+      btn.addEventListener("click", function() {
+        var open = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", open ? "false" : "true");
+        panel.hidden = open;
+      });
     });
-  });
-  if (!window.L || !POINTS.length) return;
-  var map = L.map("share-map", { scrollWheelZoom: false });
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap"
-  }).addTo(map);
-  var bounds = [];
-  function escHtml(t) {
-    var d = document.createElement("div");
-    d.textContent = t == null ? "" : String(t);
-    return d.innerHTML;
+    var mapEl = document.getElementById("share-map");
+    if (!mapEl || !window.L) return;
+    function usable(p) {
+      if (!p || typeof p.lat !== "number" || typeof p.lng !== "number") return false;
+      return Math.abs(p.lat) > 1e-6 || Math.abs(p.lng) > 1e-6;
+    }
+    var valid = POINTS.filter(usable);
+    if (!valid.length) {
+      mapEl.classList.add("map-empty");
+      mapEl.innerHTML = "<p class=\"map-empty-msg\">全体地図の座標がありません（地図URLまたは2点座標を確認してください）</p>";
+      return;
+    }
+    var map = L.map(mapEl, { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+    var bounds = [];
+    function escHtml(t) {
+      var d = document.createElement("div");
+      d.textContent = t == null ? "" : String(t);
+      return d.innerHTML;
+    }
+    valid.forEach(function(p) {
+      var m = L.marker([p.lat, p.lng]).addTo(map);
+      if (p.name) m.bindPopup(escHtml(p.name));
+      bounds.push([p.lat, p.lng]);
+    });
+    function layoutMap() {
+      try {
+        map.invalidateSize();
+      } catch (e) {}
+    }
+    if (bounds.length === 1) {
+      map.setView(bounds[0], 15);
+    } else if (bounds.length > 1) {
+      map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
+    }
+    requestAnimationFrame(layoutMap);
+    setTimeout(layoutMap, 120);
+    window.addEventListener("resize", layoutMap);
   }
-  POINTS.forEach(function(p) {
-    var m = L.marker([p.lat, p.lng]).addTo(map);
-    if (p.name) m.bindPopup(escHtml(p.name));
-    bounds.push([p.lat, p.lng]);
-  });
-  if (bounds.length === 1) {
-    map.setView(bounds[0], 15);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initShareMultipinMap);
   } else {
-    map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
+    initShareMultipinMap();
   }
 })();
 (function() {
