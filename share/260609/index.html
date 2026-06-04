@@ -300,7 +300,8 @@ body {
 </article>
   <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
-    <div id="share-map" role="application" aria-label="全径間の位置"></div>
+    <!-- share-multipin-debug: points=4 markers=4 duplicate_coordinate_groups=1 stacked_point_count=2 -->
+    <div id="share-map" role="application" aria-label="全径間の位置" data-point-count="4"></div>
   </section>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -309,7 +310,7 @@ body {
 <script>
 (function() {
   function initShareMultipinMap() {
-    var POINTS = [{"name":"高滝3N2～3N2W1","lat":33.971885,"lng":135.809465},{"name":"高滝9S9～9S10","lat":33.96416,"lng":135.81723},{"name":"高滝3N2W1～3N2W1G1","lat":33.97219,"lng":135.80922},{"name":"高滝3N2W1K1～3N2W1G2","lat":33.97219,"lng":135.80922}];
+    var POINTS = [{"name":"高滝3N2～3N2W1","lat":33.971885,"lng":135.809465,"management_no":"514 04647"},{"name":"高滝9S9～9S10","lat":33.96416,"lng":135.81723,"management_no":"514 04667"},{"name":"高滝3N2W1～3N2W1G1","lat":33.97219,"lng":135.80922,"management_no":"514 10371"},{"name":"高滝3N2W1K1～3N2W1G2","lat":33.97219,"lng":135.80922,"management_no":"514 10372"}];
     document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
       var id = btn.getAttribute("aria-controls");
       var panel = id && document.getElementById(id);
@@ -332,6 +333,44 @@ body {
       mapEl.innerHTML = "<p class=\"map-empty-msg\">全体地図の座標がありません（地図URLまたは2点座標を確認してください）</p>";
       return;
     }
+    function coordKey(p) {
+      return p.lat.toFixed(6) + "," + p.lng.toFixed(6);
+    }
+    function applyDisplayOffsets(points) {
+      var groups = {};
+      points.forEach(function(p, i) {
+        var k = coordKey(p);
+        if (!groups[k]) groups[k] = [];
+        groups[k].push({ p: p, i: i });
+      });
+      var out = points.map(function(p) {
+        return {
+          lat: p.lat,
+          lng: p.lng,
+          name: p.name,
+          management_no: p.management_no || "",
+          displayOffset: false
+        };
+      });
+      Object.keys(groups).forEach(function(k) {
+        var g = groups[k];
+        if (g.length <= 1) return;
+        var base = g[0].p;
+        var dLat = 0.00012;
+        var cosLat = Math.cos((base.lat * Math.PI) / 180);
+        var dLng = cosLat > 0.01 ? 0.00015 / cosLat : 0.00015;
+        g.forEach(function(entry, j) {
+          if (j === 0) return;
+          var angle = (2 * Math.PI * j) / g.length;
+          out[entry.i].lat = entry.p.lat + dLat * Math.cos(angle);
+          out[entry.i].lng = entry.p.lng + dLng * Math.sin(angle);
+          out[entry.i].displayOffset = true;
+        });
+      });
+      return out;
+    }
+    var displayPoints = applyDisplayOffsets(valid);
+    mapEl.setAttribute("data-marker-count", String(displayPoints.length));
     var map = L.map(mapEl, { scrollWheelZoom: false });
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -343,9 +382,13 @@ body {
       d.textContent = t == null ? "" : String(t);
       return d.innerHTML;
     }
-    valid.forEach(function(p) {
+    displayPoints.forEach(function(p) {
       var m = L.marker([p.lat, p.lng]).addTo(map);
-      if (p.name) m.bindPopup(escHtml(p.name));
+      var lines = [];
+      if (p.name) lines.push(String(p.name));
+      if (p.management_no) lines.push(String(p.management_no));
+      if (p.displayOffset) lines.push("（全体地図: 重複座標のため表示位置をずらしています）");
+      if (lines.length) m.bindPopup(escHtml(lines.join("<br>")));
       bounds.push([p.lat, p.lng]);
     });
     function layoutMap() {
