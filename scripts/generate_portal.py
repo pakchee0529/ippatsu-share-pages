@@ -42,6 +42,10 @@ survey・アーカイブ一覧・全 archive 詳細・他日付 share inject は
 ``--mode portal-top-only``: ``portal/index.html`` のみ。
 ``--mode negotiation-only``: ``portal/negotiation/index.html`` のみ。
 
+``--portal-min-date YYMMDD``（別名 ``--hide-before-date``）: ポータル TOP の共有日カードを
+**当該日付以降のみ**表示する（``YYMMDD`` 未満は TOP から除外）。``share/<date>/`` の削除や
+Supabase / archive には触れない。動的な「今日」は使わず、CLI で明示指定する。
+
 各限定 mode は生成後に HTML スモーク検証を行い、想定外の portal HTML 変更を検出する。
 """
 
@@ -78,6 +82,7 @@ from typing import Any
 
 # ippatsu-pc の data ディレクトリ（--data-root で上書き）。未指定時は sibling ippatsu-pc/data。
 _DATA_ROOT_OVERRIDE: Path | None = None
+_PORTAL_MIN_DATE: str | None = None
 # completion_reports 副本 JSON ルート（--completion-reports-root）。YYMMDD.json が直下にあるディレクトリ。
 _COMPLETION_REPORTS_ROOT_OVERRIDE: Path | None = None
 _STRICT_COMPLETION_REPORTS_ROOT: bool = False
@@ -6577,18 +6582,32 @@ def _iter_share_index_rows(repo_root: Path) -> list[tuple[str, Path]]:
     return rows
 
 
+def _share_date_before_portal_min(folder: str, portal_min_date: str | None) -> bool:
+    """TOP 非表示: folder が portal_min_date より前（YYMMDD 文字列比較）。"""
+    if not portal_min_date:
+        return False
+    d = (folder or "").strip()
+    if len(d) != 6 or not d.isdigit():
+        return False
+    return d < portal_min_date
+
+
 def _build_portal_top_entries(
     repo_root: Path,
     *,
     exclude_folder: str | None = None,
+    portal_min_date: str | None = None,
 ) -> list[tuple[str, str]]:
     manifest_entries = load_archive_manifest_entries(repo_root)
     archived = {e.date for e in manifest_entries}
+    min_date = portal_min_date if portal_min_date is not None else _PORTAL_MIN_DATE
     entries: list[tuple[str, str]] = []
     for folder, path in _iter_share_index_rows(repo_root):
         if folder in RETIRED_SHARE_DATE_KEYS:
             continue
         if folder in archived:
+            continue
+        if _share_date_before_portal_min(folder, min_date):
             continue
         if exclude_folder is not None and folder == exclude_folder:
             continue
@@ -6726,17 +6745,21 @@ def run_archive_only(repo_root: Path) -> FocusedGenerateResult:
 
 
 def run_portal_top_only(repo_root: Path) -> FocusedGenerateResult:
-    entries = _build_portal_top_entries(repo_root)
+    min_date = _PORTAL_MIN_DATE
+    entries = _build_portal_top_entries(repo_root, portal_min_date=min_date)
     manifest_entries = load_archive_manifest_entries(repo_root)
     archived = len({e.date for e in manifest_entries})
     out_html = build_html(entries, calendar_api_key=portal_calendar_api_key(repo_root))
     rel = "portal/index.html"
     out_path = _write_portal_html(repo_root, rel, out_html)
+    min_note = f", portal_min_date={min_date}" if min_date else ""
     print(
         f"Wrote {out_path} ({len(entries)} cards, "
-        f"{archived} date(s) hidden on top per manifest)"
+        f"{archived} date(s) hidden on top per manifest{min_note})"
     )
     stats = {"portal_cards": len(entries), "archived_dates_hidden": archived}
+    if min_date:
+        stats["portal_min_date"] = min_date
     cal_key = portal_calendar_api_key(repo_root)
     return FocusedGenerateResult(
         mode=PORTAL_MODE_PORTAL_TOP_ONLY,
@@ -7223,8 +7246,22 @@ def main() -> int:
             "or share-update"
         ),
     )
+    parser.add_argument(
+        "--portal-min-date",
+        "--hide-before-date",
+        dest="portal_min_date",
+        default=None,
+        metavar="YYMMDD",
+        help=(
+            "Portal TOP: show share date cards with YYMMDD >= this value only; "
+            "older dates stay on disk but are omitted from portal/index.html. "
+            "Does not use today's date automatically."
+        ),
+    )
     ns = parser.parse_args()
+    global _DATA_ROOT_OVERRIDE, _PORTAL_MIN_DATE
     _DATA_ROOT_OVERRIDE = None
+    _PORTAL_MIN_DATE = None
     _COMPLETION_REPORTS_ROOT_OVERRIDE = None
     _STRICT_COMPLETION_REPORTS_ROOT = bool(ns.strict_completion_reports_root)
     _STRICT_COMPLETION_REPORTS_MISSING = bool(ns.strict_completion_reports_missing)
@@ -7260,6 +7297,16 @@ def main() -> int:
     completion_date = (
         target_date if mode == PORTAL_MODE_COMPLETION_ARCHIVE else None
     )
+
+    if ns.portal_min_date is not None:
+        parsed_min = _parse_six_digit_date(ns.portal_min_date)
+        if parsed_min is None:
+            print(
+                "Error: --portal-min-date requires 6-digit YYMMDD.",
+                file=sys.stderr,
+            )
+            return 1
+        _PORTAL_MIN_DATE = parsed_min
 
     repo_root = Path(__file__).resolve().parent.parent
     load_portal_dotenv(repo_root)
