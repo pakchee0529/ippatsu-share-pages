@@ -33,6 +33,6 @@
 ## portal TOP 基準日
 
 - **CLI:** `--portal-min-date` / `--hide-before-date` + `--mode portal-top-only`（[`2026-06-09 実装`](./work_logs/2026-06-09_portal_top_min_date_260610.md)）
-- **適用済み（現行）:** `portal_min_date=260611` — 260610 以前を TOP から非表示。**260611 / 260612 のみ表示**（2026-06-10）。理由: 260610 登録 4 件 completed 済み。ログ: [`work_logs/2026-06-10_portal_top_min_date_260611.md`](./work_logs/2026-06-10_portal_top_min_date_260611.md)
+- **適用済み（現行）:** `portal_min_date=260611` — 260610 以前を TOP から非表示。**260611 / 260612 のみ表示**（2026-06-10）。**260611 は6件組み替え公開済** — [`work_logs/2026-06-10_share_260611_reorg_publish.md`](./work_logs/2026-06-10_share_260611_reorg_publish.md)。基準日更新ログ: [`work_logs/2026-06-10_portal_top_min_date_260611.md`](./work_logs/2026-06-10_portal_top_min_date_260611.md)
 - **履歴:** `260610`（2026-06-09）— 260609 以前非表示・260610/611/612 表示。[`work_logs/2026-06-09_portal_top_min_date_260610.md`](./work_logs/2026-06-09_portal_top_min_date_260610.md)
 - **未実施:** completed status との自動連動（明示日付 CLI のみ）
