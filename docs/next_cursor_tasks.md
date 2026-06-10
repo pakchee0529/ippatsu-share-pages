@@ -30,9 +30,9 @@
 
 **参照:** ippatsu-pc `docs/work_logs/2026-06-03_completion_reports_export_timing_policy.md`、同 `2026-06-03_completion_archive_incomplete_section_design.md`
 
-## portal TOP 基準日（2026-06-09）
+## portal TOP 基準日
 
-- **完了:** `--portal-min-date` / `--hide-before-date` を `generate_portal.py` に追加。TOP のみ `--mode portal-top-only` で再生成可能。
-- **適用済み:** `portal_min_date=260610` — 260609 以前を TOP から非表示。260610/611/612 のみ表示。
-- **ログ:** [`work_logs/2026-06-09_portal_top_min_date_260610.md`](./work_logs/2026-06-09_portal_top_min_date_260610.md)
-- **未実施:** completed status との自動連動（明示日付 CLI のみ）。GitHub Pages push は人間 Go。
+- **CLI:** `--portal-min-date` / `--hide-before-date` + `--mode portal-top-only`（[`2026-06-09 実装`](./work_logs/2026-06-09_portal_top_min_date_260610.md)）
+- **適用済み（現行）:** `portal_min_date=260611` — 260610 以前を TOP から非表示。**260611 / 260612 のみ表示**（2026-06-10）。理由: 260610 登録 4 件 completed 済み。ログ: [`work_logs/2026-06-10_portal_top_min_date_260611.md`](./work_logs/2026-06-10_portal_top_min_date_260611.md)
+- **履歴:** `260610`（2026-06-09）— 260609 以前非表示・260610/611/612 表示。[`work_logs/2026-06-09_portal_top_min_date_260610.md`](./work_logs/2026-06-09_portal_top_min_date_260610.md)
+- **未実施:** completed status との自動連動（明示日付 CLI のみ）

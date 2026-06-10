@@ -48,7 +48,7 @@
 | **HTML は手修正しない** | `portal/*.html` は生成物。差分は **スクリプト修正 → 限定再生成** のみ。 |
 | **修正は生成元へ** | 表示・UX・件数・マルチピンは `generate_portal.py` と `portal_immediate_status_client.py` を編集する。 |
 | **survey 更新は `survey-only`** | 現調待ちだけ更新するときは `--mode survey-only` を使う。 |
-| **TOP 基準日** | 古い共有日を TOP から隠すときは `--mode portal-top-only --portal-min-date YYMMDD`（`share/` は削除しない。completed 自動連動なし）。 |
+| **TOP 基準日** | 古い共有日を TOP から隠すときは `--mode portal-top-only --portal-min-date YYMMDD`（`share/` は削除しない。completed 自動連動なし）。**現行: `260611`**（2026-06-10。260610 完了 4 件反映後に更新）。 |
 | **他ポータルを巻き込まない** | `portal/index.html` / `portal/archive/*` / `portal/negotiation/index.html` は **意図がない限り再生成しない**。 |
 | **`git add .` 禁止** | 対象パスを明示して add（AGENTS.md §4）。 |
 | **秘密情報** | API key / PIN / secrets の **実値をログ・チャット・commit に出さない**。 |
