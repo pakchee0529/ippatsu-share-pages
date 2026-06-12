@@ -14,7 +14,9 @@
 | 5 | Pages 反映・本番目視 | **完了**（260529 一覧・詳細・status 非表示） |
 | 6 | share / negotiation HTML 公開 | **別 Go** — ローカル副産物は [棚卸しで restore 済](./work_logs/2026-06-03_share_pages_local_diff_cleanup.md)。full 再生成で差分再発 |
 | 17 | ローカル残差分棚卸し | **完了** — [ログ](./work_logs/2026-06-03_share_pages_local_diff_cleanup.md) |
-| 18 | archive 表記テンプレート統一 | **一部公開** — [コード](./work_logs/2026-06-03_archive_display_template_unification.md) + [公開](./work_logs/2026-06-03_archive_display_template_publish_result.md)。一覧+518/519/520/529 詳細。**他日詳細は export 整備後** |
+| 18 | archive 表記テンプレート統一 | **一部公開** — [コード](./work_logs/2026-06-03_archive_display_template_unification.md) + [公開](./work_logs/2026-06-03_archive_display_template_publish_result.md)。一覧+518/519/520/529 詳細。**260611 公開済** — [ログ](./work_logs/2026-06-12_archive_260611_publish.md) |
+| 19 | archive 260611（全6件 completed） | **完了** — [公開](./work_logs/2026-06-12_archive_260611_publish.md)。manifest + 一覧 + 詳細。TOP/share 未変更。 |
+| 20 | archive 260610 / 260612 | **次** — 別 Go（部分完了・北宇智未完了あり） |
 | 7 | `export_summary` 鮮度チェック強化 | 未着手（`exported_at` トップレベル） |
 | 8 | 公開成功後 data snapshot | 任意・別 Go（ippatsu-pc timing policy） |
 | 9 | portal archive Supabase direct/fallback | 長期 |
