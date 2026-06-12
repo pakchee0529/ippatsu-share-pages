@@ -33,6 +33,6 @@
 ## portal TOP 基準日
 
 - **CLI:** `--portal-min-date` / `--hide-before-date` + `--mode portal-top-only`（[`2026-06-09 実装`](./work_logs/2026-06-09_portal_top_min_date_260610.md)）
-- **適用済み（現行）:** `portal_min_date=260612` — **260612 のみ表示（6件）**。[260612 組み替え公開](./work_logs/2026-06-11_share_260612_reorg_publish.md)。min-date 更新: [`2026-06-11_portal_top_min_date_260612.md`](./work_logs/2026-06-11_portal_top_min_date_260612.md)。
+- **適用済み（現行）:** `portal_min_date=260613` — 260612 以前を TOP から非表示。**260612 終了扱い**（5件完了・51405397 未完了維持）。TOP カード0件（260613 以降 share 未公開）。ログ: [`work_logs/2026-06-12_portal_top_min_date_260613.md`](./work_logs/2026-06-12_portal_top_min_date_260613.md)。`share/260612/` 直接URLは残存。
 - **履歴:** `260610`（2026-06-09）— 260609 以前非表示・260610/611/612 表示。[`work_logs/2026-06-09_portal_top_min_date_260610.md`](./work_logs/2026-06-09_portal_top_min_date_260610.md)
 - **未実施:** completed status との自動連動（明示日付 CLI のみ）
