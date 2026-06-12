@@ -32,6 +32,23 @@
 
 **参照:** ippatsu-pc `docs/work_logs/2026-06-03_completion_reports_export_timing_policy.md`、同 `2026-06-03_completion_archive_incomplete_section_design.md`
 
+### 完了報告後 archive 反映（必須後続・2026-06-12）
+
+Supabase 完了報告（ippatsu-pc）だけでは **本 repo の `portal/archive` は更新されない。** 完了報告のたびに後続タスクとして archive 反映が必要（[backfill ログ](./work_logs/2026-06-12_archive_backfill_260610_260611_260612.md)）。
+
+| 段 | 担当 | 内容 |
+| -- | ---- | ---- |
+| 1 | ippatsu-pc | Supabase verify |
+| 2 | ippatsu-pc | `export_completion_reports_from_supabase.py` → `output/completion_reports_export/`（commit しない） |
+| 3 | ippatsu-pc | 未完了は `planned_but_incomplete`（DB 不変。例: 51410041 / 51405397） |
+| 4 | **share-pages** | `portal/archive_manifest.json` merge |
+| 5 | **share-pages** | `--mode completion-archive --date YYMMDD --completion-reports-root ...` |
+| 6 | **share-pages** | archive のみ commit/push |
+
+**禁止:** 完了報告＝archive 済みとみなさない / `--mode full` / portal TOP だけで archive 済みとみなさない / 未完了の DB completed 化 / `data/completion_reports` 直接書込 / `output/` commit / `git add .`
+
+**テンプレ・詳細:** [`docs/portal_operation_notes.md`](./portal_operation_notes.md) §6、ippatsu-pc [`docs/next_cursor_tasks.md`](https://github.com/pakchee0529/ippatsu-pc/blob/worktree/prod-daily/docs/next_cursor_tasks.md)「完了報告後 archive 反映」
+
 ## portal TOP 基準日
 
 - **CLI:** `--portal-min-date` / `--hide-before-date` + `--mode portal-top-only`（[`2026-06-09 実装`](./work_logs/2026-06-09_portal_top_min_date_260610.md)）

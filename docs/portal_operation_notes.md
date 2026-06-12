@@ -48,8 +48,9 @@
 | **HTML は手修正しない** | `portal/*.html` は生成物。差分は **スクリプト修正 → 限定再生成** のみ。 |
 | **修正は生成元へ** | 表示・UX・件数・マルチピンは `generate_portal.py` と `portal_immediate_status_client.py` を編集する。 |
 | **survey 更新は `survey-only`** | 現調待ちだけ更新するときは `--mode survey-only` を使う。 |
-| **TOP 基準日** | 古い共有日を TOP から隠すときは `--mode portal-top-only --portal-min-date YYMMDD`（`share/` は削除しない。completed 自動連動なし）。**現行: `260611`**（2026-06-10。260610 完了 4 件反映後に更新）。 |
+| **TOP 基準日** | 古い共有日を TOP から隠すときは `--mode portal-top-only --portal-min-date YYMMDD`（`share/` は削除しない。completed 自動連動なし・**archive 非連動**）。**現行: `260613`**（2026-06-12）。 |
 | **他ポータルを巻き込まない** | `portal/index.html` / `portal/archive/*` / `portal/negotiation/index.html` は **意図がない限り再生成しない**。 |
+| **完了報告 ≠ archive 反映** | ippatsu-pc で Supabase 完了報告しただけでは archive は更新されない。**§6 後続必須**。 |
 | **`git add .` 禁止** | 対象パスを明示して add（AGENTS.md §4）。 |
 | **秘密情報** | API key / PIN / secrets の **実値をログ・チャット・commit に出さない**。 |
 | **本番 data** | 会社PCの `ippatsu-pc-prod/data` 等で再生成確認。家PCでは本番 generate しない。 |
@@ -101,6 +102,73 @@ git diff -- portal/negotiation/index.html
 
 ---
 
+## 6. 完了報告後の completion archive 反映（必須後続）
+
+> **背景（2026-06-12）:** 260605〜260612 の archive 未反映は、Supabase 完了報告後に export / manifest / `completion-archive` / publish が走らなかったため。backfill: [work_logs/2026-06-12_archive_backfill_260610_260611_260612.md](./work_logs/2026-06-12_archive_backfill_260610_260611_260612.md)
+
+**正本:** Supabase `cases.status` + `completion_report_ref`。**副本:** ippatsu-pc `output/completion_reports_export/`（portal 生成直前に再 export。`data/completion_reports` は正本ではない・直接書かない）。
+
+### 6.1 いつ必要か
+
+ippatsu-pc で完了報告（GUI / `apply_completion_report_batch`）で Supabase を `completed` にした **直後**。portal TOP の `min-date` 更新や share 再生成とは **別タスク**。
+
+### 6.2 手順（share-pages 側の責務は 4〜6）
+
+1. **Supabase verify**（ippatsu-pc・read-only）— `completion_report_ref=YYMMDD` 件数、`completed` / `active=false` / `archive_state=stored`、同 `share_date_key` の未完了残存。
+2. **export** — `python tools/export_completion_reports_from_supabase.py --dates YYMMDD --output-dir output/completion_reports_export`（ippatsu-pc）。`output/` は commit しない。
+3. **未完了枠** — sdk に未完了が残る場合: **DB 変更禁止**（completed 化・ref 付与禁止）。export JSON の `planned_but_incomplete[]` に載せる（例: 260610 **51410041**、260612 **51405397**）。
+4. **manifest** — `portal/archive_manifest.json` に entry merge。`item_count` / `completed_count` / `planned_incomplete_count` を export と整合。根拠なき手編集禁止。
+5. **archive 限定再生成:**
+
+```powershell
+cd C:\Users\kotan\Projects\ippatsu-share-pages
+python scripts/generate_portal.py --mode completion-archive --date YYMMDD `
+  --completion-reports-root C:\Users\kotan\Projects\ippatsu-pc-prod\output\completion_reports_export
+git restore portal/index.html   # completion-archive が TOP を触る副作用対策
+```
+
+6. **確認** — `portal/archive/index.html` と `portal/archive/YYMMDD/index.html`。`portal/index.html` と `share/**` に意図しない差分がないこと。
+7. **publish** — archive 関連と docs のみ明示 `git add` → commit → push（人間 Go 後）。
+
+### 6.3 禁止
+
+- 完了報告だけで archive 反映済みとみなす
+- Supabase write と archive publish の混同
+- `data/completion_reports` を正本扱い・直接書込
+- `output/` の commit
+- `--mode full`
+- portal TOP 更新だけで archive 更新済みとみなす
+- 未完了を archive に載せるための DB completed 化
+- `git add .`
+
+### 6.4 チェックテンプレ
+
+```text
+完了報告後 archive 反映チェック:
+
+対象日: YYMMDD
+
+1. Supabase verify
+2. export_completion_reports_from_supabase.py --dates YYMMDD --output-dir output/completion_reports_export
+3. share_date_key=YYMMDD の未完了案件を planned_but_incomplete として整理
+4. archive_manifest merge
+5. generate_portal.py --mode completion-archive --date YYMMDD --completion-reports-root <export root>
+6. portal/archive 一覧・詳細を確認
+7. portal TOP / share に差分がないことを確認
+8. archive関連のみ commit/push
+```
+
+### 6.5 commit 対象（publish 時）
+
+- `portal/archive/index.html`
+- `portal/archive/YYMMDD/index.html`
+- `portal/archive_manifest.json`
+- `docs/work_logs/*`（該当ログ）
+
+**含めない:** `portal/index.html`、`share/**`、`output/`
+
+---
+
 ## 関連ドキュメント
 
 | パス | 内容 |
@@ -109,7 +177,9 @@ git diff -- portal/negotiation/index.html
 | `docs/work_logs/2026-05-29_1900_portal-regeneration-incident-summary.md` | 再生成事故と復旧の経緯 |
 | `docs/work_logs/2026-05-29_2000_cursor_survey-visible-count-sync.md` | `dd436d0` の作業ログ（件数同期） |
 | `docs/work_logs/2026-05-29_1930_cursor_survey-multipin-visible-sync.md` | `b130bce` の作業ログ（マルチピン同期） |
+| `docs/work_logs/2026-06-12_archive_backfill_260610_260611_260612.md` | archive 未反映 backfill と planned 未完了枠 |
+| ippatsu-pc `docs/next_cursor_tasks.md` §完了報告後 archive 反映 | export・verify・禁止ルール |
 
 ---
 
-*最終更新: 2026-05-29 — 正本 `dd436d0`（main）*
+*最終更新: 2026-06-12 — §6 完了報告後 archive 後続必須を追加*
