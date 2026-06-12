@@ -1,6 +1,16 @@
 {
   "entries": [
     {
+      "date": "260612",
+      "title": "2026年06月12日 5件",
+      "item_count": 5,
+      "completed_count": 5,
+      "incomplete_count": 0,
+      "reported_at": "2026-06-12T05:12:24",
+      "href": "../../share/260612/",
+      "planned_incomplete_count": 1
+    },
+    {
       "date": "260611",
       "title": "2026年06月11日 6件",
       "item_count": 6,
@@ -16,7 +26,44 @@
       "completed_count": 4,
       "incomplete_count": 0,
       "reported_at": "2026-06-10T09:01:04",
-      "href": "../../share/260610/"
+      "href": "../../share/260610/",
+      "planned_incomplete_count": 1
+    },
+    {
+      "date": "260609",
+      "title": "2026年06月09日 3件",
+      "item_count": 3,
+      "completed_count": 3,
+      "incomplete_count": 0,
+      "reported_at": "2026-06-09T14:04:08",
+      "href": "../../share/260609/"
+    },
+    {
+      "date": "260608",
+      "title": "2026年06月08日 6件",
+      "item_count": 6,
+      "completed_count": 6,
+      "incomplete_count": 0,
+      "reported_at": "2026-06-09T14:04:06",
+      "href": "../../share/260608/"
+    },
+    {
+      "date": "260606",
+      "title": "2026年06月06日 3件",
+      "item_count": 3,
+      "completed_count": 3,
+      "incomplete_count": 0,
+      "reported_at": "2026-06-09T14:04:04",
+      "href": "../../share/260606/"
+    },
+    {
+      "date": "260605",
+      "title": "2026年06月05日 2件",
+      "item_count": 2,
+      "completed_count": 2,
+      "incomplete_count": 0,
+      "reported_at": "2026-06-09T14:04:03",
+      "href": "../../share/260605/"
     },
     {
       "date": "260601",
