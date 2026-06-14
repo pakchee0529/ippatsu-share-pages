@@ -1638,6 +1638,10 @@ class PlannedIncompleteItem:
     completion_report_ref_display: str
     note: str
     map_url: str
+    start_lat: str = ""
+    start_lng: str = ""
+    end_lat: str = ""
+    end_lng: str = ""
     branch_cut_total: int = 0
     root_cut_total: int = 0
     road_width_m: str = "—"
@@ -3974,6 +3978,10 @@ def load_archive_planned_incomplete(
                 note=_to_str(ent.get("note"))
                 or "当日予定・未完了。完了扱いではありません。",
                 map_url=map_url,
+                start_lat=_to_str(src.get("start_lat")),
+                start_lng=_to_str(src.get("start_lng")),
+                end_lat=_to_str(src.get("end_lat")),
+                end_lng=_to_str(src.get("end_lng")),
                 branch_cut_total=b_total,
                 root_cut_total=r_total,
                 road_width_m=_to_str(src.get("road_width_m")) or "—",
@@ -4006,6 +4014,43 @@ def build_planned_incomplete_section_html(
                 f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
                 'target="_blank" rel="noopener noreferrer">地図を開く</a>'
             )
+        start_lat = _to_float(it.start_lat)
+        start_lng = _to_float(it.start_lng)
+        end_lat = _to_float(it.end_lat)
+        end_lng = _to_float(it.end_lng)
+        two_btn = ""
+        two_json = ""
+        two_wrap = ""
+        if (
+            start_lat is not None
+            and start_lng is not None
+            and end_lat is not None
+            and end_lng is not None
+        ):
+            two_json_id = f"planned-two-geo-{idx}"
+            two_wrap_id = f"planned-two-wrap-{idx}"
+            two_map_id = f"planned-two-map-{idx}"
+            two_btn = (
+                f'<button type="button" class="btn btn-map" data-two-open '
+                f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
+                f'data-two-json="{two_json_id}" aria-expanded="false" '
+                f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
+            )
+            two_geo = build_two_geo_payload(
+                a_name=it.label,
+                a_lat=start_lat,
+                a_lng=start_lng,
+                b_name=it.label,
+                b_lat=end_lat,
+                b_lng=end_lng,
+                gps_poles=None,
+            )
+            two_json = format_two_geo_script(two_json_id, two_geo)
+            two_wrap = (
+                f'<div class="two-map-wrap" id="{two_wrap_id}" hidden>'
+                f'<div id="{two_map_id}" class="share-two-map-canvas" '
+                'role="application" aria-label="2点地図"></div></div>'
+            )
         reason_line = ""
         if it.incomplete_reason and it.incomplete_reason != "—":
             reason_line = (
@@ -4037,7 +4082,7 @@ def build_planned_incomplete_section_html(
             f'<button type="button" class="btn btn-note" aria-expanded="false" '
             f'aria-controls="{note_id}" data-note-toggle>現場指示</button>'
         )
-        actions = "".join(x for x in [map_btn, note_btn] if x)
+        actions = "".join(x for x in [map_btn, two_btn, note_btn] if x)
         cards.append(
             f"""<article class="card card-planned-incomplete" data-planned-index="{idx}">
       <div class="card-head">
@@ -4045,6 +4090,8 @@ def build_planned_incomplete_section_html(
         <p class="item-mgmt">{escape_html(it.management_no)}</p>
         <div class="card-actions">{actions}</div>
       </div>
+      {two_json}
+      {two_wrap}
       <div class="note-panel" id="{note_id}" hidden>{note_body}</div>
 </article>"""
         )
@@ -5807,6 +5854,19 @@ def build_archive_detail_html(
                 )
         items_html = "\n".join(cards)
     planned_html = build_planned_incomplete_section_html(planned_items)
+    for it in planned_items:
+        p_lat, p_lng = _pick_item_latlng(it)
+        f_lat = _to_float(p_lat)
+        f_lng = _to_float(p_lng)
+        if f_lat is not None and f_lng is not None:
+            points.append(
+                {
+                    "name": it.label,
+                    "lat": f_lat,
+                    "lng": f_lng,
+                    "management_no": it.management_no,
+                }
+            )
     map_block = ""
     if points:
         map_block = """  <section class="map-section" aria-labelledby="map-heading">
