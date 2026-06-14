@@ -4017,20 +4017,7 @@ def build_planned_incomplete_section_html(
             warn_line = (
                 f'<p class="archive-warn-line">警告: {escape_html(it.warning)}</p>'
             )
-        status_lines = "\n".join(x for x in [reason_line, warn_line] if x)
-        road_width = escape_html(it.road_width_m)
-        if road_width != "—" and not road_width.endswith("m"):
-            road_width = f"{road_width}m"
-        summary = (
-            '<dl class="archive-mini-summary">'
-            f"<div><dt>処理</dt><dd>{escape_html(it.method)}</dd></div>"
-            f"<div><dt>B車</dt><dd>{escape_html(it.bucket_available)}</dd></div>"
-            f"<div><dt>道幅</dt><dd>{road_width}</dd></div>"
-            f"<div><dt>傾斜</dt><dd>{escape_html(it.slope)}</dd></div>"
-            f"<div><dt>枝切り</dt><dd>{it.branch_cut_total}</dd></div>"
-            f"<div><dt>根切り</dt><dd>{it.root_cut_total}</dd></div>"
-            "</dl>"
-        )
+        status_header = '<p class="archive-status-line">状態: 未完了</p>'
         note_id = f"planned-note-{idx}"
         instr = (it.instructions_html or "").strip()
         if not instr:
@@ -4038,6 +4025,14 @@ def build_planned_incomplete_section_html(
                 f"<p>処理方法: {escape_html(it.method)}</p>"
                 f"<p>備考: {escape_html(it.note)}</p>"
             )
+        note_block = ""
+        nt = (it.note or "").strip()
+        if nt and nt != "—":
+            note_esc = escape_html(nt).replace("\n", "<br>")
+            note_block = (
+                f'<div class="instr-note"><strong>備考</strong><br>{note_esc}</div>'
+            )
+        note_body = status_header + reason_line + warn_line + instr + note_block
         note_btn = (
             f'<button type="button" class="btn btn-note" aria-expanded="false" '
             f'aria-controls="{note_id}" data-note-toggle>現場指示</button>'
@@ -4050,9 +4045,7 @@ def build_planned_incomplete_section_html(
         <p class="item-mgmt">{escape_html(it.management_no)}</p>
         <div class="card-actions">{actions}</div>
       </div>
-{status_lines}
-      {summary}
-      <div class="note-panel" id="{note_id}" hidden>{instr}</div>
+      <div class="note-panel" id="{note_id}" hidden>{note_body}</div>
 </article>"""
         )
     cards_str = "\n".join(cards)
