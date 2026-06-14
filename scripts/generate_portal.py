@@ -2193,23 +2193,9 @@ body {{
   align-items: center;
   gap: 0.55rem 0.65rem;
 }}
-.share-status-pill {{
-  display: inline-flex;
-  align-items: center;
+.card-title {{
   grid-column: 1;
   grid-row: 1;
-  width: fit-content;
-  padding: 0.18rem 0.52rem;
-  border-radius: 999px;
-  background: var(--share-accent);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 800;
-  line-height: 1.35;
-}}
-.card-title {{
-  grid-column: 1 / -1;
-  grid-row: 2;
   font-weight: 700;
   line-height: 1.35;
   overflow-wrap: anywhere;
@@ -2232,7 +2218,7 @@ body {{
 }}
 .card-actions {{
   grid-column: 1 / -1;
-  grid-row: 3;
+  grid-row: 2;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
@@ -2360,15 +2346,10 @@ def _inject_share_page_summary(html: str, date_key: str) -> str:
 
 
 def _inject_share_status_pills(html: str) -> str:
-    out = re.sub(
+    return re.sub(
         r'\s*<span class="share-status-pill">現場共有</span>\s*',
         "\n",
         html,
-    )
-    return re.sub(
-        r'(<div class="card-head">\s*)',
-        r'\1<span class="share-status-pill">現場共有</span>\n    ',
-        out,
     )
 
 

@@ -345,23 +345,9 @@ body {
   align-items: center;
   gap: 0.55rem 0.65rem;
 }
-.share-status-pill {
-  display: inline-flex;
-  align-items: center;
+.card-title {
   grid-column: 1;
   grid-row: 1;
-  width: fit-content;
-  padding: 0.18rem 0.52rem;
-  border-radius: 999px;
-  background: var(--share-accent);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 800;
-  line-height: 1.35;
-}
-.card-title {
-  grid-column: 1 / -1;
-  grid-row: 2;
   font-weight: 700;
   line-height: 1.35;
   overflow-wrap: anywhere;
@@ -384,7 +370,7 @@ body {
 }
 .card-actions {
   grid-column: 1 / -1;
-  grid-row: 3;
+  grid-row: 2;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
@@ -464,8 +450,7 @@ body {
 <main>
 <article class="card" data-card-index="0" data-date="260615" data-management-no-key="51510213" data-management-no="515 10213">
   <div class="card-head">
-<span class="share-status-pill">現場共有</span>
-    <h2 class="card-title">竜門67S8～67S9</h2>
+<h2 class="card-title">竜門67S8～67S9</h2>
     <p class="item-mgmt">515 10213</p>
     
     <div class="card-actions">
@@ -484,8 +469,7 @@ body {
 </article>
 <article class="card" data-card-index="1" data-date="260615" data-management-no-key="51506503" data-management-no="515 06503">
   <div class="card-head">
-<span class="share-status-pill">現場共有</span>
-    <h2 class="card-title">津風呂24N6～26N7</h2>
+<h2 class="card-title">津風呂24N6～26N7</h2>
     <p class="item-mgmt">515 06503</p>
     
     <div class="card-actions">
@@ -504,8 +488,7 @@ body {
 </article>
 <article class="card" data-card-index="2" data-date="260615" data-management-no-key="51506500" data-management-no="515 06500">
   <div class="card-head">
-<span class="share-status-pill">現場共有</span>
-    <h2 class="card-title">津風呂24N4～24N5</h2>
+<h2 class="card-title">津風呂24N4～24N5</h2>
     <p class="item-mgmt">515 06500</p>
     
     <div class="card-actions">
@@ -524,8 +507,7 @@ body {
 </article>
 <article class="card" data-card-index="3" data-date="260615" data-management-no-key="51506492" data-management-no="515 06492">
   <div class="card-head">
-<span class="share-status-pill">現場共有</span>
-    <h2 class="card-title">津風呂22G1～22G2</h2>
+<h2 class="card-title">津風呂22G1～22G2</h2>
     <p class="item-mgmt">515 06492</p>
     
     <div class="card-actions">
@@ -544,8 +526,7 @@ body {
 </article>
 <article class="card" data-card-index="4" data-date="260615" data-management-no-key="51506491" data-management-no="515 06491">
   <div class="card-head">
-<span class="share-status-pill">現場共有</span>
-    <h2 class="card-title">津風呂20G8～21</h2>
+<h2 class="card-title">津風呂20G8～21</h2>
     <p class="item-mgmt">515 06491</p>
     
     <div class="card-actions">
@@ -564,8 +545,7 @@ body {
 </article>
 <article class="card" data-card-index="5" data-date="260615" data-management-no-key="51506487" data-management-no="515 06487">
   <div class="card-head">
-<span class="share-status-pill">現場共有</span>
-    <h2 class="card-title">津風呂20G4～20G5</h2>
+<h2 class="card-title">津風呂20G4～20G5</h2>
     <p class="item-mgmt">515 06487</p>
     
     <div class="card-actions">
@@ -762,6 +742,8 @@ body {
   });
 })();
 </script>
+
+
 
 
 
