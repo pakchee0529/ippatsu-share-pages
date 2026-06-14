@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>260604 · アーカイブ詳細</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin="">
+<style>
+:root {
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+  --accent2: #0d9488;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
+    "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding: 0.75rem 0.75rem 1.25rem;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.top-bar a {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}
+.page-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 0.8rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
+}
+.disclaimer-note {
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin: -0.35rem 0 0.85rem;
+  line-height: 1.45;
+}
+.archive-section-heading {
+  font-size: 1.05rem;
+  margin: 1rem 0 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.planned-incomplete-section .archive-section-heading {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 1.25rem;
+}
+.card-planned-incomplete {
+  border-color: #e8c4a0;
+}
+.archive-planned-count {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 0.15rem;
+}
+.card {
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.card-done {
+  opacity: 0.78;
+}
+.btn-detail-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 44px;
+  touch-action: manipulation;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border: 2px solid #2563eb;
+  line-height: 1.25;
+}
+.card-actions .btn-detail-edit {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+.btn-detail-edit:hover, .btn-detail-edit:focus-visible {
+  filter: brightness(1.03);
+  outline: none;
+}
+.item-mgmt {
+  margin: -0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+.status-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  margin-left: 0.35rem;
+  vertical-align: baseline;
+}
+.status-done {
+  color: #0f766e;
+  background: #ecfeff;
+  border: 1px solid #99f6e4;
+}
+.status-pending {
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 40px;
+  touch-action: manipulation;
+}
+.btn-map {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-map:hover, .btn-map:focus { filter: brightness(1.05); }
+.btn-note {
+  background: #fff;
+  color: var(--accent2);
+  border: 2px solid var(--accent2);
+}
+.btn-note[aria-expanded="true"] {
+  background: var(--accent2);
+  color: #fff;
+}
+.note-panel {
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  font-size: 0.92rem;
+  color: var(--text);
+}
+.note-panel[hidden] { display: none !important; }
+.archive-status-line,
+.archive-warn-line {
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+}
+.archive-warn-line { color: #b45309; }
+.instr-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.instr-table {
+  width: 100%;
+  min-width: min(100%, 320px);
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-bottom: 0.65rem;
+}
+.instr-table th,
+.instr-table td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+.instr-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.instr-cut-caption {
+  margin: 0.5rem 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.instr-cut-total th,
+.instr-cut-total td {
+  font-weight: 600;
+  background: #f1f5f9;
+}
+.instr-note {
+  margin-top: 0.65rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+  font-size: 0.92rem;
+}
+.two-map-wrap {
+  margin-top: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.two-map-wrap[hidden] { display: none !important; }
+.share-two-map-canvas {
+  width: 100%;
+  height: min(45vh, 320px);
+  min-height: 200px;
+}
+
+.leaflet-tooltip.two-tip-endpoint {
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 3px 8px;
+  border: 1px solid #2563eb;
+  background: #eff6ff;
+  color: #1e3a8a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+}
+.leaflet-tooltip.two-tip-nearby {
+  font-weight: 500;
+  font-size: 0.76rem;
+  padding: 2px 6px;
+  border: 1px solid #94a3b8;
+  background: #f8fafc;
+  color: #334155;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+}
+.leaflet-tooltip.two-tip {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+
+.map-section {
+  margin-top: 1.0rem;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 0.85rem;
+}
+.map-section h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+#share-map {
+  width: 100%;
+  height: min(55vh, 420px);
+  min-height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.map-empty .muted-tiny {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.leaflet-container { font-family: inherit; }
+.footer-note {
+  margin-top: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+@media (min-width: 480px) {
+  .card-head {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .page-title { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+  <nav class="top-bar" aria-label="サイト内リンク">
+    <a href="../../">ポータルTOP</a>
+    <a href="../">アーカイブ</a>
+  </nav>
+  <h1 class="page-title">2026年06月04日</h1>
+  <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
+  <main>
+<p class="muted-tiny">この日の現場一覧はありません。</p>
+  <section class="planned-incomplete-section" aria-labelledby="planned-incomplete-heading">
+    <h2 id="planned-incomplete-heading" class="archive-section-heading">当日予定・未完了</h2>
+    <p class="disclaimer-note">この枠は、当日予定に含まれていたが完了しなかった案件です。現在の進行状況は各ポータル一覧を参照してください。</p>
+<article class="card card-planned-incomplete" data-planned-index="0">
+      <div class="card-head">
+        <h2 class="card-title">西千股46G4～46G5 <span class="status-pill status-pending">未完了</span></h2>
+        <p class="item-mgmt">515 11527</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.401735,135.85434" target="_blank" rel="noopener noreferrer">地図を開く</a></div>
+      </div>
+      <p class="archive-status-line">未完了理由: 当日未完了</p>
+</article>
+<article class="card card-planned-incomplete" data-planned-index="1">
+      <div class="card-head">
+        <h2 class="card-title">西千股47G13～47G14 <span class="status-pill status-pending">未完了</span></h2>
+        <p class="item-mgmt">515 11900</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.402665,135.851" target="_blank" rel="noopener noreferrer">地図を開く</a></div>
+      </div>
+      <p class="archive-status-line">未完了理由: 当日未完了</p>
+</article>
+<article class="card card-planned-incomplete" data-planned-index="2">
+      <div class="card-head">
+        <h2 class="card-title">西千股47G14～47G15 <span class="status-pill status-pending">未完了</span></h2>
+        <p class="item-mgmt">515 11901</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.402590000000004,135.850675" target="_blank" rel="noopener noreferrer">地図を開く</a></div>
+      </div>
+      <p class="archive-status-line">未完了理由: 当日未完了</p>
+</article>
+<article class="card card-planned-incomplete" data-planned-index="3">
+      <div class="card-head">
+        <h2 class="card-title">西千股47G5～47G6 <span class="status-pill status-pending">未完了</span></h2>
+        <p class="item-mgmt">515 11904</p>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.40182,135.85394" target="_blank" rel="noopener noreferrer">地図を開く</a></div>
+      </div>
+      <p class="archive-status-line">未完了理由: 当日未完了</p>
+</article>
+  </section>
+
+  <section class="map-section map-empty" aria-labelledby="map-heading">
+    <h2 id="map-heading">全体地図</h2>
+    <p class="muted-tiny">まとめて表示できる位置情報がありません。</p>
+  </section>
+
+  </main>
+  <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+  <script>
+(function () {
+  document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
+    var id = btn.getAttribute("aria-controls");
+    var panel = id ? document.getElementById(id) : null;
+    if (!panel) return;
+    btn.addEventListener("click", function() {
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", open ? "false" : "true");
+      panel.hidden = open;
+    });
+  });
+
+  function gmaps(lat, lng) {
+    return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
+  }
+
+  var twoMaps = Object.create(null);
+  document.querySelectorAll("[data-two-open]").forEach(function(btn) {
+    var wrapId = btn.getAttribute("data-two-wrap");
+    var mapId = btn.getAttribute("data-two-map");
+    var jsonId = btn.getAttribute("data-two-json");
+    var wrap = wrapId ? document.getElementById(wrapId) : null;
+    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
+    if (!wrap || !jsonEl) return;
+    btn.addEventListener("click", function() {
+      var nowOpen = btn.getAttribute("aria-expanded") === "true";
+      wrap.hidden = nowOpen;
+      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
+      btn.textContent = nowOpen ? "2点地図を表示" : "2点地図を閉じる";
+      if (nowOpen) return;
+      var geo = null;
+      try {
+        geo = JSON.parse(jsonEl.textContent || "{}");
+      } catch (e) {
+        return;
+      }
+      if (!geo || !geo.a || !geo.b) return;
+      var key = mapId;
+      if (!twoMaps[key]) {
+        var mmap = L.map(mapId, { scrollWheelZoom: false });
+        twoMaps[key] = mmap;
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(mmap);
+      }
+      var mmap = twoMaps[key];
+      mmap.eachLayer(function(layer) {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
+          mmap.removeLayer(layer);
+        }
+      });
+      function addEndpoint(p, cls) {
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.marker([lat, lng]).addTo(mmap);
+        if (p.name) {
+          m.bindTooltip(String(p.name), {
+            permanent: true,
+            direction: "top",
+            className: cls,
+            offset: [0, -6],
+          });
+        }
+        m.on("click", function() {
+          window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer");
+        });
+        return [lat, lng];
+      }
+      function addNearbyPole(p) {
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.circleMarker([lat, lng], {
+          radius: 5,
+          weight: 2,
+          opacity: 0.9,
+          fillOpacity: 0.75,
+          color: "#64748b",
+          fillColor: "#94a3b8",
+        }).addTo(mmap);
+        if (p.name) {
+          m.bindTooltip(String(p.name), {
+            permanent: true,
+            direction: "top",
+            className: "two-tip-nearby",
+            offset: [0, -4],
+          });
+        }
+        m.on("click", function() {
+          window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer");
+        });
+        return [lat, lng];
+      }
+      var aPt = addEndpoint(geo.a, "two-tip-endpoint");
+      var bPt = addEndpoint(geo.b, "two-tip-endpoint");
+      var boundsPts = [];
+      if (aPt) boundsPts.push(aPt);
+      if (bPt) boundsPts.push(bPt);
+      if (aPt && bPt) {
+        L.polyline([aPt, bPt], { weight: 3, opacity: 0.85, color: "#2563eb" }).addTo(mmap);
+      }
+      if (Array.isArray(geo.nearby)) {
+        geo.nearby.forEach(function(p) {
+          var pt = addNearbyPole(p);
+          if (pt) boundsPts.push(pt);
+        });
+      }
+      if (boundsPts.length === 1) {
+        mmap.setView(boundsPts[0], 17);
+      } else if (boundsPts.length > 1) {
+        mmap.fitBounds(boundsPts, {
+          paddingTopLeft: [40, 70],
+          paddingBottomRight: [40, 70],
+          maxZoom: 18,
+        });
+      }
+      setTimeout(function() { mmap.invalidateSize(); }, 60);
+    });
+  });
+
+
+  var points = [];
+  var mapEl = document.getElementById("share-map");
+  if (mapEl && Array.isArray(points) && points.length) {
+    var map = L.map("share-map", { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
+    var bounds = [];
+    points.forEach(function(p) {
+      var lat = Number(p.lat), lng = Number(p.lng);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      bounds.push([lat, lng]);
+      var m = L.marker([lat, lng]).addTo(map);
+      var label = (p.name || "現場") + (p.management_no ? (" (" + p.management_no + ")") : "");
+      m.bindTooltip(label, { permanent: false, direction: "top" });
+    });
+    if (bounds.length === 1) map.setView(bounds[0], 15);
+    else if (bounds.length > 1) map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
+  }
+})();
+  </script>
+</body>
+</html>
