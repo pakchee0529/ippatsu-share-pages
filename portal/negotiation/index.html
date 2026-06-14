@@ -448,7 +448,8 @@ a.portal-menu-item:focus-visible {
 }
 .card-actions-revert {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 0.35rem;
   flex-basis: 100%;
@@ -456,6 +457,10 @@ a.portal-menu-item:focus-visible {
   margin-top: 0.35rem;
   padding-top: 0.55rem;
   border-top: 1px dashed var(--border);
+}
+.card-actions-revert .btn {
+  flex: 1 1 0;
+  min-width: 8.2rem;
 }
 .btn-revert {
   background: #fff7ed;
@@ -492,8 +497,13 @@ a.portal-menu-item:focus-visible {
   cursor: not-allowed;
 }
 .revert-hint {
+  flex-basis: 100%;
   margin: 0;
   line-height: 1.4;
+}
+.negotiation-revert-status,
+.portal-transition-status {
+  flex-basis: 100%;
 }
 </style>
 </head>
@@ -1084,10 +1094,12 @@ a.portal-menu-item:focus-visible {
         + '<motion class="card-head">'.replace("motion", "div")
         + '<h2 class="card-title">' + escHtml(label) + '</h2>'
         + '<p class="item-mgmt">' + escHtml(mno) + '</p>'
-        + '<div class="card-actions card-actions-revert" role="group" aria-label="現調待ちに戻す">'
+        + '<div class="card-actions card-actions-revert" role="group" aria-label="交渉待ちの状態変更">'
+        + '<button type="button" class="btn btn-entrustment" data-negotiation-entrustment>付託待ちにする</button>'
         + '<button type="button" class="btn btn-revert" data-negotiation-revert>現調待ちに戻す</button>'
-        + '<p class="revert-hint muted-tiny">現調待ちから即時昇格した案件です。</p>'
+        + '<p class="revert-hint muted-tiny">承諾書・地主情報の確認後に付託待ちへ進めます。誤操作時は現調待ちへ戻せます。</p>'
         + '<p class="negotiation-revert-status muted-tiny" data-negotiation-revert-status hidden role="status"></p>'
+        + '<p class="portal-transition-status muted-tiny" data-portal-transition-status hidden role="status"></p>'
         + '</div></div>'
         + '<div class="note-panel">' + escHtml(note) + '</div>'
         + '</article>';

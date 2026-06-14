@@ -6600,7 +6600,8 @@ body {{
 }}
 .card-actions-revert {{
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 0.35rem;
   flex-basis: 100%;
@@ -6608,6 +6609,10 @@ body {{
   margin-top: 0.35rem;
   padding-top: 0.55rem;
   border-top: 1px dashed var(--border);
+}}
+.card-actions-revert .btn {{
+  flex: 1 1 0;
+  min-width: 8.2rem;
 }}
 .btn-revert {{
   background: #fff7ed;
@@ -6644,8 +6649,13 @@ body {{
   cursor: not-allowed;
 }}
 .revert-hint {{
+  flex-basis: 100%;
   margin: 0;
   line-height: 1.4;
+}}
+.negotiation-revert-status,
+.portal-transition-status {{
+  flex-basis: 100%;
 }}
 </style>
 </head>

@@ -833,10 +833,12 @@ def render_negotiation_immediate_status_js(
         + '<motion class="card-head">'.replace("motion", "div")
         + '<h2 class="card-title">' + escHtml(label) + '</h2>'
         + '<p class="item-mgmt">' + escHtml(mno) + '</p>'
-        + '<div class="card-actions card-actions-revert" role="group" aria-label="現調待ちに戻す">'
+        + '<div class="card-actions card-actions-revert" role="group" aria-label="交渉待ちの状態変更">'
+        + '<button type="button" class="btn btn-entrustment" data-negotiation-entrustment>付託待ちにする</button>'
         + '<button type="button" class="btn btn-revert" data-negotiation-revert>現調待ちに戻す</button>'
-        + '<p class="revert-hint muted-tiny">現調待ちから即時昇格した案件です。</p>'
+        + '<p class="revert-hint muted-tiny">承諾書・地主情報の確認後に付託待ちへ進めます。誤操作時は現調待ちへ戻せます。</p>'
         + '<p class="negotiation-revert-status muted-tiny" data-negotiation-revert-status hidden role="status"></p>'
+        + '<p class="portal-transition-status muted-tiny" data-portal-transition-status hidden role="status"></p>'
         + '</div></div>'
         + '<div class="note-panel">' + escHtml(note) + '</div>'
         + '</article>';
