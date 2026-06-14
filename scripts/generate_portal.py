@@ -2105,6 +2105,254 @@ def _inject_body_data_share_page_date(html: str, date_key: str) -> str:
     return re.sub(r"<body([^>]*)>", repl, html, count=1, flags=re.I)
 
 
+_SHARE_PAGE_READABILITY_BEGIN = "<!-- share-page-readability:begin -->"
+_SHARE_PAGE_READABILITY_END = "<!-- share-page-readability:end -->"
+
+_SHARE_PAGE_READABILITY_CSS = f"""
+{_SHARE_PAGE_READABILITY_BEGIN}
+<style>
+:root {{
+  --share-bg: #eef1f5;
+  --share-card: #fff;
+  --share-text: #172033;
+  --share-muted: #657084;
+  --share-border: #d9e0ea;
+  --share-accent: #1f4f7a;
+  --share-accent2: #0d9488;
+  --share-shadow: 0 10px 26px rgba(31, 43, 58, .08);
+}}
+body {{
+  max-width: 46rem;
+  margin-left: auto;
+  margin-right: auto;
+  background: var(--share-bg);
+  color: var(--share-text);
+}}
+.page-title {{
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0 0.55rem;
+  border-bottom: 2px solid var(--share-border);
+  color: var(--share-text);
+  font-size: 1.35rem;
+  line-height: 1.35;
+}}
+.share-page-summary {{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 0 0 0.75rem;
+}}
+.share-page-summary div {{
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--share-border);
+  border-radius: 14px;
+  background: var(--share-card);
+  box-shadow: 0 2px 8px rgba(31,43,58,.04);
+}}
+.share-page-summary span {{
+  display: block;
+  color: var(--share-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+}}
+.share-page-summary strong {{
+  display: block;
+  margin-top: 0.12rem;
+  color: var(--share-text);
+  font-size: 1rem;
+  line-height: 1.2;
+}}
+.share-quick-nav {{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.85rem;
+}}
+.share-quick-nav a {{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0.42rem 0.72rem;
+  border: 1px solid #c9d5e6;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--share-accent);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
+}}
+.card {{
+  border-radius: 16px;
+  border-color: var(--share-border);
+  box-shadow: 0 2px 8px rgba(31,43,58,.045);
+}}
+.card-head {{
+  gap: 0.7rem;
+}}
+.share-status-pill {{
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  background: var(--share-accent);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.35;
+}}
+.card-title {{
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}}
+.item-mgmt {{
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: -0.05rem;
+  padding: 0.14rem 0.45rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #243044;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.84rem;
+  font-weight: 700;
+}}
+.btn {{
+  min-height: 44px;
+  border-radius: 10px;
+}}
+.btn-map {{
+  background: var(--share-accent);
+}}
+.btn-note {{
+  color: var(--share-accent2);
+  border-color: var(--share-accent2);
+}}
+.btn-note[aria-expanded="true"] {{
+  background: var(--share-accent2);
+}}
+.note-panel {{
+  border-radius: 12px;
+  border-color: var(--share-border);
+  background: #fff;
+}}
+.map-section {{
+  border-radius: 16px;
+  border-color: var(--share-border);
+  box-shadow: 0 2px 8px rgba(31,43,58,.045);
+}}
+#share-map {{
+  border-radius: 12px;
+  min-height: 260px;
+}}
+@media (max-width: 560px) {{
+  body {{
+    padding: 0.55rem 0.55rem 1rem;
+  }}
+  .share-page-summary {{
+    grid-template-columns: 1fr;
+  }}
+  .share-quick-nav a {{
+    flex: 1 1 calc(50% - 0.25rem);
+  }}
+  .card-actions .btn {{
+    flex: 1 1 100%;
+  }}
+  .page-title {{
+    font-size: 1.22rem;
+  }}
+}}
+</style>
+{_SHARE_PAGE_READABILITY_END}
+"""
+
+
+def _strip_share_page_readability_block(html: str) -> str:
+    if _SHARE_PAGE_READABILITY_BEGIN not in html:
+        return html
+    return re.sub(
+        re.escape(_SHARE_PAGE_READABILITY_BEGIN)
+        + r"[\s\S]*?"
+        + re.escape(_SHARE_PAGE_READABILITY_END)
+        + r"\s*",
+        "",
+        html,
+        count=1,
+    )
+
+
+def _normalize_share_page_heading(html: str, date_key: str) -> str:
+    if not re.fullmatch(r"\d{6}", date_key or ""):
+        return html
+    title = escape_html(fallback_heading(date_key))
+    out = re.sub(r"<title>[\s\S]*?</title>", f"<title>{title}</title>", html, count=1, flags=re.I)
+    return re.sub(
+        r'(<h1\s+class="page-title"[^>]*>)[\s\S]*?(</h1>)',
+        rf"\1{title}\2",
+        out,
+        count=1,
+        flags=re.I,
+    )
+
+
+def _inject_share_page_summary(html: str, date_key: str) -> str:
+    out = re.sub(
+        r"\s*<section class=\"share-page-summary\"[\s\S]*?</section>\s*",
+        "\n",
+        html,
+        count=1,
+    )
+    out = re.sub(
+        r"\s*<nav class=\"share-quick-nav\"[\s\S]*?</nav>\s*",
+        "\n",
+        out,
+        count=1,
+    )
+    date_label = escape_html(fallback_heading(date_key))
+    card_count = len(re.findall(r'<article\s+class="card\b', out))
+    summary = f"""
+<section class="share-page-summary" aria-label="共有概要">
+  <div><span>共有日</span><strong>{date_label}</strong></div>
+  <div><span>共有件数</span><strong>{card_count}件</strong></div>
+</section>
+<nav class="share-quick-nav" aria-label="関連ページ">
+  <a href="../../portal/">ポータルTOP</a>
+  <a href="../../portal/cases/">案件管理</a>
+  <a href="../../portal/archive/">アーカイブ</a>
+</nav>
+"""
+    return re.sub(r"(</header>)", r"\1" + summary, out, count=1, flags=re.I)
+
+
+def _inject_share_status_pills(html: str) -> str:
+    out = re.sub(
+        r'\s*<span class="share-status-pill">現場共有</span>\s*',
+        "\n",
+        html,
+    )
+    return re.sub(
+        r'(<div class="card-head">\s*)',
+        r'\1<span class="share-status-pill">現場共有</span>\n    ',
+        out,
+    )
+
+
+def apply_share_page_readability_to_share_html(html: str, date_key: str) -> str:
+    """現場共有ページ本体のスマホ視認性を整える（正本 JSON は触らない）。"""
+    out = _strip_share_page_readability_block(html)
+    out = _normalize_share_page_heading(out, date_key)
+    out = _inject_share_page_summary(out, date_key)
+    out = _inject_share_status_pills(out)
+    if "</style>" in out:
+        out = out.replace("</style>", "</style>\n" + _SHARE_PAGE_READABILITY_CSS, 1)
+    else:
+        out = _SHARE_PAGE_READABILITY_CSS + "\n" + out
+    return out
+
+
 def _inject_article_card_identity_attrs(html: str, date_key: str) -> str:
     parts = re.split(r"(?=<article class=\"card\")", html)
     rebuilt: list[str] = [parts[0]]
@@ -2724,6 +2972,7 @@ def ensure_share_detail_edit_on_share_html(html: str, date_key: str) -> str:
     """詳細修正リンク・未確定修正オーバーレイを idempotent に適用する。"""
     out = _strip_share_live_edit_inject_block(html)
     out = _strip_share_live_edit_identity_attrs(out)
+    out = apply_share_page_readability_to_share_html(out, date_key)
     if share_detail_edit_form_enabled():
         out = apply_share_detail_edit_to_share_html(out, date_key)
     return apply_share_live_edit_to_share_html(out, date_key)
