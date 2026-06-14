@@ -130,6 +130,17 @@ git restore portal/index.html   # completion-archive が TOP を触る副作用�
 6. **確認** — `portal/archive/index.html` と `portal/archive/YYMMDD/index.html`。`portal/index.html` と `share/**` に意図しない差分がないこと。
 7. **publish** — archive 関連と docs のみ明示 `git add` → commit → push（人間 Go 後）。
 
+### 6.2.1 アーカイブTOPの件名ルール
+
+`portal/archive/index.html` の各行に出す件名は、以下の優先順で生成する。
+
+1. completion export `items[]` の `source_item.label`（完了/通常アーカイブ）
+2. completion export `planned_but_incomplete[]` の `source_item.label`（当日予定・未完了枠）
+3. 既存 `portal/archive/YYMMDD/index.html` のカードタイトル（古いアーカイブの補完）
+4. 上記すべてが無い場合のみ `現場名未取得`
+
+`—` のまま公開しない。古い日付で share ページや export JSON が無くても、詳細HTMLにカードが残っている場合はTOP件名へ補完する。検索文字列も同じ候補から組み立てる。
+
 ### 6.3 禁止
 
 - 完了報告だけで archive 反映済みとみなす

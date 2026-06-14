@@ -1544,32 +1544,67 @@ def month_label_from_key(year: int, month: int) -> str:
 
 
 def group_archive_sections(
-    parts: list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
+    parts: list[
+        tuple[
+            ManifestEntry,
+            ShareSummary | None,
+            list[ArchivePublicItem] | None,
+            list[PlannedIncompleteItem],
+            list[str],
+        ]
+    ],
 ) -> list[
     tuple[
         tuple[int, int],
         str,
-        list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
+        list[
+            tuple[
+                ManifestEntry,
+                ShareSummary | None,
+                list[ArchivePublicItem] | None,
+                list[PlannedIncompleteItem],
+                list[str],
+            ]
+        ],
     ]
 ]:
     """月新しい順。各月内は日付キー新しい順。"""
     from collections import defaultdict
 
     buckets: dict[
-        tuple[int, int], list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]]
+        tuple[int, int],
+        list[
+            tuple[
+                ManifestEntry,
+                ShareSummary | None,
+                list[ArchivePublicItem] | None,
+                list[PlannedIncompleteItem],
+                list[str],
+            ]
+        ],
     ] = defaultdict(list)
-    for entry, summary, public_items in parts:
+    for entry, summary, public_items, planned_items, fallback_labels in parts:
         folder = entry.date
         mk = month_heading_key(folder)
         if mk is None:
             continue
-        buckets[mk].append((entry, summary, public_items))
+        buckets[mk].append(
+            (entry, summary, public_items, planned_items, fallback_labels)
+        )
     keys = sorted(buckets.keys(), reverse=True)
     out: list[
         tuple[
             tuple[int, int],
             str,
-            list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
+            list[
+                tuple[
+                    ManifestEntry,
+                    ShareSummary | None,
+                    list[ArchivePublicItem] | None,
+                    list[PlannedIncompleteItem],
+                    list[str],
+                ]
+            ],
         ]
     ] = []
     for y, m in keys:
@@ -2889,10 +2924,39 @@ def _norm_for_search(s: str) -> str:
     return t
 
 
+def _clean_archive_card_title(title: str) -> str:
+    """詳細HTMLのカードタイトルから状態バッジ相当の末尾語を落とす。"""
+    t = re.sub(r"\s+", " ", (title or "")).strip()
+    for suffix in (" 完了", " 未完了"):
+        if t.endswith(suffix):
+            return t[: -len(suffix)].strip()
+    return t
+
+
+def load_archive_detail_label_fallback(repo_root: Path, date_key: str) -> list[str]:
+    """既存アーカイブ詳細HTMLからTOP表示用の径間名を補完する。"""
+    path = repo_root / "portal" / "archive" / date_key / "index.html"
+    if not path.is_file():
+        return []
+    try:
+        html = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return []
+    labels: list[str] = []
+    for raw in re.findall(r'<h2\s+class="card-title">(.*?)</h2>', html, flags=re.S):
+        text = re.sub(r"<.*?>", " ", raw)
+        label = _clean_archive_card_title(text)
+        if label and label != "—":
+            labels.append(label)
+    return labels
+
+
 def build_archive_row_context(
     entry: ManifestEntry,
     share_summary: ShareSummary | None,
     public_items: list[ArchivePublicItem] | None,
+    planned_items: list[PlannedIncompleteItem] | None = None,
+    fallback_labels: list[str] | None = None,
 ) -> ArchiveRowContext:
     labels: list[str] = []
     tokens: list[str] = []
@@ -2922,6 +2986,32 @@ def build_archive_row_context(
             rs = (it.incomplete_reason or "").strip()
             if rs and rs != "—":
                 tokens.append(rs)
+    if planned_items:
+        for it in planned_items:
+            lb = (it.label or "").strip()
+            if lb:
+                labels.append(lb)
+                tokens.append(lb)
+                n = _norm_for_search(lb)
+                if n and n != lb:
+                    tokens.append(n)
+            mno = (it.management_no or "").strip()
+            if mno:
+                tokens.append(mno)
+                tokens.append(mno.replace(" ", ""))
+            rs = (it.incomplete_reason or "").strip()
+            if rs and rs != "—":
+                tokens.append(rs)
+            tokens.append("当日未完了")
+    if not labels and fallback_labels:
+        for lb in fallback_labels:
+            lb = (lb or "").strip()
+            if lb:
+                labels.append(lb)
+                tokens.append(lb)
+                n = _norm_for_search(lb)
+                if n and n != lb:
+                    tokens.append(n)
     uniq_labels: list[str] = []
     seen = set()
     for lb in labels:
@@ -2929,7 +3019,7 @@ def build_archive_row_context(
             continue
         seen.add(lb)
         uniq_labels.append(lb)
-    span_summary = "—"
+    span_summary = "現場名未取得"
     if uniq_labels:
         show_n = 4
         head = ", ".join(uniq_labels[:show_n])
@@ -2982,11 +3072,19 @@ def format_archive_row_article(
     entry: ManifestEntry,
     share_summary: ShareSummary | None,
     public_items: list[ArchivePublicItem] | None,
+    planned_items: list[PlannedIncompleteItem] | None = None,
+    fallback_labels: list[str] | None = None,
 ) -> str:
     """1行分のアーカイブカード（data-search 付き）。主リンクは常にアーカイブ詳細（共有ページ URL は使わない）。"""
     folder = entry.date
     date_jp = fallback_heading(folder)
-    ctx = build_archive_row_context(entry, share_summary, public_items)
+    ctx = build_archive_row_context(
+        entry,
+        share_summary,
+        public_items,
+        planned_items=planned_items,
+        fallback_labels=fallback_labels,
+    )
     search_attr = escape_html(ctx.search_blob)
     href = archive_list_detail_href(folder)
     pi = entry.planned_incomplete_count or 0
@@ -3007,26 +3105,49 @@ def format_archive_row_article(
 
 
 def build_archive_html(
-    recent_parts: list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
+    recent_parts: list[
+        tuple[
+            ManifestEntry,
+            ShareSummary | None,
+            list[ArchivePublicItem] | None,
+            list[PlannedIncompleteItem],
+            list[str],
+        ]
+    ],
     sections: list[
         tuple[
             tuple[int, int],
             str,
-            list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
+            list[
+                tuple[
+                    ManifestEntry,
+                    ShareSummary | None,
+                    list[ArchivePublicItem] | None,
+                    list[PlannedIncompleteItem],
+                    list[str],
+                ]
+            ],
         ]
     ],
 ) -> str:
     """直近7日 + 月別 details（検索付き）。recent と月別で同一現場は重複しない。"""
     recent_rows_str = "\n".join(
-        format_archive_row_article(e, s, p) for e, s, p in recent_parts
+        format_archive_row_article(e, s, p, planned, fallback)
+        for e, s, p, planned, fallback in recent_parts
     )
     recent_empty_hidden = " hidden" if recent_parts else ""
     month_blocks: list[str] = []
     for (y, m), month_label, items in sections:
         mid = f"m-{y:04d}-{m:02d}"
         rows_str = "\n".join(
-            format_archive_row_article(entry, summary, public_items)
-            for entry, summary, public_items in items
+            format_archive_row_article(
+                entry,
+                summary,
+                public_items,
+                planned_items,
+                fallback_labels,
+            )
+            for entry, summary, public_items, planned_items, fallback_labels in items
         )
         month_blocks.append(
             f"""    <details class="month-archive" id="{escape_html(mid)}">
@@ -6727,7 +6848,15 @@ def _build_portal_top_entries(
 def _build_archive_index_parts(
     repo_root: Path,
 ) -> tuple[
-    list[tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]],
+    list[
+        tuple[
+            ManifestEntry,
+            ShareSummary | None,
+            list[ArchivePublicItem] | None,
+            list[PlannedIncompleteItem],
+            list[str],
+        ]
+    ],
     list,
     list[ManifestEntry],
     dict[str, int],
@@ -6735,7 +6864,13 @@ def _build_archive_index_parts(
     manifest_entries = load_archive_manifest_entries(repo_root)
     share_by_folder = {f: p for f, p in _iter_share_index_rows(repo_root)}
     archive_parts: list[
-        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
+        tuple[
+            ManifestEntry,
+            ShareSummary | None,
+            list[ArchivePublicItem] | None,
+            list[PlannedIncompleteItem],
+            list[str],
+        ]
     ] = []
     for ment in manifest_entries:
         path = share_by_folder.get(ment.date)
@@ -6750,19 +6885,39 @@ def _build_archive_index_parts(
                 file=sys.stderr,
             )
         public_items, _ = load_archive_public_items(repo_root, ment.date)
-        archive_parts.append((ment, summary, public_items))
+        planned_items = load_archive_planned_incomplete(repo_root, ment.date)
+        fallback_labels = load_archive_detail_label_fallback(repo_root, ment.date)
+        archive_parts.append(
+            (ment, summary, public_items, planned_items, fallback_labels)
+        )
     today = date.today()
     recent_parts: list[
-        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
+        tuple[
+            ManifestEntry,
+            ShareSummary | None,
+            list[ArchivePublicItem] | None,
+            list[PlannedIncompleteItem],
+            list[str],
+        ]
     ] = []
     monthly_parts: list[
-        tuple[ManifestEntry, ShareSummary | None, list[ArchivePublicItem] | None]
+        tuple[
+            ManifestEntry,
+            ShareSummary | None,
+            list[ArchivePublicItem] | None,
+            list[PlannedIncompleteItem],
+            list[str],
+        ]
     ] = []
-    for ment, summary, public_items in archive_parts:
+    for ment, summary, public_items, planned_items, fallback_labels in archive_parts:
         if is_in_last_seven_days(ment.date, today):
-            recent_parts.append((ment, summary, public_items))
+            recent_parts.append(
+                (ment, summary, public_items, planned_items, fallback_labels)
+            )
         else:
-            monthly_parts.append((ment, summary, public_items))
+            monthly_parts.append(
+                (ment, summary, public_items, planned_items, fallback_labels)
+            )
     recent_parts.sort(key=lambda t: sort_key(t[0].date), reverse=True)
     sections = group_archive_sections(monthly_parts)
     stats = {
