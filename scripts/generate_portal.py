@@ -1638,6 +1638,14 @@ class PlannedIncompleteItem:
     completion_report_ref_display: str
     note: str
     map_url: str
+    branch_cut_total: int = 0
+    root_cut_total: int = 0
+    road_width_m: str = "—"
+    bucket_available: str = "—"
+    slope: str = "—"
+    method: str = "—"
+    warning: str = "—"
+    instructions_html: str = ""
 
 
 @dataclass(frozen=True)
@@ -3953,11 +3961,12 @@ def load_archive_planned_incomplete(
             active_disp = _to_str(active) or "—"
         src = ent.get("source_item") if isinstance(ent.get("source_item"), dict) else {}
         map_url = _to_str(src.get("map_url"))
+        b_total, r_total = _cut_totals(src)
         out.append(
             PlannedIncompleteItem(
                 key=key or management_no_key(mno) or mno,
-                management_no=mno,
-                label=label,
+                management_no=_to_str(src.get("management_no")) or mno,
+                label=_to_str(src.get("label")) or label,
                 incomplete_reason=_to_str(ent.get("incomplete_reason")) or "—",
                 current_status=_to_str(ent.get("current_status")) or "—",
                 active_display=active_disp,
@@ -3965,6 +3974,16 @@ def load_archive_planned_incomplete(
                 note=_to_str(ent.get("note"))
                 or "当日予定・未完了。完了扱いではありません。",
                 map_url=map_url,
+                branch_cut_total=b_total,
+                root_cut_total=r_total,
+                road_width_m=_to_str(src.get("road_width_m")) or "—",
+                bucket_available=_yes_no_jp(src.get("bucket_available")),
+                slope=_to_str(src.get("slope")) or "—",
+                method=_method_text(src),
+                warning=_to_str(src.get("warning")) or "—",
+                instructions_html=build_archive_instructions_html_from_source(src)
+                if src
+                else "",
             )
         )
     return out
@@ -3993,14 +4012,47 @@ def build_planned_incomplete_section_html(
                 f'<p class="archive-status-line">未完了理由: '
                 f"{escape_html(it.incomplete_reason)}</p>"
             )
+        warn_line = ""
+        if it.warning and it.warning != "—":
+            warn_line = (
+                f'<p class="archive-warn-line">警告: {escape_html(it.warning)}</p>'
+            )
+        status_lines = "\n".join(x for x in [reason_line, warn_line] if x)
+        road_width = escape_html(it.road_width_m)
+        if road_width != "—" and not road_width.endswith("m"):
+            road_width = f"{road_width}m"
+        summary = (
+            '<dl class="archive-mini-summary">'
+            f"<div><dt>処理</dt><dd>{escape_html(it.method)}</dd></div>"
+            f"<div><dt>B車</dt><dd>{escape_html(it.bucket_available)}</dd></div>"
+            f"<div><dt>道幅</dt><dd>{road_width}</dd></div>"
+            f"<div><dt>傾斜</dt><dd>{escape_html(it.slope)}</dd></div>"
+            f"<div><dt>枝切り</dt><dd>{it.branch_cut_total}</dd></div>"
+            f"<div><dt>根切り</dt><dd>{it.root_cut_total}</dd></div>"
+            "</dl>"
+        )
+        note_id = f"planned-note-{idx}"
+        instr = (it.instructions_html or "").strip()
+        if not instr:
+            instr = (
+                f"<p>処理方法: {escape_html(it.method)}</p>"
+                f"<p>備考: {escape_html(it.note)}</p>"
+            )
+        note_btn = (
+            f'<button type="button" class="btn btn-note" aria-expanded="false" '
+            f'aria-controls="{note_id}" data-note-toggle>現場指示</button>'
+        )
+        actions = "".join(x for x in [map_btn, note_btn] if x)
         cards.append(
             f"""<article class="card card-planned-incomplete" data-planned-index="{idx}">
       <div class="card-head">
         <h2 class="card-title">{escape_html(it.label)} <span class="status-pill status-pending">未完了</span></h2>
         <p class="item-mgmt">{escape_html(it.management_no)}</p>
-        <div class="card-actions">{map_btn}</div>
+        <div class="card-actions">{actions}</div>
       </div>
-      {reason_line}
+{status_lines}
+      {summary}
+      <div class="note-panel" id="{note_id}" hidden>{instr}</div>
 </article>"""
         )
     cards_str = "\n".join(cards)
