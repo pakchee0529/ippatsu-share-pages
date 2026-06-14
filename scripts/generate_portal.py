@@ -6818,12 +6818,18 @@ def build_entrustment_html(
 <title>付託待ち</title>
 <style>
 :root {{
-  --bg: #f4f5f7;
+  --bg: #eef1f5;
   --card: #fff;
-  --text: #1a1a1a;
-  --muted: #5c6370;
-  --border: #e1e4e8;
-  --accent: #2563eb;
+  --text: #172033;
+  --muted: #657084;
+  --border: #d9e0ea;
+  --accent: #1f4f7a;
+  --shadow: 0 10px 26px rgba(31, 43, 58, .08);
+  --survey: #2563eb;
+  --negotiation: #7c3aed;
+  --entrustment: #0f766e;
+  --construction: #b45309;
+  --return: #b91c1c;
 }}
 * {{ box-sizing: border-box; }}
 body {{
@@ -6928,11 +6934,14 @@ body {{
 def build_cases_html(items: list[PortalCaseItem], stats: dict[str, Any]) -> str:
     count_tiles = []
     counts = stats.get("counts") if isinstance(stats.get("counts"), dict) else {}
+    total_count = sum(int(counts.get(status) or 0) for status in CASE_PORTAL_STATUS_ORDER)
     for status in CASE_PORTAL_STATUS_ORDER:
         label = CASE_STATUS_LABELS.get(status, status)
         count_tiles.append(
-            f'<a class="status-tile" href="#status-{escape_html(status)}">'
-            f'<span>{escape_html(label)}</span><strong>{int(counts.get(status) or 0)}</strong></a>'
+            f'<a class="status-tile status-{escape_html(status)}" '
+            f'href="#status-{escape_html(status)}">'
+            f'<span>{escape_html(label)}</span>'
+            f'<strong>{int(counts.get(status) or 0)}</strong></a>'
         )
 
     sections: list[str] = []
@@ -6950,11 +6959,21 @@ def build_cases_html(items: list[PortalCaseItem], stats: dict[str, Any]) -> str:
                 if it.updated_at:
                     meta_parts.append(f'<span>更新 {escape_html(it.updated_at[:10])}</span>')
                 meta_html = "\n    ".join(meta_parts)
+                search_text = " ".join(
+                    [
+                        it.management_no,
+                        it.management_no_key,
+                        it.label,
+                        it.status_label,
+                        it.share_date_key,
+                    ]
+                ).strip()
                 card_html.append(
-                    f"""<article class="case-row" data-management-no-key="{escape_html(it.management_no_key)}">
-  <div>
+                    f"""<article class="case-row" data-status="{escape_html(status)}" data-search="{escape_html(search_text)}" data-management-no-key="{escape_html(it.management_no_key)}">
+  <div class="case-row-main">
+    <span class="case-status-pill status-{escape_html(status)}">{escape_html(label)}</span>
     <h3>{escape_html(it.label)}</h3>
-    <p>{escape_html(it.management_no)}</p>
+    <p class="case-management-no">{escape_html(it.management_no)}</p>
   </div>
   <div class="case-row-meta">
     {meta_html}
@@ -6966,7 +6985,7 @@ def build_cases_html(items: list[PortalCaseItem], stats: dict[str, Any]) -> str:
             cards = '<p class="empty-note">対象はありません。</p>'
         sections.append(
             f"""<section class="status-section" id="status-{escape_html(status)}">
-  <h2>{escape_html(label)} <span>{len(group)}件</span></h2>
+  <h2>{escape_html(label)} <span data-section-count="{escape_html(status)}">{len(group)}件</span></h2>
   <div class="case-list">{cards}</div>
 </section>"""
         )
@@ -7001,15 +7020,60 @@ body {{
 }}
 {subpage_menu_css}
 .lead {{
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.9rem;
   color: var(--muted);
   font-size: 0.92rem;
 }}
+.case-toolbar {{
+  position: sticky;
+  top: 0.5rem;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+  margin: 0 0 0.9rem;
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255,255,255,.94);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}}
+.case-search {{
+  width: 100%;
+  min-height: 2.8rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #b9c4d3;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font-size: 1rem;
+}}
+.case-search:focus {{
+  outline: 3px solid rgba(31,79,122,.18);
+  border-color: var(--accent);
+}}
+.case-total {{
+  min-width: 5.4rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: #172033;
+  color: #fff;
+  text-align: center;
+  font-weight: 800;
+}}
+.case-total span {{
+  display: block;
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 700;
+}}
 .status-grid {{
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   gap: 0.6rem;
-  margin-bottom: 0.9rem;
+  margin-bottom: 1rem;
 }}
 .status-tile {{
   display: flex;
@@ -7017,25 +7081,33 @@ body {{
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 0.85rem;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
   text-decoration: none;
+  box-shadow: 0 2px 8px rgba(31,43,58,.04);
+  border-left: 5px solid var(--accent);
 }}
+.status-tile.status-survey_wait {{ border-left-color: var(--survey); }}
+.status-tile.status-negotiation_wait {{ border-left-color: var(--negotiation); }}
+.status-tile.status-entrustment_wait {{ border-left-color: var(--entrustment); }}
+.status-tile.status-construction_wait {{ border-left-color: var(--construction); }}
+.status-tile.status-return_wait {{ border-left-color: var(--return); }}
 .status-tile span {{ color: var(--muted); font-size: 0.86rem; }}
-.status-tile strong {{ font-size: 1.15rem; }}
+.status-tile strong {{ font-size: 1.28rem; line-height: 1; }}
 .status-section {{
-  margin: 0 0 1rem;
+  margin: 0 0 1.1rem;
+  scroll-margin-top: 5.5rem;
 }}
 .status-section h2 {{
   display: flex;
   align-items: baseline;
   gap: 0.45rem;
-  margin: 0 0 0.45rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--border);
-  font-size: 1rem;
+  margin: 0 0 0.55rem;
+  padding: 0.7rem 0.2rem 0.45rem;
+  border-bottom: 2px solid var(--border);
+  font-size: 1.08rem;
 }}
 .status-section h2 span {{
   color: var(--muted);
@@ -7045,36 +7117,90 @@ body {{
 .case-row {{
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 1rem;
   align-items: flex-start;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0.8rem 0.9rem;
-  margin-bottom: 0.55rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,.035);
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.62rem;
+  box-shadow: 0 2px 8px rgba(31,43,58,.045);
+}}
+.case-row[hidden] {{
+  display: none;
+}}
+.case-row-main {{
+  min-width: 0;
 }}
 .case-row h3 {{
-  margin: 0;
-  font-size: 0.98rem;
+  margin: 0.35rem 0 0;
+  font-size: 1.03rem;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }}
 .case-row p, .case-row-meta {{
   margin: 0.2rem 0 0;
   color: var(--muted);
   font-size: 0.84rem;
 }}
+.case-management-no {{
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.35rem !important;
+  padding: 0.14rem 0.45rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #243044 !important;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-weight: 700;
+  letter-spacing: .01em;
+}}
+.case-status-pill {{
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.35;
+}}
+.case-status-pill.status-survey_wait {{ background: var(--survey); }}
+.case-status-pill.status-negotiation_wait {{ background: var(--negotiation); }}
+.case-status-pill.status-entrustment_wait {{ background: var(--entrustment); }}
+.case-status-pill.status-construction_wait {{ background: var(--construction); }}
+.case-status-pill.status-return_wait {{ background: var(--return); }}
 .case-row-meta {{
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.15rem;
+  min-width: 7.5rem;
+  text-align: right;
+}}
+.case-row-meta span {{
+  padding: 0.08rem 0.35rem;
+  border-radius: 999px;
+  background: #f5f7fa;
 }}
 .empty-note {{
   margin: 0.4rem 0 0.7rem;
   color: var(--muted);
   font-size: 0.88rem;
+}}
+.filter-empty {{
+  display: none;
+  margin: 0.75rem 0 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px dashed #b9c4d3;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--muted);
+  text-align: center;
+}}
+.filter-empty.is-visible {{
+  display: block;
 }}
 .footer-note {{
   margin: 1rem 0 0;
@@ -7083,6 +7209,9 @@ body {{
   text-align: center;
 }}
 @media (max-width: 560px) {{
+  body {{ padding: 0.55rem 0.55rem 1rem; }}
+  .case-toolbar {{ grid-template-columns: 1fr; }}
+  .case-total {{ min-width: 0; }}
   .case-row {{ flex-direction: column; }}
   .case-row-meta {{ align-items: flex-start; }}
 }}
@@ -7092,14 +7221,45 @@ body {{
 {subpage_header}
 <main>
   <p class="lead">アクティブ案件の状態を俯瞰する閲覧専用ページです。個人情報と交渉内容の詳細は表示しません。</p>
+  <div class="case-toolbar" role="search">
+    <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名・状態で検索" autocomplete="off">
+    <div class="case-total"><span>合計</span><strong id="caseVisibleCount">{total_count}</strong></div>
+  </div>
   <div class="status-grid">
     {"".join(count_tiles)}
   </div>
+  <p id="caseFilterEmpty" class="filter-empty">一致する案件はありません。</p>
   {"".join(sections)}
 </main>
 <p class="footer-note">このページは <code>scripts/generate_portal.py --mode cases-only</code> で再生成できます。</p>
 <script>
 {subpage_menu_js}
+(() => {{
+  const input = document.getElementById("caseSearch");
+  const visibleCount = document.getElementById("caseVisibleCount");
+  const empty = document.getElementById("caseFilterEmpty");
+  const rows = Array.from(document.querySelectorAll(".case-row"));
+  const sections = Array.from(document.querySelectorAll(".status-section"));
+  function applyFilter() {{
+    const q = (input.value || "").trim().toLowerCase();
+    let visible = 0;
+    rows.forEach((row) => {{
+      const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
+      const hit = !q || haystack.includes(q);
+      row.hidden = !hit;
+      if (hit) visible += 1;
+    }});
+    sections.forEach((section) => {{
+      const shown = Array.from(section.querySelectorAll(".case-row")).filter((row) => !row.hidden).length;
+      const count = section.querySelector("[data-section-count]");
+      if (count) count.textContent = `${{shown}}件`;
+      section.hidden = q ? shown === 0 : false;
+    }});
+    if (visibleCount) visibleCount.textContent = String(visible);
+    if (empty) empty.classList.toggle("is-visible", visible === 0);
+  }}
+  if (input) input.addEventListener("input", applyFilter);
+}})();
 </script>
 </body>
 </html>
