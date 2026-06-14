@@ -874,7 +874,14 @@ _NEARBY_POLE_BBOX_PAD_DEG = 0.003
 
 
 def gps_json_path(repo_root: Path) -> Path:
-    return repo_root.parent / "ippatsu-pc" / "app" / "resources" / "data" / "GPS.json"
+    candidates = [
+        repo_root.parent / "ippatsu-pc-prod" / "app" / "resources" / "data" / "GPS.json",
+        repo_root.parent / "ippatsu-pc" / "app" / "resources" / "data" / "GPS.json",
+    ]
+    for path in candidates:
+        if path.is_file():
+            return path
+    return candidates[-1]
 
 
 def load_gps_poles(repo_root: Path) -> list[tuple[str, float, float]]:
@@ -2232,6 +2239,9 @@ body {{
   width: 100%;
   justify-content: center;
 }}
+.card-actions .btn-note {{
+  grid-column: 1 / -1;
+}}
 .btn-map {{
   background: var(--share-accent);
 }}
@@ -2981,11 +2991,245 @@ def _share_live_edit_layer_complete(html: str) -> bool:
     return True
 
 
-def ensure_share_detail_edit_on_share_html(html: str, date_key: str) -> str:
+_SHARE_ARTICLE_CARD_BLOCK_RE = re.compile(
+    r'<article\b(?=[^>]*\bclass\s*=\s*["\']card\b)[\s\S]*?</article>',
+    re.I,
+)
+
+
+def _share_gps_pole_map(repo_root: Path) -> dict[str, tuple[float, float]]:
+    try:
+        poles = load_gps_poles(repo_root)
+    except (FileNotFoundError, ValueError, OSError):
+        return {}
+    return {name: (lat, lng) for name, lat, lng in poles if name}
+
+
+def _share_card_text(card_html: str, class_name: str) -> str:
+    m = re.search(
+        rf'<[^>]+\bclass\s*=\s*["\'][^"\']*\b{re.escape(class_name)}\b[^"\']*["\'][^>]*>([\s\S]*?)</[^>]+>',
+        card_html,
+        re.I,
+    )
+    if not m:
+        return ""
+    text = re.sub(r"<[^>]+>", "", m.group(1))
+    return html_lib.unescape(text).strip()
+
+
+def _share_split_span_label(label: str) -> tuple[str, str] | None:
+    s = html_lib.unescape(label or "").strip()
+    for sep in ("～", "〜", "~", "-"):
+        if sep in s:
+            a, b = s.split(sep, 1)
+            a = a.strip()
+            b = b.strip()
+            if a and b:
+                return a, b
+    return None
+
+
+def _share_complete_span_end_label(start: str, end: str, gps: dict[str, tuple[float, float]]) -> str:
+    if end in gps:
+        return end
+    crown = extract_crown_name(start) or ""
+    if crown and not end.startswith(crown):
+        prefixed = crown + end
+        if prefixed in gps:
+            return prefixed
+    else:
+        prefixed = end
+
+    # Some CS labels arrive as "津風呂24N6～26N7" while GPS has "津風呂24N7".
+    # Prefer the start-side route prefix when the literal end pole is absent.
+    m_start = re.match(r"^(.+?)(\d+[A-Z])(\d+[A-Z]?)$", start, re.I)
+    m_end = re.match(r"^(.+?)(\d+[A-Z])(\d+[A-Z]?)$", prefixed, re.I)
+    if m_start and m_end and m_start.group(1) == m_end.group(1):
+        candidate = f"{m_start.group(1)}{m_start.group(2)}{m_end.group(3)}"
+        if candidate in gps:
+            return candidate
+    return prefixed
+
+
+def _share_resolve_span_points(
+    label: str, gps: dict[str, tuple[float, float]]
+) -> tuple[str, float, float, str, float, float] | None:
+    parts = _share_split_span_label(label)
+    if not parts:
+        return None
+    start_label, end_raw = parts
+    if start_label not in gps:
+        return None
+    end_label = _share_complete_span_end_label(start_label, end_raw, gps)
+    if end_label not in gps:
+        return None
+    a_lat, a_lng = gps[start_label]
+    b_lat, b_lng = gps[end_label]
+    if not (_valid_jp_latlng(a_lat, a_lng) and _valid_jp_latlng(b_lat, b_lng)):
+        return None
+    return start_label, a_lat, a_lng, end_label, b_lat, b_lng
+
+
+def _share_map_button(lat: float, lng: float) -> str:
+    return (
+        f'<a class="btn btn-map" href="https://www.google.com/maps?q={lat},{lng}" '
+        'target="_blank" rel="noopener noreferrer">現場地図を開く</a>'
+    )
+
+
+def _share_card_two_geo_id(card_html: str, fallback_idx: int) -> str:
+    m = re.search(r'id="(two-geo-\d+)"', card_html)
+    if m:
+        return m.group(1)
+    return f"two-geo-{fallback_idx}"
+
+
+def _share_card_with_recovered_map(
+    card_html: str,
+    idx: int,
+    gps: dict[str, tuple[float, float]],
+    gps_poles: list[tuple[str, float, float]],
+) -> tuple[str, dict[str, Any] | None]:
+    label = _share_card_text(card_html, "card-title")
+    management_no = _share_card_text(card_html, "item-mgmt")
+    resolved = _share_resolve_span_points(label, gps)
+    if resolved is None:
+        return card_html, None
+    a_name, a_lat, a_lng, b_name, b_lat, b_lng = resolved
+    mid_lat = round((a_lat + b_lat) / 2.0, 6)
+    mid_lng = round((a_lng + b_lng) / 2.0, 6)
+
+    two_json_id = _share_card_two_geo_id(card_html, idx)
+    two_geo = build_two_geo_payload(
+        a_name=a_name,
+        a_lat=a_lat,
+        a_lng=a_lng,
+        b_name=b_name,
+        b_lat=b_lat,
+        b_lng=b_lng,
+        gps_poles=gps_poles,
+    )
+    two_json = format_two_geo_script(two_json_id, two_geo)
+    script_re = re.compile(
+        rf'<script\s+type="application/json"\s+id="{re.escape(two_json_id)}"[^>]*>[\s\S]*?</script>',
+        re.I,
+    )
+    if script_re.search(card_html):
+        out = script_re.sub(two_json, card_html, count=1)
+    else:
+        out = re.sub(r"(</div>\s*)", r"\1\n  " + two_json + "\n", card_html, count=1)
+
+    map_btn = _share_map_button(mid_lat, mid_lng)
+
+    def _actions_repl(m: re.Match[str]) -> str:
+        body = m.group(2)
+        body = re.sub(
+            r'\s*<a\s+class="btn btn-map"[^>]*>現場地図を開く</a>\s*',
+            "\n      ",
+            body,
+            count=1,
+            flags=re.I,
+        )
+        body = body.strip()
+        if body:
+            return f"{m.group(1)}\n      {map_btn}\n      {body}\n    {m.group(3)}"
+        return f"{m.group(1)}\n      {map_btn}\n    {m.group(3)}"
+
+    out = re.sub(
+        r'(<div\s+class="card-actions"[^>]*>)([\s\S]*?)(</div>)',
+        _actions_repl,
+        out,
+        count=1,
+        flags=re.I,
+    )
+    point = {
+        "name": label,
+        "lat": mid_lat,
+        "lng": mid_lng,
+        "management_no": management_no,
+    }
+    return out, point
+
+
+def _replace_share_points_array(html: str, points: list[dict[str, Any]]) -> str:
+    marker = "var POINTS = "
+    i = html.find(marker)
+    if i < 0:
+        return html
+    i += len(marker)
+    while i < len(html) and html[i] in " \t\r\n":
+        i += 1
+    if i >= len(html) or html[i] != "[":
+        return html
+    depth = 0
+    start = i
+    end = -1
+    for j in range(i, len(html)):
+        c = html[j]
+        if c == "[":
+            depth += 1
+        elif c == "]":
+            depth -= 1
+            if depth == 0:
+                end = j + 1
+                break
+    if end < 0:
+        return html
+    blob = json.dumps(points, ensure_ascii=False, indent=6).replace("<", "\\u003c")
+    return html[:start] + blob + html[end:]
+
+
+def _recover_share_page_maps_from_gps(html: str, repo_root: Path | None) -> str:
+    if repo_root is None or '<article class="card"' not in html or "var POINTS =" not in html:
+        return html
+    gps = _share_gps_pole_map(repo_root)
+    if not gps:
+        return html
+    try:
+        gps_poles = load_gps_poles(repo_root)
+    except (FileNotFoundError, ValueError, OSError):
+        gps_poles = []
+
+    points: list[dict[str, Any]] = []
+    changed = False
+
+    def _card_repl(m: re.Match[str]) -> str:
+        nonlocal changed
+        idx = len(points)
+        new_card, point = _share_card_with_recovered_map(m.group(0), idx, gps, gps_poles)
+        if point is not None:
+            points.append(point)
+        if new_card != m.group(0):
+            changed = True
+        return new_card
+
+    out = _SHARE_ARTICLE_CARD_BLOCK_RE.sub(_card_repl, html)
+    if not points:
+        return out if changed else html
+
+    out2 = _replace_share_points_array(out, points)
+    out2 = re.sub(
+        r'data-point-count="\d+"',
+        f'data-point-count="{len(points)}"',
+        out2,
+        count=1,
+    )
+    debug = f"<!-- share-multipin-debug: points={len(points)} markers={len(points)} duplicate_groups=0 -->"
+    if "share-multipin-debug:" in out2:
+        out2 = re.sub(r"<!-- share-multipin-debug:[\s\S]*?-->", debug, out2, count=1)
+    else:
+        out2 = out2.replace('<div id="share-map"', debug + "\n    " + '<div id="share-map"', 1)
+    return out2
+
+
+def ensure_share_detail_edit_on_share_html(
+    html: str, date_key: str, repo_root: Path | None = None
+) -> str:
     """詳細修正リンク・未確定修正オーバーレイを idempotent に適用する。"""
     out = _strip_share_live_edit_inject_block(html)
     out = _strip_share_live_edit_identity_attrs(out)
     out = apply_share_page_readability_to_share_html(out, date_key)
+    out = _recover_share_page_maps_from_gps(out, repo_root)
     if share_detail_edit_form_enabled():
         out = apply_share_detail_edit_to_share_html(out, date_key)
     return apply_share_live_edit_to_share_html(out, date_key)
@@ -3009,7 +3253,7 @@ def inject_share_detail_edit_into_share_pages(repo_root: Path) -> int:
             raw = idx.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
-        new_t = ensure_share_detail_edit_on_share_html(raw, sub.name)
+        new_t = ensure_share_detail_edit_on_share_html(raw, sub.name, repo_root)
         needs_write = new_t != raw or not _share_live_edit_layer_complete(raw)
         if not needs_write:
             continue
@@ -3033,7 +3277,7 @@ def inject_share_detail_edit_into_share_page_for_date(
         raw = idx.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return 0
-    new_t = ensure_share_detail_edit_on_share_html(raw, date_key)
+    new_t = ensure_share_detail_edit_on_share_html(raw, date_key, repo_root)
     needs_write = new_t != raw or not _share_live_edit_layer_complete(raw)
     if not needs_write:
         return 0
