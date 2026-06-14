@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>付託待ち</title>
+<style>
+:root {
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0 auto;
+  max-width: 46rem;
+  padding: 0.75rem 0.75rem 1.25rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.portal-page-header {
+  margin-bottom: 0.35rem;
+}
+.portal-page-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.portal-page-header-row .page-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0 0 0.35rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
+}
+.portal-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.portal-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.06);
+}
+.portal-menu-btn:hover,
+.portal-menu-btn:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+.portal-menu-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.portal-menu-label {
+  white-space: nowrap;
+}
+.portal-menu-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 12.5rem;
+  padding: 0.35rem 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(20, 32, 51, 0.12);
+}
+.portal-menu-panel[hidden] {
+  display: none !important;
+}
+.portal-menu-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+a.portal-menu-item:hover,
+a.portal-menu-item:focus-visible {
+  background: #f1f5f9;
+  outline: none;
+}
+.portal-menu-item.is-current {
+  font-weight: 700;
+  background: #f1f5f9;
+}
+
+.lead {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.case-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.85rem;
+  align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.case-card-main { min-width: 0; }
+.case-status {
+  margin: 0 0 0.25rem;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.case-title {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+.case-meta, .case-note {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+.card-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 0.5rem;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  background: #eaf2ff;
+  color: #174ea6;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid #bfd4ff;
+}
+.empty-note {
+  margin: 1rem 0;
+  padding: 0.9rem 1rem;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.footer-note {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+@media (max-width: 520px) {
+  .case-card { flex-direction: column; }
+  .card-actions, .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+  <header class="portal-page-header">
+    <div class="portal-page-header-row">
+      <h1 class="page-title">付託待ち</h1>
+      <div class="portal-menu-wrap">
+        <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel" aria-label="サイトメニューを開く">
+          <span class="portal-menu-icon" aria-hidden="true">☰</span>
+          <span class="portal-menu-label">メニュー</span>
+        </button>
+        <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
+          <a class="portal-menu-item" role="menuitem" href="../">ポータルTOP</a>
+          <a class="portal-menu-item" role="menuitem" href="../calendar/">社内カレンダー</a>
+          <a class="portal-menu-item" role="menuitem" href="../survey/">現調待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="../negotiation/">交渉待ち</a>
+          <a class="portal-menu-item is-current" role="menuitem" href="./" aria-current="page">付託待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="../cases/">案件管理</a>
+          <a class="portal-menu-item" role="menuitem" href="../archive/">アーカイブ</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+<main>
+  <p class="lead">付託待ちのCSを確認する閲覧専用ページです。地主名・住所・連絡先などの個人情報は表示しません。</p>
+  <div class="card-list" role="list">
+<p class="empty-note">付託待ちリストはまだありません。</p>
+  </div>
+</main>
+<p class="footer-note">このページは <code>scripts/generate_portal.py --mode entrustment-only</code> で再生成できます。</p>
+<script>
+
+(function () {
+  var btn = document.getElementById("portal-menu-btn");
+  var panel = document.getElementById("portal-menu-panel");
+  if (!btn || !panel) return;
+  function setOpen(open) {
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  btn.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    setOpen(panel.hidden);
+  });
+  document.addEventListener("click", function () {
+    setOpen(false);
+  });
+  panel.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") setOpen(false);
+  });
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>案件管理</title>
+<style>
+:root {
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0 auto;
+  max-width: 52rem;
+  padding: 0.75rem 0.75rem 1.25rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.portal-page-header {
+  margin-bottom: 0.35rem;
+}
+.portal-page-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.portal-page-header-row .page-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0 0 0.35rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
+}
+.portal-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.portal-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.06);
+}
+.portal-menu-btn:hover,
+.portal-menu-btn:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+.portal-menu-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.portal-menu-label {
+  white-space: nowrap;
+}
+.portal-menu-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 12.5rem;
+  padding: 0.35rem 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(20, 32, 51, 0.12);
+}
+.portal-menu-panel[hidden] {
+  display: none !important;
+}
+.portal-menu-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+a.portal-menu-item:hover,
+a.portal-menu-item:focus-visible {
+  background: #f1f5f9;
+  outline: none;
+}
+.portal-menu-item.is-current {
+  font-weight: 700;
+  background: #f1f5f9;
+}
+
+.lead {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+.status-tile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  text-decoration: none;
+}
+.status-tile span { color: var(--muted); font-size: 0.86rem; }
+.status-tile strong { font-size: 1.15rem; }
+.status-section {
+  margin: 0 0 1rem;
+}
+.status-section h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0 0 0.45rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 1rem;
+}
+.status-section h2 span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.case-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.8rem 0.9rem;
+  margin-bottom: 0.55rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.035);
+}
+.case-row h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+.case-row p, .case-row-meta {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+.case-row-meta {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+}
+.empty-note {
+  margin: 0.4rem 0 0.7rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.footer-note {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+@media (max-width: 560px) {
+  .case-row { flex-direction: column; }
+  .case-row-meta { align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+  <header class="portal-page-header">
+    <div class="portal-page-header-row">
+      <h1 class="page-title">案件管理</h1>
+      <div class="portal-menu-wrap">
+        <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel" aria-label="サイトメニューを開く">
+          <span class="portal-menu-icon" aria-hidden="true">☰</span>
+          <span class="portal-menu-label">メニュー</span>
+        </button>
+        <nav id="portal-menu-panel" class="portal-menu-panel" role="menu" hidden>
+          <a class="portal-menu-item" role="menuitem" href="../">ポータルTOP</a>
+          <a class="portal-menu-item" role="menuitem" href="../calendar/">社内カレンダー</a>
+          <a class="portal-menu-item" role="menuitem" href="../survey/">現調待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="../negotiation/">交渉待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="../entrustment/">付託待ち</a>
+          <a class="portal-menu-item is-current" role="menuitem" href="./" aria-current="page">案件管理</a>
+          <a class="portal-menu-item" role="menuitem" href="../archive/">アーカイブ</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+<main>
+  <p class="lead">アクティブ案件の状態を俯瞰する閲覧専用ページです。個人情報と交渉内容の詳細は表示しません。</p>
+  <div class="status-grid">
+    <a class="status-tile" href="#status-survey_wait"><span>現調待ち</span><strong>19</strong></a><a class="status-tile" href="#status-negotiation_wait"><span>交渉待ち</span><strong>29</strong></a><a class="status-tile" href="#status-entrustment_wait"><span>付託待ち</span><strong>0</strong></a><a class="status-tile" href="#status-construction_wait"><span>工事待ち</span><strong>26</strong></a><a class="status-tile" href="#status-return_wait"><span>返却待ち</span><strong>3</strong></a>
+  </div>
+  <section class="status-section" id="status-survey_wait">
+  <h2>現調待ち <span>19件</span></h2>
+  <div class="case-list"><article class="case-row" data-management-no-key="51400263">
+  <div>
+    <h3>Ｐ奥谷11W12S1～11W12S2</h3>
+    <p>514 00263</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51400361">
+  <div>
+    <h3>赤松35～36</h3>
+    <p>514 00361</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51402038">
+  <div>
+    <h3>上之4W4～4W5</h3>
+    <p>514 02038</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51404162">
+  <div>
+    <h3>白銀63N5W3～63N5W4</h3>
+    <p>514 04162</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51404189">
+  <div>
+    <h3>白銀115W6S1N2～115W6S1</h3>
+    <p>514 04189</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51404194">
+  <div>
+    <h3>白銀115W9～115W9W1</h3>
+    <p>514 04194</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51407220">
+  <div>
+    <h3>平沼田17～18</h3>
+    <p>514 07220</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51407272">
+  <div>
+    <h3>平沼田18～19</h3>
+    <p>514 07272</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51407898">
+  <div>
+    <h3>平沼田43N4E1～43N4E2</h3>
+    <p>514 07898</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51408008">
+  <div>
+    <h3>湯川4E6～4E7</h3>
+    <p>514 08008</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409097">
+  <div>
+    <h3>赤松1～1G1</h3>
+    <p>514 09097</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409133">
+  <div>
+    <h3>白銀115W6～115W6S1</h3>
+    <p>514 09133</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409228">
+  <div>
+    <h3>西新子14G1～14E3</h3>
+    <p>514 09228</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409459">
+  <div>
+    <h3>西新子12N1～12N2</h3>
+    <p>514 09459</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409991">
+  <div>
+    <h3>柴ヶ谷3G1～4</h3>
+    <p>514 09991</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409998">
+  <div>
+    <h3>慎1～2</h3>
+    <p>514 09998</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51410139">
+  <div>
+    <h3>江出2N14～生子93E1</h3>
+    <p>514 10139</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51410417">
+  <div>
+    <h3>城戸11W1～大日川2</h3>
+    <p>514 10417</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51410418">
+  <div>
+    <h3>向山7S1～7S2</h3>
+    <p>514 10418</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article></div>
+</section><section class="status-section" id="status-negotiation_wait">
+  <h2>交渉待ち <span>29件</span></h2>
+  <div class="case-list"><article class="case-row" data-management-no-key="51400214">
+  <div>
+    <h3>Ｐ百谷49N3～49N4</h3>
+    <p>514 00214</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51400376">
+  <div>
+    <h3>赤松26N7～26N8</h3>
+    <p>514 00376</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51400394">
+  <div>
+    <h3>芦ヶ瀬1～2</h3>
+    <p>514 00394</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51400395">
+  <div>
+    <h3>芦ヶ瀬2～3</h3>
+    <p>514 00395</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51400414">
+  <div>
+    <h3>芦ヶ瀬1E6E1～1E6E2</h3>
+    <p>514 00414</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51401005">
+  <div>
+    <h3>江出17～18</h3>
+    <p>514 01005</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51401024">
+  <div>
+    <h3>江出27E21～27E22</h3>
+    <p>514 01024</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51402687">
+  <div>
+    <h3>北宇智159～159W1</h3>
+    <p>514 02687</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51403794">
+  <div>
+    <h3>鹿場16W7～16W8</h3>
+    <p>514 03794</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51403888">
+  <div>
+    <h3>柴ヶ谷2～3</h3>
+    <p>514 03888</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51404109">
+  <div>
+    <h3>白銀151～152</h3>
+    <p>514 04109</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51404117">
+  <div>
+    <h3>白銀158～159</h3>
+    <p>514 04117</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51404127">
+  <div>
+    <h3>白銀168～169</h3>
+    <p>514 04127</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51404132">
+  <div>
+    <h3>白銀140E2～140E2N1</h3>
+    <p>514 04132</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51404202">
+  <div>
+    <h3>白銀137W3G1～137W4</h3>
+    <p>514 04202</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51404205">
+  <div>
+    <h3>白銀137W15～137W16</h3>
+    <p>514 04205</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51404217">
+  <div>
+    <h3>白銀146S1～146S2</h3>
+    <p>514 04217</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409006">
+  <div>
+    <h3>赤松23～24</h3>
+    <p>514 09006</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409094">
+  <div>
+    <h3>赤松27～28</h3>
+    <p>514 09094</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409324">
+  <div>
+    <h3>Ｐ百谷38S19～38S20</h3>
+    <p>514 09324</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409344">
+  <div>
+    <h3>Ｐ百谷38S18～38S19</h3>
+    <p>514 09344</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409384">
+  <div>
+    <h3>Ｐ百谷38S10～38S11</h3>
+    <p>514 09384</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409436">
+  <div>
+    <h3>江出27E18～27E19</h3>
+    <p>514 09436</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409476">
+  <div>
+    <h3>白銀137W4～137W4W1</h3>
+    <p>514 09476</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409990">
+  <div>
+    <h3>柴ヶ谷3～3G1</h3>
+    <p>514 09990</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409997">
+  <div>
+    <h3>白銀137W1～137W2</h3>
+    <p>514 09997</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51410156">
+  <div>
+    <h3>柴ヶ谷9W1～引込</h3>
+    <p>514 10156</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51410367">
+  <div>
+    <h3>芦ヶ瀬1E2～1E3</h3>
+    <p>514 10367</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51410368">
+  <div>
+    <h3>芦ヶ瀬1E3～1E4</h3>
+    <p>514 10368</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article></div>
+</section><section class="status-section" id="status-entrustment_wait">
+  <h2>付託待ち <span>0件</span></h2>
+  <div class="case-list"><p class="empty-note">対象はありません。</p></div>
+</section><section class="status-section" id="status-construction_wait">
+  <h2>工事待ち <span>26件</span></h2>
+  <div class="case-list"><article class="case-row" data-management-no-key="51401389">
+  <div>
+    <h3>小川176～177</h3>
+    <p>514 01389</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51401390">
+  <div>
+    <h3>小川176～古ル野1</h3>
+    <p>514 01390</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51401391">
+  <div>
+    <h3>小川177～178</h3>
+    <p>514 01391</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51401395">
+  <div>
+    <h3>小川181～182</h3>
+    <p>514 01395</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51401401">
+  <div>
+    <h3>小川187～188</h3>
+    <p>514 01401</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51401631">
+  <div>
+    <h3>柿山3～4</h3>
+    <p>514 01631</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51401633">
+  <div>
+    <h3>柿山5～6</h3>
+    <p>514 01633</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51401641">
+  <div>
+    <h3>柿山20～21</h3>
+    <p>514 01641</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51401647">
+  <div>
+    <h3>柿山14E4～14E5</h3>
+    <p>514 01647</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51401649">
+  <div>
+    <h3>柿山3E8～3E9</h3>
+    <p>514 01649</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51405397">
+  <div>
+    <h3>玉置山82N2～82N3</h3>
+    <p>514 05397</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260612</span>
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51407313">
+  <div>
+    <h3>古ル野15～16</h3>
+    <p>514 07313</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51408876">
+  <div>
+    <h3>柿山14E5～14E6</h3>
+    <p>514 08876</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51409716">
+  <div>
+    <h3>柿山3E9～3E10</h3>
+    <p>514 09716</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51410041">
+  <div>
+    <h3>北宇智146N7N2E4～146N7N2E5</h3>
+    <p>514 10041</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260610</span>
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51410307">
+  <div>
+    <h3>柿山14E6G9～14E6G9N1</h3>
+    <p>514 10307</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51506487">
+  <div>
+    <h3>津風呂20G4～20G5</h3>
+    <p>515 06487</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260615</span>
+    <span>更新 2026-06-14</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51506491">
+  <div>
+    <h3>津風呂20G8～21</h3>
+    <p>515 06491</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260615</span>
+    <span>更新 2026-06-14</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51506492">
+  <div>
+    <h3>津風呂22G1～22G2</h3>
+    <p>515 06492</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260615</span>
+    <span>更新 2026-06-14</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51506500">
+  <div>
+    <h3>津風呂24N4～24N5</h3>
+    <p>515 06500</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260615</span>
+    <span>更新 2026-06-14</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51506503">
+  <div>
+    <h3>津風呂24N6～26N7</h3>
+    <p>515 06503</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260615</span>
+    <span>更新 2026-06-14</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51510213">
+  <div>
+    <h3>竜門67S8～67S9</h3>
+    <p>515 10213</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260615</span>
+    <span>更新 2026-06-14</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51511527">
+  <div>
+    <h3>西千股46G4～46G5</h3>
+    <p>515 11527</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260604</span>
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51511900">
+  <div>
+    <h3>西千股47G13～47G14</h3>
+    <p>515 11900</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260604</span>
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51511901">
+  <div>
+    <h3>西千股47G14～47G15</h3>
+    <p>515 11901</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260604</span>
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51511904">
+  <div>
+    <h3>西千股47G5～47G6</h3>
+    <p>515 11904</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260604</span>
+    <span>更新 2026-06-13</span>
+  </div>
+</article></div>
+</section><section class="status-section" id="status-return_wait">
+  <h2>返却待ち <span>3件</span></h2>
+  <div class="case-list"><article class="case-row" data-management-no-key="51401156">
+  <div>
+    <h3>大畑7～7E1</h3>
+    <p>514 01156</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51408794">
+  <div>
+    <h3>夜中8～9</h3>
+    <p>514 08794</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article>
+<article class="case-row" data-management-no-key="51408795">
+  <div>
+    <h3>夜中9～10</h3>
+    <p>514 08795</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-13</span>
+  </div>
+</article></div>
+</section>
+</main>
+<p class="footer-note">このページは <code>scripts/generate_portal.py --mode cases-only</code> で再生成できます。</p>
+<script>
+
+(function () {
+  var btn = document.getElementById("portal-menu-btn");
+  var panel = document.getElementById("portal-menu-panel");
+  if (!btn || !panel) return;
+  function setOpen(open) {
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  btn.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    setOpen(panel.hidden);
+  });
+  document.addEventListener("click", function () {
+    setOpen(false);
+  });
+  panel.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") setOpen(false);
+  });
+})();
+
+</script>
+</body>
+</html>

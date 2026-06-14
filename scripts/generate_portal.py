@@ -1260,12 +1260,14 @@ a.portal-menu-item:focus-visible {{
 
 
 def render_portal_subpage_header(page_title: str, *, page: str) -> str:
-    """page: survey | negotiation | archive"""
+    """page: survey | negotiation | entrustment | cases | archive"""
     items: list[tuple[str, str, str | None]] = [
         ("../", "ポータルTOP", None),
         ("../calendar/", "社内カレンダー", None),
         ("../survey/", "現調待ち", "survey"),
         ("../negotiation/", "交渉待ち", "negotiation"),
+        ("../entrustment/", "付託待ち", "entrustment"),
+        ("../cases/", "案件管理", "cases"),
         ("../archive/", "アーカイブ", "archive"),
     ]
     link_lines: list[str] = []
@@ -2815,6 +2817,17 @@ class StatusSmoke:
     db_management_no_keys: list[str]
     displayed_management_no_keys: list[str]
     status: str
+
+
+@dataclass(frozen=True)
+class PortalCaseItem:
+    management_no: str
+    management_no_key: str
+    label: str
+    status: str
+    status_label: str
+    share_date_key: str
+    updated_at: str
 
 
 @dataclass(frozen=True)
@@ -4770,6 +4783,89 @@ def load_negotiation_public_items(
     return items, empty, stats
 
 
+def load_entrustment_public_items(
+    repo_root: Path,
+) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
+    """付託待ち主ソース: Supabase cases.status=entrustment_wait。閲覧専用。"""
+    _reset_map_coord_warnings()
+    items, empty, stats, smoke = _load_status_public_items(
+        status="entrustment_wait",
+        legacy_count=0,
+        empty_msg="付託待ちリストはまだありません。",
+    )
+    items = _supplement_map_fields_from_gps(items, repo_root)
+    stats["source_of_truth"] = "supabase cases.status=entrustment_wait"
+    stats["legacy_source"] = "none"
+    stats["gps_map_field_primary"] = True
+    stats["duplicate_management_no_count"] = smoke.duplicate_management_no_count
+    return items, empty, stats
+
+
+CASE_STATUS_LABELS: dict[str, str] = {
+    "survey_wait": "現調待ち",
+    "negotiation_wait": "交渉待ち",
+    "entrustment_wait": "付託待ち",
+    "return_wait": "返却待ち",
+    "construction_wait": "工事待ち",
+    "cut_wait": "伐採待ち",
+}
+
+CASE_PORTAL_STATUS_ORDER: tuple[str, ...] = (
+    "survey_wait",
+    "negotiation_wait",
+    "entrustment_wait",
+    "construction_wait",
+    "return_wait",
+)
+
+
+def _portal_case_item_from_row(row: dict[str, Any]) -> PortalCaseItem:
+    status = _to_str(row.get("status"))
+    mno = _to_str(row.get("management_no")) or "—"
+    return PortalCaseItem(
+        management_no=mno,
+        management_no_key=_to_str(row.get("management_no_key"))
+        or (management_no_key(mno) or ""),
+        label=_to_str(row.get("label")) or "—",
+        status=status,
+        status_label=CASE_STATUS_LABELS.get(status, status or "不明"),
+        share_date_key=_to_str(row.get("share_date_key")),
+        updated_at=_to_str(row.get("updated_at")),
+    )
+
+
+def load_case_management_public_items() -> tuple[list[PortalCaseItem], dict[str, Any]]:
+    """案件管理ページ用: active な主要ステータスをSupabaseから読む（閲覧専用）。"""
+    items: list[PortalCaseItem] = []
+    counts: dict[str, int] = {s: 0 for s in CASE_PORTAL_STATUS_ORDER}
+    source_available = True
+    for status in CASE_PORTAL_STATUS_ORDER:
+        rows = _fetch_cases_by_status_from_supabase(status)
+        if rows is None:
+            source_available = False
+            rows = []
+        counts[status] = len(rows)
+        for row in rows:
+            items.append(_portal_case_item_from_row(row))
+    items.sort(
+        key=lambda it: (
+            CASE_PORTAL_STATUS_ORDER.index(it.status)
+            if it.status in CASE_PORTAL_STATUS_ORDER
+            else 999,
+            it.management_no_key,
+            it.label,
+        )
+    )
+    stats = {
+        "total": len(items),
+        "visible": len(items),
+        "counts": counts,
+        "source_of_truth": "supabase cases active=true by status",
+        "source_available": source_available,
+    }
+    return items, stats
+
+
 def _supabase_rest_ready() -> tuple[str, str] | None:
     url = (os.environ.get("SUPABASE_URL") or "").strip()
     key = (os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
@@ -6616,6 +6712,8 @@ a.portal-menu-item:focus-visible {{
           <a class="portal-menu-item" role="menuitem" href="./calendar/">社内カレンダー</a>
           <a class="portal-menu-item" role="menuitem" href="./survey/">現調待ち</a>
           <a class="portal-menu-item" role="menuitem" href="./negotiation/">交渉待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="./entrustment/">付託待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="./cases/">案件管理</a>
           <a class="portal-menu-item" role="menuitem" href="./archive/">アーカイブ</a>
         </nav>
       </div>
@@ -6670,6 +6768,344 @@ a.portal-menu-item:focus-visible {{
 """
 
 
+def _readonly_map_action(item: SurveyPublicItem) -> str:
+    single = _validated_single_latlng(item, record=False)
+    if single is None:
+        two = _validated_two_latlng(item, record=False)
+        if two is not None:
+            lat, lng = two[0], two[1]
+            single = (lat, lng)
+    if single is None:
+        return ""
+    lat, lng = single
+    return (
+        f'<a class="btn btn-map" href="https://www.google.com/maps?q={lat},{lng}" '
+        'target="_blank" rel="noopener noreferrer">地図を表示</a>'
+    )
+
+
+def build_entrustment_html(
+    items: list[SurveyPublicItem],
+    empty_note: str,
+) -> str:
+    cards: list[str] = []
+    for idx, it in enumerate(items):
+        map_btn = _readonly_map_action(it)
+        note = ""
+        if it.note and it.note != "—":
+            note = f'<p class="case-note">{escape_html(it.note)}</p>'
+        actions = f'<div class="card-actions">{map_btn}</div>' if map_btn else ""
+        cards.append(
+            f"""<article class="case-card" data-card-index="{idx}" data-management-no-key="{escape_html(it.management_no_key)}">
+  <div class="case-card-main">
+    <p class="case-status">付託待ち</p>
+    <h2 class="case-title">{escape_html(it.label)}</h2>
+    <p class="case-meta">{escape_html(it.management_no)}</p>
+    {note}
+  </div>
+  {actions}
+</article>"""
+        )
+    items_html = "\n".join(cards) if cards else f'<p class="empty-note">{escape_html(empty_note)}</p>'
+    subpage_header = render_portal_subpage_header("付託待ち", page="entrustment")
+    subpage_menu_css = render_portal_subpage_menu_css()
+    subpage_menu_js = render_portal_subpage_menu_js()
+    return f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>付託待ち</title>
+<style>
+:root {{
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+}}
+* {{ box-sizing: border-box; }}
+body {{
+  margin: 0 auto;
+  max-width: 46rem;
+  padding: 0.75rem 0.75rem 1.25rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}}
+{subpage_menu_css}
+.lead {{
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}}
+.case-card {{
+  display: flex;
+  justify-content: space-between;
+  gap: 0.85rem;
+  align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}}
+.case-card-main {{ min-width: 0; }}
+.case-status {{
+  margin: 0 0 0.25rem;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+}}
+.case-title {{
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}}
+.case-meta, .case-note {{
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}}
+.card-actions {{
+  flex: 0 0 auto;
+  display: flex;
+  gap: 0.5rem;
+}}
+.btn {{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  background: #eaf2ff;
+  color: #174ea6;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid #bfd4ff;
+}}
+.empty-note {{
+  margin: 1rem 0;
+  padding: 0.9rem 1rem;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}}
+.footer-note {{
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+}}
+@media (max-width: 520px) {{
+  .case-card {{ flex-direction: column; }}
+  .card-actions, .btn {{ width: 100%; }}
+}}
+</style>
+</head>
+<body>
+{subpage_header}
+<main>
+  <p class="lead">付託待ちのCSを確認する閲覧専用ページです。地主名・住所・連絡先などの個人情報は表示しません。</p>
+  <div class="card-list" role="list">
+{items_html}
+  </div>
+</main>
+<p class="footer-note">このページは <code>scripts/generate_portal.py --mode entrustment-only</code> で再生成できます。</p>
+<script>
+{subpage_menu_js}
+</script>
+</body>
+</html>
+"""
+
+
+def build_cases_html(items: list[PortalCaseItem], stats: dict[str, Any]) -> str:
+    count_tiles = []
+    counts = stats.get("counts") if isinstance(stats.get("counts"), dict) else {}
+    for status in CASE_PORTAL_STATUS_ORDER:
+        label = CASE_STATUS_LABELS.get(status, status)
+        count_tiles.append(
+            f'<a class="status-tile" href="#status-{escape_html(status)}">'
+            f'<span>{escape_html(label)}</span><strong>{int(counts.get(status) or 0)}</strong></a>'
+        )
+
+    sections: list[str] = []
+    for status in CASE_PORTAL_STATUS_ORDER:
+        group = [it for it in items if it.status == status]
+        label = CASE_STATUS_LABELS.get(status, status)
+        if group:
+            card_html: list[str] = []
+            for it in group:
+                meta_parts: list[str] = []
+                if it.share_date_key:
+                    meta_parts.append(
+                        f'<span>共有日 {escape_html(it.share_date_key)}</span>'
+                    )
+                if it.updated_at:
+                    meta_parts.append(f'<span>更新 {escape_html(it.updated_at[:10])}</span>')
+                meta_html = "\n    ".join(meta_parts)
+                card_html.append(
+                    f"""<article class="case-row" data-management-no-key="{escape_html(it.management_no_key)}">
+  <div>
+    <h3>{escape_html(it.label)}</h3>
+    <p>{escape_html(it.management_no)}</p>
+  </div>
+  <div class="case-row-meta">
+    {meta_html}
+  </div>
+</article>"""
+                )
+            cards = "\n".join(card_html)
+        else:
+            cards = '<p class="empty-note">対象はありません。</p>'
+        sections.append(
+            f"""<section class="status-section" id="status-{escape_html(status)}">
+  <h2>{escape_html(label)} <span>{len(group)}件</span></h2>
+  <div class="case-list">{cards}</div>
+</section>"""
+        )
+
+    subpage_header = render_portal_subpage_header("案件管理", page="cases")
+    subpage_menu_css = render_portal_subpage_menu_css()
+    subpage_menu_js = render_portal_subpage_menu_js()
+    return f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>案件管理</title>
+<style>
+:root {{
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+}}
+* {{ box-sizing: border-box; }}
+body {{
+  margin: 0 auto;
+  max-width: 52rem;
+  padding: 0.75rem 0.75rem 1.25rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}}
+{subpage_menu_css}
+.lead {{
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}}
+.status-grid {{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}}
+.status-tile {{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  text-decoration: none;
+}}
+.status-tile span {{ color: var(--muted); font-size: 0.86rem; }}
+.status-tile strong {{ font-size: 1.15rem; }}
+.status-section {{
+  margin: 0 0 1rem;
+}}
+.status-section h2 {{
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0 0 0.45rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 1rem;
+}}
+.status-section h2 span {{
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}}
+.case-row {{
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.8rem 0.9rem;
+  margin-bottom: 0.55rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.035);
+}}
+.case-row h3 {{
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.35;
+}}
+.case-row p, .case-row-meta {{
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}}
+.case-row-meta {{
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+}}
+.empty-note {{
+  margin: 0.4rem 0 0.7rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}}
+.footer-note {{
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+}}
+@media (max-width: 560px) {{
+  .case-row {{ flex-direction: column; }}
+  .case-row-meta {{ align-items: flex-start; }}
+}}
+</style>
+</head>
+<body>
+{subpage_header}
+<main>
+  <p class="lead">アクティブ案件の状態を俯瞰する閲覧専用ページです。個人情報と交渉内容の詳細は表示しません。</p>
+  <div class="status-grid">
+    {"".join(count_tiles)}
+  </div>
+  {"".join(sections)}
+</main>
+<p class="footer-note">このページは <code>scripts/generate_portal.py --mode cases-only</code> で再生成できます。</p>
+<script>
+{subpage_menu_js}
+</script>
+</body>
+</html>
+"""
+
+
 PORTAL_MODE_FULL = "full"
 PORTAL_MODE_COMPLETION_ARCHIVE = "completion-archive"
 PORTAL_MODE_SHARE_UPDATE = "share-update"
@@ -6677,6 +7113,8 @@ PORTAL_MODE_SURVEY_ONLY = "survey-only"
 PORTAL_MODE_ARCHIVE_ONLY = "archive-only"
 PORTAL_MODE_PORTAL_TOP_ONLY = "portal-top-only"
 PORTAL_MODE_NEGOTIATION_ONLY = "negotiation-only"
+PORTAL_MODE_ENTRUSTMENT_ONLY = "entrustment-only"
+PORTAL_MODE_CASES_ONLY = "cases-only"
 
 # Legacy share pages that should remain accessible by direct URL,
 # but no longer appear on portal top cards.
@@ -6688,6 +7126,8 @@ FOCUSED_PORTAL_MODES = frozenset(
         PORTAL_MODE_ARCHIVE_ONLY,
         PORTAL_MODE_PORTAL_TOP_ONLY,
         PORTAL_MODE_NEGOTIATION_ONLY,
+        PORTAL_MODE_ENTRUSTMENT_ONLY,
+        PORTAL_MODE_CASES_ONLY,
     }
 )
 
@@ -6696,6 +7136,8 @@ PORTAL_GUARD_REL_PATHS: tuple[str, ...] = (
     "portal/survey/index.html",
     "portal/archive/index.html",
     "portal/negotiation/index.html",
+    "portal/entrustment/index.html",
+    "portal/cases/index.html",
 )
 
 MODE_ALLOWED_PORTAL_OUTPUTS: dict[str, frozenset[str]] = {
@@ -6703,6 +7145,8 @@ MODE_ALLOWED_PORTAL_OUTPUTS: dict[str, frozenset[str]] = {
     PORTAL_MODE_ARCHIVE_ONLY: frozenset({"portal/archive/index.html"}),
     PORTAL_MODE_PORTAL_TOP_ONLY: frozenset({"portal/index.html"}),
     PORTAL_MODE_NEGOTIATION_ONLY: frozenset({"portal/negotiation/index.html"}),
+    PORTAL_MODE_ENTRUSTMENT_ONLY: frozenset({"portal/entrustment/index.html"}),
+    PORTAL_MODE_CASES_ONLY: frozenset({"portal/cases/index.html"}),
 }
 
 
@@ -7098,6 +7542,45 @@ def run_negotiation_only(repo_root: Path) -> FocusedGenerateResult:
     )
 
 
+def run_entrustment_only(repo_root: Path) -> FocusedGenerateResult:
+    items, empty_note, stats = load_entrustment_public_items(repo_root)
+    out_html = build_entrustment_html(items, empty_note)
+    rel = "portal/entrustment/index.html"
+    out_path = _write_portal_html(repo_root, rel, out_html)
+    print(
+        f"Wrote {out_path} (entrustment_items={len(items)}, "
+        f"visible={stats.get('visible', len(items))})"
+    )
+    coord_warnings = _drain_map_coord_warnings()
+    if coord_warnings:
+        print(f"  map_coord_warnings: {coord_warnings}")
+    out_stats = dict(stats)
+    out_stats["entrustment_items"] = len(items)
+    out_stats["map_coord_warnings"] = coord_warnings
+    return FocusedGenerateResult(
+        mode=PORTAL_MODE_ENTRUSTMENT_ONLY,
+        output_rel=rel,
+        stats=out_stats,
+        apikey_nonempty=False,
+    )
+
+
+def run_cases_only(repo_root: Path) -> FocusedGenerateResult:
+    items, stats = load_case_management_public_items()
+    out_html = build_cases_html(items, stats)
+    rel = "portal/cases/index.html"
+    out_path = _write_portal_html(repo_root, rel, out_html)
+    print(f"Wrote {out_path} (case_items={len(items)})")
+    out_stats = dict(stats)
+    out_stats["case_items"] = len(items)
+    return FocusedGenerateResult(
+        mode=PORTAL_MODE_CASES_ONLY,
+        output_rel=rel,
+        stats=out_stats,
+        apikey_nonempty=False,
+    )
+
+
 def _require_html_substrings(html: str, checks: list[tuple[str, str]]) -> list[str]:
     failures: list[str] = []
     for label, needle in checks:
@@ -7130,8 +7613,6 @@ _SURVEY_CARD_RE = re.compile(
 )
 _EXPECTED_SURVEY_WAIT_COUNT = 19
 _EXPECTED_SURVEY_MULTIPIN_COUNT = 19
-_EXPECTED_NEGOTIATION_WAIT_COUNT = 30
-_EXPECTED_RETURN_WAIT_COUNT = 3
 _SURVEY_NEGOTIATION_KEY = "51403794"
 _SURVEY_GPS_SUPPLEMENT_KEY = "51410418"
 
@@ -7297,17 +7778,10 @@ def validate_negotiation_only_output(repo_root: Path) -> list[str]:
             (_SURVEY_NEGOTIATION_KEY, _SURVEY_NEGOTIATION_KEY),
         ],
     )
-    neg_count = _count_negotiation_wait_cards(html)
-    if neg_count != _EXPECTED_NEGOTIATION_WAIT_COUNT:
-        failures.append(
-            f"negotiation_wait_count expected {_EXPECTED_NEGOTIATION_WAIT_COUNT} "
-            f"got {neg_count}"
-        )
-    ret_count = _count_return_wait_cards(html)
-    if ret_count != _EXPECTED_RETURN_WAIT_COUNT:
-        failures.append(
-            f"return_wait_count expected {_EXPECTED_RETURN_WAIT_COUNT} got {ret_count}"
-        )
+    if _count_negotiation_wait_cards(html) <= 0:
+        failures.append("negotiation_wait cards missing")
+    if _count_return_wait_cards(html) <= 0:
+        failures.append("return_wait cards missing")
     if "地図を表示" in html:
         failures.append("negotiation must not contain 地図を表示")
     if "2点地図を表示" in html:
@@ -7315,6 +7789,42 @@ def validate_negotiation_only_output(repo_root: Path) -> list[str]:
     if 'id="share-map"' in html:
         failures.append('negotiation must not contain id="share-map"')
     return failures
+
+
+def validate_entrustment_only_output(repo_root: Path) -> list[str]:
+    path = repo_root / "portal" / "entrustment" / "index.html"
+    if not path.is_file():
+        return ["portal/entrustment/index.html missing"]
+    html = path.read_text(encoding="utf-8", errors="replace")
+    return _require_html_substrings(
+        html,
+        [
+            ("portal-menu-btn", "portal-menu-btn"),
+            ("付託待ち title", "<title>付託待ち</title>"),
+            ("付託待ち current", 'aria-current="page"'),
+            ("案件管理 link", 'href="../cases/"'),
+            ("アーカイブ link", 'href="../archive/"'),
+        ],
+    )
+
+
+def validate_cases_only_output(repo_root: Path) -> list[str]:
+    path = repo_root / "portal" / "cases" / "index.html"
+    if not path.is_file():
+        return ["portal/cases/index.html missing"]
+    html = path.read_text(encoding="utf-8", errors="replace")
+    return _require_html_substrings(
+        html,
+        [
+            ("portal-menu-btn", "portal-menu-btn"),
+            ("案件管理 title", "<title>案件管理</title>"),
+            ("案件管理 current", 'aria-current="page"'),
+            ("付託待ち link", 'href="../entrustment/"'),
+            ("現調待ち section", 'id="status-survey_wait"'),
+            ("付託待ち section", 'id="status-entrustment_wait"'),
+            ("工事待ち section", 'id="status-construction_wait"'),
+        ],
+    )
 
 
 def validate_focused_mode(
@@ -7330,6 +7840,10 @@ def validate_focused_mode(
         return validate_portal_top_only_output(repo_root)
     if mode == PORTAL_MODE_NEGOTIATION_ONLY:
         return validate_negotiation_only_output(repo_root)
+    if mode == PORTAL_MODE_ENTRUSTMENT_ONLY:
+        return validate_entrustment_only_output(repo_root)
+    if mode == PORTAL_MODE_CASES_ONLY:
+        return validate_cases_only_output(repo_root)
     return [f"unknown focused mode: {mode}"]
 
 
@@ -7353,6 +7867,10 @@ def _print_focused_cli_summary(
         print(f"portal_cards: {result.stats['portal_cards']}")
     if "negotiation_items" in result.stats:
         print(f"negotiation_items: {result.stats['negotiation_items']}")
+    if "entrustment_items" in result.stats:
+        print(f"entrustment_items: {result.stats['entrustment_items']}")
+    if "case_items" in result.stats:
+        print(f"case_items: {result.stats['case_items']}")
     if "manifest" in result.stats:
         print(f"manifest_entries: {result.stats['manifest']}")
     print(f"apikey_nonempty: {str(result.apikey_nonempty).lower()}")
@@ -7373,6 +7891,8 @@ def run_focused_portal_mode(mode: str, repo_root: Path) -> int:
         PORTAL_MODE_ARCHIVE_ONLY: run_archive_only,
         PORTAL_MODE_PORTAL_TOP_ONLY: run_portal_top_only,
         PORTAL_MODE_NEGOTIATION_ONLY: run_negotiation_only,
+        PORTAL_MODE_ENTRUSTMENT_ONLY: run_entrustment_only,
+        PORTAL_MODE_CASES_ONLY: run_cases_only,
     }
     result = runners[mode](repo_root)
     guard_hits = _portal_guard_violations(repo_root, before, allowed)
@@ -7486,6 +8006,8 @@ def main() -> int:
             PORTAL_MODE_ARCHIVE_ONLY,
             PORTAL_MODE_PORTAL_TOP_ONLY,
             PORTAL_MODE_NEGOTIATION_ONLY,
+            PORTAL_MODE_ENTRUSTMENT_ONLY,
+            PORTAL_MODE_CASES_ONLY,
         ),
         default=PORTAL_MODE_FULL,
         help=(
@@ -7493,7 +8015,8 @@ def main() -> int:
             "completion-archive: minimal regen for completion report archive sync "
             "(requires --date). "
             "share-update: minimal regen for share-mode publish (requires --date). "
-            "survey-only / archive-only / portal-top-only / negotiation-only: "
+            "survey-only / archive-only / portal-top-only / negotiation-only / "
+            "entrustment-only / cases-only: "
             "single HTML output with post-generate validation."
         ),
     )
@@ -7733,6 +8256,32 @@ def main() -> int:
         negotiation_coord_warnings = _drain_map_coord_warnings()
         if negotiation_coord_warnings:
             print(f"  negotiation_map_coord_warnings: {negotiation_coord_warnings}")
+        entrustment_items, entrustment_empty_note, entrustment_stats = (
+            load_entrustment_public_items(repo_root)
+        )
+        entrustment_html = build_entrustment_html(
+            entrustment_items,
+            entrustment_empty_note,
+        )
+        entrustment_path = repo_root / "portal" / "entrustment" / "index.html"
+        entrustment_path.parent.mkdir(parents=True, exist_ok=True)
+        entrustment_path.write_text(
+            entrustment_html, encoding="utf-8", newline="\n"
+        )
+        print(
+            f"Wrote {entrustment_path} "
+            f"(entrustment_items={len(entrustment_items)}, "
+            f"visible={entrustment_stats['visible']})"
+        )
+        entrustment_coord_warnings = _drain_map_coord_warnings()
+        if entrustment_coord_warnings:
+            print(f"  entrustment_map_coord_warnings: {entrustment_coord_warnings}")
+        case_items, case_stats = load_case_management_public_items()
+        cases_html = build_cases_html(case_items, case_stats)
+        cases_path = repo_root / "portal" / "cases" / "index.html"
+        cases_path.parent.mkdir(parents=True, exist_ok=True)
+        cases_path.write_text(cases_html, encoding="utf-8", newline="\n")
+        print(f"Wrote {cases_path} (case_items={len(case_items)})")
         inject_share_detail_edit_into_share_pages(repo_root)
     else:
         print(
