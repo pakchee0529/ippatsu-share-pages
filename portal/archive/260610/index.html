@@ -376,9 +376,11 @@ body {
       <div class="card-head">
         <h2 class="card-title">北宇智146N7N2E4～146N7N2E5 <span class="status-pill status-pending">未完了</span></h2>
         <p class="item-mgmt">514 10041</p>
-        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.386055,135.69454000000002" target="_blank" rel="noopener noreferrer">地図を開く</a></div>
+        <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.386055,135.69454000000002" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="planned-two-wrap-0" data-two-map="planned-two-map-0" data-two-json="planned-two-geo-0" aria-expanded="false" aria-controls="planned-two-wrap-0">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="planned-note-0" data-note-toggle>現場指示</button></div>
       </div>
-      
+      <script type="application/json" id="planned-two-geo-0">{"a": {"name": "北宇智146N7N2E4～146N7N2E5", "lat": 34.38611, "lng": 135.69458}, "b": {"name": "北宇智146N7N2E4～146N7N2E5", "lat": 34.386, "lng": 135.6945}}</script>
+      <div class="two-map-wrap" id="planned-two-wrap-0" hidden><div id="planned-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="planned-note-0" hidden><p class="archive-status-line">状態: 未完了</p><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>処理方法</th><td>持出</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>2.5m</td></tr><tr><th>傾斜</th><td>平</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>4</td><td>0</td></tr><tr><th>〜20未満</th><td>7</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>11</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>当日予定・未完了。完了扱いではありません。</div></div>
 </article>
   </section>
 
@@ -514,7 +516,7 @@ body {
   });
 
 
-  var points = [{"name": "高滝9S9～9S10", "lat": 33.9646, "lng": 135.81646, "management_no": "514 04667"}, {"name": "玉置山61～62", "lat": 33.93547, "lng": 135.80269, "management_no": "514 05231"}, {"name": "玉置山75～76", "lat": 33.93637, "lng": 135.79735, "management_no": "514 05245"}, {"name": "玉置山76～77", "lat": 33.93686, "lng": 135.79722, "management_no": "514 05247"}];
+  var points = [{"name": "高滝9S9～9S10", "lat": 33.9646, "lng": 135.81646, "management_no": "514 04667"}, {"name": "玉置山61～62", "lat": 33.93547, "lng": 135.80269, "management_no": "514 05231"}, {"name": "玉置山75～76", "lat": 33.93637, "lng": 135.79735, "management_no": "514 05245"}, {"name": "玉置山76～77", "lat": 33.93686, "lng": 135.79722, "management_no": "514 05247"}, {"name": "北宇智146N7N2E4～146N7N2E5", "lat": 34.38611, "lng": 135.69458, "management_no": "514 10041"}];
   var mapEl = document.getElementById("share-map");
   if (mapEl && Array.isArray(points) && points.length) {
     var map = L.map("share-map", { scrollWheelZoom: false });

@@ -127,7 +127,13 @@ python scripts/generate_portal.py --mode completion-archive --date YYMMDD `
 git restore portal/index.html   # completion-archive が TOP を触る副作用対策
 ```
 
-6. **確認** — `portal/archive/index.html` と `portal/archive/YYMMDD/index.html`。`portal/index.html` と `share/**` に意図しない差分がないこと。
+6. **確認** — `portal/archive/index.html` と `portal/archive/YYMMDD/index.html`。`portal/index.html` と `share/**` に意図しない差分がないこと。公開前にアーカイブ表示の不変条件も検査する。
+
+```powershell
+python scripts/verify_archive_pages.py --date YYMMDD `
+  --completion-reports-root C:\Users\kotan\Projects\ippatsu-pc-prod\output\completion_reports_export
+```
+
 7. **publish** — archive 関連と docs のみ明示 `git add` → commit → push（人間 Go 後）。
 
 ### 6.2.1 アーカイブTOPの件名ルール
@@ -174,6 +180,7 @@ git restore portal/index.html   # completion-archive が TOP を触る副作用�
 - `portal/archive/index.html`
 - `portal/archive/YYMMDD/index.html`
 - `portal/archive_manifest.json`
+- `scripts/verify_archive_pages.py`（検証ロジックを更新した場合のみ）
 - `docs/work_logs/*`（該当ログ）
 
 **含めない:** `portal/index.html`、`share/**`、`output/`

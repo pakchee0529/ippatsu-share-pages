@@ -43,6 +43,7 @@ Supabase 完了報告（ippatsu-pc）だけでは **本 repo の `portal/archive
 | 3 | ippatsu-pc | 未完了は `planned_but_incomplete`（DB 不変。例: 51410041 / 51405397） |
 | 4 | **share-pages** | `portal/archive_manifest.json` merge |
 | 5 | **share-pages** | `--mode completion-archive --date YYMMDD --completion-reports-root ...` |
+| 5.5 | **share-pages** | `scripts/verify_archive_pages.py --date YYMMDD --completion-reports-root ...` で TOP 件名・詳細カード・未完了枠・全体地図を検査 |
 | 6 | **share-pages** | archive のみ commit/push |
 
 **禁止:** 完了報告＝archive 済みとみなさない / `--mode full` / portal TOP だけで archive 済みとみなさない / 未完了の DB completed 化 / `data/completion_reports` 直接書込 / `output/` commit / `git add .`
