@@ -2188,11 +2188,16 @@ body {{
   box-shadow: 0 2px 8px rgba(31,43,58,.045);
 }}
 .card-head {{
-  gap: 0.7rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.55rem 0.65rem;
 }}
 .share-status-pill {{
   display: inline-flex;
   align-items: center;
+  grid-column: 1;
+  grid-row: 1;
   width: fit-content;
   padding: 0.18rem 0.52rem;
   border-radius: 999px;
@@ -2203,6 +2208,8 @@ body {{
   line-height: 1.35;
 }}
 .card-title {{
+  grid-column: 1 / -1;
+  grid-row: 2;
   font-weight: 700;
   line-height: 1.35;
   overflow-wrap: anywhere;
@@ -2210,8 +2217,11 @@ body {{
 .item-mgmt {{
   display: inline-flex;
   align-items: center;
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
   width: fit-content;
-  margin-top: -0.05rem;
+  margin: 0;
   padding: 0.14rem 0.45rem;
   border-radius: 999px;
   background: #eef2f7;
@@ -2220,9 +2230,21 @@ body {{
   font-size: 0.84rem;
   font-weight: 700;
 }}
+.card-actions {{
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}}
 .btn {{
   min-height: 44px;
   border-radius: 10px;
+}}
+.card-actions .btn {{
+  width: 100%;
+  justify-content: center;
 }}
 .btn-map {{
   background: var(--share-accent);
@@ -2256,13 +2278,18 @@ body {{
     grid-template-columns: 1fr;
   }}
   .share-quick-nav a {{
-    flex: 1 1 calc(50% - 0.25rem);
+    flex: 1 1 auto;
   }}
   .card-actions .btn {{
-    flex: 1 1 100%;
+    min-width: 0;
   }}
   .page-title {{
     font-size: 1.22rem;
+  }}
+}}
+@media (max-width: 380px) {{
+  .card-actions {{
+    grid-template-columns: 1fr;
   }}
 }}
 </style>
@@ -2324,6 +2351,11 @@ def _inject_share_page_summary(html: str, date_key: str) -> str:
   <a href="../../portal/archive/">アーカイブ</a>
 </nav>
 """
+    summary = re.sub(
+        r'\n\s*<a href="../../portal/(?:cases|archive)/">[\s\S]*?</a>',
+        "",
+        summary,
+    )
     return re.sub(r"(</header>)", r"\1" + summary, out, count=1, flags=re.I)
 
 
