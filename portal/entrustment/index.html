@@ -6,12 +6,18 @@
 <title>付託待ち</title>
 <style>
 :root {
-  --bg: #f4f5f7;
+  --bg: #eef1f5;
   --card: #fff;
-  --text: #1a1a1a;
-  --muted: #5c6370;
-  --border: #e1e4e8;
-  --accent: #2563eb;
+  --text: #172033;
+  --muted: #657084;
+  --border: #d9e0ea;
+  --accent: #1f4f7a;
+  --shadow: 0 10px 26px rgba(31, 43, 58, .08);
+  --survey: #2563eb;
+  --negotiation: #7c3aed;
+  --entrustment: #0f766e;
+  --construction: #b45309;
+  --return: #b91c1c;
 }
 * { box-sizing: border-box; }
 body {
@@ -113,9 +119,73 @@ a.portal-menu-item:focus-visible {
 }
 
 .lead {
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.9rem;
   color: var(--muted);
   font-size: 0.92rem;
+}
+.status-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.85rem;
+}
+.status-navigation a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid #c9d5e6;
+  background: #fff;
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.case-toolbar {
+  position: sticky;
+  top: 0.5rem;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+  margin: 0 0 0.9rem;
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255,255,255,.94);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+.case-search {
+  width: 100%;
+  min-height: 2.8rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #b9c4d3;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font-size: 1rem;
+}
+.case-search:focus {
+  outline: 3px solid rgba(31,79,122,.18);
+  border-color: var(--accent);
+}
+.case-total {
+  min-width: 5.4rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: #172033;
+  color: #fff;
+  text-align: center;
+  font-weight: 800;
+}
+.case-total span {
+  display: block;
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 .case-card {
   display: flex;
@@ -124,27 +194,51 @@ a.portal-menu-item:focus-visible {
   align-items: flex-start;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 0.9rem 1rem;
-  margin-bottom: 0.75rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  margin-bottom: 0.68rem;
+  box-shadow: 0 2px 8px rgba(31,43,58,.045);
+}
+.case-card[hidden] {
+  display: none;
 }
 .case-card-main { min-width: 0; }
-.case-status {
-  margin: 0 0 0.25rem;
-  color: var(--accent);
-  font-size: 0.8rem;
-  font-weight: 700;
+.case-status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.case-status-pill.status-entrustment_wait {
+  background: var(--entrustment);
 }
 .case-title {
-  margin: 0;
+  margin: 0.35rem 0 0;
   font-size: 1.05rem;
+  font-weight: 700;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 .case-meta, .case-note {
   margin: 0.25rem 0 0;
   color: var(--muted);
   font-size: 0.86rem;
+}
+.case-meta {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.14rem 0.45rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #243044;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-weight: 700;
 }
 .card-actions {
   flex: 0 0 auto;
@@ -172,6 +266,19 @@ a.portal-menu-item:focus-visible {
   border: 1px solid var(--border);
   border-radius: 12px;
 }
+.filter-empty {
+  display: none;
+  margin: 0.75rem 0 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px dashed #b9c4d3;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--muted);
+  text-align: center;
+}
+.filter-empty.is-visible {
+  display: block;
+}
 .footer-note {
   margin: 1rem 0 0;
   color: var(--muted);
@@ -179,6 +286,10 @@ a.portal-menu-item:focus-visible {
   text-align: center;
 }
 @media (max-width: 520px) {
+  body { padding: 0.55rem 0.55rem 1rem; }
+  .case-toolbar { grid-template-columns: 1fr; }
+  .case-total { min-width: 0; }
+  .status-navigation a { flex: 1 1 calc(50% - 0.25rem); justify-content: center; }
   .case-card { flex-direction: column; }
   .card-actions, .btn { width: 100%; }
 }
@@ -207,6 +318,15 @@ a.portal-menu-item:focus-visible {
   </header>
 <main>
   <p class="lead">付託待ちのCSを確認する閲覧専用ページです。地主名・住所・連絡先などの個人情報は表示しません。</p>
+  <nav class="status-navigation" aria-label="関連ページ">
+    <a href="../cases/#status-entrustment_wait">案件管理で見る</a>
+    <a href="../negotiation/">交渉待ちへ</a>
+  </nav>
+  <div class="case-toolbar" role="search">
+    <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名で検索" autocomplete="off">
+    <div class="case-total"><span>表示</span><strong id="caseVisibleCount">0</strong></div>
+  </div>
+  <p id="caseFilterEmpty" class="filter-empty">一致する案件はありません。</p>
   <div class="card-list" role="list">
 <p class="empty-note">付託待ちリストはまだありません。</p>
   </div>
@@ -237,6 +357,25 @@ a.portal-menu-item:focus-visible {
   });
 })();
 
+(() => {
+  const input = document.getElementById("caseSearch");
+  const visibleCount = document.getElementById("caseVisibleCount");
+  const empty = document.getElementById("caseFilterEmpty");
+  const rows = Array.from(document.querySelectorAll(".case-card"));
+  function applyFilter() {
+    const q = (input.value || "").trim().toLowerCase();
+    let visible = 0;
+    rows.forEach((row) => {
+      const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
+      const hit = !q || haystack.includes(q);
+      row.hidden = !hit;
+      if (hit) visible += 1;
+    });
+    if (visibleCount) visibleCount.textContent = String(visible);
+    if (empty) empty.classList.toggle("is-visible", visible === 0);
+  }
+  if (input) input.addEventListener("input", applyFilter);
+})();
 </script>
 </body>
 </html>

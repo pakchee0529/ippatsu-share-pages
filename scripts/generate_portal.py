@@ -5189,6 +5189,7 @@ def build_survey_html(
   data-label="{escape_html(it.label)}"
   data-requested-action="{survey_requested_action}"{multipin_attr}{hidden_attr}>
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">{escape_html(it.label)}</h2>
     <p class="item-mgmt">{escape_html(it.management_no)}</p>
     <div class="card-actions">{actions}</div>
@@ -5248,13 +5249,15 @@ def build_survey_html(
   crossorigin="">
 <style>
 :root {{
-  --bg: #f4f5f7;
+  --bg: #eef1f5;
   --card: #fff;
-  --text: #1a1a1a;
-  --muted: #5c6370;
-  --border: #e1e4e8;
-  --accent: #2563eb;
+  --text: #172033;
+  --muted: #657084;
+  --border: #d9e0ea;
+  --accent: #1f4f7a;
   --accent2: #0d9488;
+  --shadow: 0 10px 26px rgba(31, 43, 58, .08);
+  --survey: #2563eb;
 }}
 * {{ box-sizing: border-box; }}
 body {{
@@ -5265,7 +5268,7 @@ body {{
   color: var(--text);
   line-height: 1.5;
   padding: 0.75rem 0.75rem 1.25rem;
-  max-width: 40rem;
+  max-width: 46rem;
   margin-left: auto;
   margin-right: auto;
 }}
@@ -5296,21 +5299,47 @@ body {{
   color: var(--muted);
   background: #f1f5f9;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
+}}
+.status-navigation {{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.85rem;
+}}
+.status-navigation a {{
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid #c9d5e6;
+  background: #fff;
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
 }}
 .card {{
   background: var(--card);
-  border-radius: 10px;
+  border-radius: 16px;
   border: 1px solid var(--border);
   padding: 0.85rem 1rem;
   margin-bottom: 0.75rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  box-shadow: 0 2px 8px rgba(31,43,58,.045);
 }}
 .item-mgmt {{
-  margin: -0.15rem 0 0;
-  font-size: 0.82rem;
-  color: var(--muted);
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: -0.05rem 0 0;
+  padding: 0.14rem 0.45rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #243044;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.84rem;
+  font-weight: 700;
 }}
 .card-head {{
   display: flex;
@@ -5319,8 +5348,24 @@ body {{
 }}
 .card-title {{
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}}
+.case-status-pill {{
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.35;
+}}
+.case-status-pill.status-survey_wait {{
+  background: var(--survey);
 }}
 .card-actions {{
   display: flex;
@@ -5338,7 +5383,7 @@ body {{
   border: none;
   cursor: pointer;
   text-decoration: none;
-  min-height: 40px;
+  min-height: 44px;
   touch-action: manipulation;
 }}
 .btn-map {{
@@ -5407,6 +5452,19 @@ body {{
   font-size: 0.88rem;
   color: var(--muted);
 }}
+.filter-empty {{
+  display: none;
+  margin: 0.75rem 0 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px dashed #b9c4d3;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--muted);
+  text-align: center;
+}}
+.filter-empty.is-visible {{
+  display: block;
+}}
 .footer-note {{
   margin-top: 1.1rem;
   font-size: 0.8rem;
@@ -5421,6 +5479,12 @@ body {{
     justify-content: space-between;
   }}
   .page-title {{ font-size: 1.4rem; }}
+}}
+@media (max-width: 560px) {{
+  body {{ padding: 0.55rem 0.55rem 1rem; }}
+  .status-navigation a {{ flex: 1 1 calc(50% - 0.25rem); justify-content: center; }}
+  .card-actions .btn {{ flex: 1 1 100%; }}
+  .card-actions-report .btn {{ flex-basis: 100%; min-width: 0; }}
 }}
 .card-actions-report {{
   display: flex;
@@ -5540,6 +5604,10 @@ body {{
 {subpage_header}
   <p class="lead" id="survey-count-lead" data-survey-candidate-total="{len(items)}">径間ごとに地図・現場指示・操作ボタンがあります。<span class="survey-visible-count-line">表示中 <strong id="survey-visible-count">{len(items)}</strong> 件</span><span class="survey-count-hint muted-tiny" id="survey-count-hint" hidden>（候補 {len(items)} 件・交渉待ち・返却候補は除く）</span></p>
   <p class="report-disclaimer">{survey_disclaimer}</p>
+  <nav class="status-navigation" aria-label="関連ページ">
+    <a href="../cases/#status-survey_wait">案件管理で見る</a>
+    <a href="../negotiation/">交渉待ちへ</a>
+  </nav>
   <p id="survey-overlay-warning" class="survey-overlay-warning" hidden role="status"></p>
   <main>
 {items_html}
@@ -5647,10 +5715,12 @@ def build_negotiation_html(
             )
         cards.append(
             f"""<article class="card negotiation-card" data-card-index="{idx}"
+  data-search="{escape_html(' '.join([it.management_no, it.management_no_key, it.label, '交渉待ち']).strip())}"
   data-management-no-key="{escape_html(it.management_no_key)}"
   data-management-no="{escape_html(it.management_no)}"
   data-label="{escape_html(it.label)}">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">{escape_html(it.label)}</h2>
     <p class="item-mgmt">{escape_html(it.management_no)}</p>
     <div class="card-actions">{actions}</div>
@@ -5703,13 +5773,15 @@ def build_negotiation_html(
   crossorigin="">
 <style>
 :root {{
-  --bg: #f4f5f7;
+  --bg: #eef1f5;
   --card: #fff;
-  --text: #1a1a1a;
-  --muted: #5c6370;
-  --border: #e1e4e8;
-  --accent: #2563eb;
+  --text: #172033;
+  --muted: #657084;
+  --border: #d9e0ea;
+  --accent: #1f4f7a;
   --accent2: #0d9488;
+  --shadow: 0 10px 26px rgba(31, 43, 58, .08);
+  --negotiation: #7c3aed;
 }}
 * {{ box-sizing: border-box; }}
 body {{
@@ -5720,7 +5792,7 @@ body {{
   color: var(--text);
   line-height: 1.5;
   padding: 0.75rem 0.75rem 1.25rem;
-  max-width: 40rem;
+  max-width: 46rem;
   margin-left: auto;
   margin-right: auto;
 }}
@@ -5739,21 +5811,95 @@ body {{
   color: var(--muted);
   background: #f1f5f9;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
+}}
+.status-navigation {{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.85rem;
+}}
+.status-navigation a {{
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid #c9d5e6;
+  background: #fff;
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
+}}
+.case-toolbar {{
+  position: sticky;
+  top: 0.5rem;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+  margin: 0 0 0.9rem;
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255,255,255,.94);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}}
+.case-search {{
+  width: 100%;
+  min-height: 2.8rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #b9c4d3;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font-size: 1rem;
+}}
+.case-search:focus {{
+  outline: 3px solid rgba(31,79,122,.18);
+  border-color: var(--accent);
+}}
+.case-total {{
+  min-width: 5.4rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: #172033;
+  color: #fff;
+  text-align: center;
+  font-weight: 800;
+}}
+.case-total span {{
+  display: block;
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 700;
 }}
 .card {{
   background: var(--card);
-  border-radius: 10px;
+  border-radius: 16px;
   border: 1px solid var(--border);
   padding: 0.85rem 1rem;
   margin-bottom: 0.75rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  box-shadow: 0 2px 8px rgba(31,43,58,.045);
+}}
+.card[hidden] {{
+  display: none;
 }}
 .item-mgmt {{
-  margin: -0.15rem 0 0;
-  font-size: 0.82rem;
-  color: var(--muted);
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: -0.05rem 0 0;
+  padding: 0.14rem 0.45rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #243044;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.84rem;
+  font-weight: 700;
 }}
 .card-head {{
   display: flex;
@@ -5762,8 +5908,24 @@ body {{
 }}
 .card-title {{
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}}
+.case-status-pill {{
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.35;
+}}
+.case-status-pill.status-negotiation_wait {{
+  background: var(--negotiation);
 }}
 .card-actions {{
   display: flex;
@@ -5781,7 +5943,7 @@ body {{
   border: none;
   cursor: pointer;
   text-decoration: none;
-  min-height: 40px;
+  min-height: 44px;
   touch-action: manipulation;
 }}
 .btn-map {{
@@ -5865,6 +6027,13 @@ body {{
   }}
   .page-title {{ font-size: 1.4rem; }}
 }}
+@media (max-width: 560px) {{
+  body {{ padding: 0.55rem 0.55rem 1rem; }}
+  .case-toolbar {{ grid-template-columns: 1fr; }}
+  .case-total {{ min-width: 0; }}
+  .status-navigation a {{ flex: 1 1 calc(50% - 0.25rem); justify-content: center; }}
+  .card-actions .btn {{ flex: 1 1 100%; }}
+}}
 .card-actions-revert {{
   display: flex;
   flex-direction: column;
@@ -5904,6 +6073,16 @@ body {{
 {subpage_header}
   <p class="lead">現調済み・対応中の案件です。地主交渉に進む案件を確認します。（表示 {len(items)} 件）</p>
   <p class="report-disclaimer">{negotiation_disclaimer}</p>
+  <nav class="status-navigation" aria-label="関連ページ">
+    <a href="../cases/#status-negotiation_wait">案件管理で見る</a>
+    <a href="../survey/">現調待ちへ</a>
+    <a href="../entrustment/">付託待ちへ</a>
+  </nav>
+  <div class="case-toolbar" role="search">
+    <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名で検索" autocomplete="off">
+    <div class="case-total"><span>表示</span><strong id="caseVisibleCount">{len(items)}</strong></div>
+  </div>
+  <p id="caseFilterEmpty" class="filter-empty">一致する案件はありません。</p>
   <main>
 {items_html}
 {return_wait_section}
@@ -5917,6 +6096,23 @@ body {{
 (function () {{
   // Portal status overlay (B-plan immediate). Never embed service_role.
 {negotiation_portal_js}
+  const input = document.getElementById("caseSearch");
+  const visibleCount = document.getElementById("caseVisibleCount");
+  const empty = document.getElementById("caseFilterEmpty");
+  const rows = Array.from(document.querySelectorAll(".negotiation-card"));
+  function applyFilter() {{
+    const q = (input.value || "").trim().toLowerCase();
+    let visible = 0;
+    rows.forEach((row) => {{
+      const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
+      const hit = !q || haystack.includes(q);
+      row.hidden = !hit;
+      if (hit) visible += 1;
+    }});
+    if (visibleCount) visibleCount.textContent = String(visible);
+    if (empty) empty.classList.toggle("is-visible", visible === 0);
+  }}
+  if (input) input.addEventListener("input", applyFilter);
 }})();
   </script>
   <script>
@@ -6795,10 +6991,13 @@ def build_entrustment_html(
         if it.note and it.note != "—":
             note = f'<p class="case-note">{escape_html(it.note)}</p>'
         actions = f'<div class="card-actions">{map_btn}</div>' if map_btn else ""
+        search_text = " ".join(
+            [it.management_no, it.management_no_key, it.label, "付託待ち"]
+        ).strip()
         cards.append(
-            f"""<article class="case-card" data-card-index="{idx}" data-management-no-key="{escape_html(it.management_no_key)}">
+            f"""<article class="case-card" data-card-index="{idx}" data-search="{escape_html(search_text)}" data-management-no-key="{escape_html(it.management_no_key)}">
   <div class="case-card-main">
-    <p class="case-status">付託待ち</p>
+    <span class="case-status-pill status-entrustment_wait">付託待ち</span>
     <h2 class="case-title">{escape_html(it.label)}</h2>
     <p class="case-meta">{escape_html(it.management_no)}</p>
     {note}
@@ -6843,9 +7042,73 @@ body {{
 }}
 {subpage_menu_css}
 .lead {{
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.9rem;
   color: var(--muted);
   font-size: 0.92rem;
+}}
+.status-navigation {{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.85rem;
+}}
+.status-navigation a {{
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid #c9d5e6;
+  background: #fff;
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
+}}
+.case-toolbar {{
+  position: sticky;
+  top: 0.5rem;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+  margin: 0 0 0.9rem;
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255,255,255,.94);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}}
+.case-search {{
+  width: 100%;
+  min-height: 2.8rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #b9c4d3;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font-size: 1rem;
+}}
+.case-search:focus {{
+  outline: 3px solid rgba(31,79,122,.18);
+  border-color: var(--accent);
+}}
+.case-total {{
+  min-width: 5.4rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: #172033;
+  color: #fff;
+  text-align: center;
+  font-weight: 800;
+}}
+.case-total span {{
+  display: block;
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 700;
 }}
 .case-card {{
   display: flex;
@@ -6854,27 +7117,51 @@ body {{
   align-items: flex-start;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 0.9rem 1rem;
-  margin-bottom: 0.75rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  margin-bottom: 0.68rem;
+  box-shadow: 0 2px 8px rgba(31,43,58,.045);
+}}
+.case-card[hidden] {{
+  display: none;
 }}
 .case-card-main {{ min-width: 0; }}
-.case-status {{
-  margin: 0 0 0.25rem;
-  color: var(--accent);
-  font-size: 0.8rem;
-  font-weight: 700;
+.case-status-pill {{
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.35;
+}}
+.case-status-pill.status-entrustment_wait {{
+  background: var(--entrustment);
 }}
 .case-title {{
-  margin: 0;
+  margin: 0.35rem 0 0;
   font-size: 1.05rem;
+  font-weight: 700;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }}
 .case-meta, .case-note {{
   margin: 0.25rem 0 0;
   color: var(--muted);
   font-size: 0.86rem;
+}}
+.case-meta {{
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.14rem 0.45rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #243044;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-weight: 700;
 }}
 .card-actions {{
   flex: 0 0 auto;
@@ -6902,6 +7189,19 @@ body {{
   border: 1px solid var(--border);
   border-radius: 12px;
 }}
+.filter-empty {{
+  display: none;
+  margin: 0.75rem 0 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px dashed #b9c4d3;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--muted);
+  text-align: center;
+}}
+.filter-empty.is-visible {{
+  display: block;
+}}
 .footer-note {{
   margin: 1rem 0 0;
   color: var(--muted);
@@ -6909,6 +7209,10 @@ body {{
   text-align: center;
 }}
 @media (max-width: 520px) {{
+  body {{ padding: 0.55rem 0.55rem 1rem; }}
+  .case-toolbar {{ grid-template-columns: 1fr; }}
+  .case-total {{ min-width: 0; }}
+  .status-navigation a {{ flex: 1 1 calc(50% - 0.25rem); justify-content: center; }}
   .case-card {{ flex-direction: column; }}
   .card-actions, .btn {{ width: 100%; }}
 }}
@@ -6918,6 +7222,15 @@ body {{
 {subpage_header}
 <main>
   <p class="lead">付託待ちのCSを確認する閲覧専用ページです。地主名・住所・連絡先などの個人情報は表示しません。</p>
+  <nav class="status-navigation" aria-label="関連ページ">
+    <a href="../cases/#status-entrustment_wait">案件管理で見る</a>
+    <a href="../negotiation/">交渉待ちへ</a>
+  </nav>
+  <div class="case-toolbar" role="search">
+    <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名で検索" autocomplete="off">
+    <div class="case-total"><span>表示</span><strong id="caseVisibleCount">{len(items)}</strong></div>
+  </div>
+  <p id="caseFilterEmpty" class="filter-empty">一致する案件はありません。</p>
   <div class="card-list" role="list">
 {items_html}
   </div>
@@ -6925,6 +7238,25 @@ body {{
 <p class="footer-note">このページは <code>scripts/generate_portal.py --mode entrustment-only</code> で再生成できます。</p>
 <script>
 {subpage_menu_js}
+(() => {{
+  const input = document.getElementById("caseSearch");
+  const visibleCount = document.getElementById("caseVisibleCount");
+  const empty = document.getElementById("caseFilterEmpty");
+  const rows = Array.from(document.querySelectorAll(".case-card"));
+  function applyFilter() {{
+    const q = (input.value || "").trim().toLowerCase();
+    let visible = 0;
+    rows.forEach((row) => {{
+      const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
+      const hit = !q || haystack.includes(q);
+      row.hidden = !hit;
+      if (hit) visible += 1;
+    }});
+    if (visibleCount) visibleCount.textContent = String(visible);
+    if (empty) empty.classList.toggle("is-visible", visible === 0);
+  }}
+  if (input) input.addEventListener("input", applyFilter);
+}})();
 </script>
 </body>
 </html>

@@ -9,13 +9,15 @@
   crossorigin="">
 <style>
 :root {
-  --bg: #f4f5f7;
+  --bg: #eef1f5;
   --card: #fff;
-  --text: #1a1a1a;
-  --muted: #5c6370;
-  --border: #e1e4e8;
-  --accent: #2563eb;
+  --text: #172033;
+  --muted: #657084;
+  --border: #d9e0ea;
+  --accent: #1f4f7a;
   --accent2: #0d9488;
+  --shadow: 0 10px 26px rgba(31, 43, 58, .08);
+  --survey: #2563eb;
 }
 * { box-sizing: border-box; }
 body {
@@ -26,7 +28,7 @@ body {
   color: var(--text);
   line-height: 1.5;
   padding: 0.75rem 0.75rem 1.25rem;
-  max-width: 40rem;
+  max-width: 46rem;
   margin-left: auto;
   margin-right: auto;
 }
@@ -159,21 +161,47 @@ a.portal-menu-item:focus-visible {
   color: var(--muted);
   background: #f1f5f9;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
+}
+.status-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.85rem;
+}
+.status-navigation a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid #c9d5e6;
+  background: #fff;
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
 }
 .card {
   background: var(--card);
-  border-radius: 10px;
+  border-radius: 16px;
   border: 1px solid var(--border);
   padding: 0.85rem 1rem;
   margin-bottom: 0.75rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  box-shadow: 0 2px 8px rgba(31,43,58,.045);
 }
 .item-mgmt {
-  margin: -0.15rem 0 0;
-  font-size: 0.82rem;
-  color: var(--muted);
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: -0.05rem 0 0;
+  padding: 0.14rem 0.45rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #243044;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 .card-head {
   display: flex;
@@ -182,8 +210,24 @@ a.portal-menu-item:focus-visible {
 }
 .card-title {
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.case-status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.case-status-pill.status-survey_wait {
+  background: var(--survey);
 }
 .card-actions {
   display: flex;
@@ -201,7 +245,7 @@ a.portal-menu-item:focus-visible {
   border: none;
   cursor: pointer;
   text-decoration: none;
-  min-height: 40px;
+  min-height: 44px;
   touch-action: manipulation;
 }
 .btn-map {
@@ -298,6 +342,19 @@ a.portal-menu-item:focus-visible {
   font-size: 0.88rem;
   color: var(--muted);
 }
+.filter-empty {
+  display: none;
+  margin: 0.75rem 0 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px dashed #b9c4d3;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--muted);
+  text-align: center;
+}
+.filter-empty.is-visible {
+  display: block;
+}
 .footer-note {
   margin-top: 1.1rem;
   font-size: 0.8rem;
@@ -312,6 +369,12 @@ a.portal-menu-item:focus-visible {
     justify-content: space-between;
   }
   .page-title { font-size: 1.4rem; }
+}
+@media (max-width: 560px) {
+  body { padding: 0.55rem 0.55rem 1rem; }
+  .status-navigation a { flex: 1 1 calc(50% - 0.25rem); justify-content: center; }
+  .card-actions .btn { flex: 1 1 100%; }
+  .card-actions-report .btn { flex-basis: 100%; min-width: 0; }
 }
 .card-actions-report {
   display: flex;
@@ -450,6 +513,10 @@ a.portal-menu-item:focus-visible {
   </header>
   <p class="lead" id="survey-count-lead" data-survey-candidate-total="19">径間ごとに地図・現場指示・操作ボタンがあります。<span class="survey-visible-count-line">表示中 <strong id="survey-visible-count">19</strong> 件</span><span class="survey-count-hint muted-tiny" id="survey-count-hint" hidden>（候補 19 件・交渉待ち・返却候補は除く）</span></p>
   <p class="report-disclaimer">「現調済みにする」で交渉待ちへ即時反映します（portal status overlay）。「返却候補にする」はサーバーに登録し、この一覧から非表示になります。誤操作は交渉待ちページの「現調待ちに戻す」で取り消せます。従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。</p>
+  <nav class="status-navigation" aria-label="関連ページ">
+    <a href="../cases/#status-survey_wait">案件管理で見る</a>
+    <a href="../negotiation/">交渉待ちへ</a>
+  </nav>
   <p id="survey-overlay-warning" class="survey-overlay-warning" hidden role="status"></p>
   <main>
 <article class="card survey-update-card" data-card-index="0"
@@ -458,6 +525,7 @@ a.portal-menu-item:focus-visible {
   data-label="Ｐ奥谷11W12S1～11W12S2"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32353" data-multipin-lng="135.72786" hidden data-portal-moved="negotiation">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">Ｐ奥谷11W12S1～11W12S2</h2>
     <p class="item-mgmt">514 00263</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32353,135.72786" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-0" data-note-toggle>現場指示</button></div>
@@ -474,6 +542,7 @@ a.portal-menu-item:focus-visible {
   data-label="赤松35～36"
   data-requested-action="mark_survey_done" data-multipin-lat="34.33258" data-multipin-lng="135.76051">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">赤松35～36</h2>
     <p class="item-mgmt">514 00361</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.33258,135.76051" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-1" data-note-toggle>現場指示</button></div>
@@ -490,6 +559,7 @@ a.portal-menu-item:focus-visible {
   data-label="上之4W4～4W5"
   data-requested-action="mark_survey_done" data-multipin-lat="34.36296" data-multipin-lng="135.67868">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">上之4W4～4W5</h2>
     <p class="item-mgmt">514 02038</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.36296,135.67868" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-2" data-note-toggle>現場指示</button></div>
@@ -506,6 +576,7 @@ a.portal-menu-item:focus-visible {
   data-label="白銀63N5W3～63N5W4"
   data-requested-action="mark_survey_done" data-multipin-lat="34.34186" data-multipin-lng="135.73373">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">白銀63N5W3～63N5W4</h2>
     <p class="item-mgmt">514 04162</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.34186,135.73373" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-3" data-note-toggle>現場指示</button></div>
@@ -522,6 +593,7 @@ a.portal-menu-item:focus-visible {
   data-label="白銀115W6S1N2～115W6S1"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31691" data-multipin-lng="135.73552">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">白銀115W6S1N2～115W6S1</h2>
     <p class="item-mgmt">514 04189</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.31691,135.73552" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-4" data-note-toggle>現場指示</button></div>
@@ -538,6 +610,7 @@ a.portal-menu-item:focus-visible {
   data-label="白銀115W9～115W9W1"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31877" data-multipin-lng="135.73439">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">白銀115W9～115W9W1</h2>
     <p class="item-mgmt">514 04194</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.31877,135.73439" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-5" data-two-map="share-two-map-5" data-two-json="two-geo-5" aria-expanded="false" aria-controls="two-wrap-5">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-5" data-note-toggle>現場指示</button></div>
@@ -554,6 +627,7 @@ a.portal-menu-item:focus-visible {
   data-label="平沼田17～18"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32461" data-multipin-lng="135.75285" hidden data-portal-moved="negotiation">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">平沼田17～18</h2>
     <p class="item-mgmt">514 07220</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32461,135.75285" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-6" data-two-map="share-two-map-6" data-two-json="two-geo-6" aria-expanded="false" aria-controls="two-wrap-6">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-6" data-note-toggle>現場指示</button></div>
@@ -570,6 +644,7 @@ a.portal-menu-item:focus-visible {
   data-label="平沼田18～19"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32473" data-multipin-lng="135.75302" hidden data-portal-moved="negotiation">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">平沼田18～19</h2>
     <p class="item-mgmt">514 07272</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32473,135.75302" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-7" data-two-map="share-two-map-7" data-two-json="two-geo-7" aria-expanded="false" aria-controls="two-wrap-7">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-7" data-note-toggle>現場指示</button></div>
@@ -586,6 +661,7 @@ a.portal-menu-item:focus-visible {
   data-label="平沼田43N4E1～43N4E2"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32059" data-multipin-lng="135.7605">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">平沼田43N4E1～43N4E2</h2>
     <p class="item-mgmt">514 07898</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32059,135.7605" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-8" data-two-map="share-two-map-8" data-two-json="two-geo-8" aria-expanded="false" aria-controls="two-wrap-8">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-8" data-note-toggle>現場指示</button></div>
@@ -602,6 +678,7 @@ a.portal-menu-item:focus-visible {
   data-label="湯川4E6～4E7"
   data-requested-action="mark_survey_done" data-multipin-lat="34.33446" data-multipin-lng="135.74192" hidden data-portal-moved="negotiation">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">湯川4E6～4E7</h2>
     <p class="item-mgmt">514 08008</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.33446,135.74192" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-9" data-two-map="share-two-map-9" data-two-json="two-geo-9" aria-expanded="false" aria-controls="two-wrap-9">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-9" data-note-toggle>現場指示</button></div>
@@ -618,6 +695,7 @@ a.portal-menu-item:focus-visible {
   data-label="赤松1～1G1"
   data-requested-action="mark_survey_done" data-multipin-lat="34.3324" data-multipin-lng="135.7446" hidden data-portal-moved="negotiation">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">赤松1～1G1</h2>
     <p class="item-mgmt">514 09097</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.3324,135.7446" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-10" data-two-map="share-two-map-10" data-two-json="two-geo-10" aria-expanded="false" aria-controls="two-wrap-10">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-10" data-note-toggle>現場指示</button></div>
@@ -634,6 +712,7 @@ a.portal-menu-item:focus-visible {
   data-label="白銀115W6～115W6S1"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31784" data-multipin-lng="135.73535">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">白銀115W6～115W6S1</h2>
     <p class="item-mgmt">514 09133</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.31784,135.73535" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-11" data-two-map="share-two-map-11" data-two-json="two-geo-11" aria-expanded="false" aria-controls="two-wrap-11">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-11" data-note-toggle>現場指示</button></div>
@@ -650,6 +729,7 @@ a.portal-menu-item:focus-visible {
   data-label="西新子14G1～14E3"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31702" data-multipin-lng="135.74864" hidden data-portal-moved="negotiation">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">西新子14G1～14E3</h2>
     <p class="item-mgmt">514 09228</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.31702,135.74864" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-12" data-two-map="share-two-map-12" data-two-json="two-geo-12" aria-expanded="false" aria-controls="two-wrap-12">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-12" data-note-toggle>現場指示</button></div>
@@ -666,6 +746,7 @@ a.portal-menu-item:focus-visible {
   data-label="西新子12N1～12N2"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31831" data-multipin-lng="135.74634" hidden data-portal-moved="negotiation">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">西新子12N1～12N2</h2>
     <p class="item-mgmt">514 09459</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.31831,135.74634" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-13" data-two-map="share-two-map-13" data-two-json="two-geo-13" aria-expanded="false" aria-controls="two-wrap-13">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-13" data-note-toggle>現場指示</button></div>
@@ -682,6 +763,7 @@ a.portal-menu-item:focus-visible {
   data-label="柴ヶ谷3G1～4"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32879" data-multipin-lng="135.76127">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">柴ヶ谷3G1～4</h2>
     <p class="item-mgmt">514 09991</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32879,135.76127" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-14" data-two-map="share-two-map-14" data-two-json="two-geo-14" aria-expanded="false" aria-controls="two-wrap-14">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-14" data-note-toggle>現場指示</button></div>
@@ -698,6 +780,7 @@ a.portal-menu-item:focus-visible {
   data-label="慎1～2"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31806" data-multipin-lng="135.73273">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">慎1～2</h2>
     <p class="item-mgmt">514 09998</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.31806,135.73273" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-15" data-two-map="share-two-map-15" data-two-json="two-geo-15" aria-expanded="false" aria-controls="two-wrap-15">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-15" data-note-toggle>現場指示</button></div>
@@ -714,6 +797,7 @@ a.portal-menu-item:focus-visible {
   data-label="江出2N14～生子93E1"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32005" data-multipin-lng="135.70484">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">江出2N14～生子93E1</h2>
     <p class="item-mgmt">514 10139</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.32005,135.70484" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-16" data-two-map="share-two-map-16" data-two-json="two-geo-16" aria-expanded="false" aria-controls="two-wrap-16">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-16" data-note-toggle>現場指示</button></div>
@@ -730,6 +814,7 @@ a.portal-menu-item:focus-visible {
   data-label="城戸11W1～大日川2"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28639" data-multipin-lng="135.72521">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">城戸11W1～大日川2</h2>
     <p class="item-mgmt">514 10417</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.28639,135.72521" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-17" data-two-map="share-two-map-17" data-two-json="two-geo-17" aria-expanded="false" aria-controls="two-wrap-17">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-17" data-note-toggle>現場指示</button></div>
@@ -746,6 +831,7 @@ a.portal-menu-item:focus-visible {
   data-label="向山7S1～7S2"
   data-requested-action="mark_survey_done" data-multipin-lat="34.37851" data-multipin-lng="135.71279">
   <div class="card-head">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">向山7S1～7S2</h2>
     <p class="item-mgmt">514 10418</p>
     <div class="card-actions"><a class="btn btn-map" href="https://www.google.com/maps?q=34.37851,135.71279" target="_blank" rel="noopener noreferrer">地図を表示</a><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-18" data-two-map="share-two-map-18" data-two-json="two-geo-18" aria-expanded="false" aria-controls="two-wrap-18">2点地図を表示</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-18" data-note-toggle>現場指示</button></div>

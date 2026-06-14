@@ -9,13 +9,15 @@
   crossorigin="">
 <style>
 :root {
-  --bg: #f4f5f7;
+  --bg: #eef1f5;
   --card: #fff;
-  --text: #1a1a1a;
-  --muted: #5c6370;
-  --border: #e1e4e8;
-  --accent: #2563eb;
+  --text: #172033;
+  --muted: #657084;
+  --border: #d9e0ea;
+  --accent: #1f4f7a;
   --accent2: #0d9488;
+  --shadow: 0 10px 26px rgba(31, 43, 58, .08);
+  --negotiation: #7c3aed;
 }
 * { box-sizing: border-box; }
 body {
@@ -26,7 +28,7 @@ body {
   color: var(--text);
   line-height: 1.5;
   padding: 0.75rem 0.75rem 1.25rem;
-  max-width: 40rem;
+  max-width: 46rem;
   margin-left: auto;
   margin-right: auto;
 }
@@ -193,21 +195,95 @@ a.portal-menu-item:focus-visible {
   color: var(--muted);
   background: #f1f5f9;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
+}
+.status-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.85rem;
+}
+.status-navigation a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid #c9d5e6;
+  background: #fff;
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.case-toolbar {
+  position: sticky;
+  top: 0.5rem;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+  margin: 0 0 0.9rem;
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255,255,255,.94);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+.case-search {
+  width: 100%;
+  min-height: 2.8rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #b9c4d3;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font-size: 1rem;
+}
+.case-search:focus {
+  outline: 3px solid rgba(31,79,122,.18);
+  border-color: var(--accent);
+}
+.case-total {
+  min-width: 5.4rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: #172033;
+  color: #fff;
+  text-align: center;
+  font-weight: 800;
+}
+.case-total span {
+  display: block;
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 .card {
   background: var(--card);
-  border-radius: 10px;
+  border-radius: 16px;
   border: 1px solid var(--border);
   padding: 0.85rem 1rem;
   margin-bottom: 0.75rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  box-shadow: 0 2px 8px rgba(31,43,58,.045);
+}
+.card[hidden] {
+  display: none;
 }
 .item-mgmt {
-  margin: -0.15rem 0 0;
-  font-size: 0.82rem;
-  color: var(--muted);
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: -0.05rem 0 0;
+  padding: 0.14rem 0.45rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #243044;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 .card-head {
   display: flex;
@@ -216,8 +292,24 @@ a.portal-menu-item:focus-visible {
 }
 .card-title {
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.case-status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.case-status-pill.status-negotiation_wait {
+  background: var(--negotiation);
 }
 .card-actions {
   display: flex;
@@ -235,7 +327,7 @@ a.portal-menu-item:focus-visible {
   border: none;
   cursor: pointer;
   text-decoration: none;
-  min-height: 40px;
+  min-height: 44px;
   touch-action: manipulation;
 }
 .btn-map {
@@ -347,6 +439,13 @@ a.portal-menu-item:focus-visible {
   }
   .page-title { font-size: 1.4rem; }
 }
+@media (max-width: 560px) {
+  body { padding: 0.55rem 0.55rem 1rem; }
+  .case-toolbar { grid-template-columns: 1fr; }
+  .case-total { min-width: 0; }
+  .status-navigation a { flex: 1 1 calc(50% - 0.25rem); justify-content: center; }
+  .card-actions .btn { flex: 1 1 100%; }
+}
 .card-actions-revert {
   display: flex;
   flex-direction: column;
@@ -405,12 +504,24 @@ a.portal-menu-item:focus-visible {
   </header>
   <p class="lead">現調済み・対応中の案件です。地主交渉に進む案件を確認します。（表示 29 件）</p>
   <p class="report-disclaimer">「現調待ちに戻す」は誤操作取り消し用です。押すと portal status overlay を解除し、現調待ちページへ戻ります。Google フォーム報告は現調待ちページから行ってください。</p>
+  <nav class="status-navigation" aria-label="関連ページ">
+    <a href="../cases/#status-negotiation_wait">案件管理で見る</a>
+    <a href="../survey/">現調待ちへ</a>
+    <a href="../entrustment/">付託待ちへ</a>
+  </nav>
+  <div class="case-toolbar" role="search">
+    <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名で検索" autocomplete="off">
+    <div class="case-total"><span>表示</span><strong id="caseVisibleCount">29</strong></div>
+  </div>
+  <p id="caseFilterEmpty" class="filter-empty">一致する案件はありません。</p>
   <main>
 <article class="card negotiation-card" data-card-index="0"
+  data-search="514 00214 51400214 Ｐ百谷49N3～49N4 交渉待ち"
   data-management-no-key="51400214"
   data-management-no="514 00214"
   data-label="Ｐ百谷49N3～49N4">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">Ｐ百谷49N3～49N4</h2>
     <p class="item-mgmt">514 00214</p>
     <div class="card-actions"></div>
@@ -420,10 +531,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="1"
+  data-search="514 00376 51400376 赤松26N7～26N8 交渉待ち"
   data-management-no-key="51400376"
   data-management-no="514 00376"
   data-label="赤松26N7～26N8">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">赤松26N7～26N8</h2>
     <p class="item-mgmt">514 00376</p>
     <div class="card-actions"></div>
@@ -433,10 +546,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="2"
+  data-search="514 00394 51400394 芦ヶ瀬1～2 交渉待ち"
   data-management-no-key="51400394"
   data-management-no="514 00394"
   data-label="芦ヶ瀬1～2">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">芦ヶ瀬1～2</h2>
     <p class="item-mgmt">514 00394</p>
     <div class="card-actions"></div>
@@ -446,10 +561,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="3"
+  data-search="514 00395 51400395 芦ヶ瀬2～3 交渉待ち"
   data-management-no-key="51400395"
   data-management-no="514 00395"
   data-label="芦ヶ瀬2～3">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">芦ヶ瀬2～3</h2>
     <p class="item-mgmt">514 00395</p>
     <div class="card-actions"></div>
@@ -459,10 +576,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="4"
+  data-search="514 00414 51400414 芦ヶ瀬1E6E1～1E6E2 交渉待ち"
   data-management-no-key="51400414"
   data-management-no="514 00414"
   data-label="芦ヶ瀬1E6E1～1E6E2">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">芦ヶ瀬1E6E1～1E6E2</h2>
     <p class="item-mgmt">514 00414</p>
     <div class="card-actions"></div>
@@ -472,10 +591,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="5"
+  data-search="514 01005 51401005 江出17～18 交渉待ち"
   data-management-no-key="51401005"
   data-management-no="514 01005"
   data-label="江出17～18">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">江出17～18</h2>
     <p class="item-mgmt">514 01005</p>
     <div class="card-actions"></div>
@@ -485,10 +606,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="6"
+  data-search="514 01024 51401024 江出27E21～27E22 交渉待ち"
   data-management-no-key="51401024"
   data-management-no="514 01024"
   data-label="江出27E21～27E22">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">江出27E21～27E22</h2>
     <p class="item-mgmt">514 01024</p>
     <div class="card-actions"></div>
@@ -498,10 +621,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="7"
+  data-search="514 02687 51402687 北宇智159～159W1 交渉待ち"
   data-management-no-key="51402687"
   data-management-no="514 02687"
   data-label="北宇智159～159W1">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">北宇智159～159W1</h2>
     <p class="item-mgmt">514 02687</p>
     <div class="card-actions"></div>
@@ -511,10 +636,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="8"
+  data-search="514 03794 51403794 鹿場16W7～16W8 交渉待ち"
   data-management-no-key="51403794"
   data-management-no="514 03794"
   data-label="鹿場16W7～16W8">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">鹿場16W7～16W8</h2>
     <p class="item-mgmt">514 03794</p>
     <div class="card-actions"></div>
@@ -524,10 +651,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="9"
+  data-search="514 03888 51403888 柴ヶ谷2～3 交渉待ち"
   data-management-no-key="51403888"
   data-management-no="514 03888"
   data-label="柴ヶ谷2～3">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">柴ヶ谷2～3</h2>
     <p class="item-mgmt">514 03888</p>
     <div class="card-actions"></div>
@@ -537,10 +666,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="10"
+  data-search="514 04109 51404109 白銀151～152 交渉待ち"
   data-management-no-key="51404109"
   data-management-no="514 04109"
   data-label="白銀151～152">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">白銀151～152</h2>
     <p class="item-mgmt">514 04109</p>
     <div class="card-actions"></div>
@@ -550,10 +681,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="11"
+  data-search="514 04117 51404117 白銀158～159 交渉待ち"
   data-management-no-key="51404117"
   data-management-no="514 04117"
   data-label="白銀158～159">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">白銀158～159</h2>
     <p class="item-mgmt">514 04117</p>
     <div class="card-actions"></div>
@@ -563,10 +696,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="12"
+  data-search="514 04127 51404127 白銀168～169 交渉待ち"
   data-management-no-key="51404127"
   data-management-no="514 04127"
   data-label="白銀168～169">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">白銀168～169</h2>
     <p class="item-mgmt">514 04127</p>
     <div class="card-actions"></div>
@@ -576,10 +711,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="13"
+  data-search="514 04132 51404132 白銀140E2～140E2N1 交渉待ち"
   data-management-no-key="51404132"
   data-management-no="514 04132"
   data-label="白銀140E2～140E2N1">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">白銀140E2～140E2N1</h2>
     <p class="item-mgmt">514 04132</p>
     <div class="card-actions"></div>
@@ -589,10 +726,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="14"
+  data-search="514 04202 51404202 白銀137W3G1～137W4 交渉待ち"
   data-management-no-key="51404202"
   data-management-no="514 04202"
   data-label="白銀137W3G1～137W4">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">白銀137W3G1～137W4</h2>
     <p class="item-mgmt">514 04202</p>
     <div class="card-actions"></div>
@@ -602,10 +741,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="15"
+  data-search="514 04205 51404205 白銀137W15～137W16 交渉待ち"
   data-management-no-key="51404205"
   data-management-no="514 04205"
   data-label="白銀137W15～137W16">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">白銀137W15～137W16</h2>
     <p class="item-mgmt">514 04205</p>
     <div class="card-actions"></div>
@@ -615,10 +756,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="16"
+  data-search="514 04217 51404217 白銀146S1～146S2 交渉待ち"
   data-management-no-key="51404217"
   data-management-no="514 04217"
   data-label="白銀146S1～146S2">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">白銀146S1～146S2</h2>
     <p class="item-mgmt">514 04217</p>
     <div class="card-actions"></div>
@@ -628,10 +771,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="17"
+  data-search="514 09006 51409006 赤松23～24 交渉待ち"
   data-management-no-key="51409006"
   data-management-no="514 09006"
   data-label="赤松23～24">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">赤松23～24</h2>
     <p class="item-mgmt">514 09006</p>
     <div class="card-actions"></div>
@@ -641,10 +786,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="18"
+  data-search="514 09094 51409094 赤松27～28 交渉待ち"
   data-management-no-key="51409094"
   data-management-no="514 09094"
   data-label="赤松27～28">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">赤松27～28</h2>
     <p class="item-mgmt">514 09094</p>
     <div class="card-actions"></div>
@@ -654,10 +801,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="19"
+  data-search="514 09324 51409324 Ｐ百谷38S19～38S20 交渉待ち"
   data-management-no-key="51409324"
   data-management-no="514 09324"
   data-label="Ｐ百谷38S19～38S20">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">Ｐ百谷38S19～38S20</h2>
     <p class="item-mgmt">514 09324</p>
     <div class="card-actions"></div>
@@ -667,10 +816,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="20"
+  data-search="514 09344 51409344 Ｐ百谷38S18～38S19 交渉待ち"
   data-management-no-key="51409344"
   data-management-no="514 09344"
   data-label="Ｐ百谷38S18～38S19">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">Ｐ百谷38S18～38S19</h2>
     <p class="item-mgmt">514 09344</p>
     <div class="card-actions"></div>
@@ -680,10 +831,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="21"
+  data-search="514 09384 51409384 Ｐ百谷38S10～38S11 交渉待ち"
   data-management-no-key="51409384"
   data-management-no="514 09384"
   data-label="Ｐ百谷38S10～38S11">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">Ｐ百谷38S10～38S11</h2>
     <p class="item-mgmt">514 09384</p>
     <div class="card-actions"></div>
@@ -693,10 +846,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="22"
+  data-search="514 09436 51409436 江出27E18～27E19 交渉待ち"
   data-management-no-key="51409436"
   data-management-no="514 09436"
   data-label="江出27E18～27E19">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">江出27E18～27E19</h2>
     <p class="item-mgmt">514 09436</p>
     <div class="card-actions"></div>
@@ -706,10 +861,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="23"
+  data-search="514 09476 51409476 白銀137W4～137W4W1 交渉待ち"
   data-management-no-key="51409476"
   data-management-no="514 09476"
   data-label="白銀137W4～137W4W1">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">白銀137W4～137W4W1</h2>
     <p class="item-mgmt">514 09476</p>
     <div class="card-actions"></div>
@@ -719,10 +876,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="24"
+  data-search="514 09990 51409990 柴ヶ谷3～3G1 交渉待ち"
   data-management-no-key="51409990"
   data-management-no="514 09990"
   data-label="柴ヶ谷3～3G1">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">柴ヶ谷3～3G1</h2>
     <p class="item-mgmt">514 09990</p>
     <div class="card-actions"></div>
@@ -732,10 +891,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="25"
+  data-search="514 09997 51409997 白銀137W1～137W2 交渉待ち"
   data-management-no-key="51409997"
   data-management-no="514 09997"
   data-label="白銀137W1～137W2">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">白銀137W1～137W2</h2>
     <p class="item-mgmt">514 09997</p>
     <div class="card-actions"></div>
@@ -745,10 +906,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="26"
+  data-search="514 10156 51410156 柴ヶ谷9W1～引込 交渉待ち"
   data-management-no-key="51410156"
   data-management-no="514 10156"
   data-label="柴ヶ谷9W1～引込">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">柴ヶ谷9W1～引込</h2>
     <p class="item-mgmt">514 10156</p>
     <div class="card-actions"></div>
@@ -758,10 +921,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="27"
+  data-search="514 10367 51410367 芦ヶ瀬1E2～1E3 交渉待ち"
   data-management-no-key="51410367"
   data-management-no="514 10367"
   data-label="芦ヶ瀬1E2～1E3">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">芦ヶ瀬1E2～1E3</h2>
     <p class="item-mgmt">514 10367</p>
     <div class="card-actions"></div>
@@ -771,10 +936,12 @@ a.portal-menu-item:focus-visible {
   
 </article>
 <article class="card negotiation-card" data-card-index="28"
+  data-search="514 10368 51410368 芦ヶ瀬1E3～1E4 交渉待ち"
   data-management-no-key="51410368"
   data-management-no="514 10368"
   data-label="芦ヶ瀬1E3～1E4">
   <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">芦ヶ瀬1E3～1E4</h2>
     <p class="item-mgmt">514 10368</p>
     <div class="card-actions"></div>
@@ -1122,6 +1289,23 @@ a.portal-menu-item:focus-visible {
     });
   });
 
+  const input = document.getElementById("caseSearch");
+  const visibleCount = document.getElementById("caseVisibleCount");
+  const empty = document.getElementById("caseFilterEmpty");
+  const rows = Array.from(document.querySelectorAll(".negotiation-card"));
+  function applyFilter() {
+    const q = (input.value || "").trim().toLowerCase();
+    let visible = 0;
+    rows.forEach((row) => {
+      const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
+      const hit = !q || haystack.includes(q);
+      row.hidden = !hit;
+      if (hit) visible += 1;
+    });
+    if (visibleCount) visibleCount.textContent = String(visible);
+    if (empty) empty.classList.toggle("is-visible", visible === 0);
+  }
+  if (input) input.addEventListener("input", applyFilter);
 })();
   </script>
   <script>
