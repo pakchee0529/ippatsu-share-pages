@@ -1379,6 +1379,56 @@ def render_negotiation_return_candidate_section() -> str:
 """
 
 
+def render_negotiation_transition_actions(
+    *, kind: str, use_immediate: bool
+) -> str:
+    """Buttons that request DB-backed status transitions from the negotiation page."""
+    if not use_immediate:
+        return (
+            '<div class="card-actions card-actions-revert" role="group" '
+            'aria-label="状態変更（未実装）">'
+            '<button type="button" class="btn btn-revert-disabled" '
+            'disabled aria-disabled="true">状態変更（未実装）</button>'
+            '<p class="revert-hint muted-tiny">'
+            'Supabase書込キーがないため、このページでは状態変更できません。'
+            '</p>'
+            '</div>'
+        )
+    if kind == "return_wait":
+        return (
+            '<div class="card-actions card-actions-revert" role="group" '
+            'aria-label="返却待ちの状態変更">'
+            '<button type="button" class="btn btn-returned" data-returned-mark>'
+            '返却済みにする</button>'
+            '<button type="button" class="btn btn-revert" data-negotiation-revert>'
+            '現調待ちに戻す</button>'
+            '<p class="revert-hint muted-tiny">'
+            '返却済みにする時は理由を選びます。誤操作時は現調待ちへ戻せます。'
+            '</p>'
+            '<p class="negotiation-revert-status muted-tiny" '
+            'data-negotiation-revert-status hidden role="status"></p>'
+            '<p class="portal-transition-status muted-tiny" '
+            'data-portal-transition-status hidden role="status"></p>'
+            '</div>'
+        )
+    return (
+        '<div class="card-actions card-actions-revert" role="group" '
+        'aria-label="交渉待ちの状態変更">'
+        '<button type="button" class="btn btn-entrustment" '
+        'data-negotiation-entrustment>付託待ちにする</button>'
+        '<button type="button" class="btn btn-revert" data-negotiation-revert>'
+        '現調待ちに戻す</button>'
+        '<p class="revert-hint muted-tiny">'
+        '承諾書・地主情報の確認後に付託待ちへ進めます。誤操作時は現調待ちへ戻せます。'
+        '</p>'
+        '<p class="negotiation-revert-status muted-tiny" '
+        'data-negotiation-revert-status hidden role="status"></p>'
+        '<p class="portal-transition-status muted-tiny" '
+        'data-portal-transition-status hidden role="status"></p>'
+        '</div>'
+    )
+
+
 def render_negotiation_return_wait_section(
     items: list[SurveyPublicItem],
     smoke: ReturnWaitSmoke,
@@ -1411,6 +1461,10 @@ def render_negotiation_return_wait_section(
                 "</button>"
                 "</div>"
             )
+        revert_block = render_negotiation_transition_actions(
+            kind="return_wait",
+            use_immediate=bool(use_immediate and (it.management_no_key or "").strip()),
+        )
         cards.append(
             f"""    <article class="card negotiation-card return-wait-card" role="listitem"
       data-management-no-key="{escape_html(it.management_no_key)}"
@@ -6219,6 +6273,10 @@ def build_negotiation_html(
                 "</p>"
                 "</div>"
             )
+        revert_block = render_negotiation_transition_actions(
+            kind="negotiation_wait",
+            use_immediate=bool(use_immediate and it.management_no_key),
+        )
         cards.append(
             f"""<article class="card negotiation-card" data-card-index="{idx}"
   data-search="{escape_html(' '.join([it.management_no, it.management_no_key, it.label, '交渉待ち']).strip())}"
@@ -6558,6 +6616,22 @@ body {{
 }}
 .btn-revert:hover {{
   background: #ffedd5;
+}}
+.btn-entrustment {{
+  background: #0f766e;
+  color: #fff;
+  border: 2px solid #0f766e;
+}}
+.btn-entrustment:hover {{
+  background: #115e59;
+}}
+.btn-returned {{
+  background: #7f1d1d;
+  color: #fff;
+  border: 2px solid #7f1d1d;
+}}
+.btn-returned:hover {{
+  background: #991b1b;
 }}
 .btn-revert-disabled {{
   background: #f1f5f9;

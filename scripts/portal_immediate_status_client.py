@@ -779,6 +779,13 @@ def render_negotiation_immediate_status_js(
   var REVERT_CONFIRM =
     "この案件を現調待ち一覧へ戻しますか？\\n\\n交渉待ちから非表示になり、現調待ちページに再表示されます。";
   var RETURN_CANDIDATE_CLEAR_CONFIRM = "この案件の返却候補を解除しますか？";
+  var ENTRUSTMENT_CONFIRM =
+    "この案件を付託待ちにしますか？\\n\\n承諾書と地主情報の確認が済んでいる前提で進めます。";
+  var RETURNED_REASON_CHOICES = [
+    {{ code: "low_urgency_contact", label: "接触弱" }},
+    {{ code: "landowner_refused", label: "地主要望" }},
+    {{ code: "other", label: "伐採不可" }},
+  ];
   function escHtml(s) {{
     return String(s || "")
       .replace(/&/g, "&amp;")
@@ -1046,9 +1053,159 @@ def render_negotiation_immediate_status_js(
       }});
     }});
   }}
+  function mapPortalTransitionError(httpStatus, body) {{
+    var err = "";
+    if (body && typeof body === "object") {{
+      err = String(body.error || body.message || "");
+    }}
+    if (httpStatus === 401 || err === "invalid_api_key") {{
+      return "送信に失敗しました。APIキーを確認してください。";
+    }}
+    if (httpStatus === 404 || err === "case_not_found") {{
+      return "対象案件が見つかりません。ページを再読み込みしてください。";
+    }}
+    if (httpStatus === 409 || err === "stale_status") {{
+      return "すでに状態が変わっています。ページを再読み込みしてください。";
+    }}
+    if (err === "ambiguous_case") {{
+      return "同じ内部管理番号の案件が複数あります。PC側で確認してください。";
+    }}
+    if (err === "return_reason_required") {{
+      return "返却理由が必要です。";
+    }}
+    if (err.indexOf("request_id") !== -1 || err.indexOf("requested_action") !== -1) {{
+      return "Edge Function更新待ちです。PC側でdeploy後に再試行してください。";
+    }}
+    return "送信に失敗しました。通信状態を確認して再試行してください。";
+  }}
+  function cardPayload(card, action, extra) {{
+    var data = {{
+      management_no_key: (card.getAttribute("data-management-no-key") || "").trim(),
+      management_no: (card.getAttribute("data-management-no") || "").trim(),
+      label: (card.getAttribute("data-label") || "").trim(),
+      action: action,
+      source: "portal_negotiation",
+    }};
+    if (extra) {{
+      Object.keys(extra).forEach(function(k) {{ data[k] = extra[k]; }});
+    }}
+    return data;
+  }}
+  function postPortalTransition(payload) {{
+    return fetch(PORTAL_STATUS_ENDPOINT, {{
+      method: "POST",
+      headers: {{
+        "Content-Type": "application/json",
+        apikey: PORTAL_STATUS_API_KEY,
+      }},
+      body: JSON.stringify(payload),
+    }})
+      .then(function(res) {{
+        return res
+          .json()
+          .catch(function() {{ return {{}}; }})
+          .then(function(data) {{ return {{ res: res, data: data }}; }});
+      }});
+  }}
+  function setTransitionStatus(card, message) {{
+    var statusEl = card.querySelector("[data-portal-transition-status]");
+    if (!statusEl) statusEl = card.querySelector("[data-negotiation-revert-status]");
+    if (!statusEl) return;
+    statusEl.hidden = false;
+    statusEl.textContent = message;
+  }}
+  function bindEntrustmentButtons() {{
+    document.querySelectorAll(".negotiation-card[data-management-no-key]").forEach(function(card) {{
+      var btn = card.querySelector("[data-negotiation-entrustment]");
+      if (!btn || btn.getAttribute("data-entrustment-bound") === "1") return;
+      btn.setAttribute("data-entrustment-bound", "1");
+      if (!PORTAL_STATUS_API_KEY) {{
+        btn.disabled = true;
+        return;
+      }}
+      btn.addEventListener("click", function() {{
+        if (btn.disabled) return;
+        if (!window.confirm(ENTRUSTMENT_CONFIRM)) return;
+        btn.disabled = true;
+        setTransitionStatus(card, "送信中...");
+        postPortalTransition(cardPayload(card, "mark_entrustment_wait"))
+          .then(function(r) {{
+            if (r.res.ok && r.data && r.data.ok) {{
+              card.hidden = true;
+              setTransitionStatus(card, "付託待ちにしました");
+              return;
+            }}
+            btn.disabled = false;
+            setTransitionStatus(card, mapPortalTransitionError(r.res.status, r.data));
+          }})
+          .catch(function() {{
+            btn.disabled = false;
+            setTransitionStatus(card, "送信に失敗しました。通信状態を確認してください。");
+          }});
+      }});
+    }});
+  }}
+  function chooseReturnedReason() {{
+    var promptText =
+      "返却理由を選んでください。\\n" +
+      "1: 接触弱\\n" +
+      "2: 地主要望\\n" +
+      "3: 伐採不可\\n\\n" +
+      "番号または理由名を入力できます。";
+    var raw = window.prompt(promptText, "1");
+    if (raw === null) return null;
+    var value = String(raw || "").trim();
+    var byNumber = {{ "1": 0, "2": 1, "3": 2 }};
+    if (Object.prototype.hasOwnProperty.call(byNumber, value)) {{
+      return RETURNED_REASON_CHOICES[byNumber[value]];
+    }}
+    for (var i = 0; i < RETURNED_REASON_CHOICES.length; i += 1) {{
+      if (RETURNED_REASON_CHOICES[i].label === value) return RETURNED_REASON_CHOICES[i];
+    }}
+    window.alert("返却理由は「接触弱」「地主要望」「伐採不可」から選んでください。");
+    return null;
+  }}
+  function bindReturnedButtons() {{
+    document.querySelectorAll(".return-wait-card[data-management-no-key]").forEach(function(card) {{
+      var btn = card.querySelector("[data-returned-mark]");
+      if (!btn || btn.getAttribute("data-returned-bound") === "1") return;
+      btn.setAttribute("data-returned-bound", "1");
+      if (!PORTAL_STATUS_API_KEY) {{
+        btn.disabled = true;
+        return;
+      }}
+      btn.addEventListener("click", function() {{
+        if (btn.disabled) return;
+        var reason = chooseReturnedReason();
+        if (!reason) return;
+        if (!window.confirm("この案件を返却済みにしますか？\\n\\n理由: " + reason.label)) return;
+        btn.disabled = true;
+        setTransitionStatus(card, "送信中...");
+        postPortalTransition(cardPayload(card, "mark_returned", {{
+          return_reason_category: reason.code,
+          return_reason_text: reason.label,
+        }}))
+          .then(function(r) {{
+            if (r.res.ok && r.data && r.data.ok) {{
+              card.hidden = true;
+              setTransitionStatus(card, "返却済みにしました");
+              return;
+            }}
+            btn.disabled = false;
+            setTransitionStatus(card, mapPortalTransitionError(r.res.status, r.data));
+          }})
+          .catch(function() {{
+            btn.disabled = false;
+            setTransitionStatus(card, "送信に失敗しました。通信状態を確認してください。");
+          }});
+      }});
+    }});
+  }}
   fetchPortalOverrides().then(function(statusMap) {{
     appendPromotedCards(statusMap);
     bindRevertButtons();
+    bindEntrustmentButtons();
+    bindReturnedButtons();
     fetchReturnCandidates().then(function(result) {{
       renderReturnCandidateList(result.items);
     }});
