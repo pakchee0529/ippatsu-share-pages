@@ -1086,8 +1086,14 @@ def render_negotiation_immediate_status_js(
       management_no: (card.getAttribute("data-management-no") || "").trim(),
       label: (card.getAttribute("data-label") || "").trim(),
       action: action,
-      source: "portal_negotiation",
+      source: (card.getAttribute("data-portal-source") || "portal_negotiation").trim(),
     }};
+    var internalNo = (card.getAttribute("data-internal-management-no") || "").trim();
+    var spanKey = (card.getAttribute("data-span-key") || "").trim();
+    var caseId = (card.getAttribute("data-case-id") || "").trim();
+    if (internalNo) data.internal_management_no = internalNo;
+    if (spanKey) data.span_key = spanKey;
+    if (caseId) data.id = caseId;
     if (extra) {{
       Object.keys(extra).forEach(function(k) {{ data[k] = extra[k]; }});
     }}
@@ -1210,6 +1216,161 @@ def render_negotiation_immediate_status_js(
     bindReturnedButtons();
     fetchReturnCandidates().then(function(result) {{
       renderReturnCandidateList(result.items);
+    }});
+  }});
+"""
+
+
+def render_case_detail_status_js(endpoint: str, api_key: str) -> str:
+    ep = json.dumps(endpoint, ensure_ascii=False)
+    key = json.dumps(api_key, ensure_ascii=False)
+    return f"""
+  var PORTAL_STATUS_ENDPOINT = {ep};
+  var PORTAL_STATUS_API_KEY = {key};
+  var RETURNED_REASON_LABELS = {{
+    low_urgency_contact: "接触弱",
+    landowner_refused: "地主要望",
+    other: "伐採不可"
+  }};
+  function mapPortalTransitionError(httpStatus, body) {{
+    var err = "";
+    if (body && typeof body === "object") {{
+      err = String(body.error || body.message || "");
+    }}
+    if (httpStatus === 401 || err === "invalid_api_key") {{
+      return "送信に失敗しました。APIキーを確認してください。";
+    }}
+    if (httpStatus === 404 || err === "case_not_found") {{
+      return "対象案件が見つかりません。ページを再読み込みしてください。";
+    }}
+    if (httpStatus === 409 || err === "stale_status") {{
+      return "すでに状態が変わっています。ページを再読み込みしてください。";
+    }}
+    if (err === "ambiguous_case") {{
+      return "同じ内部管理番号の案件が複数あります。PC側で確認してください。";
+    }}
+    if (err === "return_reason_required") {{
+      return "返却理由が必要です。";
+    }}
+    if (err.indexOf("request_id") !== -1 || err.indexOf("requested_action") !== -1) {{
+      return "Edge Function更新待ちです。PC側でdeploy後に再試行してください。";
+    }}
+    return "送信に失敗しました。通信状態を確認して再試行してください。";
+  }}
+  function casePayload(card, action, extra) {{
+    var data = {{
+      management_no_key: (card.getAttribute("data-management-no-key") || "").trim(),
+      management_no: (card.getAttribute("data-management-no") || "").trim(),
+      label: (card.getAttribute("data-label") || "").trim(),
+      action: action,
+      source: "portal_cases",
+    }};
+    var internalNo = (card.getAttribute("data-internal-management-no") || "").trim();
+    var spanKey = (card.getAttribute("data-span-key") || "").trim();
+    var caseId = (card.getAttribute("data-case-id") || "").trim();
+    if (internalNo) data.internal_management_no = internalNo;
+    if (spanKey) data.span_key = spanKey;
+    if (caseId) data.id = caseId;
+    if (extra) {{
+      Object.keys(extra).forEach(function(k) {{ data[k] = extra[k]; }});
+    }}
+    return data;
+  }}
+  function setCaseActionUi(btn, statusEl, state, message) {{
+    statusEl.hidden = false;
+    statusEl.classList.toggle("is-error", state === "error");
+    statusEl.textContent = message || "";
+    if (state === "sending") {{
+      btn.disabled = true;
+      btn.setAttribute("aria-busy", "true");
+      btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
+      btn.textContent = "送信中...";
+      return;
+    }}
+    btn.removeAttribute("aria-busy");
+    if (state === "success") {{
+      btn.disabled = true;
+      btn.textContent = "操作済み";
+      return;
+    }}
+    btn.disabled = !PORTAL_STATUS_API_KEY;
+    if (btn.dataset.originalText) btn.textContent = btn.dataset.originalText;
+  }}
+  function postPortalTransition(payload) {{
+    return fetch(PORTAL_STATUS_ENDPOINT, {{
+      method: "POST",
+      headers: {{
+        "Content-Type": "application/json",
+        apikey: PORTAL_STATUS_API_KEY,
+      }},
+      body: JSON.stringify(payload),
+    }}).then(function(res) {{
+      return res
+        .json()
+        .catch(function() {{ return {{}}; }})
+        .then(function(data) {{ return {{ res: res, data: data }}; }});
+    }});
+  }}
+  document.querySelectorAll("[data-case-detail-action]").forEach(function(btn) {{
+    var card = btn.closest("[data-case-detail-card]");
+    var statusEl = document.querySelector("[data-case-detail-status]");
+    if (!card || !statusEl) return;
+    if (!PORTAL_STATUS_API_KEY) {{
+      btn.disabled = true;
+      statusEl.hidden = false;
+      statusEl.classList.add("is-error");
+      statusEl.textContent = "送信設定が未設定です（ポータル再生成時にキーが必要です）";
+      return;
+    }}
+    btn.addEventListener("click", function() {{
+      if (btn.disabled) return;
+      var action = btn.getAttribute("data-case-detail-action") || "";
+      var payloadExtra = {{}};
+      var confirmText = "";
+      if (action === "mark_entrustment_wait") {{
+        confirmText =
+          "この案件を「付託待ち」にします。\\n\\n承諾書と地主情報の確認が済んでいる前提で進めます。よろしいですか？";
+      }} else if (action === "mark_construction_wait") {{
+        confirmText =
+          "この案件を「工事待ち」にします。\\n\\nCS記入・添付書類・元請けへの付託提出が済んでいる前提で進めます。よろしいですか？";
+      }} else if (action === "mark_returned") {{
+        var reasonEl = document.getElementById("returnReasonCategory");
+        var noteEl = document.getElementById("returnReasonText");
+        var reason = reasonEl ? String(reasonEl.value || "").trim() : "";
+        var note = noteEl ? String(noteEl.value || "").trim() : "";
+        if (!reason) {{
+          statusEl.hidden = false;
+          statusEl.classList.add("is-error");
+          statusEl.textContent = "返却理由を選んでください。";
+          if (reasonEl) reasonEl.focus();
+          return;
+        }}
+        payloadExtra.return_reason_category = reason;
+        payloadExtra.return_reason_text = note || RETURNED_REASON_LABELS[reason] || reason;
+        confirmText =
+          "この案件を「返却済み」にします。\\n\\n理由: " +
+          (RETURNED_REASON_LABELS[reason] || reason) +
+          (note ? "\\n補足: " + note : "") +
+          "\\n\\nよろしいですか？";
+      }} else {{
+        statusEl.hidden = false;
+        statusEl.classList.add("is-error");
+        statusEl.textContent = "この状態はポータルから変更できません。";
+        return;
+      }}
+      if (!window.confirm(confirmText)) return;
+      setCaseActionUi(btn, statusEl, "sending", "送信中...");
+      postPortalTransition(casePayload(card, action, payloadExtra))
+        .then(function(r) {{
+          if (r.res.ok && r.data && r.data.ok) {{
+            setCaseActionUi(btn, statusEl, "success", "送信しました。状態が反映されない場合はページを再生成してください。");
+            return;
+          }}
+          setCaseActionUi(btn, statusEl, "error", mapPortalTransitionError(r.res.status, r.data));
+        }})
+        .catch(function() {{
+          setCaseActionUi(btn, statusEl, "error", "送信に失敗しました。通信状態を確認してください。");
+        }});
     }});
   }});
 """

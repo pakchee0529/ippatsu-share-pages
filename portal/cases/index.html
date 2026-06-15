@@ -218,6 +218,13 @@ a.portal-menu-item:focus-visible {
   padding: 0.9rem 1rem;
   margin-bottom: 0.62rem;
   box-shadow: 0 2px 8px rgba(31,43,58,.045);
+  color: inherit;
+  text-decoration: none;
+}
+.case-row:hover, .case-row:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 4px 14px rgba(37,99,235,.12);
 }
 .case-row[hidden] {
   display: none;
@@ -332,7 +339,7 @@ a.portal-menu-item:focus-visible {
     </div>
   </header>
 <main>
-  <p class="lead">アクティブ案件の状態を俯瞰する閲覧専用ページです。個人情報と交渉内容の詳細は表示しません。</p>
+  <p class="lead">アクティブ案件の状態を俯瞰し、各案件の詳細ページへ移動できます。個人情報と交渉内容の詳細は表示しません。</p>
   <div class="case-toolbar" role="search">
     <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名・状態で検索" autocomplete="off">
     <div class="case-total"><span>合計</span><strong id="caseVisibleCount">77</strong></div>
@@ -343,7 +350,7 @@ a.portal-menu-item:focus-visible {
   <p id="caseFilterEmpty" class="filter-empty">一致する案件はありません。</p>
   <section class="status-section" id="status-survey_wait">
   <h2>現調待ち <span data-section-count="survey_wait">19件</span></h2>
-  <div class="case-list"><article class="case-row" data-status="survey_wait" data-search="514 00263 51400263 Ｐ奥谷11W12S1～11W12S2 現調待ち" data-management-no-key="51400263">
+  <div class="case-list"><a class="case-row" href="./case-e9c22579f6c7b411/" data-status="survey_wait" data-search="514 00263 51400263 51400263 p奥谷11w12s1~11w12s2 Ｐ奥谷11W12S1～11W12S2 現調待ち" data-management-no-key="51400263">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>Ｐ奥谷11W12S1～11W12S2</h3>
@@ -352,8 +359,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 00361 51400361 赤松35～36 現調待ち" data-management-no-key="51400361">
+</a>
+<a class="case-row" href="./case-da697f3deb651445/" data-status="survey_wait" data-search="514 00361 51400361 51400361 赤松35~36 赤松35～36 現調待ち" data-management-no-key="51400361">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>赤松35～36</h3>
@@ -362,8 +369,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 02038 51402038 上之4W4～4W5 現調待ち" data-management-no-key="51402038">
+</a>
+<a class="case-row" href="./case-495230b5bb973948/" data-status="survey_wait" data-search="514 02038 51402038 51402038 上之4w4~4w5 上之4W4～4W5 現調待ち" data-management-no-key="51402038">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>上之4W4～4W5</h3>
@@ -372,8 +379,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 04162 51404162 白銀63N5W3～63N5W4 現調待ち" data-management-no-key="51404162">
+</a>
+<a class="case-row" href="./case-18626dded972d258/" data-status="survey_wait" data-search="514 04162 51404162 51404162 白銀63n5w3~63n5w4 白銀63N5W3～63N5W4 現調待ち" data-management-no-key="51404162">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>白銀63N5W3～63N5W4</h3>
@@ -382,8 +389,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 04189 51404189 白銀115W6S1N2～115W6S1 現調待ち" data-management-no-key="51404189">
+</a>
+<a class="case-row" href="./case-6b662fa63e57b3ed/" data-status="survey_wait" data-search="514 04189 51404189 51404189 白銀115w6s1n2~115w6s1 白銀115W6S1N2～115W6S1 現調待ち" data-management-no-key="51404189">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>白銀115W6S1N2～115W6S1</h3>
@@ -392,8 +399,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 04194 51404194 白銀115W9～115W9W1 現調待ち" data-management-no-key="51404194">
+</a>
+<a class="case-row" href="./case-21272611af3d77af/" data-status="survey_wait" data-search="514 04194 51404194 51404194 白銀115w9~115w9w1 白銀115W9～115W9W1 現調待ち" data-management-no-key="51404194">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>白銀115W9～115W9W1</h3>
@@ -402,8 +409,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 07220 51407220 平沼田17～18 現調待ち" data-management-no-key="51407220">
+</a>
+<a class="case-row" href="./case-bf1525352a5679b5/" data-status="survey_wait" data-search="514 07220 51407220 51407220 平沼田17~18 平沼田17～18 現調待ち" data-management-no-key="51407220">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>平沼田17～18</h3>
@@ -412,8 +419,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 07272 51407272 平沼田18～19 現調待ち" data-management-no-key="51407272">
+</a>
+<a class="case-row" href="./case-5fdf6dbc7f9e7bef/" data-status="survey_wait" data-search="514 07272 51407272 51407272 平沼田18~19 平沼田18～19 現調待ち" data-management-no-key="51407272">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>平沼田18～19</h3>
@@ -422,8 +429,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 07898 51407898 平沼田43N4E1～43N4E2 現調待ち" data-management-no-key="51407898">
+</a>
+<a class="case-row" href="./case-0d058e7d95547720/" data-status="survey_wait" data-search="514 07898 51407898 51407898 平沼田43n4e1~43n4e2 平沼田43N4E1～43N4E2 現調待ち" data-management-no-key="51407898">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>平沼田43N4E1～43N4E2</h3>
@@ -432,8 +439,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 08008 51408008 湯川4E6～4E7 現調待ち" data-management-no-key="51408008">
+</a>
+<a class="case-row" href="./case-8abf7e4322b1af1b/" data-status="survey_wait" data-search="514 08008 51408008 51408008 湯川4e6~4e7 湯川4E6～4E7 現調待ち" data-management-no-key="51408008">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>湯川4E6～4E7</h3>
@@ -442,8 +449,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 09097 51409097 赤松1～1G1 現調待ち" data-management-no-key="51409097">
+</a>
+<a class="case-row" href="./case-0670a95ce24bec39/" data-status="survey_wait" data-search="514 09097 51409097 51409097 赤松1~1g1 赤松1～1G1 現調待ち" data-management-no-key="51409097">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>赤松1～1G1</h3>
@@ -452,8 +459,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 09133 51409133 白銀115W6～115W6S1 現調待ち" data-management-no-key="51409133">
+</a>
+<a class="case-row" href="./case-67956db16e674513/" data-status="survey_wait" data-search="514 09133 51409133 51409133 白銀115w6~115w6s1 白銀115W6～115W6S1 現調待ち" data-management-no-key="51409133">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>白銀115W6～115W6S1</h3>
@@ -462,8 +469,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 09228 51409228 西新子14G1～14E3 現調待ち" data-management-no-key="51409228">
+</a>
+<a class="case-row" href="./case-124072babf52ef7f/" data-status="survey_wait" data-search="514 09228 51409228 51409228 西新子14g1~14e3 西新子14G1～14E3 現調待ち" data-management-no-key="51409228">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>西新子14G1～14E3</h3>
@@ -472,8 +479,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 09459 51409459 西新子12N1～12N2 現調待ち" data-management-no-key="51409459">
+</a>
+<a class="case-row" href="./case-5606fbb17b92667a/" data-status="survey_wait" data-search="514 09459 51409459 51409459 西新子12n1~12n2 西新子12N1～12N2 現調待ち" data-management-no-key="51409459">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>西新子12N1～12N2</h3>
@@ -482,8 +489,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 09991 51409991 柴ヶ谷3G1～4 現調待ち" data-management-no-key="51409991">
+</a>
+<a class="case-row" href="./case-58e7938605641045/" data-status="survey_wait" data-search="514 09991 51409991 51409991 柴ヶ谷3g1~4 柴ヶ谷3G1～4 現調待ち" data-management-no-key="51409991">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>柴ヶ谷3G1～4</h3>
@@ -492,8 +499,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 09998 51409998 慎1～2 現調待ち" data-management-no-key="51409998">
+</a>
+<a class="case-row" href="./case-3b7b9675054f36b4/" data-status="survey_wait" data-search="514 09998 51409998 51409998 慎1~2 慎1～2 現調待ち" data-management-no-key="51409998">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>慎1～2</h3>
@@ -502,8 +509,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 10139 51410139 江出2N14～生子93E1 現調待ち" data-management-no-key="51410139">
+</a>
+<a class="case-row" href="./case-b1a9d42881a32bcb/" data-status="survey_wait" data-search="514 10139 51410139 51410139 江出2n14~生子93e1 江出2N14～生子93E1 現調待ち" data-management-no-key="51410139">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>江出2N14～生子93E1</h3>
@@ -512,8 +519,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 10417 51410417 城戸11W1～大日川2 現調待ち" data-management-no-key="51410417">
+</a>
+<a class="case-row" href="./case-b5b755b1093c70bb/" data-status="survey_wait" data-search="514 10417 51410417 51410417 城戸11w1~大日川2 城戸11W1～大日川2 現調待ち" data-management-no-key="51410417">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>城戸11W1～大日川2</h3>
@@ -522,8 +529,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="survey_wait" data-search="514 10418 51410418 向山7S1～7S2 現調待ち" data-management-no-key="51410418">
+</a>
+<a class="case-row" href="./case-fbdec8c95fd734e5/" data-status="survey_wait" data-search="514 10418 51410418 51410418 向山7s1~7s2 向山7S1～7S2 現調待ち" data-management-no-key="51410418">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h3>向山7S1～7S2</h3>
@@ -532,10 +539,10 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article></div>
+</a></div>
 </section><section class="status-section" id="status-negotiation_wait">
   <h2>交渉待ち <span data-section-count="negotiation_wait">29件</span></h2>
-  <div class="case-list"><article class="case-row" data-status="negotiation_wait" data-search="514 00214 51400214 Ｐ百谷49N3～49N4 交渉待ち" data-management-no-key="51400214">
+  <div class="case-list"><a class="case-row" href="./case-4e99caa19171238d/" data-status="negotiation_wait" data-search="514 00214 51400214 51400214 p百谷49n3~49n4 Ｐ百谷49N3～49N4 交渉待ち" data-management-no-key="51400214">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>Ｐ百谷49N3～49N4</h3>
@@ -544,8 +551,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 00376 51400376 赤松26N7～26N8 交渉待ち" data-management-no-key="51400376">
+</a>
+<a class="case-row" href="./case-7cb81ada13752bbf/" data-status="negotiation_wait" data-search="514 00376 51400376 51400376 赤松26n7~26n8 赤松26N7～26N8 交渉待ち" data-management-no-key="51400376">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>赤松26N7～26N8</h3>
@@ -554,8 +561,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 00394 51400394 芦ヶ瀬1～2 交渉待ち" data-management-no-key="51400394">
+</a>
+<a class="case-row" href="./case-49b5be8342357133/" data-status="negotiation_wait" data-search="514 00394 51400394 51400394 芦ヶ瀬1~2 芦ヶ瀬1～2 交渉待ち" data-management-no-key="51400394">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>芦ヶ瀬1～2</h3>
@@ -564,8 +571,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 00395 51400395 芦ヶ瀬2～3 交渉待ち" data-management-no-key="51400395">
+</a>
+<a class="case-row" href="./case-cf97ee37b9d8cb02/" data-status="negotiation_wait" data-search="514 00395 51400395 51400395 芦ヶ瀬2~3 芦ヶ瀬2～3 交渉待ち" data-management-no-key="51400395">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>芦ヶ瀬2～3</h3>
@@ -574,8 +581,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 00414 51400414 芦ヶ瀬1E6E1～1E6E2 交渉待ち" data-management-no-key="51400414">
+</a>
+<a class="case-row" href="./case-cc1b1d0d1c3c860c/" data-status="negotiation_wait" data-search="514 00414 51400414 51400414 芦ヶ瀬1e6e1~1e6e2 芦ヶ瀬1E6E1～1E6E2 交渉待ち" data-management-no-key="51400414">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>芦ヶ瀬1E6E1～1E6E2</h3>
@@ -584,8 +591,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 01005 51401005 江出17～18 交渉待ち" data-management-no-key="51401005">
+</a>
+<a class="case-row" href="./case-45ef3f03c2a62968/" data-status="negotiation_wait" data-search="514 01005 51401005 51401005 江出17~18 江出17～18 交渉待ち" data-management-no-key="51401005">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>江出17～18</h3>
@@ -594,8 +601,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 01024 51401024 江出27E21～27E22 交渉待ち" data-management-no-key="51401024">
+</a>
+<a class="case-row" href="./case-d5046372217ff71d/" data-status="negotiation_wait" data-search="514 01024 51401024 51401024 江出27e21~27e22 江出27E21～27E22 交渉待ち" data-management-no-key="51401024">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>江出27E21～27E22</h3>
@@ -604,8 +611,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 02687 51402687 北宇智159～159W1 交渉待ち" data-management-no-key="51402687">
+</a>
+<a class="case-row" href="./case-61a5712ffd4a876e/" data-status="negotiation_wait" data-search="514 02687 51402687 51402687 北宇智159~159w1 北宇智159～159W1 交渉待ち" data-management-no-key="51402687">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>北宇智159～159W1</h3>
@@ -614,8 +621,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 03794 51403794 鹿場16W7～16W8 交渉待ち" data-management-no-key="51403794">
+</a>
+<a class="case-row" href="./case-1e13a602d37ad820/" data-status="negotiation_wait" data-search="514 03794 51403794 51403794 鹿場16w7~16w8 鹿場16W7～16W8 交渉待ち" data-management-no-key="51403794">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>鹿場16W7～16W8</h3>
@@ -624,8 +631,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 03888 51403888 柴ヶ谷2～3 交渉待ち" data-management-no-key="51403888">
+</a>
+<a class="case-row" href="./case-996a79ff2c93d50f/" data-status="negotiation_wait" data-search="514 03888 51403888 51403888 柴ヶ谷2~3 柴ヶ谷2～3 交渉待ち" data-management-no-key="51403888">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>柴ヶ谷2～3</h3>
@@ -634,8 +641,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 04109 51404109 白銀151～152 交渉待ち" data-management-no-key="51404109">
+</a>
+<a class="case-row" href="./case-975bcc611396a6a1/" data-status="negotiation_wait" data-search="514 04109 51404109 51404109 白銀151~152 白銀151～152 交渉待ち" data-management-no-key="51404109">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>白銀151～152</h3>
@@ -644,8 +651,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 04117 51404117 白銀158～159 交渉待ち" data-management-no-key="51404117">
+</a>
+<a class="case-row" href="./case-990d0fdb816a40a3/" data-status="negotiation_wait" data-search="514 04117 51404117 51404117 白銀158~159 白銀158～159 交渉待ち" data-management-no-key="51404117">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>白銀158～159</h3>
@@ -654,8 +661,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 04127 51404127 白銀168～169 交渉待ち" data-management-no-key="51404127">
+</a>
+<a class="case-row" href="./case-3f046a8dfcb0dd65/" data-status="negotiation_wait" data-search="514 04127 51404127 51404127 白銀168~169 白銀168～169 交渉待ち" data-management-no-key="51404127">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>白銀168～169</h3>
@@ -664,8 +671,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 04132 51404132 白銀140E2～140E2N1 交渉待ち" data-management-no-key="51404132">
+</a>
+<a class="case-row" href="./case-072c90c41c134c9c/" data-status="negotiation_wait" data-search="514 04132 51404132 51404132 白銀140e2~140e2n1 白銀140E2～140E2N1 交渉待ち" data-management-no-key="51404132">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>白銀140E2～140E2N1</h3>
@@ -674,8 +681,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 04202 51404202 白銀137W3G1～137W4 交渉待ち" data-management-no-key="51404202">
+</a>
+<a class="case-row" href="./case-035ed7ce67f0174b/" data-status="negotiation_wait" data-search="514 04202 51404202 51404202 白銀137w3g1~137w4 白銀137W3G1～137W4 交渉待ち" data-management-no-key="51404202">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>白銀137W3G1～137W4</h3>
@@ -684,8 +691,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 04205 51404205 白銀137W15～137W16 交渉待ち" data-management-no-key="51404205">
+</a>
+<a class="case-row" href="./case-b3017d37e483085a/" data-status="negotiation_wait" data-search="514 04205 51404205 51404205 白銀137w15~137w16 白銀137W15～137W16 交渉待ち" data-management-no-key="51404205">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>白銀137W15～137W16</h3>
@@ -694,8 +701,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 04217 51404217 白銀146S1～146S2 交渉待ち" data-management-no-key="51404217">
+</a>
+<a class="case-row" href="./case-d224c2e58b49011c/" data-status="negotiation_wait" data-search="514 04217 51404217 51404217 白銀146s1~146s2 白銀146S1～146S2 交渉待ち" data-management-no-key="51404217">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>白銀146S1～146S2</h3>
@@ -704,8 +711,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 09006 51409006 赤松23～24 交渉待ち" data-management-no-key="51409006">
+</a>
+<a class="case-row" href="./case-a3dd0ffe3ae506c1/" data-status="negotiation_wait" data-search="514 09006 51409006 51409006 赤松23~24 赤松23～24 交渉待ち" data-management-no-key="51409006">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>赤松23～24</h3>
@@ -714,8 +721,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 09094 51409094 赤松27～28 交渉待ち" data-management-no-key="51409094">
+</a>
+<a class="case-row" href="./case-1f8fad1e4d057d88/" data-status="negotiation_wait" data-search="514 09094 51409094 51409094 赤松27~28 赤松27～28 交渉待ち" data-management-no-key="51409094">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>赤松27～28</h3>
@@ -724,8 +731,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 09324 51409324 Ｐ百谷38S19～38S20 交渉待ち" data-management-no-key="51409324">
+</a>
+<a class="case-row" href="./case-22844618e5708914/" data-status="negotiation_wait" data-search="514 09324 51409324 51409324 p百谷38s19~38s20 Ｐ百谷38S19～38S20 交渉待ち" data-management-no-key="51409324">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>Ｐ百谷38S19～38S20</h3>
@@ -734,8 +741,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 09344 51409344 Ｐ百谷38S18～38S19 交渉待ち" data-management-no-key="51409344">
+</a>
+<a class="case-row" href="./case-f9b4099a6ce9685d/" data-status="negotiation_wait" data-search="514 09344 51409344 51409344 p百谷38s18~38s19 Ｐ百谷38S18～38S19 交渉待ち" data-management-no-key="51409344">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>Ｐ百谷38S18～38S19</h3>
@@ -744,8 +751,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 09384 51409384 Ｐ百谷38S10～38S11 交渉待ち" data-management-no-key="51409384">
+</a>
+<a class="case-row" href="./case-a43dbefa18609950/" data-status="negotiation_wait" data-search="514 09384 51409384 51409384 p百谷38s10~38s11 Ｐ百谷38S10～38S11 交渉待ち" data-management-no-key="51409384">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>Ｐ百谷38S10～38S11</h3>
@@ -754,8 +761,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 09436 51409436 江出27E18～27E19 交渉待ち" data-management-no-key="51409436">
+</a>
+<a class="case-row" href="./case-10836db85e6fd2d3/" data-status="negotiation_wait" data-search="514 09436 51409436 51409436 江出27e18~27e19 江出27E18～27E19 交渉待ち" data-management-no-key="51409436">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>江出27E18～27E19</h3>
@@ -764,8 +771,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 09476 51409476 白銀137W4～137W4W1 交渉待ち" data-management-no-key="51409476">
+</a>
+<a class="case-row" href="./case-fb75e483396db48d/" data-status="negotiation_wait" data-search="514 09476 51409476 51409476 白銀137w4~137w4w1 白銀137W4～137W4W1 交渉待ち" data-management-no-key="51409476">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>白銀137W4～137W4W1</h3>
@@ -774,8 +781,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 09990 51409990 柴ヶ谷3～3G1 交渉待ち" data-management-no-key="51409990">
+</a>
+<a class="case-row" href="./case-6c01127f5206a91d/" data-status="negotiation_wait" data-search="514 09990 51409990 51409990 柴ヶ谷3~3g1 柴ヶ谷3～3G1 交渉待ち" data-management-no-key="51409990">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>柴ヶ谷3～3G1</h3>
@@ -784,8 +791,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 09997 51409997 白銀137W1～137W2 交渉待ち" data-management-no-key="51409997">
+</a>
+<a class="case-row" href="./case-de08a247dda74253/" data-status="negotiation_wait" data-search="514 09997 51409997 51409997 白銀137w1~137w2 白銀137W1～137W2 交渉待ち" data-management-no-key="51409997">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>白銀137W1～137W2</h3>
@@ -794,8 +801,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 10156 51410156 柴ヶ谷9W1～引込 交渉待ち" data-management-no-key="51410156">
+</a>
+<a class="case-row" href="./case-74705c3bade197c7/" data-status="negotiation_wait" data-search="514 10156 51410156 51410156 柴ヶ谷9w1~引込 柴ヶ谷9W1～引込 交渉待ち" data-management-no-key="51410156">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>柴ヶ谷9W1～引込</h3>
@@ -804,8 +811,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 10367 51410367 芦ヶ瀬1E2～1E3 交渉待ち" data-management-no-key="51410367">
+</a>
+<a class="case-row" href="./case-6ce9de6b0a34418a/" data-status="negotiation_wait" data-search="514 10367 51410367 51410367 芦ヶ瀬1e2~1e3 芦ヶ瀬1E2～1E3 交渉待ち" data-management-no-key="51410367">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>芦ヶ瀬1E2～1E3</h3>
@@ -814,8 +821,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="negotiation_wait" data-search="514 10368 51410368 芦ヶ瀬1E3～1E4 交渉待ち" data-management-no-key="51410368">
+</a>
+<a class="case-row" href="./case-37712612f6af9adf/" data-status="negotiation_wait" data-search="514 10368 51410368 51410368 芦ヶ瀬1e3~1e4 芦ヶ瀬1E3～1E4 交渉待ち" data-management-no-key="51410368">
   <div class="case-row-main">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h3>芦ヶ瀬1E3～1E4</h3>
@@ -824,13 +831,13 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article></div>
+</a></div>
 </section><section class="status-section" id="status-entrustment_wait">
   <h2>付託待ち <span data-section-count="entrustment_wait">0件</span></h2>
   <div class="case-list"><p class="empty-note">対象はありません。</p></div>
 </section><section class="status-section" id="status-construction_wait">
   <h2>工事待ち <span data-section-count="construction_wait">26件</span></h2>
-  <div class="case-list"><article class="case-row" data-status="construction_wait" data-search="514 01389 51401389 小川176～177 工事待ち" data-management-no-key="51401389">
+  <div class="case-list"><a class="case-row" href="./case-68ae8c43cf29ab49/" data-status="construction_wait" data-search="514 01389 51401389 51401389 小川176~177 小川176～177 工事待ち" data-management-no-key="51401389">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>小川176～177</h3>
@@ -839,8 +846,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 01390 51401390 小川176～古ル野1 工事待ち" data-management-no-key="51401390">
+</a>
+<a class="case-row" href="./case-45676670aab5cefa/" data-status="construction_wait" data-search="514 01390 51401390 51401390 小川176~古ル野1 小川176～古ル野1 工事待ち" data-management-no-key="51401390">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>小川176～古ル野1</h3>
@@ -849,8 +856,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 01391 51401391 小川177～178 工事待ち" data-management-no-key="51401391">
+</a>
+<a class="case-row" href="./case-457ed4d7dc9db7d0/" data-status="construction_wait" data-search="514 01391 51401391 51401391 小川177~178 小川177～178 工事待ち" data-management-no-key="51401391">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>小川177～178</h3>
@@ -859,8 +866,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 01395 51401395 小川181～182 工事待ち" data-management-no-key="51401395">
+</a>
+<a class="case-row" href="./case-e78815f2403ed499/" data-status="construction_wait" data-search="514 01395 51401395 51401395 小川181~182 小川181～182 工事待ち" data-management-no-key="51401395">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>小川181～182</h3>
@@ -869,8 +876,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 01401 51401401 小川187～188 工事待ち" data-management-no-key="51401401">
+</a>
+<a class="case-row" href="./case-6610e0ca1495a376/" data-status="construction_wait" data-search="514 01401 51401401 51401401 小川187~188 小川187～188 工事待ち" data-management-no-key="51401401">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>小川187～188</h3>
@@ -879,8 +886,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 01631 51401631 柿山3～4 工事待ち" data-management-no-key="51401631">
+</a>
+<a class="case-row" href="./case-b35ef52efd16f21f/" data-status="construction_wait" data-search="514 01631 51401631 51401631 柿山3~4 柿山3～4 工事待ち" data-management-no-key="51401631">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>柿山3～4</h3>
@@ -889,8 +896,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 01633 51401633 柿山5～6 工事待ち" data-management-no-key="51401633">
+</a>
+<a class="case-row" href="./case-32d80efb32577798/" data-status="construction_wait" data-search="514 01633 51401633 51401633 柿山5~6 柿山5～6 工事待ち" data-management-no-key="51401633">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>柿山5～6</h3>
@@ -899,8 +906,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 01641 51401641 柿山20～21 工事待ち" data-management-no-key="51401641">
+</a>
+<a class="case-row" href="./case-6b03148f336cf281/" data-status="construction_wait" data-search="514 01641 51401641 51401641 柿山20~21 柿山20～21 工事待ち" data-management-no-key="51401641">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>柿山20～21</h3>
@@ -909,8 +916,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 01647 51401647 柿山14E4～14E5 工事待ち" data-management-no-key="51401647">
+</a>
+<a class="case-row" href="./case-3cbf0055e1abfb25/" data-status="construction_wait" data-search="514 01647 51401647 51401647 柿山14e4~14e5 柿山14E4～14E5 工事待ち" data-management-no-key="51401647">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>柿山14E4～14E5</h3>
@@ -919,8 +926,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 01649 51401649 柿山3E8～3E9 工事待ち" data-management-no-key="51401649">
+</a>
+<a class="case-row" href="./case-7933c2090b8233dc/" data-status="construction_wait" data-search="514 01649 51401649 51401649 柿山3e8~3e9 柿山3E8～3E9 工事待ち" data-management-no-key="51401649">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>柿山3E8～3E9</h3>
@@ -929,8 +936,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 05397 51405397 玉置山82N2～82N3 工事待ち 260612" data-management-no-key="51405397">
+</a>
+<a class="case-row" href="./case-8230c6935bbb2893/" data-status="construction_wait" data-search="514 05397 51405397 51405397 玉置山82n2~82n3 玉置山82N2～82N3 工事待ち 260612" data-management-no-key="51405397">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>玉置山82N2～82N3</h3>
@@ -940,8 +947,8 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260612</span>
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 07313 51407313 古ル野15～16 工事待ち" data-management-no-key="51407313">
+</a>
+<a class="case-row" href="./case-5ed5bce51dd64952/" data-status="construction_wait" data-search="514 07313 51407313 51407313 古ル野15~16 古ル野15～16 工事待ち" data-management-no-key="51407313">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>古ル野15～16</h3>
@@ -950,8 +957,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 08876 51408876 柿山14E5～14E6 工事待ち" data-management-no-key="51408876">
+</a>
+<a class="case-row" href="./case-2e67a09e8f6e18ff/" data-status="construction_wait" data-search="514 08876 51408876 51408876 柿山14e5~14e6 柿山14E5～14E6 工事待ち" data-management-no-key="51408876">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>柿山14E5～14E6</h3>
@@ -960,8 +967,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 09716 51409716 柿山3E9～3E10 工事待ち" data-management-no-key="51409716">
+</a>
+<a class="case-row" href="./case-53b304348a91e4f2/" data-status="construction_wait" data-search="514 09716 51409716 51409716 柿山3e9~3e10 柿山3E9～3E10 工事待ち" data-management-no-key="51409716">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>柿山3E9～3E10</h3>
@@ -970,8 +977,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 10041 51410041 北宇智146N7N2E4～146N7N2E5 工事待ち 260610" data-management-no-key="51410041">
+</a>
+<a class="case-row" href="./case-c09532faaf223976/" data-status="construction_wait" data-search="514 10041 51410041 51410041 北宇智146n7n2e4~146n7n2e5 北宇智146N7N2E4～146N7N2E5 工事待ち 260610" data-management-no-key="51410041">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>北宇智146N7N2E4～146N7N2E5</h3>
@@ -981,8 +988,8 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260610</span>
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="514 10307 51410307 柿山14E6G9～14E6G9N1 工事待ち" data-management-no-key="51410307">
+</a>
+<a class="case-row" href="./case-bbf6961965220e1f/" data-status="construction_wait" data-search="514 10307 51410307 51410307 柿山14e6g9~14e6g9n1 柿山14E6G9～14E6G9N1 工事待ち" data-management-no-key="51410307">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>柿山14E6G9～14E6G9N1</h3>
@@ -991,8 +998,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="515 06487 51506487 津風呂20G4～20G5 工事待ち 260615" data-management-no-key="51506487">
+</a>
+<a class="case-row" href="./case-9e764745c57c076d/" data-status="construction_wait" data-search="515 06487 51506487 51506487 津風呂20g4~20g5 津風呂20G4～20G5 工事待ち 260615" data-management-no-key="51506487">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>津風呂20G4～20G5</h3>
@@ -1002,8 +1009,8 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260615</span>
     <span>更新 2026-06-14</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="515 06491 51506491 津風呂20G8～21 工事待ち 260615" data-management-no-key="51506491">
+</a>
+<a class="case-row" href="./case-e4d344f20b7ef58a/" data-status="construction_wait" data-search="515 06491 51506491 51506491 津風呂20g8~21 津風呂20G8～21 工事待ち 260615" data-management-no-key="51506491">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>津風呂20G8～21</h3>
@@ -1013,8 +1020,8 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260615</span>
     <span>更新 2026-06-14</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="515 06492 51506492 津風呂22G1～22G2 工事待ち 260615" data-management-no-key="51506492">
+</a>
+<a class="case-row" href="./case-d13f15e7cd7bb9ce/" data-status="construction_wait" data-search="515 06492 51506492 51506492 津風呂22g1~22g2 津風呂22G1～22G2 工事待ち 260615" data-management-no-key="51506492">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>津風呂22G1～22G2</h3>
@@ -1024,8 +1031,8 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260615</span>
     <span>更新 2026-06-14</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="515 06500 51506500 津風呂24N4～24N5 工事待ち 260615" data-management-no-key="51506500">
+</a>
+<a class="case-row" href="./case-a7c7ad3862b65f4c/" data-status="construction_wait" data-search="515 06500 51506500 51506500 津風呂24n4~24n5 津風呂24N4～24N5 工事待ち 260615" data-management-no-key="51506500">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>津風呂24N4～24N5</h3>
@@ -1035,8 +1042,8 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260615</span>
     <span>更新 2026-06-14</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="515 06503 51506503 津風呂24N6～26N7 工事待ち 260615" data-management-no-key="51506503">
+</a>
+<a class="case-row" href="./case-8ab75ef13d7b7ca1/" data-status="construction_wait" data-search="515 06503 51506503 51506503 津風呂24n6~26n7 津風呂24N6～26N7 工事待ち 260615" data-management-no-key="51506503">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>津風呂24N6～26N7</h3>
@@ -1046,8 +1053,8 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260615</span>
     <span>更新 2026-06-14</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="515 10213 51510213 竜門67S8～67S9 工事待ち 260615" data-management-no-key="51510213">
+</a>
+<a class="case-row" href="./case-6ad5e48314dac6e2/" data-status="construction_wait" data-search="515 10213 51510213 51510213 竜門67s8~67s9 竜門67S8～67S9 工事待ち 260615" data-management-no-key="51510213">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>竜門67S8～67S9</h3>
@@ -1057,8 +1064,8 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260615</span>
     <span>更新 2026-06-14</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="515 11527 51511527 西千股46G4～46G5 工事待ち 260604" data-management-no-key="51511527">
+</a>
+<a class="case-row" href="./case-12717d157b7bda9a/" data-status="construction_wait" data-search="515 11527 51511527 51511527 西千股46g4~46g5 西千股46G4～46G5 工事待ち 260604" data-management-no-key="51511527">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>西千股46G4～46G5</h3>
@@ -1068,8 +1075,8 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260604</span>
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="515 11900 51511900 西千股47G13～47G14 工事待ち 260604" data-management-no-key="51511900">
+</a>
+<a class="case-row" href="./case-f45460550840c33e/" data-status="construction_wait" data-search="515 11900 51511900 51511900 西千股47g13~47g14 西千股47G13～47G14 工事待ち 260604" data-management-no-key="51511900">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>西千股47G13～47G14</h3>
@@ -1079,8 +1086,8 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260604</span>
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="515 11901 51511901 西千股47G14～47G15 工事待ち 260604" data-management-no-key="51511901">
+</a>
+<a class="case-row" href="./case-2dd8f5cc250140ad/" data-status="construction_wait" data-search="515 11901 51511901 51511901 西千股47g14~47g15 西千股47G14～47G15 工事待ち 260604" data-management-no-key="51511901">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>西千股47G14～47G15</h3>
@@ -1090,8 +1097,8 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260604</span>
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="construction_wait" data-search="515 11904 51511904 西千股47G5～47G6 工事待ち 260604" data-management-no-key="51511904">
+</a>
+<a class="case-row" href="./case-606db91574a2d6cb/" data-status="construction_wait" data-search="515 11904 51511904 51511904 西千股47g5~47g6 西千股47G5～47G6 工事待ち 260604" data-management-no-key="51511904">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>西千股47G5～47G6</h3>
@@ -1101,10 +1108,10 @@ a.portal-menu-item:focus-visible {
     <span>共有日 260604</span>
     <span>更新 2026-06-13</span>
   </div>
-</article></div>
+</a></div>
 </section><section class="status-section" id="status-return_wait">
   <h2>返却待ち <span data-section-count="return_wait">3件</span></h2>
-  <div class="case-list"><article class="case-row" data-status="return_wait" data-search="514 01156 51401156 大畑7～7E1 返却待ち" data-management-no-key="51401156">
+  <div class="case-list"><a class="case-row" href="./case-3d6f736f897da062/" data-status="return_wait" data-search="514 01156 51401156 51401156 大畑7~7e1 大畑7～7E1 返却待ち" data-management-no-key="51401156">
   <div class="case-row-main">
     <span class="case-status-pill status-return_wait">返却待ち</span>
     <h3>大畑7～7E1</h3>
@@ -1113,8 +1120,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="return_wait" data-search="514 08794 51408794 夜中8～9 返却待ち" data-management-no-key="51408794">
+</a>
+<a class="case-row" href="./case-a259ad5041274409/" data-status="return_wait" data-search="514 08794 51408794 51408794 夜中8~9 夜中8～9 返却待ち" data-management-no-key="51408794">
   <div class="case-row-main">
     <span class="case-status-pill status-return_wait">返却待ち</span>
     <h3>夜中8～9</h3>
@@ -1123,8 +1130,8 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article>
-<article class="case-row" data-status="return_wait" data-search="514 08795 51408795 夜中9～10 返却待ち" data-management-no-key="51408795">
+</a>
+<a class="case-row" href="./case-229c002929b90079/" data-status="return_wait" data-search="514 08795 51408795 51408795 夜中9~10 夜中9～10 返却待ち" data-management-no-key="51408795">
   <div class="case-row-main">
     <span class="case-status-pill status-return_wait">返却待ち</span>
     <h3>夜中9～10</h3>
@@ -1133,7 +1140,7 @@ a.portal-menu-item:focus-visible {
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
   </div>
-</article></div>
+</a></div>
 </section>
 </main>
 <p class="footer-note">このページは <code>scripts/generate_portal.py --mode cases-only</code> で再生成できます。</p>

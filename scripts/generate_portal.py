@@ -53,6 +53,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import hashlib
 import html as html_lib
 import json
 import math
@@ -72,6 +73,7 @@ from portal_immediate_status_client import (
     PORTAL_CASE_STATUS_ENDPOINT_DEFAULT,
     fetch_portal_negotiation_wait_keys,
     portal_immediate_status_enabled,
+    render_case_detail_status_js,
     render_negotiation_immediate_status_js,
     render_survey_immediate_status_js,
     render_survey_legacy_request_js,
@@ -3381,6 +3383,9 @@ class StatusSmoke:
 
 @dataclass(frozen=True)
 class PortalCaseItem:
+    case_id: str
+    internal_management_no: str
+    span_key: str
     management_no: str
     management_no_key: str
     label: str
@@ -5383,6 +5388,9 @@ def _portal_case_item_from_row(row: dict[str, Any]) -> PortalCaseItem:
     status = _to_str(row.get("status"))
     mno = _to_str(row.get("management_no")) or "—"
     return PortalCaseItem(
+        case_id=_to_str(row.get("id")),
+        internal_management_no=_to_str(row.get("internal_management_no")),
+        span_key=_to_str(row.get("span_key")),
         management_no=mno,
         management_no_key=_to_str(row.get("management_no_key"))
         or (management_no_key(mno) or ""),
@@ -5424,6 +5432,338 @@ def load_case_management_public_items() -> tuple[list[PortalCaseItem], dict[str,
         "source_available": source_available,
     }
     return items, stats
+
+
+def portal_case_detail_slug(it: PortalCaseItem) -> str:
+    """Public, URL-safe detail key derived from stable identifiers."""
+    parts = [
+        it.case_id,
+        it.internal_management_no,
+        it.span_key,
+        it.management_no_key,
+    ]
+    seed = "|".join(p for p in parts if p.strip()) or it.label or it.management_no
+    digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()[:16]
+    return f"case-{digest}"
+
+
+def portal_case_detail_href(it: PortalCaseItem) -> str:
+    return f"./{portal_case_detail_slug(it)}/"
+
+
+def render_cases_detail_header(page_title: str) -> str:
+    """Header for portal/cases/<detail>/ pages (one level below cases index)."""
+    items: list[tuple[str, str, str | None]] = [
+        ("../../", "ポータルTOP", None),
+        ("../../calendar/", "社内カレンダー", None),
+        ("../../survey/", "現調待ち", "survey"),
+        ("../../negotiation/", "交渉待ち", "negotiation"),
+        ("../../entrustment/", "付託待ち", "entrustment"),
+        ("../", "案件管理", "cases"),
+        ("../../archive/", "アーカイブ", "archive"),
+    ]
+    link_lines: list[str] = []
+    for href, label, page_id in items:
+        is_current = page_id == "cases"
+        cls = "portal-menu-item is-current" if is_current else "portal-menu-item"
+        current_attr = ' aria-current="page"' if is_current else ""
+        link_lines.append(
+            f'          <a class="{cls}" role="menuitem" href="{escape_html(href)}"'
+            f'{current_attr}>{escape_html(label)}</a>'
+        )
+    links = "\n".join(link_lines)
+    return f"""  <header class="portal-page-header">
+    <div class="portal-page-header-row">
+      <h1 class="page-title">{escape_html(page_title)}</h1>
+      <div class="portal-menu-wrap">
+        <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel" aria-label="サイトメニューを開く">
+          <span class="portal-menu-icon" aria-hidden="true">☰</span>
+        </button>
+        <nav class="portal-menu-panel" id="portal-menu-panel" hidden aria-label="サイトメニュー">
+{links}
+        </nav>
+      </div>
+    </div>
+  </header>"""
+
+
+def _case_detail_ident_rows(it: PortalCaseItem) -> str:
+    rows: list[tuple[str, str]] = [
+        ("状態", it.status_label),
+        ("管理番号", it.management_no),
+        ("径間", it.label),
+    ]
+    if it.share_date_key:
+        rows.append(("共有日", it.share_date_key))
+    if it.updated_at:
+        rows.append(("更新日", it.updated_at[:10]))
+    if it.internal_management_no:
+        rows.append(("内部管理番号", it.internal_management_no))
+    if it.span_key:
+        rows.append(("径間キー", it.span_key))
+    if it.case_id:
+        rows.append(("case id", it.case_id))
+    return "\n".join(
+        f"""      <dt>{escape_html(label)}</dt>
+      <dd>{escape_html(value)}</dd>"""
+        for label, value in rows
+        if value
+    )
+
+
+def _case_detail_action_panel(it: PortalCaseItem, *, apikey_nonempty: bool) -> str:
+    disabled = "" if apikey_nonempty else " disabled aria-disabled=\"true\""
+    if it.status == "negotiation_wait":
+        return f"""  <section class="detail-panel action-panel" aria-labelledby="case-action-heading">
+    <h2 id="case-action-heading">このページでできる操作</h2>
+    <p class="action-note">承諾書と地主情報の確認が済んでいる案件だけ、付託待ちへ進めます。</p>
+    <button type="button" class="btn btn-primary" data-case-detail-action="mark_entrustment_wait"{disabled}>付託待ちにする</button>
+    <p class="action-status muted-tiny" data-case-detail-status hidden role="status"></p>
+  </section>"""
+    if it.status == "entrustment_wait":
+        return f"""  <section class="detail-panel action-panel" aria-labelledby="case-action-heading">
+    <h2 id="case-action-heading">このページでできる操作</h2>
+    <p class="action-note">CS記入・添付書類・元請けへの付託提出が済んでいる案件だけ、工事待ちへ進めます。</p>
+    <button type="button" class="btn btn-primary" data-case-detail-action="mark_construction_wait"{disabled}>工事待ちにする</button>
+    <p class="action-status muted-tiny" data-case-detail-status hidden role="status"></p>
+  </section>"""
+    if it.status == "return_wait":
+        return f"""  <section class="detail-panel action-panel" aria-labelledby="case-action-heading">
+    <h2 id="case-action-heading">このページでできる操作</h2>
+    <p class="action-note">返却済みにする場合は理由が必須です。送信前に確認ダイアログを表示します。</p>
+    <label class="form-label" for="returnReasonCategory">返却理由</label>
+    <select id="returnReasonCategory" class="reason-select">
+      <option value="">選択してください</option>
+      <option value="low_urgency_contact">接触弱</option>
+      <option value="landowner_refused">地主要望</option>
+      <option value="other">伐採不可</option>
+    </select>
+    <label class="form-label" for="returnReasonText">補足（任意）</label>
+    <textarea id="returnReasonText" class="reason-text" rows="3" placeholder="補足があれば入力"></textarea>
+    <button type="button" class="btn btn-danger" data-case-detail-action="mark_returned"{disabled}>返却済みにする</button>
+    <p class="action-status muted-tiny" data-case-detail-status hidden role="status"></p>
+  </section>"""
+    return f"""  <section class="detail-panel action-panel" aria-labelledby="case-action-heading">
+    <h2 id="case-action-heading">このページでできる操作</h2>
+    <p class="action-note">現在の状態（{escape_html(it.status_label)}）はポータルから変更できません。必要な操作はPC側で行ってください。</p>
+    <p class="action-status muted-tiny" data-case-detail-status hidden role="status"></p>
+  </section>"""
+
+
+def build_case_detail_html(
+    it: PortalCaseItem,
+    *,
+    status_request_api_key: str,
+    portal_status_endpoint: str,
+) -> str:
+    subpage_menu_css = render_portal_subpage_menu_css()
+    subpage_menu_js = render_portal_subpage_menu_js()
+    status_js = render_case_detail_status_js(
+        portal_status_endpoint, status_request_api_key
+    )
+    apikey_nonempty = bool(status_request_api_key)
+    header = render_cases_detail_header("案件詳細")
+    ident_rows = _case_detail_ident_rows(it)
+    action_panel = _case_detail_action_panel(it, apikey_nonempty=apikey_nonempty)
+    return f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>案件詳細</title>
+<style>
+:root {{
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+  --danger: #b91c1c;
+  --shadow: 0 2px 8px rgba(31,43,58,.045);
+}}
+* {{ box-sizing: border-box; }}
+body {{
+  margin: 0 auto;
+  max-width: 44rem;
+  padding: 0.75rem 0.75rem 1.25rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}}
+{subpage_menu_css}
+.back-link {{
+  display: inline-flex;
+  margin: 0.2rem 0 0.85rem;
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}}
+.detail-card, .detail-panel {{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  margin-bottom: 0.9rem;
+}}
+.status-pill {{
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  background: #172033;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+}}
+.detail-title {{
+  margin: 0.55rem 0 0.2rem;
+  font-size: 1.35rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}}
+.detail-management {{
+  margin: 0;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-weight: 700;
+}}
+.detail-ident {{
+  display: grid;
+  grid-template-columns: minmax(7.5rem, auto) minmax(0, 1fr);
+  gap: 0.55rem 0.75rem;
+  margin: 0.85rem 0 0;
+}}
+.detail-ident dt {{
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}}
+.detail-ident dd {{
+  margin: 0;
+  overflow-wrap: anywhere;
+}}
+.action-panel h2 {{
+  margin: 0 0 0.45rem;
+  font-size: 1.05rem;
+}}
+.action-note {{
+  margin: 0 0 0.8rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}}
+.btn {{
+  width: 100%;
+  min-height: 3rem;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}}
+.btn-primary {{ background: var(--accent); }}
+.btn-danger {{ background: var(--danger); }}
+.btn:disabled {{
+  cursor: not-allowed;
+  opacity: 0.55;
+}}
+.form-label {{
+  display: block;
+  margin: 0.7rem 0 0.25rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}}
+.reason-select, .reason-text {{
+  width: 100%;
+  border: 1px solid #b9c4d3;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+}}
+.reason-select {{
+  min-height: 2.8rem;
+  padding: 0.55rem 0.7rem;
+}}
+.reason-text {{
+  padding: 0.65rem 0.7rem;
+  resize: vertical;
+  margin-bottom: 0.8rem;
+}}
+.muted-tiny {{
+  margin: 0.65rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}}
+.muted-tiny.is-error {{
+  color: var(--danger);
+  font-weight: 700;
+}}
+.footer-note {{
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+}}
+@media (max-width: 560px) {{
+  body {{ padding: 0.55rem 0.55rem 1rem; }}
+  .detail-ident {{ grid-template-columns: 1fr; gap: 0.2rem; }}
+}}
+</style>
+</head>
+<body>
+{header}
+<main>
+  <a class="back-link" href="../">案件管理へ戻る</a>
+  <article class="detail-card" data-case-detail-card
+    data-management-no-key="{escape_html(it.management_no_key)}"
+    data-management-no="{escape_html(it.management_no)}"
+    data-label="{escape_html(it.label)}"
+    data-current-status="{escape_html(it.status)}"
+    data-internal-management-no="{escape_html(it.internal_management_no)}"
+    data-span-key="{escape_html(it.span_key)}"
+    data-case-id="{escape_html(it.case_id)}">
+    <span class="status-pill">{escape_html(it.status_label)}</span>
+    <h2 class="detail-title">{escape_html(it.label)}</h2>
+    <p class="detail-management">{escape_html(it.management_no)}</p>
+    <dl class="detail-ident">
+{ident_rows}
+    </dl>
+  </article>
+{action_panel}
+</main>
+<p class="footer-note">このページは <code>scripts/generate_portal.py --mode cases-only</code> で再生成できます。</p>
+<script>
+{subpage_menu_js}
+{status_js}
+</script>
+</body>
+</html>
+"""
+
+
+def write_case_detail_pages(
+    repo_root: Path,
+    items: list[PortalCaseItem],
+    *,
+    status_request_api_key: str,
+    portal_status_endpoint: str,
+) -> list[str]:
+    written: list[str] = []
+    for it in items:
+        rel = f"portal/cases/{portal_case_detail_slug(it)}/index.html"
+        html = build_case_detail_html(
+            it,
+            status_request_api_key=status_request_api_key,
+            portal_status_endpoint=portal_status_endpoint,
+        )
+        _write_portal_html(repo_root, rel, html)
+        written.append(rel)
+    return written
 
 
 def _supabase_rest_ready() -> tuple[str, str] | None:
@@ -7885,13 +8225,15 @@ def build_cases_html(items: list[PortalCaseItem], stats: dict[str, Any]) -> str:
                     [
                         it.management_no,
                         it.management_no_key,
+                        it.internal_management_no,
+                        it.span_key,
                         it.label,
                         it.status_label,
                         it.share_date_key,
                     ]
                 ).strip()
                 card_html.append(
-                    f"""<article class="case-row" data-status="{escape_html(status)}" data-search="{escape_html(search_text)}" data-management-no-key="{escape_html(it.management_no_key)}">
+                    f"""<a class="case-row" href="{escape_html(portal_case_detail_href(it))}" data-status="{escape_html(status)}" data-search="{escape_html(search_text)}" data-management-no-key="{escape_html(it.management_no_key)}">
   <div class="case-row-main">
     <span class="case-status-pill status-{escape_html(status)}">{escape_html(label)}</span>
     <h3>{escape_html(it.label)}</h3>
@@ -7900,7 +8242,7 @@ def build_cases_html(items: list[PortalCaseItem], stats: dict[str, Any]) -> str:
   <div class="case-row-meta">
     {meta_html}
   </div>
-</article>"""
+</a>"""
                 )
             cards = "\n".join(card_html)
         else:
@@ -8047,6 +8389,13 @@ body {{
   padding: 0.9rem 1rem;
   margin-bottom: 0.62rem;
   box-shadow: 0 2px 8px rgba(31,43,58,.045);
+  color: inherit;
+  text-decoration: none;
+}}
+.case-row:hover, .case-row:focus-visible {{
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 4px 14px rgba(37,99,235,.12);
 }}
 .case-row[hidden] {{
   display: none;
@@ -8142,7 +8491,7 @@ body {{
 <body>
 {subpage_header}
 <main>
-  <p class="lead">アクティブ案件の状態を俯瞰する閲覧専用ページです。個人情報と交渉内容の詳細は表示しません。</p>
+  <p class="lead">アクティブ案件の状態を俯瞰し、各案件の詳細ページへ移動できます。個人情報と交渉内容の詳細は表示しません。</p>
   <div class="case-toolbar" role="search">
     <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名・状態で検索" autocomplete="off">
     <div class="case-total"><span>合計</span><strong id="caseVisibleCount">{total_count}</strong></div>
@@ -8228,7 +8577,9 @@ MODE_ALLOWED_PORTAL_OUTPUTS: dict[str, frozenset[str]] = {
     PORTAL_MODE_PORTAL_TOP_ONLY: frozenset({"portal/index.html"}),
     PORTAL_MODE_NEGOTIATION_ONLY: frozenset({"portal/negotiation/index.html"}),
     PORTAL_MODE_ENTRUSTMENT_ONLY: frozenset({"portal/entrustment/index.html"}),
-    PORTAL_MODE_CASES_ONLY: frozenset({"portal/cases/index.html"}),
+    PORTAL_MODE_CASES_ONLY: frozenset(
+        {"portal/cases/index.html", "portal/cases/*/index.html"}
+    ),
 }
 
 
@@ -8296,10 +8647,28 @@ def load_portal_dotenv(repo_root: Path) -> list[str]:
 
 def _snapshot_portal_guard_files(repo_root: Path) -> dict[str, bytes | None]:
     snap: dict[str, bytes | None] = {}
-    for rel in PORTAL_GUARD_REL_PATHS:
+    rels = set(PORTAL_GUARD_REL_PATHS)
+    cases_dir = repo_root / "portal" / "cases"
+    if cases_dir.is_dir():
+        for p in cases_dir.glob("*/index.html"):
+            rels.add(p.relative_to(repo_root).as_posix())
+    for rel in sorted(rels):
         p = repo_root / rel
         snap[rel] = p.read_bytes() if p.is_file() else None
     return snap
+
+
+def _portal_guard_output_allowed(rel: str, allowed: frozenset[str]) -> bool:
+    if rel in allowed:
+        return True
+    if (
+        "portal/cases/*/index.html" in allowed
+        and rel.startswith("portal/cases/")
+        and rel.endswith("/index.html")
+        and rel.count("/") == 3
+    ):
+        return True
+    return False
 
 
 def _portal_guard_violations(
@@ -8308,10 +8677,15 @@ def _portal_guard_violations(
     allowed: frozenset[str],
 ) -> list[str]:
     violations: list[str] = []
-    for rel in PORTAL_GUARD_REL_PATHS:
+    rels = set(PORTAL_GUARD_REL_PATHS) | set(before)
+    cases_dir = repo_root / "portal" / "cases"
+    if cases_dir.is_dir():
+        for p in cases_dir.glob("*/index.html"):
+            rels.add(p.relative_to(repo_root).as_posix())
+    for rel in sorted(rels):
         p = repo_root / rel
         after = p.read_bytes() if p.is_file() else None
-        if before.get(rel) != after and rel not in allowed:
+        if before.get(rel) != after and not _portal_guard_output_allowed(rel, allowed):
             violations.append(rel)
     return violations
 
@@ -8649,17 +9023,35 @@ def run_entrustment_only(repo_root: Path) -> FocusedGenerateResult:
 
 def run_cases_only(repo_root: Path) -> FocusedGenerateResult:
     items, stats = load_case_management_public_items()
+    portal_api_key = survey_status_request_api_key(repo_root)
+    if not portal_api_key:
+        print(
+            "warning: cases portal apikey not set; "
+            "set PORTAL_SURVEY_REQUEST_API_KEY or SUPABASE_ANON_KEY "
+            "when generating (detail action buttons are disabled).",
+            file=sys.stderr,
+        )
     out_html = build_cases_html(items, stats)
     rel = "portal/cases/index.html"
     out_path = _write_portal_html(repo_root, rel, out_html)
-    print(f"Wrote {out_path} (case_items={len(items)})")
+    detail_rels = write_case_detail_pages(
+        repo_root,
+        items,
+        status_request_api_key=portal_api_key,
+        portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+    )
+    print(
+        f"Wrote {out_path} (case_items={len(items)}, "
+        f"case_detail_pages={len(detail_rels)})"
+    )
     out_stats = dict(stats)
     out_stats["case_items"] = len(items)
+    out_stats["case_detail_pages"] = len(detail_rels)
     return FocusedGenerateResult(
         mode=PORTAL_MODE_CASES_ONLY,
         output_rel=rel,
         stats=out_stats,
-        apikey_nonempty=False,
+        apikey_nonempty=bool(portal_api_key),
     )
 
 
@@ -8895,7 +9287,7 @@ def validate_cases_only_output(repo_root: Path) -> list[str]:
     if not path.is_file():
         return ["portal/cases/index.html missing"]
     html = path.read_text(encoding="utf-8", errors="replace")
-    return _require_html_substrings(
+    failures = _require_html_substrings(
         html,
         [
             ("portal-menu-btn", "portal-menu-btn"),
@@ -8907,6 +9299,9 @@ def validate_cases_only_output(repo_root: Path) -> list[str]:
             ("工事待ち section", 'id="status-construction_wait"'),
         ],
     )
+    if 'class="case-row"' in html and 'href="./case-' not in html:
+        failures.append("case detail links")
+    return failures
 
 
 def validate_focused_mode(
@@ -8953,6 +9348,8 @@ def _print_focused_cli_summary(
         print(f"entrustment_items: {result.stats['entrustment_items']}")
     if "case_items" in result.stats:
         print(f"case_items: {result.stats['case_items']}")
+    if "case_detail_pages" in result.stats:
+        print(f"case_detail_pages: {result.stats['case_detail_pages']}")
     if "manifest" in result.stats:
         print(f"manifest_entries: {result.stats['manifest']}")
     print(f"apikey_nonempty: {str(result.apikey_nonempty).lower()}")
@@ -9363,7 +9760,16 @@ def main() -> int:
         cases_path = repo_root / "portal" / "cases" / "index.html"
         cases_path.parent.mkdir(parents=True, exist_ok=True)
         cases_path.write_text(cases_html, encoding="utf-8", newline="\n")
-        print(f"Wrote {cases_path} (case_items={len(case_items)})")
+        case_detail_rels = write_case_detail_pages(
+            repo_root,
+            case_items,
+            status_request_api_key=portal_api_key,
+            portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+        )
+        print(
+            f"Wrote {cases_path} (case_items={len(case_items)}, "
+            f"case_detail_pages={len(case_detail_rels)})"
+        )
         inject_share_detail_edit_into_share_pages(repo_root)
     else:
         print(
