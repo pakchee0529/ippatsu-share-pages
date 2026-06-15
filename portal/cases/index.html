@@ -2136,7 +2136,7 @@ a.portal-menu-item:focus-visible {
     var p = new URLSearchParams(); p.set("list","cases"); p.set("statuses",(PAGE_STATUSES[PAGE]||ORDER).join(","));
     if (extra && extra.id) p.set("id", extra.id);
     return fetch(ENDPOINT+"?"+p.toString(), {headers:{apikey:API_KEY,Accept:"application/json"}})
-      .then(function(res) { return res.json().catch(function(){return {};}).then(function(body) { if(!res.ok || !body || body.ok!==true) throw new Error((body&&body.error)||("http_"+res.status)); return body; }); });
+      .then(function(res) { return res.json().catch(function(){return {};}).then(function(body) { if(!res.ok || !body || body.ok!==true) throw new Error((body&&body.error)||("http_"+res.status)); if(!Array.isArray(body.cases)) throw new Error("live_cases_endpoint_not_deployed"); return body; }); });
   }
   function post(row, action, extra) {
     var payload={id:t(row,"id"),management_no_key:t(row,"management_no_key"),management_no:t(row,"management_no"),label:t(row,"label"),internal_management_no:t(row,"internal_management_no"),span_key:t(row,"span_key"),action:action,source:"portal_live_cases"};
