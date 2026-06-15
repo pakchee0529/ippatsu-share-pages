@@ -302,6 +302,21 @@ a.portal-menu-item:focus-visible {
 .filter-empty.is-visible {
   display: block;
 }
+.live-cases-status {
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.live-cases-status.is-error {
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #f59e0b;
+}
+.live-cases-status[hidden] { display: none !important; }
 .footer-note {
   margin: 1rem 0 0;
   color: var(--muted);
@@ -340,16 +355,17 @@ a.portal-menu-item:focus-visible {
   </header>
 <main>
   <p class="lead">アクティブ案件の状態を俯瞰し、各案件の詳細ページへ移動できます。個人情報と交渉内容の詳細は表示しません。</p>
+  <p id="liveCasesStatus" class="live-cases-status" hidden role="status"></p>
   <div class="case-toolbar" role="search">
     <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名・状態で検索" autocomplete="off">
-    <div class="case-total"><span>合計</span><strong id="caseVisibleCount">77</strong></div>
+    <div class="case-total"><span>合計</span><strong id="caseVisibleCount">170</strong></div>
   </div>
   <div class="status-grid">
-    <a class="status-tile status-survey_wait" href="#status-survey_wait"><span>現調待ち</span><strong>19</strong></a><a class="status-tile status-negotiation_wait" href="#status-negotiation_wait"><span>交渉待ち</span><strong>29</strong></a><a class="status-tile status-entrustment_wait" href="#status-entrustment_wait"><span>付託待ち</span><strong>0</strong></a><a class="status-tile status-construction_wait" href="#status-construction_wait"><span>工事待ち</span><strong>26</strong></a><a class="status-tile status-return_wait" href="#status-return_wait"><span>返却待ち</span><strong>3</strong></a>
+    <a class="status-tile status-survey_wait" href="#status-survey_wait"><span>現調待ち</span><strong>108</strong></a><a class="status-tile status-negotiation_wait" href="#status-negotiation_wait"><span>交渉待ち</span><strong>29</strong></a><a class="status-tile status-entrustment_wait" href="#status-entrustment_wait"><span>付託待ち</span><strong>0</strong></a><a class="status-tile status-construction_wait" href="#status-construction_wait"><span>工事待ち</span><strong>30</strong></a><a class="status-tile status-return_wait" href="#status-return_wait"><span>返却待ち</span><strong>3</strong></a>
   </div>
   <p id="caseFilterEmpty" class="filter-empty">一致する案件はありません。</p>
   <section class="status-section" id="status-survey_wait">
-  <h2>現調待ち <span data-section-count="survey_wait">19件</span></h2>
+  <h2>現調待ち <span data-section-count="survey_wait">108件</span></h2>
   <div class="case-list"><a class="case-row" href="./case-e9c22579f6c7b411/" data-status="survey_wait" data-search="514 00263 51400263 51400263 p奥谷11w12s1~11w12s2 Ｐ奥谷11W12S1～11W12S2 現調待ち" data-management-no-key="51400263">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
@@ -370,6 +386,36 @@ a.portal-menu-item:focus-visible {
     <span>更新 2026-06-13</span>
   </div>
 </a>
+<a class="case-row" href="./case-858c81a460e40b15/" data-status="survey_wait" data-search="51402008 51402008 51402008 釜中3~4g9 釜中3～4G9 現調待ち" data-management-no-key="51402008">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>釜中3～4G9</h3>
+    <p class="case-management-no">51402008</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-4fa55fc828afd09a/" data-status="survey_wait" data-search="51402010 51402010 51402010 釜中4g9~5 釜中4G9～5 現調待ち" data-management-no-key="51402010">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>釜中4G9～5</h3>
+    <p class="case-management-no">51402010</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-6cab71777d7ec4ca/" data-status="survey_wait" data-search="51402013 51402013 51402013 釜中6~7 釜中6～7 現調待ち" data-management-no-key="51402013">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>釜中6～7</h3>
+    <p class="case-management-no">51402013</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
 <a class="case-row" href="./case-495230b5bb973948/" data-status="survey_wait" data-search="514 02038 51402038 51402038 上之4w4~4w5 上之4W4～4W5 現調待ち" data-management-no-key="51402038">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
@@ -378,6 +424,56 @@ a.portal-menu-item:focus-visible {
   </div>
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
+  </div>
+</a>
+<a class="case-row" href="./case-5250707821178178/" data-status="survey_wait" data-search="51403367 51403367 51403367 小山片川4~5 小山片川4～5 現調待ち" data-management-no-key="51403367">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>小山片川4～5</h3>
+    <p class="case-management-no">51403367</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-88513324de646781/" data-status="survey_wait" data-search="51403372 51403372 51403372 小山片川7~8 小山片川7～8 現調待ち" data-management-no-key="51403372">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>小山片川7～8</h3>
+    <p class="case-management-no">51403372</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-a7bee9fa2b9f565b/" data-status="survey_wait" data-search="51403373 51403373 51403373 小山片川8~9 小山片川8～9 現調待ち" data-management-no-key="51403373">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>小山片川8～9</h3>
+    <p class="case-management-no">51403373</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-9482d0f1de4bc6d3/" data-status="survey_wait" data-search="51403374 51403374 51403374 小山片川9~10 小山片川9～10 現調待ち" data-management-no-key="51403374">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>小山片川9～10</h3>
+    <p class="case-management-no">51403374</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-c21413a5f6b56b5d/" data-status="survey_wait" data-search="51403378 51403378 51403378 小山片川12g9g1~12w1 小山片川12G9G1～12W1 現調待ち" data-management-no-key="51403378">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>小山片川12G9G1～12W1</h3>
+    <p class="case-management-no">51403378</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
   </div>
 </a>
 <a class="case-row" href="./case-18626dded972d258/" data-status="survey_wait" data-search="514 04162 51404162 51404162 白銀63n5w3~63n5w4 白銀63N5W3～63N5W4 現調待ち" data-management-no-key="51404162">
@@ -410,6 +506,676 @@ a.portal-menu-item:focus-visible {
     <span>更新 2026-06-13</span>
   </div>
 </a>
+<a class="case-row" href="./case-84cc17a1708c552a/" data-status="survey_wait" data-search="51406086 51406086 51406086 西川77~78 西川77～78 現調待ち" data-management-no-key="51406086">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川77～78</h3>
+    <p class="case-management-no">51406086</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-3efa2acc8ef0f153/" data-status="survey_wait" data-search="51406098 51406098 51406098 西川86~87 西川86～87 現調待ち" data-management-no-key="51406098">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川86～87</h3>
+    <p class="case-management-no">51406098</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-0718d172b198fb2a/" data-status="survey_wait" data-search="51406108 51406108 51406108 西川95~95g1 西川95～95G1 現調待ち" data-management-no-key="51406108">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川95～95G1</h3>
+    <p class="case-management-no">51406108</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-f16ea700c4bffd1e/" data-status="survey_wait" data-search="51406127 51406127 51406127 西川116g9~118g1g9 西川116G9～118G1G9 現調待ち" data-management-no-key="51406127">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川116G9～118G1G9</h3>
+    <p class="case-management-no">51406127</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-69f11e42a8d5e10b/" data-status="survey_wait" data-search="51406135 51406135 51406135 西川125~127 西川125～127 現調待ち" data-management-no-key="51406135">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川125～127</h3>
+    <p class="case-management-no">51406135</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-f32332b86ad7e9d6/" data-status="survey_wait" data-search="51406182 51406182 51406182 西川75e2~75e3 西川75E2～75E3 現調待ち" data-management-no-key="51406182">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川75E2～75E3</h3>
+    <p class="case-management-no">51406182</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-c03283eb2f9ef34f/" data-status="survey_wait" data-search="51406186 51406186 51406186 西川75e3~75e3s1 西川75E3～75E3S1 現調待ち" data-management-no-key="51406186">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川75E3～75E3S1</h3>
+    <p class="case-management-no">51406186</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-c1fb1a3fabbdf1fe/" data-status="survey_wait" data-search="51406253 51406253 51406253 西川58g4~58g5 西川58G4～58G5 現調待ち" data-management-no-key="51406253">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川58G4～58G5</h3>
+    <p class="case-management-no">51406253</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-5a8b149bb4ca0b43/" data-status="survey_wait" data-search="51406260 51406260 51406260 西川63g6~63g7 西川63G6～63G7 現調待ち" data-management-no-key="51406260">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川63G6～63G7</h3>
+    <p class="case-management-no">51406260</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-bca38829d4e67fcf/" data-status="survey_wait" data-search="51406263 51406263 51406263 西川75e3s1~75e3s2 西川75E3S1～75E3S2 現調待ち" data-management-no-key="51406263">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川75E3S1～75E3S2</h3>
+    <p class="case-management-no">51406263</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-03e45b427df66abc/" data-status="survey_wait" data-search="51406272 51406272 51406272 西川122g1~123g1 西川122G1～123G1 現調待ち" data-management-no-key="51406272">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川122G1～123G1</h3>
+    <p class="case-management-no">51406272</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-bd7cac0979a324a0/" data-status="survey_wait" data-search="51406295 51406295 51406295 西川151s4~151s5 西川151S4～151S5 現調待ち" data-management-no-key="51406295">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川151S4～151S5</h3>
+    <p class="case-management-no">51406295</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-8a84dea287ba20b2/" data-status="survey_wait" data-search="51406606 51406606 51406606 沼田原28~29 沼田原28～29 現調待ち" data-management-no-key="51406606">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原28～29</h3>
+    <p class="case-management-no">51406606</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-d838eeb9df6aad01/" data-status="survey_wait" data-search="51406608 51406608 51406608 沼田原30~31 沼田原30～31 現調待ち" data-management-no-key="51406608">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原30～31</h3>
+    <p class="case-management-no">51406608</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-88bd5da3823c2867/" data-status="survey_wait" data-search="51406627 51406627 51406627 沼田原52~53 沼田原52～53 現調待ち" data-management-no-key="51406627">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原52～53</h3>
+    <p class="case-management-no">51406627</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-f0e69d24f7571356/" data-status="survey_wait" data-search="51406629 51406629 51406629 沼田原54~55 沼田原54～55 現調待ち" data-management-no-key="51406629">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原54～55</h3>
+    <p class="case-management-no">51406629</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-6e9ffbfe733168d6/" data-status="survey_wait" data-search="51406634 51406634 51406634 沼田原59~60 沼田原59～60 現調待ち" data-management-no-key="51406634">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原59～60</h3>
+    <p class="case-management-no">51406634</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-9bccc0a0772f7b5b/" data-status="survey_wait" data-search="51406638 51406638 51406638 沼田原63~64 沼田原63～64 現調待ち" data-management-no-key="51406638">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原63～64</h3>
+    <p class="case-management-no">51406638</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-22f61697a44793e2/" data-status="survey_wait" data-search="51406659 51406659 51406659 沼田原87~87n1 沼田原87～87N1 現調待ち" data-management-no-key="51406659">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原87～87N1</h3>
+    <p class="case-management-no">51406659</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-8b318a9b8b8ccc62/" data-status="survey_wait" data-search="51406660 51406660 51406660 沼田原89~中峰1e1 沼田原89～中峰1E1 現調待ち" data-management-no-key="51406660">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原89～中峰1E1</h3>
+    <p class="case-management-no">51406660</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-bd3b5c220f815e73/" data-status="survey_wait" data-search="51406673 51406673 51406673 沼田原103~104 沼田原103～104 現調待ち" data-management-no-key="51406673">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原103～104</h3>
+    <p class="case-management-no">51406673</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-112eeaf156ac0d62/" data-status="survey_wait" data-search="51406738 51406738 51406738 沼田原75s12~75s13 沼田原75S12～75S13 現調待ち" data-management-no-key="51406738">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原75S12～75S13</h3>
+    <p class="case-management-no">51406738</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-b0ac3601fba05a24/" data-status="survey_wait" data-search="51406739 51406739 51406739 沼田原75s13~75s14 沼田原75S13～75S14 現調待ち" data-management-no-key="51406739">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原75S13～75S14</h3>
+    <p class="case-management-no">51406739</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-be3ec38dc8b76677/" data-status="survey_wait" data-search="51406744 51406744 51406744 沼田原75s18~75s19 沼田原75S18～75S19 現調待ち" data-management-no-key="51406744">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原75S18～75S19</h3>
+    <p class="case-management-no">51406744</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-446981b6ae1df44b/" data-status="survey_wait" data-search="51406747 51406747 51406747 沼田原75s19g1~75s20 沼田原75S19G1～75S20 現調待ち" data-management-no-key="51406747">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原75S19G1～75S20</h3>
+    <p class="case-management-no">51406747</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-3ed5c484ed519715/" data-status="survey_wait" data-search="51406748 51406748 51406748 沼田原75s20~75s21 沼田原75S20～75S21 現調待ち" data-management-no-key="51406748">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原75S20～75S21</h3>
+    <p class="case-management-no">51406748</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-d650e07f4771d9d1/" data-status="survey_wait" data-search="51406750 51406750 51406750 沼田原75s22~75s23 沼田原75S22～75S23 現調待ち" data-management-no-key="51406750">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原75S22～75S23</h3>
+    <p class="case-management-no">51406750</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-a8b1d5070693a50e/" data-status="survey_wait" data-search="51406751 51406751 51406751 沼田原85k~86n1 沼田原85K～86N1 現調待ち" data-management-no-key="51406751">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原85K～86N1</h3>
+    <p class="case-management-no">51406751</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-b1109ea0ab62bf87/" data-status="survey_wait" data-search="51406859 51406859 51406859 桧川迫6~桧川迫7w1 桧川迫6～桧川迫7W1 現調待ち" data-management-no-key="51406859">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫6～桧川迫7W1</h3>
+    <p class="case-management-no">51406859</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-2ad99dcb0d19590f/" data-status="survey_wait" data-search="51406862 51406862 51406862 桧川迫11~桧川迫11g1 桧川迫11～桧川迫11G1 現調待ち" data-management-no-key="51406862">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫11～桧川迫11G1</h3>
+    <p class="case-management-no">51406862</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-2addf1eba273e383/" data-status="survey_wait" data-search="51406872 51406872 51406872 桧川迫19~桧川迫20 桧川迫19～桧川迫20 現調待ち" data-management-no-key="51406872">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫19～桧川迫20</h3>
+    <p class="case-management-no">51406872</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-9c576c30a780b36a/" data-status="survey_wait" data-search="51406881 51406881 51406881 桧川迫27~桧川迫28 桧川迫27～桧川迫28 現調待ち" data-management-no-key="51406881">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫27～桧川迫28</h3>
+    <p class="case-management-no">51406881</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-73e87e80da48ed2e/" data-status="survey_wait" data-search="51406882 51406882 51406882 桧川迫27~桧川迫27w1 桧川迫27～桧川迫27W1 現調待ち" data-management-no-key="51406882">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫27～桧川迫27W1</h3>
+    <p class="case-management-no">51406882</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-d8d72675cdd9529b/" data-status="survey_wait" data-search="51406883 51406883 51406883 桧川迫28~桧川迫29 桧川迫28～桧川迫29 現調待ち" data-management-no-key="51406883">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫28～桧川迫29</h3>
+    <p class="case-management-no">51406883</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-9326236ea6ab89f4/" data-status="survey_wait" data-search="51406885 51406885 51406885 桧川迫30~桧川迫31 桧川迫30～桧川迫31 現調待ち" data-management-no-key="51406885">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫30～桧川迫31</h3>
+    <p class="case-management-no">51406885</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-d932a91c32af2c9a/" data-status="survey_wait" data-search="51406886 51406886 51406886 桧川迫31~桧川迫32 桧川迫31～桧川迫32 現調待ち" data-management-no-key="51406886">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫31～桧川迫32</h3>
+    <p class="case-management-no">51406886</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-01208af638709254/" data-status="survey_wait" data-search="51406887 51406887 51406887 桧川迫32~桧川迫33 桧川迫32～桧川迫33 現調待ち" data-management-no-key="51406887">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫32～桧川迫33</h3>
+    <p class="case-management-no">51406887</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-ff319f28ebf3a7b8/" data-status="survey_wait" data-search="51406894 51406894 51406894 桧川迫38~桧川迫39 桧川迫38～桧川迫39 現調待ち" data-management-no-key="51406894">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫38～桧川迫39</h3>
+    <p class="case-management-no">51406894</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-a462f274ee93646d/" data-status="survey_wait" data-search="51406904 51406904 51406904 桧川迫51~桧川迫52 桧川迫51～桧川迫52 現調待ち" data-management-no-key="51406904">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫51～桧川迫52</h3>
+    <p class="case-management-no">51406904</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-ec8eaeffbfd053b7/" data-status="survey_wait" data-search="51406922 51406922 51406922 桧川迫67~桧川迫68 桧川迫67～桧川迫68 現調待ち" data-management-no-key="51406922">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫67～桧川迫68</h3>
+    <p class="case-management-no">51406922</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-d0848036cd26bc21/" data-status="survey_wait" data-search="51406923 51406923 51406923 桧川迫68~桧川迫69 桧川迫68～桧川迫69 現調待ち" data-management-no-key="51406923">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫68～桧川迫69</h3>
+    <p class="case-management-no">51406923</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-7e80df061fecd899/" data-status="survey_wait" data-search="51406927 51406927 51406927 桧川迫78~桧川迫79 桧川迫78～桧川迫79 現調待ち" data-management-no-key="51406927">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫78～桧川迫79</h3>
+    <p class="case-management-no">51406927</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-4e36dbb3d6729045/" data-status="survey_wait" data-search="51406930 51406930 51406930 桧川迫83~桧川迫83s1 桧川迫83～桧川迫83S1 現調待ち" data-management-no-key="51406930">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫83～桧川迫83S1</h3>
+    <p class="case-management-no">51406930</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-039cdbac4c2ccdcc/" data-status="survey_wait" data-search="51406947 51406947 51406947 桧川迫99~桧川迫100 桧川迫99～桧川迫100 現調待ち" data-management-no-key="51406947">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫99～桧川迫100</h3>
+    <p class="case-management-no">51406947</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-61d88624ef23ed36/" data-status="survey_wait" data-search="51406949 51406949 51406949 桧川迫101~桧川迫102 桧川迫101～桧川迫102 現調待ち" data-management-no-key="51406949">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫101～桧川迫102</h3>
+    <p class="case-management-no">51406949</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-c842afa373dfa4c1/" data-status="survey_wait" data-search="51406951 51406951 51406951 桧川迫58e1~桧川迫58e2 桧川迫58E1～桧川迫58E2 現調待ち" data-management-no-key="51406951">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫58E1～桧川迫58E2</h3>
+    <p class="case-management-no">51406951</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-7c4ff45261e58e96/" data-status="survey_wait" data-search="51406957 51406957 51406957 桧川迫58e5~桧川迫58e6 桧川迫58E5～桧川迫58E6 現調待ち" data-management-no-key="51406957">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫58E5～桧川迫58E6</h3>
+    <p class="case-management-no">51406957</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-6c839701278eb67a/" data-status="survey_wait" data-search="51406969 51406969 51406969 桧川迫11n3w1~桧川迫11n3w1n1 桧川迫11N3W1～桧川迫11N3W1N1 現調待ち" data-management-no-key="51406969">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫11N3W1～桧川迫11N3W1N1</h3>
+    <p class="case-management-no">51406969</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-1fd0c1a152b9c498/" data-status="survey_wait" data-search="51406973 51406973 51406973 桧川迫11n6~桧川迫11n6e1 桧川迫11N6～桧川迫11N6E1 現調待ち" data-management-no-key="51406973">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫11N6～桧川迫11N6E1</h3>
+    <p class="case-management-no">51406973</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-47c9d16f7bfe1806/" data-status="survey_wait" data-search="51406981 51406981 51406981 桧川迫15n2~桧川迫15n3 桧川迫15N2～桧川迫15N3 現調待ち" data-management-no-key="51406981">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫15N2～桧川迫15N3</h3>
+    <p class="case-management-no">51406981</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-7617ae5eecc9ccf5/" data-status="survey_wait" data-search="51406987 51406987 51406987 桧川迫18s5~桧川迫18s6 桧川迫18S5～桧川迫18S6 現調待ち" data-management-no-key="51406987">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫18S5～桧川迫18S6</h3>
+    <p class="case-management-no">51406987</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-c7b0dc86dfba32a3/" data-status="survey_wait" data-search="51406987 51406987 51406987-2 沼田原9~10 沼田原9～10 現調待ち" data-management-no-key="51406987">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原9～10</h3>
+    <p class="case-management-no">51406987</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-c3801d518e11aa80/" data-status="survey_wait" data-search="51407002 51407002 51407002 桧川迫27w1~桧川迫27w2 桧川迫27W1～桧川迫27W2 現調待ち" data-management-no-key="51407002">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫27W1～桧川迫27W2</h3>
+    <p class="case-management-no">51407002</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-1a03a25a474f1356/" data-status="survey_wait" data-search="51407006 51407006 51407006 桧川迫42n2~桧川迫42n3 桧川迫42N2～桧川迫42N3 現調待ち" data-management-no-key="51407006">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫42N2～桧川迫42N3</h3>
+    <p class="case-management-no">51407006</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-d9c3fee243e724dc/" data-status="survey_wait" data-search="51407008 51407008 51407008 桧川迫42n3~桧川迫42n5 桧川迫42N3～桧川迫42N5 現調待ち" data-management-no-key="51407008">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫42N3～桧川迫42N5</h3>
+    <p class="case-management-no">51407008</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-f47c5f5281453a75/" data-status="survey_wait" data-search="51407009 51407009 51407009 桧川迫42n5~桧川迫42n6 桧川迫42N5～桧川迫42N6 現調待ち" data-management-no-key="51407009">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫42N5～桧川迫42N6</h3>
+    <p class="case-management-no">51407009</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-fbfeaa2b7acd070b/" data-status="survey_wait" data-search="51407017 51407017 51407017 桧川迫45g1~桧川迫45s1 桧川迫45G1～桧川迫45S1 現調待ち" data-management-no-key="51407017">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫45G1～桧川迫45S1</h3>
+    <p class="case-management-no">51407017</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-acae91f05726f7c2/" data-status="survey_wait" data-search="51407032 51407032 51407032 桧川迫49s7~桧川迫49s8 桧川迫49S7～桧川迫49S8 現調待ち" data-management-no-key="51407032">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫49S7～桧川迫49S8</h3>
+    <p class="case-management-no">51407032</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-710e4d62960a2fdf/" data-status="survey_wait" data-search="51407066 51407066 51407066 桧川迫75n3~桧川迫75n4 桧川迫75N3～桧川迫75N4 現調待ち" data-management-no-key="51407066">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫75N3～桧川迫75N4</h3>
+    <p class="case-management-no">51407066</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-0c8e6d02441d5eaf/" data-status="survey_wait" data-search="51407071 51407071 51407071 桧川迫75n7~桧川迫75n8 桧川迫75N7～桧川迫75N8 現調待ち" data-management-no-key="51407071">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫75N7～桧川迫75N8</h3>
+    <p class="case-management-no">51407071</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-f0d18055460d0b94/" data-status="survey_wait" data-search="51407073 51407073 51407073 桧川迫75n9~桧川迫75n9n1 桧川迫75N9～桧川迫75N9N1 現調待ち" data-management-no-key="51407073">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫75N9～桧川迫75N9N1</h3>
+    <p class="case-management-no">51407073</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-38a8ffef032f37d3/" data-status="survey_wait" data-search="51407079 51407079 51407079 桧川迫83s4~桧川迫83s4w1 桧川迫83S4～桧川迫83S4W1 現調待ち" data-management-no-key="51407079">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫83S4～桧川迫83S4W1</h3>
+    <p class="case-management-no">51407079</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-9e1ae5206718f689/" data-status="survey_wait" data-search="51407080 51407080 51407080 桧川迫83s4~桧川迫83s5 桧川迫83S4～桧川迫83S5 現調待ち" data-management-no-key="51407080">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫83S4～桧川迫83S5</h3>
+    <p class="case-management-no">51407080</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-1dacc07a713c6ae1/" data-status="survey_wait" data-search="51407084 51407084 51407084 桧川迫83s7~桧川迫83s8 桧川迫83S7～桧川迫83S8 現調待ち" data-management-no-key="51407084">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫83S7～桧川迫83S8</h3>
+    <p class="case-management-no">51407084</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-4b8e59d388578579/" data-status="survey_wait" data-search="51407085 51407085 51407085 桧川迫83s8~桧川迫83s9 桧川迫83S8～桧川迫83S9 現調待ち" data-management-no-key="51407085">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫83S8～桧川迫83S9</h3>
+    <p class="case-management-no">51407085</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-e939add7fd16629d/" data-status="survey_wait" data-search="51407098 51407098 51407098 引土21~22 引土21～22 現調待ち" data-management-no-key="51407098">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>引土21～22</h3>
+    <p class="case-management-no">51407098</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-90355d366f84703c/" data-status="survey_wait" data-search="51407105 51407105 51407105 引土16g5~16g6 引土16G5～16G6 現調待ち" data-management-no-key="51407105">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>引土16G5～16G6</h3>
+    <p class="case-management-no">51407105</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
 <a class="case-row" href="./case-bf1525352a5679b5/" data-status="survey_wait" data-search="514 07220 51407220 51407220 平沼田17~18 平沼田17～18 現調待ち" data-management-no-key="51407220">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
@@ -428,6 +1194,36 @@ a.portal-menu-item:focus-visible {
   </div>
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
+  </div>
+</a>
+<a class="case-row" href="./case-54d01dc681190de2/" data-status="survey_wait" data-search="51407873 51407873 51407873 山際15~16 山際15～16 現調待ち" data-management-no-key="51407873">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>山際15～16</h3>
+    <p class="case-management-no">51407873</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-0370fabaf0e025b2/" data-status="survey_wait" data-search="51407877 51407877 51407877 山際20~21 山際20～21 現調待ち" data-management-no-key="51407877">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>山際20～21</h3>
+    <p class="case-management-no">51407877</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-860a96fca06bfb75/" data-status="survey_wait" data-search="51407878 51407878 51407878 山際21~22 山際21～22 現調待ち" data-management-no-key="51407878">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>山際21～22</h3>
+    <p class="case-management-no">51407878</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
   </div>
 </a>
 <a class="case-row" href="./case-0d058e7d95547720/" data-status="survey_wait" data-search="514 07898 51407898 51407898 平沼田43n4e1~43n4e2 平沼田43N4E1～43N4E2 現調待ち" data-management-no-key="51407898">
@@ -450,6 +1246,16 @@ a.portal-menu-item:focus-visible {
     <span>更新 2026-06-13</span>
   </div>
 </a>
+<a class="case-row" href="./case-6c66b83dc8cc849b/" data-status="survey_wait" data-search="51408875 51408875 51408875 桧川迫51s4~桧川迫51s5 桧川迫51S4～桧川迫51S5 現調待ち" data-management-no-key="51408875">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫51S4～桧川迫51S5</h3>
+    <p class="case-management-no">51408875</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
 <a class="case-row" href="./case-0670a95ce24bec39/" data-status="survey_wait" data-search="514 09097 51409097 51409097 赤松1~1g1 赤松1～1G1 現調待ち" data-management-no-key="51409097">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
@@ -468,6 +1274,16 @@ a.portal-menu-item:focus-visible {
   </div>
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
+  </div>
+</a>
+<a class="case-row" href="./case-8d95c79be480f066/" data-status="survey_wait" data-search="51409221 51409221 51409221 桧川迫83s6~桧川迫83s7 桧川迫83S6～桧川迫83S7 現調待ち" data-management-no-key="51409221">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫83S6～桧川迫83S7</h3>
+    <p class="case-management-no">51409221</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
   </div>
 </a>
 <a class="case-row" href="./case-124072babf52ef7f/" data-status="survey_wait" data-search="514 09228 51409228 51409228 西新子14g1~14e3 西新子14G1～14E3 現調待ち" data-management-no-key="51409228">
@@ -490,6 +1306,36 @@ a.portal-menu-item:focus-visible {
     <span>更新 2026-06-13</span>
   </div>
 </a>
+<a class="case-row" href="./case-bcc394a6c9a9bdba/" data-status="survey_wait" data-search="51409521 51409521 51409521 桧川迫18~桧川迫19 桧川迫18～桧川迫19 現調待ち" data-management-no-key="51409521">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫18～桧川迫19</h3>
+    <p class="case-management-no">51409521</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-5901218ff41a8251/" data-status="survey_wait" data-search="51409653 51409653 51409653 西川147e3~147e4 西川147E3～147E4 現調待ち" data-management-no-key="51409653">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川147E3～147E4</h3>
+    <p class="case-management-no">51409653</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-f66d5c51197057ff/" data-status="survey_wait" data-search="51409888 51409888 51409888 桧川迫58e4~桧川迫58e5 桧川迫58E4～桧川迫58E5 現調待ち" data-management-no-key="51409888">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫58E4～桧川迫58E5</h3>
+    <p class="case-management-no">51409888</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
 <a class="case-row" href="./case-58e7938605641045/" data-status="survey_wait" data-search="514 09991 51409991 51409991 柴ヶ谷3g1~4 柴ヶ谷3G1～4 現調待ち" data-management-no-key="51409991">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
@@ -510,6 +1356,26 @@ a.portal-menu-item:focus-visible {
     <span>更新 2026-06-13</span>
   </div>
 </a>
+<a class="case-row" href="./case-3bbf0b56567f181c/" data-status="survey_wait" data-search="51410053 51410053 51410053 桧川迫53s1k99~桧川迫53s1 桧川迫53S1K99～桧川迫53S1 現調待ち" data-management-no-key="51410053">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>桧川迫53S1K99～桧川迫53S1</h3>
+    <p class="case-management-no">51410053</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-080f0ce843e2db12/" data-status="survey_wait" data-search="51410113 51410113 51410113 釜中7~7g1 釜中7～7G1 現調待ち" data-management-no-key="51410113">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>釜中7～7G1</h3>
+    <p class="case-management-no">51410113</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
 <a class="case-row" href="./case-b1a9d42881a32bcb/" data-status="survey_wait" data-search="514 10139 51410139 51410139 江出2n14~生子93e1 江出2N14～生子93E1 現調待ち" data-management-no-key="51410139">
   <div class="case-row-main">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
@@ -518,6 +1384,46 @@ a.portal-menu-item:focus-visible {
   </div>
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
+  </div>
+</a>
+<a class="case-row" href="./case-6b783c62b28e7e18/" data-status="survey_wait" data-search="51410178 51410178 51410178 沼田原46s3e2~46s6 沼田原46S3E2～46S6 現調待ち" data-management-no-key="51410178">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>沼田原46S3E2～46S6</h3>
+    <p class="case-management-no">51410178</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-289e679d67468fd7/" data-status="survey_wait" data-search="51410183 51410183 51410183 引土18~18w1 引土18～18W1 現調待ち" data-management-no-key="51410183">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>引土18～18W1</h3>
+    <p class="case-management-no">51410183</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-aafad6c064f341e7/" data-status="survey_wait" data-search="51410293 51410293 51410293 西川93n3~93n4 西川93N3～93N4 現調待ち" data-management-no-key="51410293">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>西川93N3～93N4</h3>
+    <p class="case-management-no">51410293</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-41c04d676c067df5/" data-status="survey_wait" data-search="51410306 51410306 51410306 中峰3w3~引込 中峰3W3～引込 現調待ち" data-management-no-key="51410306">
+  <div class="case-row-main">
+    <span class="case-status-pill status-survey_wait">現調待ち</span>
+    <h3>中峰3W3～引込</h3>
+    <p class="case-management-no">51410306</p>
+  </div>
+  <div class="case-row-meta">
+    <span>更新 2026-06-15</span>
   </div>
 </a>
 <a class="case-row" href="./case-b5b755b1093c70bb/" data-status="survey_wait" data-search="514 10417 51410417 51410417 城戸11w1~大日川2 城戸11W1～大日川2 現調待ち" data-management-no-key="51410417">
@@ -836,7 +1742,7 @@ a.portal-menu-item:focus-visible {
   <h2>付託待ち <span data-section-count="entrustment_wait">0件</span></h2>
   <div class="case-list"><p class="empty-note">対象はありません。</p></div>
 </section><section class="status-section" id="status-construction_wait">
-  <h2>工事待ち <span data-section-count="construction_wait">26件</span></h2>
+  <h2>工事待ち <span data-section-count="construction_wait">30件</span></h2>
   <div class="case-list"><a class="case-row" href="./case-68ae8c43cf29ab49/" data-status="construction_wait" data-search="514 01389 51401389 51401389 小川176~177 小川176～177 工事待ち" data-management-no-key="51401389">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
@@ -958,6 +1864,17 @@ a.portal-menu-item:focus-visible {
     <span>更新 2026-06-13</span>
   </div>
 </a>
+<a class="case-row" href="./case-ae1fee10b43b11d0/" data-status="construction_wait" data-search="514 08029 51408029 51408029 湯塩3e2~3e3 湯塩3E2～3E3 工事待ち 260616" data-management-no-key="51408029">
+  <div class="case-row-main">
+    <span class="case-status-pill status-construction_wait">工事待ち</span>
+    <h3>湯塩3E2～3E3</h3>
+    <p class="case-management-no">514 08029</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260616</span>
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
 <a class="case-row" href="./case-2e67a09e8f6e18ff/" data-status="construction_wait" data-search="514 08876 51408876 51408876 柿山14e5~14e6 柿山14E5～14E6 工事待ち" data-management-no-key="51408876">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
@@ -968,6 +1885,28 @@ a.portal-menu-item:focus-visible {
     <span>更新 2026-06-13</span>
   </div>
 </a>
+<a class="case-row" href="./case-820a2e640d20f3a8/" data-status="construction_wait" data-search="514 09030 51409030 51409030 湯塩3e1~3e2 湯塩3E1～3E2 工事待ち 260616" data-management-no-key="51409030">
+  <div class="case-row-main">
+    <span class="case-status-pill status-construction_wait">工事待ち</span>
+    <h3>湯塩3E1～3E2</h3>
+    <p class="case-management-no">514 09030</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260616</span>
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-cd8a2daa59c2705b/" data-status="construction_wait" data-search="514 09272 51409272 51409272 阪巻10~10s1 阪巻10～10S1 工事待ち 260616" data-management-no-key="51409272">
+  <div class="case-row-main">
+    <span class="case-status-pill status-construction_wait">工事待ち</span>
+    <h3>阪巻10～10S1</h3>
+    <p class="case-management-no">514 09272</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260616</span>
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
 <a class="case-row" href="./case-53b304348a91e4f2/" data-status="construction_wait" data-search="514 09716 51409716 51409716 柿山3e9~3e10 柿山3E9～3E10 工事待ち" data-management-no-key="51409716">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
@@ -976,6 +1915,17 @@ a.portal-menu-item:focus-visible {
   </div>
   <div class="case-row-meta">
     <span>更新 2026-06-13</span>
+  </div>
+</a>
+<a class="case-row" href="./case-fe703816c66069d1/" data-status="construction_wait" data-search="514 09983 51409983 51409983 立川渡14~永谷1 立川渡14～永谷1 工事待ち 260616" data-management-no-key="51409983">
+  <div class="case-row-main">
+    <span class="case-status-pill status-construction_wait">工事待ち</span>
+    <h3>立川渡14～永谷1</h3>
+    <p class="case-management-no">514 09983</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260616</span>
+    <span>更新 2026-06-15</span>
   </div>
 </a>
 <a class="case-row" href="./case-c09532faaf223976/" data-status="construction_wait" data-search="514 10041 51410041 51410041 北宇智146n7n2e4~146n7n2e5 北宇智146N7N2E4～146N7N2E5 工事待ち 260610" data-management-no-key="51410041">
@@ -999,15 +1949,26 @@ a.portal-menu-item:focus-visible {
     <span>更新 2026-06-13</span>
   </div>
 </a>
-<a class="case-row" href="./case-9e764745c57c076d/" data-status="construction_wait" data-search="515 06487 51506487 51506487 津風呂20g4~20g5 津風呂20G4～20G5 工事待ち 260615" data-management-no-key="51506487">
+<a class="case-row" href="./case-a90a14b306951dec/" data-status="construction_wait" data-search="515 03712 51503712 51503712 佐曽25~26 佐曽25～26 工事待ち 260617" data-management-no-key="51503712">
   <div class="case-row-main">
     <span class="case-status-pill status-construction_wait">工事待ち</span>
-    <h3>津風呂20G4～20G5</h3>
-    <p class="case-management-no">515 06487</p>
+    <h3>佐曽25～26</h3>
+    <p class="case-management-no">515 03712</p>
   </div>
   <div class="case-row-meta">
-    <span>共有日 260615</span>
-    <span>更新 2026-06-14</span>
+    <span>共有日 260617</span>
+    <span>更新 2026-06-15</span>
+  </div>
+</a>
+<a class="case-row" href="./case-648906fff2e97280/" data-status="construction_wait" data-search="515 03713 51503713 51503713 佐曽25~25n1 佐曽25～25N1 工事待ち 260617" data-management-no-key="51503713">
+  <div class="case-row-main">
+    <span class="case-status-pill status-construction_wait">工事待ち</span>
+    <h3>佐曽25～25N1</h3>
+    <p class="case-management-no">515 03713</p>
+  </div>
+  <div class="case-row-meta">
+    <span>共有日 260617</span>
+    <span>更新 2026-06-15</span>
   </div>
 </a>
 <a class="case-row" href="./case-e4d344f20b7ef58a/" data-status="construction_wait" data-search="515 06491 51506491 51506491 津風呂20g8~21 津風呂20G8～21 工事待ち 260615" data-management-no-key="51506491">
@@ -1048,17 +2009,6 @@ a.portal-menu-item:focus-visible {
     <span class="case-status-pill status-construction_wait">工事待ち</span>
     <h3>津風呂24N6～26N7</h3>
     <p class="case-management-no">515 06503</p>
-  </div>
-  <div class="case-row-meta">
-    <span>共有日 260615</span>
-    <span>更新 2026-06-14</span>
-  </div>
-</a>
-<a class="case-row" href="./case-6ad5e48314dac6e2/" data-status="construction_wait" data-search="515 10213 51510213 51510213 竜門67s8~67s9 竜門67S8～67S9 工事待ち 260615" data-management-no-key="51510213">
-  <div class="case-row-main">
-    <span class="case-status-pill status-construction_wait">工事待ち</span>
-    <h3>竜門67S8～67S9</h3>
-    <p class="case-management-no">515 10213</p>
   </div>
   <div class="case-row-meta">
     <span>共有日 260615</span>
@@ -1167,6 +2117,85 @@ a.portal-menu-item:focus-visible {
   document.addEventListener("keydown", function (ev) {
     if (ev.key === "Escape") setOpen(false);
   });
+})();
+
+
+(function () {
+  var PAGE = "cases";
+  var ENDPOINT = "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request";
+  var API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
+  var LABELS = {survey_wait:"現調待ち",negotiation_wait:"交渉待ち",entrustment_wait:"付託待ち",construction_wait:"工事待ち",return_wait:"返却待ち",returned:"返却済み"};
+  var ORDER = ["survey_wait","negotiation_wait","entrustment_wait","construction_wait","return_wait"];
+  var PAGE_STATUSES = {survey:["survey_wait"],negotiation:["negotiation_wait","return_wait"],entrustment:["entrustment_wait"],cases:ORDER,detail:ORDER};
+  function esc(v) { return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+  function t(r,k) { return String((r && r[k]) || "").trim(); }
+  function searchText(r) { return [t(r,"management_no"),t(r,"management_no_key"),t(r,"internal_management_no"),t(r,"span_key"),t(r,"label"),LABELS[t(r,"status")]||t(r,"status")].join(" "); }
+  function setStatus(msg, err) { var el=document.getElementById("liveCasesStatus"); if(!el) return; el.hidden=false; el.textContent=msg; el.classList.toggle("is-error", !!err); }
+  function fetchCases(extra) {
+    if (!ENDPOINT || !API_KEY) return Promise.reject(new Error("api_key_missing"));
+    var p = new URLSearchParams(); p.set("list","cases"); p.set("statuses",(PAGE_STATUSES[PAGE]||ORDER).join(","));
+    if (extra && extra.id) p.set("id", extra.id);
+    return fetch(ENDPOINT+"?"+p.toString(), {headers:{apikey:API_KEY,Accept:"application/json"}})
+      .then(function(res) { return res.json().catch(function(){return {};}).then(function(body) { if(!res.ok || !body || body.ok!==true) throw new Error((body&&body.error)||("http_"+res.status)); return body; }); });
+  }
+  function post(row, action, extra) {
+    var payload={id:t(row,"id"),management_no_key:t(row,"management_no_key"),management_no:t(row,"management_no"),label:t(row,"label"),internal_management_no:t(row,"internal_management_no"),span_key:t(row,"span_key"),action:action,source:"portal_live_cases"};
+    if(extra) Object.keys(extra).forEach(function(k){payload[k]=extra[k];});
+    return fetch(ENDPOINT, {method:"POST",headers:{"Content-Type":"application/json",apikey:API_KEY},body:JSON.stringify(payload)})
+      .then(function(res) { return res.json().catch(function(){return {};}).then(function(body) { if(!res.ok || !body || body.ok!==true) throw new Error((body&&body.error)||("http_"+res.status)); return body; }); });
+  }
+  function bind(root, rows) {
+    var byId={}; rows.forEach(function(r){byId[t(r,"id")]=r;});
+    root.querySelectorAll("[data-live-action]").forEach(function(btn) {
+      if(btn.dataset.liveBound==="1") return; btn.dataset.liveBound="1";
+      btn.addEventListener("click", function() {
+        var row=byId[btn.getAttribute("data-case-id")||""]; var action=btn.getAttribute("data-live-action")||""; if(!row||!action||btn.disabled) return;
+        var extra=null, msg="この案件の状態を更新します。よろしいですか？";
+        if(action==="mark_survey_done") msg="この案件を交渉待ちにします。よろしいですか？";
+        if(action==="mark_return_candidate") msg="この案件を返却候補にします。よろしいですか？";
+        if(action==="mark_entrustment_wait") msg="この案件を付託待ちにします。よろしいですか？";
+        if(action==="mark_construction_wait") msg="この案件を工事待ちにします。よろしいですか？";
+        if(action==="mark_returned") { msg="この案件を返却済みにします。よろしいですか？"; extra={return_reason_category:"other",return_reason_text:"ポータルから返却済みに変更"}; }
+        if(!window.confirm(msg)) return;
+        btn.disabled=true; var before=btn.textContent; btn.textContent="送信中...";
+        post(row, action, extra).then(function(){btn.textContent="反映済み"; setTimeout(function(){location.reload();},500);})
+          .catch(function(e){btn.disabled=false; btn.textContent=before||"再試行"; window.alert("送信に失敗しました: "+(e&&e.message?e.message:e));});
+      });
+    });
+  }
+  function mapBtn(r) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"); return lat&&lng?'<a class="btn btn-map" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q='+encodeURIComponent(lat+","+lng)+'">地図を表示</a>':""; }
+  function surveyCard(r) { return '<article class="card survey-update-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="card-head"><span class="case-status-pill status-survey_wait">現調待ち</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions">'+mapBtn(r)+'</div><div class="card-actions card-actions-portal-request"><div class="survey-case-action-row"><button type="button" class="btn btn-survey-mark-done" data-live-action="mark_survey_done" data-case-id="'+esc(t(r,"id"))+'">現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-live-action="mark_return_candidate" data-case-id="'+esc(t(r,"id"))+'">返却候補にする</button></div></div></div></article>'; }
+  function negotiationCard(r) { var st=t(r,"status"), act=""; if(st==="negotiation_wait") act='<button type="button" class="btn btn-entrustment" data-live-action="mark_entrustment_wait" data-case-id="'+esc(t(r,"id"))+'">付託待ちにする</button>'; if(st==="return_wait") act='<button type="button" class="btn btn-returned" data-live-action="mark_returned" data-case-id="'+esc(t(r,"id"))+'">返却済みにする</button>'; return '<article class="card negotiation-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="card-head"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-revert">'+act+'</div></div></article>'; }
+  function entrustmentCard(r) { return '<article class="case-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="case-card-main"><span class="case-status-pill status-entrustment_wait">付託待ち</span><h2 class="case-title">'+esc(t(r,"label")||"—")+'</h2><p class="case-meta">'+esc(t(r,"management_no")||"—")+'</p></div><div class="card-actions">'+mapBtn(r)+'<button type="button" class="btn" data-live-action="mark_construction_wait" data-case-id="'+esc(t(r,"id"))+'">工事待ちにする</button></div></article>'; }
+  function detailHref(r) { return PAGE==="cases" ? "./detail/?id="+encodeURIComponent(t(r,"id")) : "../cases/detail/?id="+encodeURIComponent(t(r,"id")); }
+  function caseRow(r) { var st=t(r,"status"); return '<a class="case-row" href="'+esc(detailHref(r))+'" data-status="'+esc(st)+'" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="case-row-main"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h3>'+esc(t(r,"label")||"—")+'</h3><p class="case-management-no">'+esc(t(r,"management_no")||"—")+'</p></div><div class="case-row-meta">'+(t(r,"updated_at")?'<span>更新 '+esc(t(r,"updated_at").slice(0,10))+'</span>':"")+'</div></a>'; }
+  function updateCount(n) { ["caseVisibleCount","survey-visible-count"].forEach(function(id){var el=document.getElementById(id); if(el) el.textContent=String(n);}); }
+  function renderList(rows) {
+    var main=document.querySelector("main"); if(!main) return;
+    var map=main.querySelector(".map-section"), html="";
+    if(PAGE==="survey") html=rows.map(surveyCard).join("");
+    if(PAGE==="negotiation") html=rows.map(negotiationCard).join("");
+    if(PAGE==="entrustment") html='<div class="card-list" role="list">'+rows.map(entrustmentCard).join("")+'</div>';
+    main.innerHTML=html || '<p class="empty-note">対象はありません。</p>'; if(map&&PAGE==="survey") main.appendChild(map);
+    updateCount(rows.length); bind(main, rows);
+  }
+  function renderCases(rows, counts) {
+    var grid=document.querySelector(".status-grid"); if(grid) grid.innerHTML=ORDER.map(function(st){return '<a class="status-tile status-'+esc(st)+'" href="#status-'+esc(st)+'"><span>'+esc(LABELS[st])+'</span><strong>'+esc((counts&&counts[st])||0)+'</strong></a>';}).join("");
+    ORDER.forEach(function(st){var section=document.getElementById("status-"+st); if(!section) return; var list=section.querySelector(".case-list"), group=rows.filter(function(r){return t(r,"status")===st;}), count=section.querySelector("[data-section-count]"); if(count) count.textContent=group.length+"件"; if(list) list.innerHTML=group.length?group.map(caseRow).join(""):'<p class="empty-note">対象はありません。</p>'; });
+    updateCount(rows.length);
+  }
+  function renderDetail(rows) {
+    var target=document.getElementById("liveCaseDetail"); if(!target) return; var r=rows[0]; if(!r) {target.innerHTML='<p class="empty-note">対象案件が見つかりません。</p>'; return;}
+    var st=t(r,"status"), action=""; if(st==="negotiation_wait") action='<button class="btn btn-primary" data-live-action="mark_entrustment_wait" data-case-id="'+esc(t(r,"id"))+'">付託待ちにする</button>'; if(st==="entrustment_wait") action='<button class="btn btn-primary" data-live-action="mark_construction_wait" data-case-id="'+esc(t(r,"id"))+'">工事待ちにする</button>'; if(st==="return_wait") action='<button class="btn btn-danger" data-live-action="mark_returned" data-case-id="'+esc(t(r,"id"))+'">返却済みにする</button>';
+    target.innerHTML='<article class="detail-card"><span class="status-pill">'+esc(LABELS[st]||st)+'</span><h2 class="detail-title">'+esc(t(r,"label")||"—")+'</h2><p class="detail-management">'+esc(t(r,"management_no")||"—")+'</p><dl class="detail-ident"><dt>内部管理番号</dt><dd>'+esc(t(r,"internal_management_no")||"—")+'</dd><dt>径間キー</dt><dd>'+esc(t(r,"span_key")||"—")+'</dd><dt>case id</dt><dd>'+esc(t(r,"id")||"—")+'</dd></dl></article><section class="detail-panel action-panel"><h2>このページでできる操作</h2>'+(action||'<p class="action-note">現在の状態はポータルから変更できません。</p>')+'</section>'; bind(target,[r]);
+  }
+  function refresh() {
+    var extra={}; if(PAGE==="detail") { extra.id=new URLSearchParams(location.search).get("id")||""; if(!extra.id) { setStatus("case id が指定されていません。", true); return; } }
+    setStatus("Supabaseから最新情報を読み込み中...", false);
+    fetchCases(extra).then(function(body){var rows=Array.isArray(body.cases)?body.cases:[]; if(PAGE==="cases") renderCases(rows, body.counts||{}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);})
+      .catch(function(e){setStatus("Supabase最新取得に失敗しました。生成時点の表示を使っています: "+(e&&e.message?e.message:e), true);});
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", refresh); else refresh();
 })();
 
 (() => {

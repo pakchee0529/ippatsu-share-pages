@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>案件詳細</title>
+<style>
+:root {
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+  --danger: #b91c1c;
+  --shadow: 0 2px 8px rgba(31,43,58,.045);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0 auto;
+  max-width: 44rem;
+  padding: 0.75rem 0.75rem 1.25rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.portal-page-header {
+  margin-bottom: 0.35rem;
+}
+.portal-page-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.portal-page-header-row .page-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0 0 0.35rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
+}
+.portal-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.portal-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.06);
+}
+.portal-menu-btn:hover,
+.portal-menu-btn:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+.portal-menu-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.portal-menu-label {
+  white-space: nowrap;
+}
+.portal-menu-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 12.5rem;
+  padding: 0.35rem 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(20, 32, 51, 0.12);
+}
+.portal-menu-panel[hidden] {
+  display: none !important;
+}
+.portal-menu-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+a.portal-menu-item:hover,
+a.portal-menu-item:focus-visible {
+  background: #f1f5f9;
+  outline: none;
+}
+.portal-menu-item.is-current {
+  font-weight: 700;
+  background: #f1f5f9;
+}
+
+.back-link {
+  display: inline-flex;
+  margin: 0.2rem 0 0.85rem;
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+.detail-card, .detail-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  margin-bottom: 0.9rem;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  background: #172033;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.detail-title {
+  margin: 0.55rem 0 0.2rem;
+  font-size: 1.35rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.detail-management {
+  margin: 0;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-weight: 700;
+}
+.detail-ident {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, auto) minmax(0, 1fr);
+  gap: 0.55rem 0.75rem;
+  margin: 0.85rem 0 0;
+}
+.detail-ident dt {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.detail-ident dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.action-panel h2 {
+  margin: 0 0 0.45rem;
+  font-size: 1.05rem;
+}
+.action-note {
+  margin: 0 0 0.8rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.btn {
+  width: 100%;
+  min-height: 3rem;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.btn-primary { background: var(--accent); }
+.btn-danger { background: var(--danger); }
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.form-label {
+  display: block;
+  margin: 0.7rem 0 0.25rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+.reason-select, .reason-text {
+  width: 100%;
+  border: 1px solid #b9c4d3;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+}
+.reason-select {
+  min-height: 2.8rem;
+  padding: 0.55rem 0.7rem;
+}
+.reason-text {
+  padding: 0.65rem 0.7rem;
+  resize: vertical;
+  margin-bottom: 0.8rem;
+}
+.muted-tiny {
+  margin: 0.65rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.muted-tiny.is-error {
+  color: var(--danger);
+  font-weight: 700;
+}
+.footer-note {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+@media (max-width: 560px) {
+  body { padding: 0.55rem 0.55rem 1rem; }
+  .detail-ident { grid-template-columns: 1fr; gap: 0.2rem; }
+}
+</style>
+</head>
+<body>
+  <header class="portal-page-header">
+    <div class="portal-page-header-row">
+      <h1 class="page-title">案件詳細</h1>
+      <div class="portal-menu-wrap">
+        <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel" aria-label="サイトメニューを開く">
+          <span class="portal-menu-icon" aria-hidden="true">☰</span>
+        </button>
+        <nav class="portal-menu-panel" id="portal-menu-panel" hidden aria-label="サイトメニュー">
+          <a class="portal-menu-item" role="menuitem" href="../../">ポータルTOP</a>
+          <a class="portal-menu-item" role="menuitem" href="../../calendar/">社内カレンダー</a>
+          <a class="portal-menu-item" role="menuitem" href="../../survey/">現調待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="../../negotiation/">交渉待ち</a>
+          <a class="portal-menu-item" role="menuitem" href="../../entrustment/">付託待ち</a>
+          <a class="portal-menu-item is-current" role="menuitem" href="../" aria-current="page">案件管理</a>
+          <a class="portal-menu-item" role="menuitem" href="../../archive/">アーカイブ</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+<main>
+  <a class="back-link" href="../">案件管理へ戻る</a>
+  <article class="detail-card" data-case-detail-card
+    data-management-no-key="51406744"
+    data-management-no="51406744"
+    data-label="沼田原75S18～75S19"
+    data-current-status="survey_wait"
+    data-internal-management-no="51406744"
+    data-span-key="沼田原75s18~75s19"
+    data-case-id="2187575e-817d-44bd-acf4-4f8a0eddcd06">
+    <span class="status-pill">現調待ち</span>
+    <h2 class="detail-title">沼田原75S18～75S19</h2>
+    <p class="detail-management">51406744</p>
+    <dl class="detail-ident">
+      <dt>状態</dt>
+      <dd>現調待ち</dd>
+      <dt>管理番号</dt>
+      <dd>51406744</dd>
+      <dt>径間</dt>
+      <dd>沼田原75S18～75S19</dd>
+      <dt>更新日</dt>
+      <dd>2026-06-15</dd>
+      <dt>内部管理番号</dt>
+      <dd>51406744</dd>
+      <dt>径間キー</dt>
+      <dd>沼田原75s18~75s19</dd>
+      <dt>case id</dt>
+      <dd>2187575e-817d-44bd-acf4-4f8a0eddcd06</dd>
+    </dl>
+  </article>
+  <section class="detail-panel action-panel" aria-labelledby="case-action-heading">
+    <h2 id="case-action-heading">このページでできる操作</h2>
+    <p class="action-note">現在の状態（現調待ち）はポータルから変更できません。必要な操作はPC側で行ってください。</p>
+    <p class="action-status muted-tiny" data-case-detail-status hidden role="status"></p>
+  </section>
+</main>
+<p class="footer-note">このページは <code>scripts/generate_portal.py --mode cases-only</code> で再生成できます。</p>
+<script>
+
+(function () {
+  var btn = document.getElementById("portal-menu-btn");
+  var panel = document.getElementById("portal-menu-panel");
+  if (!btn || !panel) return;
+  function setOpen(open) {
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  btn.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    setOpen(panel.hidden);
+  });
+  document.addEventListener("click", function () {
+    setOpen(false);
+  });
+  panel.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") setOpen(false);
+  });
+})();
+
+
+  var PORTAL_STATUS_ENDPOINT = "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request";
+  var PORTAL_STATUS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
+  var RETURNED_REASON_LABELS = {
+    low_urgency_contact: "接触弱",
+    landowner_refused: "地主要望",
+    other: "伐採不可"
+  };
+  function mapPortalTransitionError(httpStatus, body) {
+    var err = "";
+    if (body && typeof body === "object") {
+      err = String(body.error || body.message || "");
+    }
+    if (httpStatus === 401 || err === "invalid_api_key") {
+      return "送信に失敗しました。APIキーを確認してください。";
+    }
+    if (httpStatus === 404 || err === "case_not_found") {
+      return "対象案件が見つかりません。ページを再読み込みしてください。";
+    }
+    if (httpStatus === 409 || err === "stale_status") {
+      return "すでに状態が変わっています。ページを再読み込みしてください。";
+    }
+    if (err === "ambiguous_case") {
+      return "同じ内部管理番号の案件が複数あります。PC側で確認してください。";
+    }
+    if (err === "return_reason_required") {
+      return "返却理由が必要です。";
+    }
+    if (err.indexOf("request_id") !== -1 || err.indexOf("requested_action") !== -1) {
+      return "Edge Function更新待ちです。PC側でdeploy後に再試行してください。";
+    }
+    return "送信に失敗しました。通信状態を確認して再試行してください。";
+  }
+  function casePayload(card, action, extra) {
+    var data = {
+      management_no_key: (card.getAttribute("data-management-no-key") || "").trim(),
+      management_no: (card.getAttribute("data-management-no") || "").trim(),
+      label: (card.getAttribute("data-label") || "").trim(),
+      action: action,
+      source: "portal_cases",
+    };
+    var internalNo = (card.getAttribute("data-internal-management-no") || "").trim();
+    var spanKey = (card.getAttribute("data-span-key") || "").trim();
+    var caseId = (card.getAttribute("data-case-id") || "").trim();
+    if (internalNo) data.internal_management_no = internalNo;
+    if (spanKey) data.span_key = spanKey;
+    if (caseId) data.id = caseId;
+    if (extra) {
+      Object.keys(extra).forEach(function(k) { data[k] = extra[k]; });
+    }
+    return data;
+  }
+  function setCaseActionUi(btn, statusEl, state, message) {
+    statusEl.hidden = false;
+    statusEl.classList.toggle("is-error", state === "error");
+    statusEl.textContent = message || "";
+    if (state === "sending") {
+      btn.disabled = true;
+      btn.setAttribute("aria-busy", "true");
+      btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
+      btn.textContent = "送信中...";
+      return;
+    }
+    btn.removeAttribute("aria-busy");
+    if (state === "success") {
+      btn.disabled = true;
+      btn.textContent = "操作済み";
+      return;
+    }
+    btn.disabled = !PORTAL_STATUS_API_KEY;
+    if (btn.dataset.originalText) btn.textContent = btn.dataset.originalText;
+  }
+  function postPortalTransition(payload) {
+    return fetch(PORTAL_STATUS_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: PORTAL_STATUS_API_KEY,
+      },
+      body: JSON.stringify(payload),
+    }).then(function(res) {
+      return res
+        .json()
+        .catch(function() { return {}; })
+        .then(function(data) { return { res: res, data: data }; });
+    });
+  }
+  document.querySelectorAll("[data-case-detail-action]").forEach(function(btn) {
+    var card = btn.closest("[data-case-detail-card]");
+    var statusEl = document.querySelector("[data-case-detail-status]");
+    if (!card || !statusEl) return;
+    if (!PORTAL_STATUS_API_KEY) {
+      btn.disabled = true;
+      statusEl.hidden = false;
+      statusEl.classList.add("is-error");
+      statusEl.textContent = "送信設定が未設定です（ポータル再生成時にキーが必要です）";
+      return;
+    }
+    btn.addEventListener("click", function() {
+      if (btn.disabled) return;
+      var action = btn.getAttribute("data-case-detail-action") || "";
+      var payloadExtra = {};
+      var confirmText = "";
+      if (action === "mark_entrustment_wait") {
+        confirmText =
+          "この案件を「付託待ち」にします。\n\n承諾書と地主情報の確認が済んでいる前提で進めます。よろしいですか？";
+      } else if (action === "mark_construction_wait") {
+        confirmText =
+          "この案件を「工事待ち」にします。\n\nCS記入・添付書類・元請けへの付託提出が済んでいる前提で進めます。よろしいですか？";
+      } else if (action === "mark_returned") {
+        var reasonEl = document.getElementById("returnReasonCategory");
+        var noteEl = document.getElementById("returnReasonText");
+        var reason = reasonEl ? String(reasonEl.value || "").trim() : "";
+        var note = noteEl ? String(noteEl.value || "").trim() : "";
+        if (!reason) {
+          statusEl.hidden = false;
+          statusEl.classList.add("is-error");
+          statusEl.textContent = "返却理由を選んでください。";
+          if (reasonEl) reasonEl.focus();
+          return;
+        }
+        payloadExtra.return_reason_category = reason;
+        payloadExtra.return_reason_text = note || RETURNED_REASON_LABELS[reason] || reason;
+        confirmText =
+          "この案件を「返却済み」にします。\n\n理由: " +
+          (RETURNED_REASON_LABELS[reason] || reason) +
+          (note ? "\n補足: " + note : "") +
+          "\n\nよろしいですか？";
+      } else {
+        statusEl.hidden = false;
+        statusEl.classList.add("is-error");
+        statusEl.textContent = "この状態はポータルから変更できません。";
+        return;
+      }
+      if (!window.confirm(confirmText)) return;
+      setCaseActionUi(btn, statusEl, "sending", "送信中...");
+      postPortalTransition(casePayload(card, action, payloadExtra))
+        .then(function(r) {
+          if (r.res.ok && r.data && r.data.ok) {
+            setCaseActionUi(btn, statusEl, "success", "送信しました。状態が反映されない場合はページを再生成してください。");
+            return;
+          }
+          setCaseActionUi(btn, statusEl, "error", mapPortalTransitionError(r.res.status, r.data));
+        })
+        .catch(function() {
+          setCaseActionUi(btn, statusEl, "error", "送信に失敗しました。通信状態を確認してください。");
+        });
+    });
+  });
+
+</script>
+</body>
+</html>

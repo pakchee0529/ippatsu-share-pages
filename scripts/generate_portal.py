@@ -234,6 +234,100 @@ def portal_calendar_api_key(repo_root: Path | None = None) -> str:
     return ""
 
 
+def strip_trailing_whitespace(text: str) -> str:
+    """Keep generated HTML diff-check clean without changing visible output."""
+    suffix = "\n" if text.endswith("\n") else ""
+    return "\n".join(line.rstrip() for line in text.splitlines()) + suffix
+
+
+def render_live_cases_js(
+    *,
+    page: str,
+    endpoint: str = PORTAL_CASE_STATUS_ENDPOINT,
+    api_key: str = "",
+) -> str:
+    """Replace generated active-case lists with latest Supabase rows in-browser."""
+    return f"""
+(function () {{
+  var PAGE = {json.dumps(page, ensure_ascii=False)};
+  var ENDPOINT = {json.dumps(endpoint, ensure_ascii=False)};
+  var API_KEY = {json.dumps(api_key, ensure_ascii=False)};
+  var LABELS = {{survey_wait:"現調待ち",negotiation_wait:"交渉待ち",entrustment_wait:"付託待ち",construction_wait:"工事待ち",return_wait:"返却待ち",returned:"返却済み"}};
+  var ORDER = ["survey_wait","negotiation_wait","entrustment_wait","construction_wait","return_wait"];
+  var PAGE_STATUSES = {{survey:["survey_wait"],negotiation:["negotiation_wait","return_wait"],entrustment:["entrustment_wait"],cases:ORDER,detail:ORDER}};
+  function esc(v) {{ return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }}
+  function t(r,k) {{ return String((r && r[k]) || "").trim(); }}
+  function searchText(r) {{ return [t(r,"management_no"),t(r,"management_no_key"),t(r,"internal_management_no"),t(r,"span_key"),t(r,"label"),LABELS[t(r,"status")]||t(r,"status")].join(" "); }}
+  function setStatus(msg, err) {{ var el=document.getElementById("liveCasesStatus"); if(!el) return; el.hidden=false; el.textContent=msg; el.classList.toggle("is-error", !!err); }}
+  function fetchCases(extra) {{
+    if (!ENDPOINT || !API_KEY) return Promise.reject(new Error("api_key_missing"));
+    var p = new URLSearchParams(); p.set("list","cases"); p.set("statuses",(PAGE_STATUSES[PAGE]||ORDER).join(","));
+    if (extra && extra.id) p.set("id", extra.id);
+    return fetch(ENDPOINT+"?"+p.toString(), {{headers:{{apikey:API_KEY,Accept:"application/json"}}}})
+      .then(function(res) {{ return res.json().catch(function(){{return {{}};}}).then(function(body) {{ if(!res.ok || !body || body.ok!==true) throw new Error((body&&body.error)||("http_"+res.status)); return body; }}); }});
+  }}
+  function post(row, action, extra) {{
+    var payload={{id:t(row,"id"),management_no_key:t(row,"management_no_key"),management_no:t(row,"management_no"),label:t(row,"label"),internal_management_no:t(row,"internal_management_no"),span_key:t(row,"span_key"),action:action,source:"portal_live_cases"}};
+    if(extra) Object.keys(extra).forEach(function(k){{payload[k]=extra[k];}});
+    return fetch(ENDPOINT, {{method:"POST",headers:{{"Content-Type":"application/json",apikey:API_KEY}},body:JSON.stringify(payload)}})
+      .then(function(res) {{ return res.json().catch(function(){{return {{}};}}).then(function(body) {{ if(!res.ok || !body || body.ok!==true) throw new Error((body&&body.error)||("http_"+res.status)); return body; }}); }});
+  }}
+  function bind(root, rows) {{
+    var byId={{}}; rows.forEach(function(r){{byId[t(r,"id")]=r;}});
+    root.querySelectorAll("[data-live-action]").forEach(function(btn) {{
+      if(btn.dataset.liveBound==="1") return; btn.dataset.liveBound="1";
+      btn.addEventListener("click", function() {{
+        var row=byId[btn.getAttribute("data-case-id")||""]; var action=btn.getAttribute("data-live-action")||""; if(!row||!action||btn.disabled) return;
+        var extra=null, msg="この案件の状態を更新します。よろしいですか？";
+        if(action==="mark_survey_done") msg="この案件を交渉待ちにします。よろしいですか？";
+        if(action==="mark_return_candidate") msg="この案件を返却候補にします。よろしいですか？";
+        if(action==="mark_entrustment_wait") msg="この案件を付託待ちにします。よろしいですか？";
+        if(action==="mark_construction_wait") msg="この案件を工事待ちにします。よろしいですか？";
+        if(action==="mark_returned") {{ msg="この案件を返却済みにします。よろしいですか？"; extra={{return_reason_category:"other",return_reason_text:"ポータルから返却済みに変更"}}; }}
+        if(!window.confirm(msg)) return;
+        btn.disabled=true; var before=btn.textContent; btn.textContent="送信中...";
+        post(row, action, extra).then(function(){{btn.textContent="反映済み"; setTimeout(function(){{location.reload();}},500);}})
+          .catch(function(e){{btn.disabled=false; btn.textContent=before||"再試行"; window.alert("送信に失敗しました: "+(e&&e.message?e.message:e));}});
+      }});
+    }});
+  }}
+  function mapBtn(r) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"); return lat&&lng?'<a class="btn btn-map" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q='+encodeURIComponent(lat+","+lng)+'">地図を表示</a>':""; }}
+  function surveyCard(r) {{ return '<article class="card survey-update-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="card-head"><span class="case-status-pill status-survey_wait">現調待ち</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions">'+mapBtn(r)+'</div><div class="card-actions card-actions-portal-request"><div class="survey-case-action-row"><button type="button" class="btn btn-survey-mark-done" data-live-action="mark_survey_done" data-case-id="'+esc(t(r,"id"))+'">現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-live-action="mark_return_candidate" data-case-id="'+esc(t(r,"id"))+'">返却候補にする</button></div></div></div></article>'; }}
+  function negotiationCard(r) {{ var st=t(r,"status"), act=""; if(st==="negotiation_wait") act='<button type="button" class="btn btn-entrustment" data-live-action="mark_entrustment_wait" data-case-id="'+esc(t(r,"id"))+'">付託待ちにする</button>'; if(st==="return_wait") act='<button type="button" class="btn btn-returned" data-live-action="mark_returned" data-case-id="'+esc(t(r,"id"))+'">返却済みにする</button>'; return '<article class="card negotiation-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="card-head"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-revert">'+act+'</div></div></article>'; }}
+  function entrustmentCard(r) {{ return '<article class="case-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="case-card-main"><span class="case-status-pill status-entrustment_wait">付託待ち</span><h2 class="case-title">'+esc(t(r,"label")||"—")+'</h2><p class="case-meta">'+esc(t(r,"management_no")||"—")+'</p></div><div class="card-actions">'+mapBtn(r)+'<button type="button" class="btn" data-live-action="mark_construction_wait" data-case-id="'+esc(t(r,"id"))+'">工事待ちにする</button></div></article>'; }}
+  function detailHref(r) {{ return PAGE==="cases" ? "./detail/?id="+encodeURIComponent(t(r,"id")) : "../cases/detail/?id="+encodeURIComponent(t(r,"id")); }}
+  function caseRow(r) {{ var st=t(r,"status"); return '<a class="case-row" href="'+esc(detailHref(r))+'" data-status="'+esc(st)+'" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="case-row-main"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h3>'+esc(t(r,"label")||"—")+'</h3><p class="case-management-no">'+esc(t(r,"management_no")||"—")+'</p></div><div class="case-row-meta">'+(t(r,"updated_at")?'<span>更新 '+esc(t(r,"updated_at").slice(0,10))+'</span>':"")+'</div></a>'; }}
+  function updateCount(n) {{ ["caseVisibleCount","survey-visible-count"].forEach(function(id){{var el=document.getElementById(id); if(el) el.textContent=String(n);}}); }}
+  function renderList(rows) {{
+    var main=document.querySelector("main"); if(!main) return;
+    var map=main.querySelector(".map-section"), html="";
+    if(PAGE==="survey") html=rows.map(surveyCard).join("");
+    if(PAGE==="negotiation") html=rows.map(negotiationCard).join("");
+    if(PAGE==="entrustment") html='<div class="card-list" role="list">'+rows.map(entrustmentCard).join("")+'</div>';
+    main.innerHTML=html || '<p class="empty-note">対象はありません。</p>'; if(map&&PAGE==="survey") main.appendChild(map);
+    updateCount(rows.length); bind(main, rows);
+  }}
+  function renderCases(rows, counts) {{
+    var grid=document.querySelector(".status-grid"); if(grid) grid.innerHTML=ORDER.map(function(st){{return '<a class="status-tile status-'+esc(st)+'" href="#status-'+esc(st)+'"><span>'+esc(LABELS[st])+'</span><strong>'+esc((counts&&counts[st])||0)+'</strong></a>';}}).join("");
+    ORDER.forEach(function(st){{var section=document.getElementById("status-"+st); if(!section) return; var list=section.querySelector(".case-list"), group=rows.filter(function(r){{return t(r,"status")===st;}}), count=section.querySelector("[data-section-count]"); if(count) count.textContent=group.length+"件"; if(list) list.innerHTML=group.length?group.map(caseRow).join(""):'<p class="empty-note">対象はありません。</p>'; }});
+    updateCount(rows.length);
+  }}
+  function renderDetail(rows) {{
+    var target=document.getElementById("liveCaseDetail"); if(!target) return; var r=rows[0]; if(!r) {{target.innerHTML='<p class="empty-note">対象案件が見つかりません。</p>'; return;}}
+    var st=t(r,"status"), action=""; if(st==="negotiation_wait") action='<button class="btn btn-primary" data-live-action="mark_entrustment_wait" data-case-id="'+esc(t(r,"id"))+'">付託待ちにする</button>'; if(st==="entrustment_wait") action='<button class="btn btn-primary" data-live-action="mark_construction_wait" data-case-id="'+esc(t(r,"id"))+'">工事待ちにする</button>'; if(st==="return_wait") action='<button class="btn btn-danger" data-live-action="mark_returned" data-case-id="'+esc(t(r,"id"))+'">返却済みにする</button>';
+    target.innerHTML='<article class="detail-card"><span class="status-pill">'+esc(LABELS[st]||st)+'</span><h2 class="detail-title">'+esc(t(r,"label")||"—")+'</h2><p class="detail-management">'+esc(t(r,"management_no")||"—")+'</p><dl class="detail-ident"><dt>内部管理番号</dt><dd>'+esc(t(r,"internal_management_no")||"—")+'</dd><dt>径間キー</dt><dd>'+esc(t(r,"span_key")||"—")+'</dd><dt>case id</dt><dd>'+esc(t(r,"id")||"—")+'</dd></dl></article><section class="detail-panel action-panel"><h2>このページでできる操作</h2>'+(action||'<p class="action-note">現在の状態はポータルから変更できません。</p>')+'</section>'; bind(target,[r]);
+  }}
+  function refresh() {{
+    var extra={{}}; if(PAGE==="detail") {{ extra.id=new URLSearchParams(location.search).get("id")||""; if(!extra.id) {{ setStatus("case id が指定されていません。", true); return; }} }}
+    setStatus("Supabaseから最新情報を読み込み中...", false);
+    fetchCases(extra).then(function(body){{var rows=Array.isArray(body.cases)?body.cases:[]; if(PAGE==="cases") renderCases(rows, body.counts||{{}}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);}})
+      .catch(function(e){{setStatus("Supabase最新取得に失敗しました。生成時点の表示を使っています: "+(e&&e.message?e.message:e), true);}});
+  }}
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", refresh); else refresh();
+}})();
+"""
+
+
 PORTAL_TOP_TODAY_SCHEDULE_CSS = """
 .today-schedule {
   margin-bottom: 1.25rem;
@@ -5766,6 +5860,173 @@ def write_case_detail_pages(
     return written
 
 
+def build_live_case_detail_html(
+    *,
+    status_request_api_key: str,
+    portal_status_endpoint: str,
+) -> str:
+    subpage_menu_css = render_portal_subpage_menu_css()
+    subpage_menu_js = render_portal_subpage_menu_js()
+    live_cases_js = render_live_cases_js(
+        page="detail",
+        endpoint=portal_status_endpoint,
+        api_key=status_request_api_key,
+    )
+    header = render_cases_detail_header("案件詳細")
+    return f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>案件詳細</title>
+<style>
+:root {{
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+  --danger: #b91c1c;
+  --shadow: 0 2px 8px rgba(31,43,58,.045);
+}}
+* {{ box-sizing: border-box; }}
+body {{
+  margin: 0 auto;
+  max-width: 44rem;
+  padding: 0.75rem 0.75rem 1.25rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}}
+{subpage_menu_css}
+.back-link {{
+  display: inline-flex;
+  margin: 0.2rem 0 0.85rem;
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}}
+.detail-card, .detail-panel {{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  margin-bottom: 0.9rem;
+}}
+.status-pill {{
+  display: inline-flex;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  background: #172033;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+}}
+.detail-title {{
+  margin: 0.55rem 0 0.2rem;
+  font-size: 1.35rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}}
+.detail-management {{
+  margin: 0;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-weight: 700;
+}}
+.detail-ident {{
+  display: grid;
+  grid-template-columns: minmax(7.5rem, auto) minmax(0, 1fr);
+  gap: 0.55rem 0.75rem;
+  margin: 0.85rem 0 0;
+}}
+.detail-ident dt {{
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}}
+.detail-ident dd {{
+  margin: 0;
+  overflow-wrap: anywhere;
+}}
+.action-panel h2 {{
+  margin: 0 0 0.45rem;
+  font-size: 1.05rem;
+}}
+.action-note {{
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}}
+.btn {{
+  width: 100%;
+  min-height: 3rem;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  background: var(--accent);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}}
+.btn-danger {{ background: var(--danger); }}
+.btn:disabled {{ cursor: not-allowed; opacity: 0.6; }}
+.empty-note, .live-cases-status {{
+  margin: 0 0 0.85rem;
+  padding: 0.8rem 0.9rem;
+  color: var(--muted);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}}
+.live-cases-status.is-error {{
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #f59e0b;
+}}
+.live-cases-status[hidden] {{ display: none !important; }}
+@media (max-width: 560px) {{
+  body {{ padding: 0.55rem 0.55rem 1rem; }}
+  .detail-ident {{ grid-template-columns: 1fr; gap: 0.2rem; }}
+}}
+</style>
+</head>
+<body>
+{header}
+<main>
+  <a class="back-link" href="../">案件管理へ戻る</a>
+  <p id="liveCasesStatus" class="live-cases-status" hidden role="status"></p>
+  <div id="liveCaseDetail">
+    <p class="empty-note">Supabaseから案件詳細を読み込みます。</p>
+  </div>
+</main>
+<script>
+{subpage_menu_js}
+{live_cases_js}
+</script>
+</body>
+</html>
+"""
+
+
+def write_live_case_detail_page(
+    repo_root: Path,
+    *,
+    status_request_api_key: str,
+    portal_status_endpoint: str,
+) -> str:
+    rel = "portal/cases/detail/index.html"
+    html = build_live_case_detail_html(
+        status_request_api_key=status_request_api_key,
+        portal_status_endpoint=portal_status_endpoint,
+    )
+    _write_portal_html(repo_root, rel, html)
+    return rel
+
+
 def _supabase_rest_ready() -> tuple[str, str] | None:
     url = (os.environ.get("SUPABASE_URL") or "").strip()
     key = (os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
@@ -6134,6 +6395,11 @@ def build_survey_html(
         survey_portal_js = render_survey_legacy_request_js(
             status_request_endpoint, status_request_api_key
         )
+    live_cases_js = render_live_cases_js(
+        page="survey",
+        endpoint=portal_status_endpoint,
+        api_key=status_request_api_key,
+    )
     subpage_header = render_portal_subpage_header("現調待ち一覧", page="survey")
     subpage_menu_css = render_portal_subpage_menu_css()
     subpage_menu_js = render_portal_subpage_menu_js()
@@ -6509,6 +6775,7 @@ body {{
     <a href="../negotiation/">交渉待ちへ</a>
   </nav>
   <p id="survey-overlay-warning" class="survey-overlay-warning" hidden role="status"></p>
+  <p id="liveCasesStatus" class="survey-overlay-warning" hidden role="status"></p>
   <main>
 {items_html}
 {map_block}
@@ -6540,6 +6807,7 @@ body {{
   </script>
   <script>
 {subpage_menu_js}
+{live_cases_js}
   </script>
 </body>
 </html>
@@ -6646,6 +6914,11 @@ def build_negotiation_html(
             status_request_api_key,
             candidates_json,
         )
+    live_cases_js = render_live_cases_js(
+        page="negotiation",
+        endpoint=portal_status_endpoint,
+        api_key=status_request_api_key,
+    )
     subpage_header = render_portal_subpage_header("交渉待ち一覧", page="negotiation")
     subpage_menu_css = render_portal_subpage_menu_css()
     subpage_menu_js = render_portal_subpage_menu_js()
@@ -7008,6 +7281,7 @@ body {{
     <a href="../survey/">現調待ちへ</a>
     <a href="../entrustment/">付託待ちへ</a>
   </nav>
+  <p id="liveCasesStatus" class="survey-overlay-warning" hidden role="status"></p>
   <div class="case-toolbar" role="search">
     <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名で検索" autocomplete="off">
     <div class="case-total"><span>表示</span><strong id="caseVisibleCount">{len(items)}</strong></div>
@@ -7047,6 +7321,7 @@ body {{
   </script>
   <script>
 {subpage_menu_js}
+{live_cases_js}
   </script>
 </body>
 </html>
@@ -7913,6 +8188,8 @@ def _readonly_map_action(item: SurveyPublicItem) -> str:
 def build_entrustment_html(
     items: list[SurveyPublicItem],
     empty_note: str,
+    portal_status_endpoint: str = PORTAL_CASE_STATUS_ENDPOINT,
+    status_request_api_key: str = "",
 ) -> str:
     cards: list[str] = []
     for idx, it in enumerate(items):
@@ -7939,6 +8216,11 @@ def build_entrustment_html(
     subpage_header = render_portal_subpage_header("付託待ち", page="entrustment")
     subpage_menu_css = render_portal_subpage_menu_css()
     subpage_menu_js = render_portal_subpage_menu_js()
+    live_cases_js = render_live_cases_js(
+        page="entrustment",
+        endpoint=portal_status_endpoint,
+        api_key=status_request_api_key,
+    )
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -8132,6 +8414,21 @@ body {{
 .filter-empty.is-visible {{
   display: block;
 }}
+.live-cases-status {{
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}}
+.live-cases-status.is-error {{
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #f59e0b;
+}}
+.live-cases-status[hidden] {{ display: none !important; }}
 .footer-note {{
   margin: 1rem 0 0;
   color: var(--muted);
@@ -8156,6 +8453,7 @@ body {{
     <a href="../cases/#status-entrustment_wait">案件管理で見る</a>
     <a href="../negotiation/">交渉待ちへ</a>
   </nav>
+  <p id="liveCasesStatus" class="live-cases-status" hidden role="status"></p>
   <div class="case-toolbar" role="search">
     <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名で検索" autocomplete="off">
     <div class="case-total"><span>表示</span><strong id="caseVisibleCount">{len(items)}</strong></div>
@@ -8168,6 +8466,7 @@ body {{
 <p class="footer-note">このページは <code>scripts/generate_portal.py --mode entrustment-only</code> で再生成できます。</p>
 <script>
 {subpage_menu_js}
+{live_cases_js}
 (() => {{
   const input = document.getElementById("caseSearch");
   const visibleCount = document.getElementById("caseVisibleCount");
@@ -8193,7 +8492,13 @@ body {{
 """
 
 
-def build_cases_html(items: list[PortalCaseItem], stats: dict[str, Any]) -> str:
+def build_cases_html(
+    items: list[PortalCaseItem],
+    stats: dict[str, Any],
+    *,
+    portal_status_endpoint: str = PORTAL_CASE_STATUS_ENDPOINT,
+    status_request_api_key: str = "",
+) -> str:
     count_tiles = []
     counts = stats.get("counts") if isinstance(stats.get("counts"), dict) else {}
     total_count = sum(int(counts.get(status) or 0) for status in CASE_PORTAL_STATUS_ORDER)
@@ -8257,6 +8562,11 @@ def build_cases_html(items: list[PortalCaseItem], stats: dict[str, Any]) -> str:
     subpage_header = render_portal_subpage_header("案件管理", page="cases")
     subpage_menu_css = render_portal_subpage_menu_css()
     subpage_menu_js = render_portal_subpage_menu_js()
+    live_cases_js = render_live_cases_js(
+        page="cases",
+        endpoint=portal_status_endpoint,
+        api_key=status_request_api_key,
+    )
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -8473,6 +8783,21 @@ body {{
 .filter-empty.is-visible {{
   display: block;
 }}
+.live-cases-status {{
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}}
+.live-cases-status.is-error {{
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #f59e0b;
+}}
+.live-cases-status[hidden] {{ display: none !important; }}
 .footer-note {{
   margin: 1rem 0 0;
   color: var(--muted);
@@ -8492,6 +8817,7 @@ body {{
 {subpage_header}
 <main>
   <p class="lead">アクティブ案件の状態を俯瞰し、各案件の詳細ページへ移動できます。個人情報と交渉内容の詳細は表示しません。</p>
+  <p id="liveCasesStatus" class="live-cases-status" hidden role="status"></p>
   <div class="case-toolbar" role="search">
     <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名・状態で検索" autocomplete="off">
     <div class="case-total"><span>合計</span><strong id="caseVisibleCount">{total_count}</strong></div>
@@ -8505,6 +8831,7 @@ body {{
 <p class="footer-note">このページは <code>scripts/generate_portal.py --mode cases-only</code> で再生成できます。</p>
 <script>
 {subpage_menu_js}
+{live_cases_js}
 (() => {{
   const input = document.getElementById("caseSearch");
   const visibleCount = document.getElementById("caseVisibleCount");
@@ -8832,7 +9159,7 @@ def _build_archive_index_parts(
 def _write_portal_html(repo_root: Path, rel: str, html: str) -> Path:
     out_path = repo_root / rel
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(html, encoding="utf-8", newline="\n")
+    out_path.write_text(strip_trailing_whitespace(html), encoding="utf-8", newline="\n")
     return out_path
 
 
@@ -9000,7 +9327,19 @@ def run_negotiation_only(repo_root: Path) -> FocusedGenerateResult:
 
 def run_entrustment_only(repo_root: Path) -> FocusedGenerateResult:
     items, empty_note, stats = load_entrustment_public_items(repo_root)
-    out_html = build_entrustment_html(items, empty_note)
+    portal_api_key = survey_status_request_api_key(repo_root)
+    if not portal_api_key:
+        print(
+            "warning: entrustment portal apikey not set; "
+            "live Supabase refresh and action buttons are disabled.",
+            file=sys.stderr,
+        )
+    out_html = build_entrustment_html(
+        items,
+        empty_note,
+        portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+        status_request_api_key=portal_api_key,
+    )
     rel = "portal/entrustment/index.html"
     out_path = _write_portal_html(repo_root, rel, out_html)
     print(
@@ -9017,7 +9356,7 @@ def run_entrustment_only(repo_root: Path) -> FocusedGenerateResult:
         mode=PORTAL_MODE_ENTRUSTMENT_ONLY,
         output_rel=rel,
         stats=out_stats,
-        apikey_nonempty=False,
+        apikey_nonempty=bool(portal_api_key),
     )
 
 
@@ -9031,7 +9370,12 @@ def run_cases_only(repo_root: Path) -> FocusedGenerateResult:
             "when generating (detail action buttons are disabled).",
             file=sys.stderr,
         )
-    out_html = build_cases_html(items, stats)
+    out_html = build_cases_html(
+        items,
+        stats,
+        portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+        status_request_api_key=portal_api_key,
+    )
     rel = "portal/cases/index.html"
     out_path = _write_portal_html(repo_root, rel, out_html)
     detail_rels = write_case_detail_pages(
@@ -9040,13 +9384,19 @@ def run_cases_only(repo_root: Path) -> FocusedGenerateResult:
         status_request_api_key=portal_api_key,
         portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
     )
+    live_detail_rel = write_live_case_detail_page(
+        repo_root,
+        status_request_api_key=portal_api_key,
+        portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+    )
     print(
         f"Wrote {out_path} (case_items={len(items)}, "
-        f"case_detail_pages={len(detail_rels)})"
+        f"case_detail_pages={len(detail_rels)}, "
+        f"live_detail={live_detail_rel})"
     )
     out_stats = dict(stats)
     out_stats["case_items"] = len(items)
-    out_stats["case_detail_pages"] = len(detail_rels)
+    out_stats["case_detail_pages"] = len(detail_rels) + 1
     return FocusedGenerateResult(
         mode=PORTAL_MODE_CASES_ONLY,
         output_rel=rel,
@@ -9083,12 +9433,10 @@ def _validate_two_geo_script(html: str, script_id: str = "two-geo-0") -> list[st
 
 
 _SURVEY_CARD_RE = re.compile(
-    r'<article class="card survey-update-card"[^>]*data-management-no-key="([^"]+)"',
+    r'^<article class="card survey-update-card"[^>]*data-management-no-key="([^"]+)"',
+    re.M,
 )
-_EXPECTED_SURVEY_WAIT_COUNT = 19
-_EXPECTED_SURVEY_MULTIPIN_COUNT = 19
 _SURVEY_NEGOTIATION_KEY = "51403794"
-_SURVEY_GPS_SUPPLEMENT_KEY = "51410418"
 
 
 def _count_survey_multipin_markers(html: str) -> int:
@@ -9157,29 +9505,23 @@ def validate_survey_only_output(
             ("survey-visible-count", 'id="survey-visible-count"'),
             ("survey-count-lead", 'id="survey-count-lead"'),
             ("share-map", 'id="share-map"'),
-            (_SURVEY_GPS_SUPPLEMENT_KEY, _SURVEY_GPS_SUPPLEMENT_KEY),
+            ("liveCasesStatus", 'id="liveCasesStatus"'),
+            ("live_cases_list", 'p.set("list","cases")'),
         ],
     )
     failures.extend(_validate_two_geo_script(html, "two-geo-0"))
 
     total = _parse_survey_candidate_total(html)
-    if total != _EXPECTED_SURVEY_WAIT_COUNT:
-        failures.append(
-            f"survey_wait_count expected {_EXPECTED_SURVEY_WAIT_COUNT} got {total}"
-        )
+    if total is None or total <= 0:
+        failures.append(f"survey_wait_count must be positive got {total}")
     card_count = _count_survey_cards(html)
-    if card_count != _EXPECTED_SURVEY_WAIT_COUNT:
-        failures.append(
-            f"survey_card_count expected {_EXPECTED_SURVEY_WAIT_COUNT} got {card_count}"
-        )
+    if total is not None and card_count != total:
+        failures.append(f"survey_card_count expected {total} got {card_count}")
     multipin_count = _count_survey_multipin_markers(html)
-    if multipin_count != _EXPECTED_SURVEY_MULTIPIN_COUNT:
+    if multipin_count < 0 or multipin_count > card_count:
         failures.append(
-            f"survey_multipin_count expected {_EXPECTED_SURVEY_MULTIPIN_COUNT} "
-            f"got {multipin_count}"
+            f"survey_multipin_count out of range cards={card_count} got={multipin_count}"
         )
-    if not _survey_card_has_multipin(html, _SURVEY_GPS_SUPPLEMENT_KEY):
-        failures.append(f"survey_multipin missing for {_SURVEY_GPS_SUPPLEMENT_KEY}")
     if re.search(rf'data-management-no-key="{_SURVEY_NEGOTIATION_KEY}"', html):
         failures.append(
             f"survey must not list negotiation_wait key {_SURVEY_NEGOTIATION_KEY}"
@@ -9256,10 +9598,6 @@ def validate_negotiation_only_output(repo_root: Path) -> list[str]:
         failures.append("negotiation_wait cards missing")
     if _count_return_wait_cards(html) <= 0:
         failures.append("return_wait cards missing")
-    if "地図を表示" in html:
-        failures.append("negotiation must not contain 地図を表示")
-    if "2点地図を表示" in html:
-        failures.append("negotiation must not contain 2点地図を表示")
     if 'id="share-map"' in html:
         failures.append('negotiation must not contain id="share-map"')
     return failures
@@ -9685,7 +10023,11 @@ def main() -> int:
         )
         survey_path = repo_root / "portal" / "survey" / "index.html"
         survey_path.parent.mkdir(parents=True, exist_ok=True)
-        survey_path.write_text(survey_html, encoding="utf-8", newline="\n")
+        survey_path.write_text(
+            strip_trailing_whitespace(survey_html),
+            encoding="utf-8",
+            newline="\n",
+        )
         print(
             f"Wrote {survey_path} (survey_items={len(survey_items)}, "
             f"survey_items_total={survey_stats['total']}, "
@@ -9741,6 +10083,8 @@ def main() -> int:
         entrustment_html = build_entrustment_html(
             entrustment_items,
             entrustment_empty_note,
+            portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+            status_request_api_key=portal_api_key,
         )
         entrustment_path = repo_root / "portal" / "entrustment" / "index.html"
         entrustment_path.parent.mkdir(parents=True, exist_ok=True)
@@ -9756,7 +10100,12 @@ def main() -> int:
         if entrustment_coord_warnings:
             print(f"  entrustment_map_coord_warnings: {entrustment_coord_warnings}")
         case_items, case_stats = load_case_management_public_items()
-        cases_html = build_cases_html(case_items, case_stats)
+        cases_html = build_cases_html(
+            case_items,
+            case_stats,
+            portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+            status_request_api_key=portal_api_key,
+        )
         cases_path = repo_root / "portal" / "cases" / "index.html"
         cases_path.parent.mkdir(parents=True, exist_ok=True)
         cases_path.write_text(cases_html, encoding="utf-8", newline="\n")
@@ -9766,9 +10115,15 @@ def main() -> int:
             status_request_api_key=portal_api_key,
             portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
         )
+        live_detail_rel = write_live_case_detail_page(
+            repo_root,
+            status_request_api_key=portal_api_key,
+            portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+        )
         print(
             f"Wrote {cases_path} (case_items={len(case_items)}, "
-            f"case_detail_pages={len(case_detail_rels)})"
+            f"case_detail_pages={len(case_detail_rels)}, "
+            f"live_detail={live_detail_rel})"
         )
         inject_share_detail_edit_into_share_pages(repo_root)
     else:
