@@ -5085,6 +5085,39 @@ a.portal-menu-item:focus-visible {
   var PAGE_STATUSES = {survey:["survey_wait"],negotiation:["negotiation_wait","return_wait"],entrustment:["entrustment_wait"],cases:ORDER,detail:ORDER};
   function esc(v) { return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
   function t(r,k) { return String((r && r[k]) || "").trim(); }
+  var SURVEY_STATIC_GEO = {};
+  function surveyGeoKeys(r) {
+    return [t(r,"management_no_key"), t(r,"management_no")].filter(Boolean);
+  }
+  function rememberSurveyStaticGeo(root) {
+    if (PAGE !== "survey") return;
+    (root || document).querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
+      var lat = card.getAttribute("data-multipin-lat") || "";
+      var lng = card.getAttribute("data-multipin-lng") || "";
+      if (!lat || !lng) return;
+      var record = {
+        start_lat: lat,
+        start_lng: lng,
+        management_no: card.getAttribute("data-management-no") || "",
+        management_no_key: card.getAttribute("data-management-no-key") || "",
+      };
+      surveyGeoKeys(record).forEach(function(key) { SURVEY_STATIC_GEO[key] = record; });
+    });
+  }
+  function enrichSurveyRow(r) {
+    if (PAGE !== "survey" || !r) return r;
+    if (t(r,"start_lat") && t(r,"start_lng")) return r;
+    var found = null;
+    surveyGeoKeys(r).some(function(key) {
+      found = SURVEY_STATIC_GEO[key] || null;
+      return !!found;
+    });
+    if (!found) return r;
+    var out = Object.assign({}, r);
+    out.start_lat = out.start_lat || found.start_lat;
+    out.start_lng = out.start_lng || found.start_lng;
+    return out;
+  }
   function searchText(r) { return [t(r,"management_no"),t(r,"management_no_key"),t(r,"internal_management_no"),t(r,"span_key"),t(r,"label"),LABELS[t(r,"status")]||t(r,"status")].join(" "); }
   function setStatus(msg, err) { var el=document.getElementById("liveCasesStatus"); if(!el) return; el.hidden=false; el.textContent=msg; el.classList.toggle("is-error", !!err); }
   function fetchCases(extra) {
@@ -5151,9 +5184,10 @@ a.portal-menu-item:focus-visible {
     target.innerHTML='<article class="detail-card"><span class="status-pill">'+esc(LABELS[st]||st)+'</span><h2 class="detail-title">'+esc(t(r,"label")||"—")+'</h2><p class="detail-management">'+esc(t(r,"management_no")||"—")+'</p><dl class="detail-ident"><dt>内部管理番号</dt><dd>'+esc(t(r,"internal_management_no")||"—")+'</dd><dt>径間キー</dt><dd>'+esc(t(r,"span_key")||"—")+'</dd><dt>case id</dt><dd>'+esc(t(r,"id")||"—")+'</dd></dl></article><section class="detail-panel action-panel"><h2>このページでできる操作</h2>'+(action||'<p class="action-note">現在の状態はポータルから変更できません。</p>')+'</section>'; bind(target,[r]);
   }
   function refresh() {
+    rememberSurveyStaticGeo(document);
     var extra={}; if(PAGE==="detail") { extra.id=new URLSearchParams(location.search).get("id")||""; if(!extra.id) { setStatus("case id が指定されていません。", true); return; } }
     setStatus("Supabaseから最新情報を読み込み中...", false);
-    fetchCases(extra).then(function(body){var rows=Array.isArray(body.cases)?body.cases:[]; if(PAGE==="cases") renderCases(rows, body.counts||{}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);})
+    fetchCases(extra).then(function(body){var rows=Array.isArray(body.cases)?body.cases:[]; if(PAGE==="survey") rows=rows.map(enrichSurveyRow); if(PAGE==="cases") renderCases(rows, body.counts||{}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);})
       .catch(function(e){setStatus("Supabase最新取得に失敗しました。生成時点の表示を使っています: "+(e&&e.message?e.message:e), true);});
   }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", refresh); else refresh();
