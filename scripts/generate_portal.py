@@ -291,8 +291,10 @@ def render_live_cases_js(
       }});
     }});
   }}
-  function mapBtn(r) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"); return lat&&lng?'<a class="btn btn-map" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q='+encodeURIComponent(lat+","+lng)+'">地図を表示</a>':""; }}
-  function surveyCard(r) {{ return '<article class="card survey-update-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="card-head"><span class="case-status-pill status-survey_wait">現調待ち</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions">'+mapBtn(r)+'</div><div class="card-actions card-actions-portal-request"><div class="survey-case-action-row"><button type="button" class="btn btn-survey-mark-done" data-live-action="mark_survey_done" data-case-id="'+esc(t(r,"id"))+'">現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-live-action="mark_return_candidate" data-case-id="'+esc(t(r,"id"))+'">返却候補にする</button></div></div></div></article>'; }}
+  function mapBtn(r) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"); return lat&&lng?'<a class="btn btn-map" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q='+encodeURIComponent(lat+","+lng)+'">地図を開く</a>':""; }}
+  function nearbyBtn(r, idx) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<button type="button" class="btn btn-nearby-map" data-nearby-open data-nearby-wrap="live-nearby-wrap-'+idx+'" data-nearby-map="live-nearby-map-'+idx+'" aria-expanded="false" aria-controls="live-nearby-wrap-'+idx+'">半径200m</button>'; }}
+  function nearbyWrap(r, idx) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<p class="nearby-map-status muted-tiny" data-nearby-status hidden role="status"></p><div class="nearby-map-wrap" id="live-nearby-wrap-'+idx+'" hidden><div id="live-nearby-map-'+idx+'" class="share-two-map-canvas" role="application" aria-label="半径200m電柱地図"></div></div>'; }}
+  function surveyCard(r, idx) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"), mp=(lat&&lng)?' data-multipin-lat="'+esc(lat)+'" data-multipin-lng="'+esc(lng)+'"':""; return '<article class="card survey-update-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'" data-management-no="'+esc(t(r,"management_no"))+'" data-label="'+esc(t(r,"label"))+'"'+mp+'><div class="card-head"><span class="case-status-pill status-survey_wait">現調待ち</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-map-primary">'+mapBtn(r)+nearbyBtn(r, idx)+'</div><div class="card-actions card-actions-portal-request"><div class="survey-case-action-row"><button type="button" class="btn btn-survey-mark-done" data-live-action="mark_survey_done" data-case-id="'+esc(t(r,"id"))+'">現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-live-action="mark_return_candidate" data-case-id="'+esc(t(r,"id"))+'">返却候補にする</button></div></div></div>'+nearbyWrap(r, idx)+'</article>'; }}
   function negotiationCard(r) {{ var st=t(r,"status"), act=""; if(st==="negotiation_wait") act='<button type="button" class="btn btn-entrustment" data-live-action="mark_entrustment_wait" data-case-id="'+esc(t(r,"id"))+'">付託待ちにする</button>'; if(st==="return_wait") act='<button type="button" class="btn btn-returned" data-live-action="mark_returned" data-case-id="'+esc(t(r,"id"))+'">返却済みにする</button>'; return '<article class="card negotiation-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="card-head"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-revert">'+act+'</div></div></article>'; }}
   function entrustmentCard(r) {{ return '<article class="case-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="case-card-main"><span class="case-status-pill status-entrustment_wait">付託待ち</span><h2 class="case-title">'+esc(t(r,"label")||"—")+'</h2><p class="case-meta">'+esc(t(r,"management_no")||"—")+'</p></div><div class="card-actions">'+mapBtn(r)+'<button type="button" class="btn" data-live-action="mark_construction_wait" data-case-id="'+esc(t(r,"id"))+'">工事待ちにする</button></div></article>'; }}
   function detailHref(r) {{ return PAGE==="cases" ? "./detail/?id="+encodeURIComponent(t(r,"id")) : "../cases/detail/?id="+encodeURIComponent(t(r,"id")); }}
@@ -306,6 +308,9 @@ def render_live_cases_js(
     if(PAGE==="entrustment") html='<div class="card-list" role="list">'+rows.map(entrustmentCard).join("")+'</div>';
     main.innerHTML=html || '<p class="empty-note">対象はありません。</p>'; if(map&&PAGE==="survey") main.appendChild(map);
     updateCount(rows.length); bind(main, rows);
+    if(PAGE==="survey" && typeof bindNearbyButtons==="function") bindNearbyButtons(main);
+    if(PAGE==="survey" && typeof bindSurveySearchControls==="function") bindSurveySearchControls();
+    if(PAGE==="survey" && typeof applySurveySearchFilter==="function") applySurveySearchFilter();
   }}
   function renderCases(rows, counts) {{
     var grid=document.querySelector(".status-grid"); if(grid) grid.innerHTML=ORDER.map(function(st){{return '<a class="status-tile status-'+esc(st)+'" href="#status-'+esc(st)+'"><span>'+esc(LABELS[st])+'</span><strong>'+esc((counts&&counts[st])||0)+'</strong></a>';}}).join("");
@@ -964,7 +969,7 @@ def escape_html(s: str) -> str:
 
 # 2点地図: 周辺電柱（GPS.json）— 生成時に1回だけ読み込む
 _GPS_POLES_CACHE: list[tuple[str, float, float]] | None = None
-_NEARBY_POLE_RADIUS_M = 160.0
+_NEARBY_POLE_RADIUS_M = 200.0
 _NEARBY_POLE_ENDPOINT_EXCLUDE_M = 3.0
 _NEARBY_POLE_BBOX_PAD_DEG = 0.003
 
@@ -1063,6 +1068,39 @@ def nearby_poles_for_two_point(
     return out
 
 
+def nearby_poles_for_point(
+    poles: list[tuple[str, float, float]],
+    lat0: float,
+    lng0: float,
+    *,
+    radius_m: float = _NEARBY_POLE_RADIUS_M,
+) -> list[dict[str, Any]]:
+    """Single point radius search for the survey portal's 200m button."""
+    pad = _NEARBY_POLE_BBOX_PAD_DEG
+    out: list[dict[str, Any]] = []
+    seen: set[tuple[str, float, float]] = set()
+    for name, lat, lng in poles:
+        if lat < lat0 - pad or lat > lat0 + pad or lng < lng0 - pad or lng > lng0 + pad:
+            continue
+        dist = haversine_m(lat0, lng0, lat, lng)
+        if dist > radius_m:
+            continue
+        key = (name, round(lat, 5), round(lng, 5))
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(
+            {
+                "name": name,
+                "lat": lat,
+                "lng": lng,
+                "distance_m": round(dist, 1),
+            }
+        )
+    out.sort(key=lambda row: float(row["distance_m"]))
+    return out
+
+
 def json_for_script_tag(data: Any) -> str:
     """application/json 用（HTML エスケープせず、< のみ \\u003c）。"""
     return json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
@@ -1103,6 +1141,20 @@ def build_two_geo_payload(
                 filtered_nearby.append(p)
         geo["nearby"] = filtered_nearby
     return geo
+
+
+def build_nearby_geo_payload(
+    *,
+    center_name: str,
+    center_lat: float,
+    center_lng: float,
+    gps_poles: list[tuple[str, float, float]],
+) -> dict[str, Any]:
+    return {
+        "center": {"name": center_name, "lat": center_lat, "lng": center_lng},
+        "nearby": nearby_poles_for_point(gps_poles, center_lat, center_lng),
+        "radius_m": int(_NEARBY_POLE_RADIUS_M),
+    }
 
 
 def two_map_click_handler_js() -> str:
@@ -1211,6 +1263,138 @@ def two_map_click_handler_js() -> str:
       setTimeout(function() { mmap.invalidateSize(); }, 60);
     });
   });
+"""
+
+
+def nearby_map_click_handler_js() -> str:
+    """Survey card 200m nearby-pole map, using generated JSON keyed by management_no_key."""
+    return """
+  var surveyNearbyMaps = Object.create(null);
+  var surveyNearbyData = Object.create(null);
+  var surveyNearbyDataEl = document.getElementById("survey-nearby-data");
+  if (surveyNearbyDataEl) {
+    try {
+      surveyNearbyData = JSON.parse(surveyNearbyDataEl.textContent || "{}") || Object.create(null);
+    } catch (e) {
+      surveyNearbyData = Object.create(null);
+    }
+  }
+  function createNearbyDotIcon(type) {
+    var cls = type === "center" ? "nearby-pin center" : "nearby-pin pole";
+    return L.divIcon({
+      className: "nearby-div-icon",
+      html: '<span class="' + cls + '"></span>',
+      iconSize: type === "center" ? [16, 16] : [12, 12],
+      iconAnchor: type === "center" ? [8, 8] : [6, 6],
+      popupAnchor: [0, -8],
+    });
+  }
+  function nearestSurveyNearbyKey(card) {
+    return (card && card.getAttribute("data-management-no-key") || "").trim();
+  }
+  function fallbackNearbyPayload(card) {
+    var lat = Number(card && card.getAttribute("data-multipin-lat"));
+    var lng = Number(card && card.getAttribute("data-multipin-lng"));
+    if (!isFinite(lat) || !isFinite(lng)) return null;
+    return {
+      center: {
+        name: card.getAttribute("data-label") || "現調地点",
+        lat: lat,
+        lng: lng,
+      },
+      nearby: [],
+      radius_m: 200,
+    };
+  }
+  function renderNearbyMap(card, wrap, mapId, statusEl) {
+    var key = nearestSurveyNearbyKey(card);
+    var geo = (key && surveyNearbyData[key]) || fallbackNearbyPayload(card);
+    if (!geo || !geo.center) {
+      if (statusEl) {
+        statusEl.hidden = false;
+        statusEl.textContent = "半径200m地図に使える位置情報がありません。";
+      }
+      return;
+    }
+    var center = geo.center;
+    var clat = Number(center.lat), clng = Number(center.lng);
+    if (!isFinite(clat) || !isFinite(clng)) return;
+    var mmap = surveyNearbyMaps[mapId];
+    if (!mmap) {
+      mmap = L.map(mapId, { scrollWheelZoom: false });
+      surveyNearbyMaps[mapId] = mmap;
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(mmap);
+    }
+    mmap.eachLayer(function(layer) {
+      if (layer instanceof L.Marker || layer instanceof L.Circle || layer instanceof L.CircleMarker) {
+        mmap.removeLayer(layer);
+      }
+    });
+    var bounds = [];
+    L.circle([clat, clng], {
+      radius: Number(geo.radius_m || 200),
+      color: "#2563eb",
+      weight: 1,
+      fillColor: "#bfdbfe",
+      fillOpacity: 0.12,
+    }).addTo(mmap);
+    L.marker([clat, clng], { icon: createNearbyDotIcon("center") })
+      .addTo(mmap)
+      .bindPopup(String(center.name || "現調地点"));
+    bounds.push([clat, clng]);
+    var nearby = Array.isArray(geo.nearby) ? geo.nearby : [];
+    nearby.forEach(function(p, index) {
+      var lat = Number(p.lat), lng = Number(p.lng);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      var label = String(p.name || "電柱");
+      var dist = isFinite(Number(p.distance_m)) ? " " + Math.round(Number(p.distance_m)) + "m" : "";
+      L.marker([lat, lng], { icon: createNearbyDotIcon("pole") })
+        .addTo(mmap)
+        .bindPopup(label + dist)
+        .bindTooltip(label, {
+          permanent: index < 80,
+          direction: "top",
+          className: "two-tip-nearby",
+          offset: [0, -5],
+        });
+      bounds.push([lat, lng]);
+    });
+    if (statusEl) {
+      statusEl.hidden = false;
+      statusEl.textContent = "半径200m: " + nearby.length + "件";
+    }
+    if (bounds.length === 1) {
+      mmap.setView(bounds[0], 17);
+    } else if (bounds.length > 1) {
+      mmap.fitBounds(bounds, { padding: [32, 52], maxZoom: 18 });
+    }
+    setTimeout(function() { mmap.invalidateSize(); }, 60);
+  }
+  function bindNearbyButtons(root) {
+    (root || document).querySelectorAll("[data-nearby-open]").forEach(function(btn) {
+      if (btn.getAttribute("data-nearby-bound") === "1") return;
+      btn.setAttribute("data-nearby-bound", "1");
+      btn.addEventListener("click", function() {
+        var card = btn.closest(".survey-update-card");
+        var wrapId = btn.getAttribute("data-nearby-wrap");
+        var mapId = btn.getAttribute("data-nearby-map");
+        var wrap = wrapId ? document.getElementById(wrapId) : null;
+        var statusEl = card ? card.querySelector("[data-nearby-status]") : null;
+        if (!card || !wrap || !mapId) return;
+        var nowOpen = btn.getAttribute("aria-expanded") === "true";
+        wrap.hidden = nowOpen;
+        btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
+        btn.textContent = nowOpen ? "半径200m" : "200m地図を閉じる";
+        if (nowOpen) return;
+        renderNearbyMap(card, wrap, mapId, statusEl);
+      });
+    });
+  }
+  window.bindNearbyButtons = bindNearbyButtons;
+  bindNearbyButtons(document);
 """
 
 
@@ -4811,7 +4995,6 @@ def build_planned_incomplete_section_html(
         start_lng = _to_float(it.start_lng)
         end_lat = _to_float(it.end_lat)
         end_lng = _to_float(it.end_lng)
-        two_btn = ""
         two_json = ""
         two_wrap = ""
         if (
@@ -6219,17 +6402,43 @@ def build_survey_html(
         )
     cards: list[str] = []
     points: list[dict] = []
+    nearby_payloads: dict[str, dict[str, Any]] = {}
     for idx, it in enumerate(items):
         # 単点地図ボタン: 妥当な単点座標があるときだけ。map_url は信用せず座標から生成。
         map_btn = ""
+        nearby_btn = ""
+        nearby_wrap = ""
         single = _validated_single_latlng(it)
         if single is not None:
             s_lat, s_lng = single
             map_btn = (
                 f'<a class="btn btn-map" '
                 f'href="https://www.google.com/maps?q={s_lat},{s_lng}" '
-                'target="_blank" rel="noopener noreferrer">地図を表示</a>'
+                'target="_blank" rel="noopener noreferrer">地図を開く</a>'
             )
+            nearby_wrap_id = f"nearby-wrap-{idx}"
+            nearby_map_id = f"nearby-map-{idx}"
+            nearby_btn = (
+                f'<button type="button" class="btn btn-nearby-map" '
+                f'data-nearby-open data-nearby-wrap="{nearby_wrap_id}" '
+                f'data-nearby-map="{nearby_map_id}" aria-expanded="false" '
+                f'aria-controls="{nearby_wrap_id}">半径200m</button>'
+            )
+            nearby_wrap = (
+                '<p class="nearby-map-status muted-tiny" data-nearby-status '
+                'hidden role="status"></p>'
+                f'<div class="nearby-map-wrap" id="{nearby_wrap_id}" hidden>'
+                f'<div id="{nearby_map_id}" class="share-two-map-canvas" '
+                'role="application" aria-label="半径200m電柱地図"></div></div>'
+            )
+            nearby_key = (it.management_no_key or it.management_no or "").strip()
+            if nearby_key:
+                nearby_payloads[nearby_key] = build_nearby_geo_payload(
+                    center_name=it.label,
+                    center_lat=s_lat,
+                    center_lng=s_lng,
+                    gps_poles=gps_poles,
+                )
         # 2点地図ボタン: 開始/終了の2点がどちらも妥当なときだけ。
         two_btn = ""
         two_json = ""
@@ -6267,7 +6476,7 @@ def build_survey_html(
             f'aria-controls="{note_id}" data-note-toggle>現場指示</button>'
         )
         note_body = f"備考: {escape_html(it.note)}"
-        actions = "".join(x for x in [map_btn, two_btn, note_btn] if x)
+        primary_actions = "".join(x for x in [map_btn, nearby_btn] if x)
         report_btns = ""
         if not use_immediate:
             url_done = build_survey_report_url(
@@ -6348,18 +6557,17 @@ def build_survey_html(
   data-management-no-key="{escape_html(it.management_no_key)}"
   data-management-no="{escape_html(it.management_no)}"
   data-label="{escape_html(it.label)}"
+  data-search="{escape_html(' '.join([it.management_no, it.management_no_key, it.label, it.note]).strip())}"
   data-requested-action="{survey_requested_action}"{multipin_attr}{hidden_attr}>
   <div class="card-head">
     <span class="case-status-pill status-survey_wait">現調待ち</span>
     <h2 class="card-title">{escape_html(it.label)}</h2>
     <p class="item-mgmt">{escape_html(it.management_no)}</p>
-    <div class="card-actions">{actions}</div>
-    {report_btns}
+    <div class="card-actions card-actions-map-primary">{primary_actions}</div>
     {portal_request_btns}
+    {report_btns}
   </div>
-  {two_json}
-  {two_wrap}
-  <div class="note-panel" id="{note_id}" hidden>{note_body}</div>
+  {nearby_wrap}
 </article>"""
         )
         if f_lat_mp is not None and f_lng_mp is not None:
@@ -6387,6 +6595,10 @@ def build_survey_html(
     <p class="muted-tiny">まとめて表示できる位置情報がありません。</p>
   </section>
 """
+    nearby_json = (
+        '<script type="application/json" id="survey-nearby-data">'
+        f"{json_for_script_tag(nearby_payloads)}</script>"
+    )
     if use_immediate:
         survey_portal_js = render_survey_immediate_status_js(
             portal_status_endpoint, status_request_api_key
@@ -6486,6 +6698,55 @@ body {{
   font-weight: 800;
   text-decoration: none;
 }}
+.survey-search-panel {{
+  margin: 0 0 0.85rem;
+  padding: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(31,43,58,.04);
+}}
+.survey-search-row {{
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}}
+.survey-search-input {{
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.48rem 0.7rem;
+  border: 1px solid #b9c4d3;
+  border-radius: 10px;
+  font: inherit;
+  background: #fff;
+}}
+.survey-search-input:focus {{
+  border-color: var(--accent);
+  outline: 2px solid rgba(31, 79, 122, 0.18);
+}}
+.btn-search-clear {{
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}}
+.survey-search-actions {{
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.55rem;
+}}
+.survey-search-actions .btn {{
+  flex: 1 1 100%;
+}}
+.btn-visible-map {{
+  background: #eef2ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}}
+.btn-visible-map.is-disabled {{
+  opacity: 0.55;
+  pointer-events: none;
+}}
 .card {{
   background: var(--card);
   border-radius: 16px;
@@ -6538,6 +6799,20 @@ body {{
   flex-wrap: wrap;
   gap: 0.5rem;
 }}
+.card-actions-map-primary,
+.card-actions-secondary {{
+  flex-basis: 100%;
+  width: 100%;
+}}
+.card-actions-map-primary .btn,
+.survey-case-action-row .btn {{
+  flex: 1 1 calc(50% - 0.25rem);
+  min-width: 8.25rem;
+}}
+.card-actions-secondary .btn {{
+  flex: 1 1 calc(50% - 0.25rem);
+  min-width: 8.25rem;
+}}
 .btn {{
   display: inline-flex;
   align-items: center;
@@ -6557,6 +6832,16 @@ body {{
   color: #fff;
 }}
 .btn-map:hover, .btn-map:focus {{ filter: brightness(1.05); }}
+.btn-nearby-map {{
+  background: #eef2ff;
+  color: #3730a3;
+  border: 2px solid #a5b4fc;
+}}
+.btn-nearby-map:hover,
+.btn-nearby-map:focus-visible {{
+  background: #e0e7ff;
+  outline: none;
+}}
 .btn-note {{
   background: #fff;
   color: var(--accent2);
@@ -6583,6 +6868,35 @@ body {{
   overflow: hidden;
 }}
 .two-map-wrap[hidden] {{ display: none !important; }}
+.nearby-map-wrap {{
+  margin-top: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}}
+.nearby-map-wrap[hidden] {{ display: none !important; }}
+.nearby-map-status[hidden] {{ display: none !important; }}
+.nearby-div-icon {{
+  background: transparent;
+  border: none;
+}}
+.nearby-pin {{
+  display: block;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.35);
+}}
+.nearby-pin.center {{
+  width: 16px;
+  height: 16px;
+  background: #16a34a;
+}}
+.nearby-pin.pole {{
+  width: 12px;
+  height: 12px;
+  background: #2563eb;
+}}
 .share-two-map-canvas {{
   width: 100%;
   height: min(45vh, 320px);
@@ -6631,6 +6945,9 @@ body {{
 .filter-empty.is-visible {{
   display: block;
 }}
+.survey-update-card.is-search-hidden {{
+  display: none !important;
+}}
 .footer-note {{
   margin-top: 1.1rem;
   font-size: 0.8rem;
@@ -6649,7 +6966,13 @@ body {{
 @media (max-width: 560px) {{
   body {{ padding: 0.55rem 0.55rem 1rem; }}
   .status-navigation a {{ flex: 1 1 calc(50% - 0.25rem); justify-content: center; }}
+  .survey-search-row {{ flex-direction: column; }}
   .card-actions .btn {{ flex: 1 1 100%; }}
+  .card-actions-map-primary .btn,
+  .survey-case-action-row .btn {{
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
+  }}
   .card-actions-report .btn {{ flex-basis: 100%; min-width: 0; }}
 }}
 .card-actions-report {{
@@ -6768,12 +7091,24 @@ body {{
 </head>
 <body>
 {subpage_header}
-  <p class="lead" id="survey-count-lead" data-survey-candidate-total="{len(items)}">径間ごとに地図・現場指示・操作ボタンがあります。<span class="survey-visible-count-line">表示中 <strong id="survey-visible-count">{len(items)}</strong> 件</span><span class="survey-count-hint muted-tiny" id="survey-count-hint" hidden>（候補 {len(items)} 件・交渉待ち・返却候補は除く）</span></p>
+  <p class="lead" id="survey-count-lead" data-survey-candidate-total="{len(items)}">径間ごとに地図・操作ボタンがあります。<span class="survey-visible-count-line">表示中 <strong id="survey-visible-count">{len(items)}</strong> 件</span><span class="survey-count-hint muted-tiny" id="survey-count-hint" hidden>（候補 {len(items)} 件・交渉待ち・返却候補は除く）</span></p>
   <p class="report-disclaimer">{survey_disclaimer}</p>
   <nav class="status-navigation" aria-label="関連ページ">
     <a href="../cases/#status-survey_wait">案件管理で見る</a>
     <a href="../negotiation/">交渉待ちへ</a>
   </nav>
+  <section class="survey-search-panel" aria-label="現調待ち検索">
+    <div class="survey-search-row">
+      <input id="survey-search-input" class="survey-search-input" type="search"
+        placeholder="径間名・管理番号で検索（例: 西川）" autocomplete="off">
+      <button id="survey-search-clear" type="button" class="btn btn-search-clear">クリア</button>
+    </div>
+    <div class="survey-search-actions">
+      <a id="survey-visible-map-open" class="btn btn-visible-map" target="_blank"
+        rel="noopener noreferrer" aria-disabled="true">検索結果のマルチピンマップを開く</a>
+    </div>
+  </section>
+  <p id="survey-filter-empty" class="filter-empty" role="status">検索条件に一致する現調待ちはありません。</p>
   <p id="survey-overlay-warning" class="survey-overlay-warning" hidden role="status"></p>
   <p id="liveCasesStatus" class="survey-overlay-warning" hidden role="status"></p>
   <main>
@@ -6781,6 +7116,7 @@ body {{
 {map_block}
   </main>
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+  {nearby_json}
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""></script>
@@ -6800,6 +7136,7 @@ body {{
     return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
   }}
 {two_map_click_handler_js()}
+{nearby_map_click_handler_js()}
 {render_survey_multipin_js()}
   // Portal status overlay (B-plan) or legacy pending request (A-plan). Never embed service_role.
 {survey_portal_js}
@@ -9498,7 +9835,6 @@ def validate_survey_only_output(
             ("survey-overlay-warning", "survey-overlay-warning"),
             ("fetchReturnCandidates", "fetchReturnCandidates"),
             ("portal-menu-btn", "portal-menu-btn"),
-            ("two-geo-0", 'id="two-geo-0"'),
             ("applySurveyMultipinState", "function applySurveyMultipinState"),
             ("collectVisibleSurveyMultipinPoints", "collectVisibleSurveyMultipinPoints"),
             ("updateSurveyVisibleCount", "function updateSurveyVisibleCount"),
@@ -9509,8 +9845,6 @@ def validate_survey_only_output(
             ("live_cases_list", 'p.set("list","cases")'),
         ],
     )
-    failures.extend(_validate_two_geo_script(html, "two-geo-0"))
-
     total = _parse_survey_candidate_total(html)
     if total is None or total <= 0:
         failures.append(f"survey_wait_count must be positive got {total}")

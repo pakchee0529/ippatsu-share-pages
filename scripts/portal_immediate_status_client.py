@@ -87,6 +87,7 @@ def render_survey_multipin_js() -> str:
   function isSurveyCardVisible(card) {
     if (!card || card.hidden) return false;
     if (card.getAttribute("data-portal-moved")) return false;
+    if (card.getAttribute("data-search-hidden") === "1") return false;
     return true;
   }
   function getVisibleSurveyCardCount() {
@@ -117,6 +118,90 @@ def render_survey_multipin_js() -> str:
       hintEl.hidden = false;
     } else if (hintEl) {
       hintEl.hidden = true;
+    }
+  }
+  function normalizeSurveySearchText(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[\\u3000\\s]+/g, " ");
+  }
+  function surveyCardSearchText(card) {
+    return normalizeSurveySearchText([
+      card.getAttribute("data-search") || "",
+      card.getAttribute("data-label") || "",
+      card.getAttribute("data-management-no") || "",
+      card.getAttribute("data-management-no-key") || "",
+    ].join(" "));
+  }
+  function applySurveySearchFilter() {
+    var input = document.getElementById("survey-search-input");
+    var empty = document.getElementById("survey-filter-empty");
+    var query = normalizeSurveySearchText(input ? input.value : "");
+    var terms = query ? query.split(" ").filter(Boolean) : [];
+    document.querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
+      var text = surveyCardSearchText(card);
+      var matched = terms.length === 0 || terms.every(function(term) {
+        return text.indexOf(term) >= 0;
+      });
+      if (matched) {
+        card.classList.remove("is-search-hidden");
+        card.removeAttribute("data-search-hidden");
+      } else {
+        card.classList.add("is-search-hidden");
+        card.setAttribute("data-search-hidden", "1");
+      }
+    });
+    if (typeof applySurveyMultipinState === "function") applySurveyMultipinState();
+    if (empty) empty.classList.toggle("is-visible", getVisibleSurveyCardCount() === 0);
+  }
+  function bindSurveySearchControls() {
+    var input = document.getElementById("survey-search-input");
+    if (!input || input.getAttribute("data-search-bound") === "1") return;
+    input.setAttribute("data-search-bound", "1");
+    input.addEventListener("input", applySurveySearchFilter);
+    var clear = document.getElementById("survey-search-clear");
+    if (clear) {
+      clear.addEventListener("click", function() {
+        input.value = "";
+        input.focus();
+        applySurveySearchFilter();
+      });
+    }
+  }
+  function visibleSurveyGoogleMapsUrl(points) {
+    var usable = (points || []).filter(function(p) {
+      return isPortalJpLatLng(Number(p.lat), Number(p.lng));
+    });
+    if (!usable.length) return "";
+    if (usable.length === 1) {
+      return "https://www.google.com/maps?q=" +
+        encodeURIComponent(usable[0].lat + "," + usable[0].lng);
+    }
+    var first = usable[0];
+    var last = usable[Math.min(usable.length - 1, 9)];
+    var mids = usable.slice(1, Math.min(usable.length - 1, 9));
+    var params = new URLSearchParams();
+    params.set("api", "1");
+    params.set("origin", first.lat + "," + first.lng);
+    params.set("destination", last.lat + "," + last.lng);
+    if (mids.length) {
+      params.set("waypoints", mids.map(function(p) { return p.lat + "," + p.lng; }).join("|"));
+    }
+    return "https://www.google.com/maps/dir/?" + params.toString();
+  }
+  function updateVisibleSurveyMapButton(points) {
+    var btn = document.getElementById("survey-visible-map-open");
+    if (!btn) return;
+    var url = visibleSurveyGoogleMapsUrl(points || []);
+    if (url) {
+      btn.href = url;
+      btn.removeAttribute("aria-disabled");
+      btn.classList.remove("is-disabled");
+    } else {
+      btn.removeAttribute("href");
+      btn.setAttribute("aria-disabled", "true");
+      btn.classList.add("is-disabled");
     }
   }
   function collectVisibleSurveyMultipinPoints() {
@@ -179,8 +264,15 @@ def render_survey_multipin_js() -> str:
   }
   function applySurveyMultipinState() {
     updateSurveyVisibleCount();
-    renderSurveyMultipinMap(collectVisibleSurveyMultipinPoints());
+    var points = collectVisibleSurveyMultipinPoints();
+    updateVisibleSurveyMapButton(points);
+    renderSurveyMultipinMap(points);
   }
+  window.bindSurveySearchControls = bindSurveySearchControls;
+  window.applySurveySearchFilter = applySurveySearchFilter;
+  window.applySurveyMultipinState = applySurveyMultipinState;
+  bindSurveySearchControls();
+  applySurveySearchFilter();
 """
 
 
