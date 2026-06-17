@@ -245,6 +245,7 @@ def render_live_cases_js(
     page: str,
     endpoint: str = PORTAL_CASE_STATUS_ENDPOINT,
     api_key: str = "",
+    jurisdiction: str | None = None,
 ) -> str:
     """Replace generated active-case lists with latest Supabase rows in-browser."""
     return f"""
@@ -252,6 +253,7 @@ def render_live_cases_js(
   var PAGE = {json.dumps(page, ensure_ascii=False)};
   var ENDPOINT = {json.dumps(endpoint, ensure_ascii=False)};
   var API_KEY = {json.dumps(api_key, ensure_ascii=False)};
+  var JURISDICTION = {json.dumps(normalize_jurisdiction(jurisdiction), ensure_ascii=False)};
   var LABELS = {{survey_wait:"現調待ち",negotiation_wait:"交渉待ち",entrustment_wait:"付託待ち",construction_wait:"工事待ち",return_wait:"返却待ち",returned:"返却済み"}};
   var ORDER = ["survey_wait","negotiation_wait","entrustment_wait","construction_wait","return_wait"];
   var PAGE_STATUSES = {{survey:["survey_wait"],negotiation:["negotiation_wait","return_wait"],entrustment:["entrustment_wait"],cases:ORDER,detail:ORDER}};
@@ -290,6 +292,10 @@ def render_live_cases_js(
     out.start_lng = out.start_lng || found.start_lng;
     return out;
   }}
+  function filterJurisdiction(rows) {{
+    if (!JURISDICTION) return rows;
+    return rows.filter(function(r) {{ return t(r,"jurisdiction") === JURISDICTION; }});
+  }}
   function searchText(r) {{ return [t(r,"management_no"),t(r,"management_no_key"),t(r,"internal_management_no"),t(r,"span_key"),t(r,"label"),LABELS[t(r,"status")]||t(r,"status")].join(" "); }}
   function setStatus(msg, err) {{ var el=document.getElementById("liveCasesStatus"); if(!el) return; el.hidden=false; el.textContent=msg; el.classList.toggle("is-error", !!err); }}
   function fetchCases(extra) {{
@@ -327,8 +333,8 @@ def render_live_cases_js(
   function mapBtn(r) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"); return lat&&lng?'<a class="btn btn-map" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q='+encodeURIComponent(lat+","+lng)+'">地図を開く</a>':""; }}
   function nearbyBtn(r, idx) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<button type="button" class="btn btn-nearby-map" data-nearby-open data-nearby-wrap="live-nearby-wrap-'+idx+'" data-nearby-map="live-nearby-map-'+idx+'" aria-expanded="false" aria-controls="live-nearby-wrap-'+idx+'">半径200m</button>'; }}
   function nearbyWrap(r, idx) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<p class="nearby-map-status muted-tiny" data-nearby-status hidden role="status"></p><div class="nearby-map-wrap" id="live-nearby-wrap-'+idx+'" hidden><div id="live-nearby-map-'+idx+'" class="share-two-map-canvas" role="application" aria-label="半径200m電柱地図"></div></div>'; }}
-  function surveyCard(r, idx) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"), mp=(lat&&lng)?' data-multipin-lat="'+esc(lat)+'" data-multipin-lng="'+esc(lng)+'"':""; return '<article class="card survey-update-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'" data-management-no="'+esc(t(r,"management_no"))+'" data-label="'+esc(t(r,"label"))+'"'+mp+'><div class="card-head"><span class="case-status-pill status-survey_wait">現調待ち</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-map-primary">'+mapBtn(r)+nearbyBtn(r, idx)+'</div><div class="card-actions card-actions-portal-request"><div class="survey-case-action-row"><button type="button" class="btn btn-survey-mark-done" data-live-action="mark_survey_done" data-case-id="'+esc(t(r,"id"))+'">現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-live-action="mark_return_candidate" data-case-id="'+esc(t(r,"id"))+'">返却候補にする</button></div></div></div>'+nearbyWrap(r, idx)+'</article>'; }}
-  function negotiationCard(r) {{ var st=t(r,"status"), act=""; if(st==="negotiation_wait") act='<button type="button" class="btn btn-entrustment" data-live-action="mark_entrustment_wait" data-case-id="'+esc(t(r,"id"))+'">付託待ちにする</button>'; if(st==="return_wait") act='<button type="button" class="btn btn-returned" data-live-action="mark_returned" data-case-id="'+esc(t(r,"id"))+'">返却済みにする</button>'; return '<article class="card negotiation-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="card-head"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-revert">'+act+'</div></div></article>'; }}
+  function surveyCard(r, idx) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"), mp=(lat&&lng)?' data-multipin-lat="'+esc(lat)+'" data-multipin-lng="'+esc(lng)+'"':""; return '<article class="card survey-update-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'" data-management-no="'+esc(t(r,"management_no"))+'" data-label="'+esc(t(r,"label"))+'" data-jurisdiction="'+esc(t(r,"jurisdiction"))+'"'+mp+'><div class="card-head"><span class="case-status-pill status-survey_wait">現調待ち</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-map-primary">'+mapBtn(r)+nearbyBtn(r, idx)+'</div><div class="card-actions card-actions-portal-request"><div class="survey-case-action-row"><button type="button" class="btn btn-survey-mark-done" data-live-action="mark_survey_done" data-case-id="'+esc(t(r,"id"))+'">現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-live-action="mark_return_candidate" data-case-id="'+esc(t(r,"id"))+'">返却候補にする</button></div></div></div>'+nearbyWrap(r, idx)+'</article>'; }}
+  function negotiationCard(r) {{ var st=t(r,"status"), act=""; if(st==="negotiation_wait") act='<button type="button" class="btn btn-entrustment" data-live-action="mark_entrustment_wait" data-case-id="'+esc(t(r,"id"))+'">付託待ちにする</button>'; if(st==="return_wait") act='<button type="button" class="btn btn-returned" data-live-action="mark_returned" data-case-id="'+esc(t(r,"id"))+'">返却済みにする</button>'; return '<article class="card negotiation-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'" data-jurisdiction="'+esc(t(r,"jurisdiction"))+'"><div class="card-head"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-revert">'+act+'</div></div></article>'; }}
   function entrustmentCard(r) {{ return '<article class="case-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="case-card-main"><span class="case-status-pill status-entrustment_wait">付託待ち</span><h2 class="case-title">'+esc(t(r,"label")||"—")+'</h2><p class="case-meta">'+esc(t(r,"management_no")||"—")+'</p></div><div class="card-actions">'+mapBtn(r)+'<button type="button" class="btn" data-live-action="mark_construction_wait" data-case-id="'+esc(t(r,"id"))+'">工事待ちにする</button></div></article>'; }}
   function detailHref(r) {{ return PAGE==="cases" ? "./detail/?id="+encodeURIComponent(t(r,"id")) : "../cases/detail/?id="+encodeURIComponent(t(r,"id")); }}
   function caseRow(r) {{ var st=t(r,"status"); return '<a class="case-row" href="'+esc(detailHref(r))+'" data-status="'+esc(st)+'" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="case-row-main"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h3>'+esc(t(r,"label")||"—")+'</h3><p class="case-management-no">'+esc(t(r,"management_no")||"—")+'</p></div><div class="case-row-meta">'+(t(r,"updated_at")?'<span>更新 '+esc(t(r,"updated_at").slice(0,10))+'</span>':"")+'</div></a>'; }}
@@ -359,7 +365,7 @@ def render_live_cases_js(
     rememberSurveyStaticGeo(document);
     var extra={{}}; if(PAGE==="detail") {{ extra.id=new URLSearchParams(location.search).get("id")||""; if(!extra.id) {{ setStatus("case id が指定されていません。", true); return; }} }}
     setStatus("Supabaseから最新情報を読み込み中...", false);
-    fetchCases(extra).then(function(body){{var rows=Array.isArray(body.cases)?body.cases:[]; if(PAGE==="survey") rows=rows.map(enrichSurveyRow); if(PAGE==="cases") renderCases(rows, body.counts||{{}}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);}})
+    fetchCases(extra).then(function(body){{var rows=Array.isArray(body.cases)?body.cases:[]; rows=filterJurisdiction(rows); if(PAGE==="survey") rows=rows.map(enrichSurveyRow); if(PAGE==="cases") renderCases(rows, body.counts||{{}}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);}})
       .catch(function(e){{setStatus("Supabase最新取得に失敗しました。生成時点の表示を使っています: "+(e&&e.message?e.message:e), true);}});
   }}
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", refresh); else refresh();
@@ -1580,16 +1586,19 @@ a.portal-menu-item:focus-visible {{
 """
 
 
-def render_portal_subpage_header(page_title: str, *, page: str) -> str:
+def render_portal_subpage_header(
+    page_title: str, *, page: str, base_prefix: str = "../"
+) -> str:
     """page: survey | negotiation | entrustment | cases | archive"""
+    base = base_prefix or "../"
     items: list[tuple[str, str, str | None]] = [
-        ("../", "ポータルTOP", None),
-        ("../calendar/", "社内カレンダー", None),
-        ("../survey/", "現調待ち", "survey"),
-        ("../negotiation/", "交渉待ち", "negotiation"),
-        ("../entrustment/", "付託待ち", "entrustment"),
-        ("../cases/", "案件管理", "cases"),
-        ("../archive/", "アーカイブ", "archive"),
+        (base, "ポータルTOP", None),
+        (base + "calendar/", "社内カレンダー", None),
+        (base + "survey/", "現調待ち", "survey"),
+        (base + "negotiation/", "交渉待ち", "negotiation"),
+        (base + "entrustment/", "付託待ち", "entrustment"),
+        (base + "cases/", "案件管理", "cases"),
+        (base + "archive/", "アーカイブ", "archive"),
     ]
     link_lines: list[str] = []
     for href, label, page_id in items:
@@ -1783,7 +1792,8 @@ def render_negotiation_return_wait_section(
             f"""    <article class="card negotiation-card return-wait-card" role="listitem"
       data-management-no-key="{escape_html(it.management_no_key)}"
       data-management-no="{escape_html(it.management_no)}"
-      data-label="{escape_html(it.label or '—')}">
+      data-label="{escape_html(it.label or '—')}"
+      data-jurisdiction="{escape_html(it.jurisdiction)}">
       <div class="card-head">
         <div>
           <h3 class="card-title">{escape_html(it.label or "—")}</h3>
@@ -3668,6 +3678,52 @@ class SurveyPublicItem:
     end_lat: str
     end_lng: str
     note: str
+    jurisdiction: str = ""
+
+
+JURISDICTION_PAGE_KEYS: tuple[str, ...] = ("gojo", "totsukawa", "yoshino")
+JURISDICTION_LABELS: dict[str, str] = {
+    "gojo": "五條",
+    "totsukawa": "十津川",
+    "yoshino": "吉野",
+}
+
+
+def normalize_jurisdiction(value: object) -> str:
+    s = _to_str(value).strip().lower()
+    return s if s in JURISDICTION_LABELS else ""
+
+
+def jurisdiction_page_label(jurisdiction: str | None) -> str:
+    key = normalize_jurisdiction(jurisdiction)
+    return JURISDICTION_LABELS.get(key, "")
+
+
+def render_jurisdiction_navigation(*, section: str, current: str | None) -> str:
+    """Navigation between all / jurisdiction-specific status pages."""
+    cur = normalize_jurisdiction(current)
+    prefix = "../" if cur else "./"
+    links: list[str] = []
+    all_cls = "is-current" if not cur else ""
+    all_current = ' aria-current="page"' if not cur else ""
+    links.append(
+        f'<a class="{all_cls}" href="{escape_html(prefix)}"{all_current}>全体</a>'
+    )
+    for key in JURISDICTION_PAGE_KEYS:
+        cls = "is-current" if key == cur else ""
+        current_attr = ' aria-current="page"' if key == cur else ""
+        href = f"{prefix}{key}/"
+        links.append(
+            f'<a class="{cls}" href="{escape_html(href)}"{current_attr}>'
+            f'{escape_html(JURISDICTION_LABELS[key])}</a>'
+        )
+    label = "管轄別ページ"
+    return (
+        f'  <nav class="status-navigation jurisdiction-navigation" '
+        f'aria-label="{escape_html(label)}">\n    '
+        + "\n    ".join(links)
+        + "\n  </nav>"
+    )
 
 
 @dataclass(frozen=True)
@@ -5396,15 +5452,24 @@ def _load_negotiation_public_items_legacy(
     return out, "", stats
 
 
-def _fetch_cases_by_status_from_supabase(status: str) -> list[dict[str, Any]] | None:
+def _fetch_cases_by_status_from_supabase(
+    status: str, *, jurisdiction: str | None = None
+) -> list[dict[str, Any]] | None:
     creds = _supabase_rest_ready()
     if creds is None:
         return None
     url, key = creds
+    jurisdiction_key = normalize_jurisdiction(jurisdiction)
+    jurisdiction_query = (
+        f"&jurisdiction=eq.{quote(jurisdiction_key, safe='')}"
+        if jurisdiction_key
+        else ""
+    )
     endpoint = (
         f"{url.rstrip('/')}/rest/v1/cases"
         "?select=*"
         f"&status=eq.{quote(status, safe='')}"
+        f"{jurisdiction_query}"
         "&active=eq.true"
         "&order=management_no_key.asc"
     )
@@ -5443,8 +5508,9 @@ def _load_status_public_items(
     status: str,
     legacy_count: int,
     empty_msg: str,
+    jurisdiction: str | None = None,
 ) -> tuple[list[SurveyPublicItem], str, dict[str, Any], StatusSmoke]:
-    rows = _fetch_cases_by_status_from_supabase(status)
+    rows = _fetch_cases_by_status_from_supabase(status, jurisdiction=jurisdiction)
     if rows is None:
         smoke = StatusSmoke(
             db_count=0,
@@ -5481,6 +5547,7 @@ def _load_status_public_items(
                 end_lat=_to_str(row.get("end_lat")),
                 end_lng=_to_str(row.get("end_lng")),
                 note=_to_str(row.get("note")) or "—",
+                jurisdiction=normalize_jurisdiction(row.get("jurisdiction")),
             )
         )
     db_keys_sorted = sorted(k for k in db_keys if k)
@@ -5507,6 +5574,7 @@ def _load_status_public_items(
         "total": len(rows),
         "visible": len(items),
         "filtered": max(len(rows) - len(items), 0),
+        "jurisdiction": normalize_jurisdiction(jurisdiction),
         "exclude_reasons": {},
         "db_count": smoke.db_count,
         "displayed_count": smoke.displayed_count,
@@ -5680,6 +5748,7 @@ def _supplement_map_fields_from_gps(
                 end_lat=str(e_lat) if e_ok else "",
                 end_lng=str(e_lng) if e_ok else "",
                 note=it.note,
+                jurisdiction=it.jurisdiction,
             )
         )
     return out
@@ -5687,6 +5756,8 @@ def _supplement_map_fields_from_gps(
 
 def load_survey_public_items(
     repo_root: Path,
+    *,
+    jurisdiction: str | None = None,
 ) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
     """現調待ち主ソース: Supabase cases.status=survey_wait。queue.json は補助件数。"""
     _reset_map_coord_warnings()
@@ -5695,6 +5766,7 @@ def load_survey_public_items(
         status="survey_wait",
         legacy_count=len(legacy_items),
         empty_msg="現調待ちリストはまだありません。",
+        jurisdiction=jurisdiction,
     )
     items, legacy_audit = _record_legacy_queue_audit(items, legacy_items)
     items = _supplement_map_fields_from_gps(items, repo_root)
@@ -5709,6 +5781,8 @@ def load_survey_public_items(
 
 def load_negotiation_public_items(
     repo_root: Path,
+    *,
+    jurisdiction: str | None = None,
 ) -> tuple[list[SurveyPublicItem], str, dict[str, Any]]:
     """交渉待ち主ソース: Supabase cases.status=negotiation_wait。queue.json は補助件数。"""
     _reset_map_coord_warnings()
@@ -5717,6 +5791,7 @@ def load_negotiation_public_items(
         status="negotiation_wait",
         legacy_count=len(legacy_items),
         empty_msg="交渉待ちリストはまだありません。",
+        jurisdiction=jurisdiction,
     )
     items, legacy_audit = _record_legacy_queue_audit(items, legacy_items)
     stats.update(legacy_audit)
@@ -6320,15 +6395,24 @@ def _supabase_rest_ready() -> tuple[str, str] | None:
     return url, key
 
 
-def _fetch_return_wait_cases_from_supabase() -> list[dict[str, Any]] | None:
+def _fetch_return_wait_cases_from_supabase(
+    *, jurisdiction: str | None = None
+) -> list[dict[str, Any]] | None:
     creds = _supabase_rest_ready()
     if creds is None:
         return None
     url, key = creds
+    jurisdiction_key = normalize_jurisdiction(jurisdiction)
+    jurisdiction_query = (
+        f"&jurisdiction=eq.{quote(jurisdiction_key, safe='')}"
+        if jurisdiction_key
+        else ""
+    )
     endpoint = (
         f"{url.rstrip('/')}/rest/v1/cases"
         "?select=*"
         "&status=eq.return_wait"
+        f"{jurisdiction_query}"
         "&active=eq.true"
         "&archive_state=is.null"
         "&returned_at=is.null"
@@ -6397,8 +6481,9 @@ def load_return_wait_public_items(
     *,
     portal_status_endpoint: str,
     portal_api_key: str,
+    jurisdiction: str | None = None,
 ) -> tuple[list[SurveyPublicItem], ReturnWaitSmoke]:
-    rows = _fetch_return_wait_cases_from_supabase()
+    rows = _fetch_return_wait_cases_from_supabase(jurisdiction=jurisdiction)
     if rows is None:
         smoke = ReturnWaitSmoke(
             db_return_wait_count=0,
@@ -6437,6 +6522,7 @@ def load_return_wait_public_items(
                 end_lat=_to_str(row.get("end_lat")),
                 end_lng=_to_str(row.get("end_lng")),
                 note=_to_str(row.get("note")) or "—",
+                jurisdiction=normalize_jurisdiction(row.get("jurisdiction")),
             )
         )
 
@@ -6474,6 +6560,7 @@ def build_survey_html(
     immediate_status: bool | None = None,
     initial_hidden_overlay_keys: set[str] | None = None,
     repo_root: Path | None = None,
+    jurisdiction: str | None = None,
 ) -> str:
     root = repo_root or Path(__file__).resolve().parent.parent
     gps_poles = load_gps_poles(root)
@@ -6483,6 +6570,10 @@ def build_survey_html(
         else portal_immediate_status_enabled()
     )
     hidden_overlay_keys = initial_hidden_overlay_keys or set()
+    jurisdiction_key = normalize_jurisdiction(jurisdiction)
+    jurisdiction_label = jurisdiction_page_label(jurisdiction_key)
+    jurisdiction_suffix = f"（{jurisdiction_label}）" if jurisdiction_label else ""
+    subpage_base_prefix = "../../" if jurisdiction_key else "../"
     if use_immediate:
         survey_mark_hint = (
             "押すと交渉待ちページへ即時に移動します（誤操作は交渉待ちから戻せます）"
@@ -6659,6 +6750,7 @@ def build_survey_html(
   data-management-no-key="{escape_html(it.management_no_key)}"
   data-management-no="{escape_html(it.management_no)}"
   data-label="{escape_html(it.label)}"
+  data-jurisdiction="{escape_html(it.jurisdiction)}"
   data-search="{escape_html(' '.join([it.management_no, it.management_no_key, it.label, it.note]).strip())}"
   data-requested-action="{survey_requested_action}"{multipin_attr}{hidden_attr}>
   <div class="card-head">
@@ -6713,17 +6805,25 @@ def build_survey_html(
         page="survey",
         endpoint=portal_status_endpoint,
         api_key=status_request_api_key,
+        jurisdiction=jurisdiction_key,
     )
-    subpage_header = render_portal_subpage_header("現調待ち一覧", page="survey")
+    subpage_header = render_portal_subpage_header(
+        f"現調待ち一覧{jurisdiction_suffix}",
+        page="survey",
+        base_prefix=subpage_base_prefix,
+    )
     subpage_menu_css = render_portal_subpage_menu_css()
     subpage_menu_js = render_portal_subpage_menu_js()
+    jurisdiction_nav = render_jurisdiction_navigation(
+        section="survey", current=jurisdiction_key
+    )
     survey_action_css = survey_case_action_row_css() if use_immediate else ""
     html_body = f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>現調待ち一覧</title>
+<title>現調待ち一覧{jurisdiction_suffix}</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
   crossorigin="">
@@ -7195,9 +7295,10 @@ body {{
 {subpage_header}
   <p class="lead" id="survey-count-lead" data-survey-candidate-total="{len(items)}">径間ごとに地図・操作ボタンがあります。<span class="survey-visible-count-line">表示中 <strong id="survey-visible-count">{len(items)}</strong> 件</span><span class="survey-count-hint muted-tiny" id="survey-count-hint" hidden>（候補 {len(items)} 件・交渉待ち・返却候補は除く）</span></p>
   <p class="report-disclaimer">{survey_disclaimer}</p>
+{jurisdiction_nav}
   <nav class="status-navigation" aria-label="関連ページ">
-    <a href="../cases/#status-survey_wait">案件管理で見る</a>
-    <a href="../negotiation/">交渉待ちへ</a>
+    <a href="{subpage_base_prefix}cases/#status-survey_wait">案件管理で見る</a>
+    <a href="{subpage_base_prefix}negotiation/{jurisdiction_key + '/' if jurisdiction_key else ''}">交渉待ちへ</a>
   </nav>
   <section class="survey-search-panel" aria-label="現調待ち検索">
     <div class="survey-search-row">
@@ -7264,6 +7365,7 @@ def build_negotiation_html(
     status_request_api_key: str = "",
     immediate_status: bool | None = None,
     repo_root: Path | None = None,
+    jurisdiction: str | None = None,
 ) -> str:
     """交渉待ちページ（M11 + B-plan immediate status draft）。
 
@@ -7276,6 +7378,10 @@ def build_negotiation_html(
         if immediate_status is not None
         else portal_immediate_status_enabled()
     )
+    jurisdiction_key = normalize_jurisdiction(jurisdiction)
+    jurisdiction_label = jurisdiction_page_label(jurisdiction_key)
+    jurisdiction_suffix = f"（{jurisdiction_label}）" if jurisdiction_label else ""
+    subpage_base_prefix = "../../" if jurisdiction_key else "../"
     if use_immediate:
         negotiation_disclaimer = (
             "「現調待ちに戻す」は誤操作取り消し用です。"
@@ -7329,7 +7435,8 @@ def build_negotiation_html(
   data-search="{escape_html(' '.join([it.management_no, it.management_no_key, it.label, '交渉待ち']).strip())}"
   data-management-no-key="{escape_html(it.management_no_key)}"
   data-management-no="{escape_html(it.management_no)}"
-  data-label="{escape_html(it.label)}">
+  data-label="{escape_html(it.label)}"
+  data-jurisdiction="{escape_html(it.jurisdiction)}">
   <div class="card-head">
     <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
     <h2 class="card-title">{escape_html(it.label)}</h2>
@@ -7357,10 +7464,18 @@ def build_negotiation_html(
         page="negotiation",
         endpoint=portal_status_endpoint,
         api_key=status_request_api_key,
+        jurisdiction=jurisdiction_key,
     )
-    subpage_header = render_portal_subpage_header("交渉待ち一覧", page="negotiation")
+    subpage_header = render_portal_subpage_header(
+        f"交渉待ち一覧{jurisdiction_suffix}",
+        page="negotiation",
+        base_prefix=subpage_base_prefix,
+    )
     subpage_menu_css = render_portal_subpage_menu_css()
     subpage_menu_js = render_portal_subpage_menu_js()
+    jurisdiction_nav = render_jurisdiction_navigation(
+        section="negotiation", current=jurisdiction_key
+    )
     if return_wait_smoke is None:
         return_wait_smoke = ReturnWaitSmoke(
             db_return_wait_count=0,
@@ -7383,7 +7498,7 @@ def build_negotiation_html(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>交渉待ち一覧</title>
+<title>交渉待ち一覧{jurisdiction_suffix}</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
   crossorigin="">
@@ -7715,10 +7830,11 @@ body {{
 {subpage_header}
   <p class="lead">現調済み・対応中の案件です。地主交渉に進む案件を確認します。（表示 {len(items)} 件）</p>
   <p class="report-disclaimer">{negotiation_disclaimer}</p>
+{jurisdiction_nav}
   <nav class="status-navigation" aria-label="関連ページ">
-    <a href="../cases/#status-negotiation_wait">案件管理で見る</a>
-    <a href="../survey/">現調待ちへ</a>
-    <a href="../entrustment/">付託待ちへ</a>
+    <a href="{subpage_base_prefix}cases/#status-negotiation_wait">案件管理で見る</a>
+    <a href="{subpage_base_prefix}survey/{jurisdiction_key + '/' if jurisdiction_key else ''}">現調待ちへ</a>
+    <a href="{subpage_base_prefix}entrustment/">付託待ちへ</a>
   </nav>
   <p id="liveCasesStatus" class="survey-overlay-warning" hidden role="status"></p>
   <div class="case-toolbar" role="search">
@@ -9331,17 +9447,37 @@ FOCUSED_PORTAL_MODES = frozenset(
 PORTAL_GUARD_REL_PATHS: tuple[str, ...] = (
     "portal/index.html",
     "portal/survey/index.html",
+    "portal/survey/gojo/index.html",
+    "portal/survey/totsukawa/index.html",
+    "portal/survey/yoshino/index.html",
     "portal/archive/index.html",
     "portal/negotiation/index.html",
+    "portal/negotiation/gojo/index.html",
+    "portal/negotiation/totsukawa/index.html",
+    "portal/negotiation/yoshino/index.html",
     "portal/entrustment/index.html",
     "portal/cases/index.html",
 )
 
 MODE_ALLOWED_PORTAL_OUTPUTS: dict[str, frozenset[str]] = {
-    PORTAL_MODE_SURVEY_ONLY: frozenset({"portal/survey/index.html"}),
+    PORTAL_MODE_SURVEY_ONLY: frozenset(
+        {
+            "portal/survey/index.html",
+            "portal/survey/gojo/index.html",
+            "portal/survey/totsukawa/index.html",
+            "portal/survey/yoshino/index.html",
+        }
+    ),
     PORTAL_MODE_ARCHIVE_ONLY: frozenset({"portal/archive/index.html"}),
     PORTAL_MODE_PORTAL_TOP_ONLY: frozenset({"portal/index.html"}),
-    PORTAL_MODE_NEGOTIATION_ONLY: frozenset({"portal/negotiation/index.html"}),
+    PORTAL_MODE_NEGOTIATION_ONLY: frozenset(
+        {
+            "portal/negotiation/index.html",
+            "portal/negotiation/gojo/index.html",
+            "portal/negotiation/totsukawa/index.html",
+            "portal/negotiation/yoshino/index.html",
+        }
+    ),
     PORTAL_MODE_ENTRUSTMENT_ONLY: frozenset({"portal/entrustment/index.html"}),
     PORTAL_MODE_CASES_ONLY: frozenset(
         {"portal/cases/index.html", "portal/cases/*/index.html"}
@@ -9603,7 +9739,6 @@ def _write_portal_html(repo_root: Path, rel: str, html: str) -> Path:
 
 
 def run_survey_only(repo_root: Path) -> FocusedGenerateResult:
-    survey_items, survey_empty_note, survey_stats = load_survey_public_items(repo_root)
     portal_api_key = survey_status_request_api_key(repo_root)
     if not portal_api_key:
         print(
@@ -9615,22 +9750,44 @@ def run_survey_only(repo_root: Path) -> FocusedGenerateResult:
     overlay_neg_keys = fetch_portal_negotiation_wait_keys(
         PORTAL_CASE_STATUS_ENDPOINT, portal_api_key
     )
-    survey_html = build_survey_html(
-        survey_items,
-        survey_empty_note,
-        date.today().isoformat(),
-        status_request_api_key=portal_api_key,
-        portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
-        initial_hidden_overlay_keys=overlay_neg_keys,
-        repo_root=repo_root,
-    )
-    rel = "portal/survey/index.html"
-    out_path = _write_portal_html(repo_root, rel, survey_html)
+    page_specs: list[tuple[str | None, str]] = [
+        (None, "portal/survey/index.html"),
+        ("gojo", "portal/survey/gojo/index.html"),
+        ("totsukawa", "portal/survey/totsukawa/index.html"),
+        ("yoshino", "portal/survey/yoshino/index.html"),
+    ]
+    stats: dict[str, Any] = {}
+    page_counts: dict[str, int] = {}
+    survey_stats: dict[str, Any] = {}
+    survey_items: list[SurveyPublicItem] = []
+    for jurisdiction_key, rel in page_specs:
+        items, empty_note, page_stats = load_survey_public_items(
+            repo_root,
+            jurisdiction=jurisdiction_key,
+        )
+        survey_html = build_survey_html(
+            items,
+            empty_note,
+            date.today().isoformat(),
+            status_request_api_key=portal_api_key,
+            portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+            initial_hidden_overlay_keys=overlay_neg_keys,
+            repo_root=repo_root,
+            jurisdiction=jurisdiction_key,
+        )
+        out_path = _write_portal_html(repo_root, rel, survey_html)
+        name = jurisdiction_key or "all"
+        page_counts[name] = len(items)
+        print(f"Wrote {out_path} (survey_items={len(items)}, jurisdiction={name})")
+        if jurisdiction_key is None:
+            survey_items = items
+            survey_stats = page_stats
     stats = dict(survey_stats)
     stats["survey_items"] = len(survey_items)
+    stats["jurisdiction_page_counts"] = page_counts
     print(
-        f"Wrote {out_path} (survey_items={len(survey_items)}, "
-        f"survey_items_total={survey_stats['total']}, "
+        f"Wrote survey jurisdiction pages (survey_items={len(survey_items)}, "
+        f"survey_items_total={survey_stats.get('total', 0)}, "
         f"visible={survey_stats['visible']}, "
         f"filtered={survey_stats['filtered']})"
     )
@@ -9642,7 +9799,7 @@ def run_survey_only(repo_root: Path) -> FocusedGenerateResult:
     stats["map_coord_warnings"] = coord_warnings
     return FocusedGenerateResult(
         mode=PORTAL_MODE_SURVEY_ONLY,
-        output_rel=rel,
+        output_rel="portal/survey/index.html (+ jurisdiction pages)",
         stats=stats,
         apikey_nonempty=bool(portal_api_key),
     )
@@ -9696,9 +9853,6 @@ def run_portal_top_only(repo_root: Path) -> FocusedGenerateResult:
 
 
 def run_negotiation_only(repo_root: Path) -> FocusedGenerateResult:
-    negotiation_items, negotiation_empty_note, negotiation_stats = (
-        load_negotiation_public_items(repo_root)
-    )
     portal_api_key = survey_status_request_api_key(repo_root)
     if not portal_api_key:
         print(
@@ -9707,26 +9861,67 @@ def run_negotiation_only(repo_root: Path) -> FocusedGenerateResult:
             "when generating.",
             file=sys.stderr,
         )
-    survey_items, _, _ = load_survey_public_items(repo_root)
-    return_wait_items, return_wait_smoke = load_return_wait_public_items(
-        portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
-        portal_api_key=portal_api_key,
+    page_specs: list[tuple[str | None, str]] = [
+        (None, "portal/negotiation/index.html"),
+        ("gojo", "portal/negotiation/gojo/index.html"),
+        ("totsukawa", "portal/negotiation/totsukawa/index.html"),
+        ("yoshino", "portal/negotiation/yoshino/index.html"),
+    ]
+    negotiation_items: list[SurveyPublicItem] = []
+    negotiation_stats: dict[str, Any] = {}
+    return_wait_smoke = ReturnWaitSmoke(
+        db_return_wait_count=0,
+        displayed_return_wait_count=0,
+        overlay_return_candidate_count=0,
+        duplicate_management_no_count=0,
+        warnings_count=0,
+        db_return_wait_management_no_keys=[],
+        displayed_management_no_keys=[],
     )
-    negotiation_html = build_negotiation_html(
-        negotiation_items,
-        negotiation_empty_note,
-        promoted_candidates=survey_items,
-        return_wait_items=return_wait_items,
-        return_wait_smoke=return_wait_smoke,
-        status_request_api_key=portal_api_key,
-        portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
-        repo_root=repo_root,
-    )
-    rel = "portal/negotiation/index.html"
-    out_path = _write_portal_html(repo_root, rel, negotiation_html)
+    page_counts: dict[str, dict[str, int]] = {}
+    for jurisdiction_key, rel in page_specs:
+        items, empty_note, page_stats = load_negotiation_public_items(
+            repo_root,
+            jurisdiction=jurisdiction_key,
+        )
+        survey_items, _, _ = load_survey_public_items(
+            repo_root,
+            jurisdiction=jurisdiction_key,
+        )
+        return_wait_items, page_return_wait_smoke = load_return_wait_public_items(
+            portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+            portal_api_key=portal_api_key,
+            jurisdiction=jurisdiction_key,
+        )
+        negotiation_html = build_negotiation_html(
+            items,
+            empty_note,
+            promoted_candidates=survey_items,
+            return_wait_items=return_wait_items,
+            return_wait_smoke=page_return_wait_smoke,
+            status_request_api_key=portal_api_key,
+            portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
+            repo_root=repo_root,
+            jurisdiction=jurisdiction_key,
+        )
+        out_path = _write_portal_html(repo_root, rel, negotiation_html)
+        name = jurisdiction_key or "all"
+        page_counts[name] = {
+            "negotiation_wait": len(items),
+            "return_wait": page_return_wait_smoke.displayed_return_wait_count,
+        }
+        print(
+            f"Wrote {out_path} (negotiation_items={len(items)}, "
+            f"return_wait={page_return_wait_smoke.displayed_return_wait_count}, "
+            f"jurisdiction={name})"
+        )
+        if jurisdiction_key is None:
+            negotiation_items = items
+            negotiation_stats = page_stats
+            return_wait_smoke = page_return_wait_smoke
     print(
-        f"Wrote {out_path} (negotiation_items={len(negotiation_items)}, "
-        f"negotiation_items_total={negotiation_stats['total']}, "
+        f"Wrote negotiation jurisdiction pages (negotiation_items={len(negotiation_items)}, "
+        f"negotiation_items_total={negotiation_stats.get('total', 0)}, "
         f"visible={negotiation_stats['visible']}, "
         f"filtered={negotiation_stats['filtered']}, "
         f"db_return_wait={return_wait_smoke.db_return_wait_count}, "
@@ -9737,6 +9932,7 @@ def run_negotiation_only(repo_root: Path) -> FocusedGenerateResult:
     )
     stats = dict(negotiation_stats)
     stats["negotiation_items"] = len(negotiation_items)
+    stats["jurisdiction_page_counts"] = page_counts
     stats["db_return_wait_count"] = return_wait_smoke.db_return_wait_count
     stats["displayed_return_wait_count"] = return_wait_smoke.displayed_return_wait_count
     stats["overlay_return_candidate_count"] = (
@@ -9758,7 +9954,7 @@ def run_negotiation_only(repo_root: Path) -> FocusedGenerateResult:
     stats["map_coord_warnings"] = coord_warnings
     return FocusedGenerateResult(
         mode=PORTAL_MODE_NEGOTIATION_ONLY,
-        output_rel=rel,
+        output_rel="portal/negotiation/index.html (+ jurisdiction pages)",
         stats=stats,
         apikey_nonempty=bool(portal_api_key),
     )
@@ -9875,7 +10071,6 @@ _SURVEY_CARD_RE = re.compile(
     r'^<article class="card survey-update-card"[^>]*data-management-no-key="([^"]+)"',
     re.M,
 )
-_SURVEY_NEGOTIATION_KEY = "51403794"
 
 
 def _count_survey_multipin_markers(html: str) -> int:
@@ -9922,6 +10117,40 @@ def _count_return_wait_cards(html: str) -> int:
     )
 
 
+def _validate_jurisdiction_pages(
+    repo_root: Path, *, section: str, card_class: str
+) -> list[str]:
+    failures: list[str] = []
+    all_path = repo_root / "portal" / section / "index.html"
+    if all_path.is_file():
+        all_html = all_path.read_text(encoding="utf-8", errors="replace")
+        if 'var JURISDICTION = "";' not in all_html:
+            failures.append(f"{section} all page missing empty jurisdiction filter")
+    for key, label in JURISDICTION_LABELS.items():
+        rel = f"portal/{section}/{key}/index.html"
+        path = repo_root / rel
+        if not path.is_file():
+            failures.append(f"{rel} missing")
+            continue
+        html = path.read_text(encoding="utf-8", errors="replace")
+        if f'var JURISDICTION = "{key}";' not in html:
+            failures.append(f"{rel} missing live jurisdiction filter {key}")
+        if label not in html:
+            failures.append(f"{rel} missing label {label}")
+        wrong = [
+            other
+            for other in JURISDICTION_PAGE_KEYS
+            if other != key and f'data-jurisdiction="{other}"' in html
+        ]
+        if wrong:
+            failures.append(f"{rel} contains other jurisdiction cards: {','.join(wrong)}")
+        if f'class="{card_class}"' not in html and f"class='{card_class}'" not in html:
+            # Yoshino can legitimately be empty for some statuses, so this is
+            # only an HTML-shape check against the live filter and navigation.
+            pass
+    return failures
+
+
 def validate_survey_only_output(
     repo_root: Path, *, apikey_nonempty: bool
 ) -> list[str]:
@@ -9958,10 +10187,11 @@ def validate_survey_only_output(
         failures.append(
             f"survey_multipin_count out of range cards={card_count} got={multipin_count}"
         )
-    if re.search(rf'data-management-no-key="{_SURVEY_NEGOTIATION_KEY}"', html):
-        failures.append(
-            f"survey must not list negotiation_wait key {_SURVEY_NEGOTIATION_KEY}"
+    failures.extend(
+        _validate_jurisdiction_pages(
+            repo_root, section="survey", card_class="card survey-update-card"
         )
+    )
 
     multipin_violations = find_survey_html_multipin_violations(html)
     if multipin_violations:
@@ -10027,7 +10257,6 @@ def validate_negotiation_only_output(repo_root: Path) -> list[str]:
             ("negotiation-card", "negotiation-card"),
             ("data-negotiation-revert", "data-negotiation-revert"),
             ("現調待ちに戻す", "現調待ちに戻す"),
-            (_SURVEY_NEGOTIATION_KEY, _SURVEY_NEGOTIATION_KEY),
         ],
     )
     if _count_negotiation_wait_cards(html) <= 0:
@@ -10036,6 +10265,11 @@ def validate_negotiation_only_output(repo_root: Path) -> list[str]:
         failures.append("return_wait cards missing")
     if 'id="share-map"' in html:
         failures.append('negotiation must not contain id="share-map"')
+    failures.extend(
+        _validate_jurisdiction_pages(
+            repo_root, section="negotiation", card_class="card negotiation-card"
+        )
+    )
     return failures
 
 

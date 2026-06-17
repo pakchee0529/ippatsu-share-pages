@@ -624,6 +624,12 @@ a.portal-menu-item:focus-visible {
   </header>
   <p class="lead" id="survey-count-lead" data-survey-candidate-total="223">径間ごとに地図・操作ボタンがあります。<span class="survey-visible-count-line">表示中 <strong id="survey-visible-count">223</strong> 件</span><span class="survey-count-hint muted-tiny" id="survey-count-hint" hidden>（候補 223 件・交渉待ち・返却候補は除く）</span></p>
   <p class="report-disclaimer">「現調済みにする」で交渉待ちへ即時反映します（portal status overlay）。「返却候補にする」はサーバーに登録し、この一覧から非表示になります。誤操作は交渉待ちページの「現調待ちに戻す」で取り消せます。従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。</p>
+  <nav class="status-navigation jurisdiction-navigation" aria-label="管轄別ページ">
+    <a class="is-current" href="./" aria-current="page">全体</a>
+    <a class="" href="./gojo/">五條</a>
+    <a class="" href="./totsukawa/">十津川</a>
+    <a class="" href="./yoshino/">吉野</a>
+  </nav>
   <nav class="status-navigation" aria-label="関連ページ">
     <a href="../cases/#status-survey_wait">案件管理で見る</a>
     <a href="../negotiation/">交渉待ちへ</a>
@@ -647,6 +653,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400014"
   data-management-no="51400014"
   data-label="S今西3～4"
+  data-jurisdiction="totsukawa"
   data-search="51400014 51400014 S今西3～4 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97411" data-multipin-lng="135.73813">
   <div class="card-head">
@@ -663,6 +670,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400015"
   data-management-no="51400015"
   data-label="S今西4～5"
+  data-jurisdiction="totsukawa"
   data-search="51400015 51400015 S今西4～5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97582" data-multipin-lng="135.73899">
   <div class="card-head">
@@ -679,6 +687,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400072"
   data-management-no="51400072"
   data-label="S今西68～69"
+  data-jurisdiction="totsukawa"
   data-search="51400072 51400072 S今西68～69 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.99399" data-multipin-lng="135.7406">
   <div class="card-head">
@@ -695,6 +704,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400086"
   data-management-no="51400086"
   data-label="S今西73E2～73E3"
+  data-jurisdiction="totsukawa"
   data-search="51400086 51400086 S今西73E2～73E3 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.99562" data-multipin-lng="135.74107">
   <div class="card-head">
@@ -711,6 +721,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400263"
   data-management-no="514 00263"
   data-label="Ｐ奥谷11W12S1～11W12S2"
+  data-jurisdiction="gojo"
   data-search="514 00263 51400263 Ｐ奥谷11W12S1～11W12S2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32353" data-multipin-lng="135.72786" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -727,6 +738,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400361"
   data-management-no="514 00361"
   data-label="赤松35～36"
+  data-jurisdiction="gojo"
   data-search="514 00361 51400361 赤松35～36 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.33258" data-multipin-lng="135.76051">
   <div class="card-head">
@@ -743,6 +755,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400561"
   data-management-no="51400561"
   data-label="尼ヶ生8～9"
+  data-jurisdiction="gojo"
   data-search="51400561 51400561 尼ヶ生8～9 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30622" data-multipin-lng="135.76912" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -759,6 +772,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400563"
   data-management-no="51400563"
   data-label="尼ヶ生10～11"
+  data-jurisdiction="gojo"
   data-search="51400563 51400563 尼ヶ生10～11 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30683" data-multipin-lng="135.76895" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -775,6 +789,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400568"
   data-management-no="51400568"
   data-label="尼ヶ生16～17"
+  data-jurisdiction="gojo"
   data-search="51400568 51400568 尼ヶ生16～17 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30862" data-multipin-lng="135.76976" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -791,6 +806,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400571"
   data-management-no="51400571"
   data-label="尼ヶ生19～20"
+  data-jurisdiction="gojo"
   data-search="51400571 51400571 尼ヶ生19～20 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30947" data-multipin-lng="135.77003" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -807,6 +823,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400575"
   data-management-no="51400575"
   data-label="尼ヶ生23～24"
+  data-jurisdiction="gojo"
   data-search="51400575 51400575 尼ヶ生23～24 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31032" data-multipin-lng="135.77026" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -823,6 +840,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400578"
   data-management-no="51400578"
   data-label="尼ヶ生26～27"
+  data-jurisdiction="gojo"
   data-search="51400578 51400578 尼ヶ生26～27 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31156" data-multipin-lng="135.77086" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -839,6 +857,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400785"
   data-management-no="51400785"
   data-label="今西17～18"
+  data-jurisdiction="totsukawa"
   data-search="51400785 51400785 今西17～18 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.00103" data-multipin-lng="135.74245">
   <div class="card-head">
@@ -855,6 +874,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400786"
   data-management-no="51400786"
   data-label="今西18～18G1"
+  data-jurisdiction="totsukawa"
   data-search="51400786 51400786 今西18～18G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.00128" data-multipin-lng="135.74296">
   <div class="card-head">
@@ -871,6 +891,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51400791"
   data-management-no="51400791"
   data-label="今西22～23"
+  data-jurisdiction="totsukawa"
   data-search="51400791 51400791 今西22～23 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.00214" data-multipin-lng="135.74495">
   <div class="card-head">
@@ -887,6 +908,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51401600"
   data-management-no="51401600"
   data-label="奥谷24～25"
+  data-jurisdiction="gojo"
   data-search="51401600 51401600 奥谷24～25 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.3061" data-multipin-lng="135.76039">
   <div class="card-head">
@@ -903,6 +925,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51401602"
   data-management-no="51401602"
   data-label="奥谷26～27"
+  data-jurisdiction="gojo"
   data-search="51401602 51401602 奥谷26～27 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30641" data-multipin-lng="135.76122">
   <div class="card-head">
@@ -919,6 +942,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51402008"
   data-management-no="51402008"
   data-label="釜中3～4G9"
+  data-jurisdiction="totsukawa"
   data-search="51402008 51402008 釜中3～4G9 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97937" data-multipin-lng="135.72812">
   <div class="card-head">
@@ -935,6 +959,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51402010"
   data-management-no="51402010"
   data-label="釜中4G9～5"
+  data-jurisdiction="totsukawa"
   data-search="51402010 51402010 釜中4G9～5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97991" data-multipin-lng="135.7281">
   <div class="card-head">
@@ -951,6 +976,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51402013"
   data-management-no="51402013"
   data-label="釜中6～7"
+  data-jurisdiction="totsukawa"
   data-search="51402013 51402013 釜中6～7 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.98102" data-multipin-lng="135.72811">
   <div class="card-head">
@@ -967,6 +993,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51402038"
   data-management-no="514 02038"
   data-label="上之4W4～4W5"
+  data-jurisdiction="gojo"
   data-search="514 02038 51402038 上之4W4～4W5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.36296" data-multipin-lng="135.67868" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -983,6 +1010,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403222"
   data-management-no="51403222"
   data-label="越作1～2"
+  data-jurisdiction="gojo"
   data-search="51403222 51403222 越作1～2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30106" data-multipin-lng="135.76473">
   <div class="card-head">
@@ -999,6 +1027,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403226"
   data-management-no="51403226"
   data-label="越作6～7"
+  data-jurisdiction="gojo"
   data-search="51403226 51403226 越作6～7 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29911" data-multipin-lng="135.76742">
   <div class="card-head">
@@ -1015,6 +1044,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403229"
   data-management-no="51403229"
   data-label="越作12～13"
+  data-jurisdiction="gojo"
   data-search="51403229 51403229 越作12～13 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29598" data-multipin-lng="135.76665">
   <div class="card-head">
@@ -1031,6 +1061,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403239"
   data-management-no="51403239"
   data-label="越作23～24"
+  data-jurisdiction="gojo"
   data-search="51403239 51403239 越作23～24 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29847" data-multipin-lng="135.77288">
   <div class="card-head">
@@ -1047,6 +1078,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403240"
   data-management-no="51403240"
   data-label="越作23～23E1"
+  data-jurisdiction="gojo"
   data-search="51403240 51403240 越作23～23E1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29847" data-multipin-lng="135.77288">
   <div class="card-head">
@@ -1063,6 +1095,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403241"
   data-management-no="51403241"
   data-label="越作24～25"
+  data-jurisdiction="gojo"
   data-search="51403241 51403241 越作24～25 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29888" data-multipin-lng="135.77366">
   <div class="card-head">
@@ -1079,6 +1112,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403244"
   data-management-no="51403244"
   data-label="越作27～29"
+  data-jurisdiction="gojo"
   data-search="51403244 51403244 越作27～29 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29923" data-multipin-lng="135.77515">
   <div class="card-head">
@@ -1095,6 +1129,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403253"
   data-management-no="51403253"
   data-label="越作16E4～16E5"
+  data-jurisdiction="gojo"
   data-search="51403253 51403253 越作16E4～16E5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29779" data-multipin-lng="135.7717">
   <div class="card-head">
@@ -1111,6 +1146,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403259"
   data-management-no="51403259"
   data-label="越作2E9～2E10"
+  data-jurisdiction="gojo"
   data-search="51403259 51403259 越作2E9～2E10 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30102" data-multipin-lng="135.76791">
   <div class="card-head">
@@ -1127,6 +1163,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403367"
   data-management-no="51403367"
   data-label="小山片川4～5"
+  data-jurisdiction="totsukawa"
   data-search="51403367 51403367 小山片川4～5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97124" data-multipin-lng="135.68837">
   <div class="card-head">
@@ -1143,6 +1180,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403372"
   data-management-no="51403372"
   data-label="小山片川7～8"
+  data-jurisdiction="totsukawa"
   data-search="51403372 51403372 小山片川7～8 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97518" data-multipin-lng="135.69284">
   <div class="card-head">
@@ -1159,6 +1197,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403373"
   data-management-no="51403373"
   data-label="小山片川8～9"
+  data-jurisdiction="totsukawa"
   data-search="51403373 51403373 小山片川8～9 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97614" data-multipin-lng="135.69296">
   <div class="card-head">
@@ -1175,6 +1214,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403374"
   data-management-no="51403374"
   data-label="小山片川9～10"
+  data-jurisdiction="totsukawa"
   data-search="51403374 51403374 小山片川9～10 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97741" data-multipin-lng="135.69266">
   <div class="card-head">
@@ -1191,6 +1231,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403378"
   data-management-no="51403378"
   data-label="小山片川12G9G1～12W1"
+  data-jurisdiction="totsukawa"
   data-search="51403378 51403378 小山片川12G9G1～12W1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.98098" data-multipin-lng="135.69146">
   <div class="card-head">
@@ -1207,6 +1248,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403757"
   data-management-no="51403757"
   data-label="鹿場5～5G1"
+  data-jurisdiction="gojo"
   data-search="51403757 51403757 鹿場5～5G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30457" data-multipin-lng="135.75992" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -1223,6 +1265,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403758"
   data-management-no="51403758"
   data-label="鹿場6～6G1"
+  data-jurisdiction="gojo"
   data-search="51403758 51403758 鹿場6～6G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30443" data-multipin-lng="135.75889">
   <div class="card-head">
@@ -1239,6 +1282,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403766"
   data-management-no="51403766"
   data-label="鹿場15～16W1"
+  data-jurisdiction="gojo"
   data-search="51403766 51403766 鹿場15～16W1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29931" data-multipin-lng="135.75723">
   <div class="card-head">
@@ -1255,6 +1299,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403772"
   data-management-no="51403772"
   data-label="鹿場13E1～13E2"
+  data-jurisdiction="gojo"
   data-search="51403772 51403772 鹿場13E1～13E2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.2999" data-multipin-lng="135.75859">
   <div class="card-head">
@@ -1271,6 +1316,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403774"
   data-management-no="51403774"
   data-label="鹿場13E3～13E4"
+  data-jurisdiction="gojo"
   data-search="51403774 51403774 鹿場13E3～13E4 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29904" data-multipin-lng="135.75926">
   <div class="card-head">
@@ -1287,6 +1333,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403777"
   data-management-no="51403777"
   data-label="鹿場2G2～3"
+  data-jurisdiction="gojo"
   data-search="51403777 51403777 鹿場2G2～3 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30446" data-multipin-lng="135.76251" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -1303,6 +1350,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403780"
   data-management-no="51403780"
   data-label="鹿場4G1～4G2"
+  data-jurisdiction="gojo"
   data-search="51403780 51403780 鹿場4G1～4G2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30508" data-multipin-lng="135.76073" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -1319,6 +1367,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403782"
   data-management-no="51403782"
   data-label="鹿場4G3～5"
+  data-jurisdiction="gojo"
   data-search="51403782 51403782 鹿場4G3～5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30479" data-multipin-lng="135.76018" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -1335,6 +1384,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403792"
   data-management-no="51403792"
   data-label="鹿場16W3～16W4"
+  data-jurisdiction="gojo"
   data-search="51403792 51403792 鹿場16W3～16W4 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29851" data-multipin-lng="135.75559">
   <div class="card-head">
@@ -1351,6 +1401,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403793"
   data-management-no="51403793"
   data-label="鹿場16W4～16W4N1"
+  data-jurisdiction="gojo"
   data-search="51403793 51403793 鹿場16W4～16W4N1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29815" data-multipin-lng="135.75489">
   <div class="card-head">
@@ -1367,6 +1418,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51403794"
   data-management-no="51403794"
   data-label="鹿場16W7～16W8"
+  data-jurisdiction="gojo"
   data-search="51403794 51403794 鹿場16W7～16W8 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29858" data-multipin-lng="135.75317">
   <div class="card-head">
@@ -1383,6 +1435,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51404162"
   data-management-no="514 04162"
   data-label="白銀63N5W3～63N5W4"
+  data-jurisdiction="gojo"
   data-search="514 04162 51404162 白銀63N5W3～63N5W4 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.34186" data-multipin-lng="135.73373">
   <div class="card-head">
@@ -1399,6 +1452,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51404189"
   data-management-no="514 04189"
   data-label="白銀115W6S1N2～115W6S1"
+  data-jurisdiction="gojo"
   data-search="514 04189 51404189 白銀115W6S1N2～115W6S1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31691" data-multipin-lng="135.73552">
   <div class="card-head">
@@ -1415,6 +1469,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51404194"
   data-management-no="514 04194"
   data-label="白銀115W9～115W9W1"
+  data-jurisdiction="gojo"
   data-search="514 04194 51404194 白銀115W9～115W9W1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31877" data-multipin-lng="135.73439">
   <div class="card-head">
@@ -1431,6 +1486,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405549"
   data-management-no="51405549"
   data-label="出谷2～3"
+  data-jurisdiction="totsukawa"
   data-search="51405549 51405549 出谷2～3 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95283" data-multipin-lng="135.73749">
   <div class="card-head">
@@ -1447,6 +1503,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405552"
   data-management-no="51405552"
   data-label="出谷5～6"
+  data-jurisdiction="totsukawa"
   data-search="51405552 51405552 出谷5～6 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95177" data-multipin-lng="135.73714">
   <div class="card-head">
@@ -1463,6 +1520,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405561"
   data-management-no="51405561"
   data-label="出谷14～15"
+  data-jurisdiction="totsukawa"
   data-search="51405561 51405561 出谷14～15 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95076" data-multipin-lng="135.73439">
   <div class="card-head">
@@ -1479,6 +1537,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405579"
   data-management-no="51405579"
   data-label="出谷34～35"
+  data-jurisdiction="totsukawa"
   data-search="51405579 51405579 出谷34～35 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.94929" data-multipin-lng="135.72669">
   <div class="card-head">
@@ -1495,6 +1554,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405585"
   data-management-no="51405585"
   data-label="出谷39～39E1"
+  data-jurisdiction="totsukawa"
   data-search="51405585 51405585 出谷39～39E1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95067" data-multipin-lng="135.72536">
   <div class="card-head">
@@ -1511,6 +1571,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405586"
   data-management-no="51405586"
   data-label="出谷39～39N1"
+  data-jurisdiction="totsukawa"
   data-search="51405586 51405586 出谷39～39N1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95067" data-multipin-lng="135.72536">
   <div class="card-head">
@@ -1527,6 +1588,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405603"
   data-management-no="51405603"
   data-label="出谷57G9～58"
+  data-jurisdiction="totsukawa"
   data-search="51405603 51405603 出谷57G9～58 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95337" data-multipin-lng="135.70976">
   <div class="card-head">
@@ -1543,6 +1605,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405604"
   data-management-no="51405604"
   data-label="出谷57G9～57E1"
+  data-jurisdiction="totsukawa"
   data-search="51405604 51405604 出谷57G9～57E1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95337" data-multipin-lng="135.70976">
   <div class="card-head">
@@ -1559,6 +1622,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405605"
   data-management-no="51405605"
   data-label="出谷58～59"
+  data-jurisdiction="totsukawa"
   data-search="51405605 51405605 出谷58～59 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95401" data-multipin-lng="135.70942">
   <div class="card-head">
@@ -1575,6 +1639,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405656"
   data-management-no="51405656"
   data-label="十日市12～13"
+  data-jurisdiction="gojo"
   data-search="51405656 51405656 十日市12～13 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29027" data-multipin-lng="135.75831">
   <div class="card-head">
@@ -1591,6 +1656,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405658"
   data-management-no="51405658"
   data-label="十日市14～15"
+  data-jurisdiction="gojo"
   data-search="51405658 51405658 十日市14～15 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29103" data-multipin-lng="135.75925">
   <div class="card-head">
@@ -1607,6 +1673,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405666"
   data-management-no="51405666"
   data-label="十日市23～24"
+  data-jurisdiction="gojo"
   data-search="51405666 51405666 十日市23～24 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29589" data-multipin-lng="135.763">
   <div class="card-head">
@@ -1623,6 +1690,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405670"
   data-management-no="51405670"
   data-label="十日市26G1～26W1G1"
+  data-jurisdiction="gojo"
   data-search="51405670 51405670 十日市26G1～26W1G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29698" data-multipin-lng="135.76147">
   <div class="card-head">
@@ -1639,6 +1707,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405675"
   data-management-no="51405675"
   data-label="十日市34～35"
+  data-jurisdiction="gojo"
   data-search="51405675 51405675 十日市34～35 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29959" data-multipin-lng="135.76377">
   <div class="card-head">
@@ -1655,6 +1724,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405678"
   data-management-no="51405678"
   data-label="十日市37～38"
+  data-jurisdiction="gojo"
   data-search="51405678 51405678 十日市37～38 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30044" data-multipin-lng="135.76407">
   <div class="card-head">
@@ -1671,6 +1741,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405679"
   data-management-no="51405679"
   data-label="十日市38～越作1"
+  data-jurisdiction="gojo"
   data-search="51405679 51405679 十日市38～越作1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.3013" data-multipin-lng="135.76451">
   <div class="card-head">
@@ -1687,6 +1758,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405693"
   data-management-no="51405693"
   data-label="十日市58～59"
+  data-jurisdiction="gojo"
   data-search="51405693 51405693 十日市58～59 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30552" data-multipin-lng="135.77262">
   <div class="card-head">
@@ -1703,6 +1775,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405694"
   data-management-no="51405694"
   data-label="十日市59～60"
+  data-jurisdiction="gojo"
   data-search="51405694 51405694 十日市59～60 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30581" data-multipin-lng="135.77306">
   <div class="card-head">
@@ -1719,6 +1792,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405698"
   data-management-no="51405698"
   data-label="十日市61～61N1"
+  data-jurisdiction="gojo"
   data-search="51405698 51405698 十日市61～61N1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30681" data-multipin-lng="135.77452">
   <div class="card-head">
@@ -1735,6 +1809,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405701"
   data-management-no="51405701"
   data-label="十日市63～64"
+  data-jurisdiction="gojo"
   data-search="51405701 51405701 十日市63～64 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30719" data-multipin-lng="135.77632">
   <div class="card-head">
@@ -1751,6 +1826,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405714"
   data-management-no="51405714"
   data-label="十日市9G3E1～9G3E2"
+  data-jurisdiction="gojo"
   data-search="51405714 51405714 十日市9G3E1～9G3E2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28941" data-multipin-lng="135.75679">
   <div class="card-head">
@@ -1767,6 +1843,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405715"
   data-management-no="51405715"
   data-label="十日市9G3E3～9G3E4"
+  data-jurisdiction="gojo"
   data-search="51405715 51405715 十日市9G3E3～9G3E4 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.289" data-multipin-lng="135.75699">
   <div class="card-head">
@@ -1783,6 +1860,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405718"
   data-management-no="51405718"
   data-label="十日市14N4～14N4E1G1"
+  data-jurisdiction="gojo"
   data-search="51405718 51405718 十日市14N4～14N4E1G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29145" data-multipin-lng="135.75778">
   <div class="card-head">
@@ -1799,6 +1877,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405729"
   data-management-no="51405729"
   data-label="十日市19S1G1～19S2"
+  data-jurisdiction="gojo"
   data-search="51405729 51405729 十日市19S1G1～19S2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29309" data-multipin-lng="135.76276">
   <div class="card-head">
@@ -1815,6 +1894,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405734"
   data-management-no="51405734"
   data-label="十日市24W1～24W2"
+  data-jurisdiction="gojo"
   data-search="51405734 51405734 十日市24W1～24W2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29592" data-multipin-lng="135.76203">
   <div class="card-head">
@@ -1831,6 +1911,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405750"
   data-management-no="51405750"
   data-label="十日市66N1～66N2"
+  data-jurisdiction="gojo"
   data-search="51405750 51405750 十日市66N1～66N2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30758" data-multipin-lng="135.77769">
   <div class="card-head">
@@ -1847,6 +1928,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405862"
   data-management-no="51405862"
   data-label="殿野7～8"
+  data-jurisdiction="totsukawa"
   data-search="51405862 51405862 殿野7～8 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.17242" data-multipin-lng="135.75964">
   <div class="card-head">
@@ -1863,6 +1945,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405870"
   data-management-no="51405870"
   data-label="殿野21～22"
+  data-jurisdiction="totsukawa"
   data-search="51405870 51405870 殿野21～22 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.17501" data-multipin-lng="135.76346">
   <div class="card-head">
@@ -1879,6 +1962,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405871"
   data-management-no="51405871"
   data-label="殿野22～23"
+  data-jurisdiction="totsukawa"
   data-search="51405871 51405871 殿野22～23 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.17522" data-multipin-lng="135.76314">
   <div class="card-head">
@@ -1895,6 +1979,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405900"
   data-management-no="51405900"
   data-label="土呂6G1～7"
+  data-jurisdiction="totsukawa"
   data-search="51405900 51405900 土呂6G1～7 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.96568" data-multipin-lng="135.7423">
   <div class="card-head">
@@ -1911,6 +1996,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405949"
   data-management-no="51405949"
   data-label="中原17～19"
+  data-jurisdiction="totsukawa"
   data-search="51405949 51405949 中原17～19 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.19495" data-multipin-lng="135.7246">
   <div class="card-head">
@@ -1927,6 +2013,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405954"
   data-management-no="51405954"
   data-label="中原23～24"
+  data-jurisdiction="totsukawa"
   data-search="51405954 51405954 中原23～24 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.19305" data-multipin-lng="135.72143">
   <div class="card-head">
@@ -1943,6 +2030,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405955"
   data-management-no="51405955"
   data-label="中原25～26"
+  data-jurisdiction="totsukawa"
   data-search="51405955 51405955 中原25～26 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.19306" data-multipin-lng="135.71949">
   <div class="card-head">
@@ -1959,6 +2047,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405959"
   data-management-no="51405959"
   data-label="中原9S4～9S5"
+  data-jurisdiction="totsukawa"
   data-search="51405959 51405959 中原9S4～9S5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.19778" data-multipin-lng="135.73268">
   <div class="card-head">
@@ -1975,6 +2064,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405960"
   data-management-no="51405960"
   data-label="中原9S5～9S6"
+  data-jurisdiction="totsukawa"
   data-search="51405960 51405960 中原9S5～9S6 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.19767" data-multipin-lng="135.73307">
   <div class="card-head">
@@ -1991,6 +2081,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405969"
   data-management-no="51405969"
   data-label="中原12S1～12S2"
+  data-jurisdiction="totsukawa"
   data-search="51405969 51405969 中原12S1～12S2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.19553" data-multipin-lng="135.72853">
   <div class="card-head">
@@ -2007,6 +2098,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405970"
   data-management-no="51405970"
   data-label="中原12S2～12S2W1"
+  data-jurisdiction="totsukawa"
   data-search="51405970 51405970 中原12S2～12S2W1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.19514" data-multipin-lng="135.72903">
   <div class="card-head">
@@ -2023,6 +2115,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405977"
   data-management-no="51405977"
   data-label="中峰3～4"
+  data-jurisdiction="totsukawa"
   data-search="51405977 51405977 中峰3～4 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.15088" data-multipin-lng="135.7783">
   <div class="card-head">
@@ -2039,6 +2132,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405979"
   data-management-no="51405979"
   data-label="中峰4～4E1"
+  data-jurisdiction="totsukawa"
   data-search="51405979 51405979 中峰4～4E1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.15129" data-multipin-lng="135.77822">
   <div class="card-head">
@@ -2055,6 +2149,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51405980"
   data-management-no="51405980"
   data-label="中峰1E1～沼田原91"
+  data-jurisdiction="totsukawa"
   data-search="51405980 51405980 中峰1E1～沼田原91 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.1497" data-multipin-lng="135.77953">
   <div class="card-head">
@@ -2071,6 +2166,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406073"
   data-management-no="51406073"
   data-label="西川50～土呂3G1"
+  data-jurisdiction="totsukawa"
   data-search="51406073 51406073 西川50～土呂3G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.96588" data-multipin-lng="135.73918">
   <div class="card-head">
@@ -2087,6 +2183,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406086"
   data-management-no="51406086"
   data-label="西川77～78"
+  data-jurisdiction="totsukawa"
   data-search="51406086 51406086 西川77～78 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97669" data-multipin-lng="135.72631">
   <div class="card-head">
@@ -2103,6 +2200,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406098"
   data-management-no="51406098"
   data-label="西川1E1～1E2"
+  data-jurisdiction="totsukawa"
   data-search="51406098 51406098 西川1E1～1E2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.93898" data-multipin-lng="135.75575">
   <div class="card-head">
@@ -2119,6 +2217,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406098"
   data-management-no="51406098"
   data-label="西川86～87"
+  data-jurisdiction="totsukawa"
   data-search="51406098 51406098 西川86～87 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97723" data-multipin-lng="135.71506">
   <div class="card-head">
@@ -2135,6 +2234,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406108"
   data-management-no="51406108"
   data-label="西川95～95G1"
+  data-jurisdiction="totsukawa"
   data-search="51406108 51406108 西川95～95G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97088" data-multipin-lng="135.70755">
   <div class="card-head">
@@ -2151,6 +2251,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406127"
   data-management-no="51406127"
   data-label="西川116G9～118G1G9"
+  data-jurisdiction="totsukawa"
   data-search="51406127 51406127 西川116G9～118G1G9 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.96372" data-multipin-lng="135.69706">
   <div class="card-head">
@@ -2167,6 +2268,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406135"
   data-management-no="51406135"
   data-label="西川125～127"
+  data-jurisdiction="totsukawa"
   data-search="51406135 51406135 西川125～127 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.96317" data-multipin-lng="135.68393">
   <div class="card-head">
@@ -2183,6 +2285,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406173"
   data-management-no="51406173"
   data-label="西川24E1～24E2"
+  data-jurisdiction="totsukawa"
   data-search="51406173 51406173 西川24E1～24E2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.9524" data-multipin-lng="135.7408">
   <div class="card-head">
@@ -2199,6 +2302,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406181"
   data-management-no="51406181"
   data-label="西川24E2～24E3"
+  data-jurisdiction="totsukawa"
   data-search="51406181 51406181 西川24E2～24E3 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95279" data-multipin-lng="135.7412">
   <div class="card-head">
@@ -2215,6 +2319,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406182"
   data-management-no="51406182"
   data-label="西川75E2～75E3"
+  data-jurisdiction="totsukawa"
   data-search="51406182 51406182 西川75E2～75E3 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97609" data-multipin-lng="135.72785">
   <div class="card-head">
@@ -2231,6 +2336,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406186"
   data-management-no="51406186"
   data-label="西川75E3～75E3S1"
+  data-jurisdiction="totsukawa"
   data-search="51406186 51406186 西川75E3～75E3S1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97602" data-multipin-lng="135.72803">
   <div class="card-head">
@@ -2247,6 +2353,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406189"
   data-management-no="51406189"
   data-label="西川1G13～1G14"
+  data-jurisdiction="totsukawa"
   data-search="51406189 51406189 西川1G13～1G14 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.93942" data-multipin-lng="135.75356">
   <div class="card-head">
@@ -2263,6 +2370,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406207"
   data-management-no="51406207"
   data-label="西川13W1N1～13W1N2"
+  data-jurisdiction="totsukawa"
   data-search="51406207 51406207 西川13W1N1～13W1N2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.94365" data-multipin-lng="135.74296">
   <div class="card-head">
@@ -2279,6 +2387,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406209"
   data-management-no="51406209"
   data-label="西川16G1～17E2"
+  data-jurisdiction="totsukawa"
   data-search="51406209 51406209 西川16G1～17E2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.94675" data-multipin-lng="135.74393">
   <div class="card-head">
@@ -2295,6 +2404,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406222"
   data-management-no="51406222"
   data-label="西川18G12～24E1"
+  data-jurisdiction="totsukawa"
   data-search="51406222 51406222 西川18G12～24E1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95217" data-multipin-lng="135.73965">
   <div class="card-head">
@@ -2311,6 +2421,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406223"
   data-management-no="51406223"
   data-label="西川28G1～28G2"
+  data-jurisdiction="totsukawa"
   data-search="51406223 51406223 西川28G1～28G2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95397" data-multipin-lng="135.73859">
   <div class="card-head">
@@ -2327,6 +2438,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406231"
   data-management-no="51406231"
   data-label="西川32G1～32"
+  data-jurisdiction="totsukawa"
   data-search="51406231 51406231 西川32G1～32 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95736" data-multipin-lng="135.7386">
   <div class="card-head">
@@ -2343,6 +2455,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406248"
   data-management-no="51406248"
   data-label="西川57E1W4～58E1"
+  data-jurisdiction="totsukawa"
   data-search="51406248 51406248 西川57E1W4～58E1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97228" data-multipin-lng="135.73611">
   <div class="card-head">
@@ -2359,6 +2472,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406253"
   data-management-no="51406253"
   data-label="西川58G4～58G5"
+  data-jurisdiction="totsukawa"
   data-search="51406253 51406253 西川58G4～58G5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97328" data-multipin-lng="135.73343">
   <div class="card-head">
@@ -2375,6 +2489,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406260"
   data-management-no="51406260"
   data-label="西川63G6～63G7"
+  data-jurisdiction="totsukawa"
   data-search="51406260 51406260 西川63G6～63G7 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.9737" data-multipin-lng="135.72929">
   <div class="card-head">
@@ -2391,6 +2506,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406263"
   data-management-no="51406263"
   data-label="西川75E3S1～75E3S2"
+  data-jurisdiction="totsukawa"
   data-search="51406263 51406263 西川75E3S1～75E3S2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97588" data-multipin-lng="135.72828">
   <div class="card-head">
@@ -2407,6 +2523,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406272"
   data-management-no="51406272"
   data-label="西川122G1～123G1"
+  data-jurisdiction="totsukawa"
   data-search="51406272 51406272 西川122G1～123G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.96548" data-multipin-lng="135.68967">
   <div class="card-head">
@@ -2423,6 +2540,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406295"
   data-management-no="51406295"
   data-label="西川151S4～151S5"
+  data-jurisdiction="totsukawa"
   data-search="51406295 51406295 西川151S4～151S5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.9709" data-multipin-lng="135.6504">
   <div class="card-head">
@@ -2439,6 +2557,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406606"
   data-management-no="51406606"
   data-label="沼田原28～29"
+  data-jurisdiction="totsukawa"
   data-search="51406606 51406606 沼田原28～29 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.14985" data-multipin-lng="135.75744">
   <div class="card-head">
@@ -2455,6 +2574,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406608"
   data-management-no="51406608"
   data-label="沼田原30～31"
+  data-jurisdiction="totsukawa"
   data-search="51406608 51406608 沼田原30～31 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.14987" data-multipin-lng="135.75819">
   <div class="card-head">
@@ -2471,6 +2591,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406627"
   data-management-no="51406627"
   data-label="沼田原52～53"
+  data-jurisdiction="totsukawa"
   data-search="51406627 51406627 沼田原52～53 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.14924" data-multipin-lng="135.76696">
   <div class="card-head">
@@ -2487,6 +2608,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406629"
   data-management-no="51406629"
   data-label="沼田原54～55"
+  data-jurisdiction="totsukawa"
   data-search="51406629 51406629 沼田原54～55 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.14876" data-multipin-lng="135.76774">
   <div class="card-head">
@@ -2503,6 +2625,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406634"
   data-management-no="51406634"
   data-label="沼田原59～60"
+  data-jurisdiction="totsukawa"
   data-search="51406634 51406634 沼田原59～60 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.14879" data-multipin-lng="135.7697">
   <div class="card-head">
@@ -2519,6 +2642,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406638"
   data-management-no="51406638"
   data-label="沼田原63～64"
+  data-jurisdiction="totsukawa"
   data-search="51406638 51406638 沼田原63～64 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.14831" data-multipin-lng="135.77004">
   <div class="card-head">
@@ -2535,6 +2659,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406659"
   data-management-no="51406659"
   data-label="沼田原87～87N1"
+  data-jurisdiction="totsukawa"
   data-search="51406659 51406659 沼田原87～87N1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.15018" data-multipin-lng="135.77844">
   <div class="card-head">
@@ -2551,6 +2676,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406660"
   data-management-no="51406660"
   data-label="沼田原89～中峰1E1"
+  data-jurisdiction="totsukawa"
   data-search="51406660 51406660 沼田原89～中峰1E1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.15017" data-multipin-lng="135.77941">
   <div class="card-head">
@@ -2567,6 +2693,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406673"
   data-management-no="51406673"
   data-label="沼田原103～104"
+  data-jurisdiction="totsukawa"
   data-search="51406673 51406673 沼田原103～104 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.1485" data-multipin-lng="135.78462">
   <div class="card-head">
@@ -2583,6 +2710,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406738"
   data-management-no="51406738"
   data-label="沼田原75S12～75S13"
+  data-jurisdiction="totsukawa"
   data-search="51406738 51406738 沼田原75S12～75S13 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.14139" data-multipin-lng="135.77423">
   <div class="card-head">
@@ -2599,6 +2727,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406739"
   data-management-no="51406739"
   data-label="沼田原75S13～75S14"
+  data-jurisdiction="totsukawa"
   data-search="51406739 51406739 沼田原75S13～75S14 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.14113" data-multipin-lng="135.77422">
   <div class="card-head">
@@ -2615,6 +2744,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406744"
   data-management-no="51406744"
   data-label="沼田原75S18～75S19"
+  data-jurisdiction="totsukawa"
   data-search="51406744 51406744 沼田原75S18～75S19 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.13972" data-multipin-lng="135.77422">
   <div class="card-head">
@@ -2631,6 +2761,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406747"
   data-management-no="51406747"
   data-label="沼田原75S19G1～75S20"
+  data-jurisdiction="totsukawa"
   data-search="51406747 51406747 沼田原75S19G1～75S20 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.13928" data-multipin-lng="135.77422">
   <div class="card-head">
@@ -2647,6 +2778,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406748"
   data-management-no="51406748"
   data-label="沼田原75S20～75S21"
+  data-jurisdiction="totsukawa"
   data-search="51406748 51406748 沼田原75S20～75S21 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.13923" data-multipin-lng="135.77383">
   <div class="card-head">
@@ -2663,6 +2795,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406750"
   data-management-no="51406750"
   data-label="沼田原75S22～75S23"
+  data-jurisdiction="totsukawa"
   data-search="51406750 51406750 沼田原75S22～75S23 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.139" data-multipin-lng="135.77315">
   <div class="card-head">
@@ -2679,6 +2812,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406751"
   data-management-no="51406751"
   data-label="沼田原85K～86N1"
+  data-jurisdiction="totsukawa"
   data-search="51406751 51406751 沼田原85K～86N1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.15019" data-multipin-lng="135.77775">
   <div class="card-head">
@@ -2695,6 +2829,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406859"
   data-management-no="51406859"
   data-label="桧川迫6～桧川迫7W1"
+  data-jurisdiction="gojo"
   data-search="51406859 51406859 桧川迫6～桧川迫7W1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28431" data-multipin-lng="135.75084">
   <div class="card-head">
@@ -2711,6 +2846,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406862"
   data-management-no="51406862"
   data-label="桧川迫11～桧川迫11G1"
+  data-jurisdiction="gojo"
   data-search="51406862 51406862 桧川迫11～桧川迫11G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28625" data-multipin-lng="135.75273">
   <div class="card-head">
@@ -2727,6 +2863,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406872"
   data-management-no="51406872"
   data-label="桧川迫19～桧川迫20"
+  data-jurisdiction="gojo"
   data-search="51406872 51406872 桧川迫19～桧川迫20 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28638" data-multipin-lng="135.75612">
   <div class="card-head">
@@ -2743,6 +2880,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406881"
   data-management-no="51406881"
   data-label="桧川迫27～桧川迫28"
+  data-jurisdiction="gojo"
   data-search="51406881 51406881 桧川迫27～桧川迫28 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28556" data-multipin-lng="135.76132">
   <div class="card-head">
@@ -2759,6 +2897,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406882"
   data-management-no="51406882"
   data-label="桧川迫27～桧川迫27W1"
+  data-jurisdiction="gojo"
   data-search="51406882 51406882 桧川迫27～桧川迫27W1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28556" data-multipin-lng="135.76132">
   <div class="card-head">
@@ -2775,6 +2914,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406883"
   data-management-no="51406883"
   data-label="桧川迫28～桧川迫29"
+  data-jurisdiction="gojo"
   data-search="51406883 51406883 桧川迫28～桧川迫29 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28513" data-multipin-lng="135.7616">
   <div class="card-head">
@@ -2791,6 +2931,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406885"
   data-management-no="51406885"
   data-label="桧川迫30～桧川迫31"
+  data-jurisdiction="gojo"
   data-search="51406885 51406885 桧川迫30～桧川迫31 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28463" data-multipin-lng="135.76289">
   <div class="card-head">
@@ -2807,6 +2948,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406886"
   data-management-no="51406886"
   data-label="桧川迫31～桧川迫32"
+  data-jurisdiction="gojo"
   data-search="51406886 51406886 桧川迫31～桧川迫32 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28456" data-multipin-lng="135.76346">
   <div class="card-head">
@@ -2823,6 +2965,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406887"
   data-management-no="51406887"
   data-label="桧川迫32～桧川迫33"
+  data-jurisdiction="gojo"
   data-search="51406887 51406887 桧川迫32～桧川迫33 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28432" data-multipin-lng="135.76397">
   <div class="card-head">
@@ -2839,6 +2982,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406894"
   data-management-no="51406894"
   data-label="桧川迫38～桧川迫39"
+  data-jurisdiction="gojo"
   data-search="51406894 51406894 桧川迫38～桧川迫39 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28419" data-multipin-lng="135.76746">
   <div class="card-head">
@@ -2855,6 +2999,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406904"
   data-management-no="51406904"
   data-label="桧川迫51～桧川迫52"
+  data-jurisdiction="gojo"
   data-search="51406904 51406904 桧川迫51～桧川迫52 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27979" data-multipin-lng="135.7772">
   <div class="card-head">
@@ -2871,6 +3016,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406922"
   data-management-no="51406922"
   data-label="桧川迫67～桧川迫68"
+  data-jurisdiction="gojo"
   data-search="51406922 51406922 桧川迫67～桧川迫68 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27825" data-multipin-lng="135.78937">
   <div class="card-head">
@@ -2887,6 +3033,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406923"
   data-management-no="51406923"
   data-label="桧川迫68～桧川迫69"
+  data-jurisdiction="gojo"
   data-search="51406923 51406923 桧川迫68～桧川迫69 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27825" data-multipin-lng="135.78996">
   <div class="card-head">
@@ -2903,6 +3050,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406927"
   data-management-no="51406927"
   data-label="桧川迫78～桧川迫79"
+  data-jurisdiction="gojo"
   data-search="51406927 51406927 桧川迫78～桧川迫79 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27714" data-multipin-lng="135.79572">
   <div class="card-head">
@@ -2919,6 +3067,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406930"
   data-management-no="51406930"
   data-label="桧川迫83～桧川迫83S1"
+  data-jurisdiction="gojo"
   data-search="51406930 51406930 桧川迫83～桧川迫83S1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27675" data-multipin-lng="135.79831">
   <div class="card-head">
@@ -2935,6 +3084,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406947"
   data-management-no="51406947"
   data-label="桧川迫99～桧川迫100"
+  data-jurisdiction="gojo"
   data-search="51406947 51406947 桧川迫99～桧川迫100 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27802" data-multipin-lng="135.80523">
   <div class="card-head">
@@ -2951,6 +3101,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406949"
   data-management-no="51406949"
   data-label="桧川迫101～桧川迫102"
+  data-jurisdiction="gojo"
   data-search="51406949 51406949 桧川迫101～桧川迫102 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27796" data-multipin-lng="135.80612">
   <div class="card-head">
@@ -2967,6 +3118,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406951"
   data-management-no="51406951"
   data-label="桧川迫58E1～桧川迫58E2"
+  data-jurisdiction="gojo"
   data-search="51406951 51406951 桧川迫58E1～桧川迫58E2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.2765" data-multipin-lng="135.78412">
   <div class="card-head">
@@ -2983,6 +3135,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406957"
   data-management-no="51406957"
   data-label="桧川迫58E5～桧川迫58E6"
+  data-jurisdiction="gojo"
   data-search="51406957 51406957 桧川迫58E5～桧川迫58E6 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27563" data-multipin-lng="135.79036">
   <div class="card-head">
@@ -2999,6 +3152,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406969"
   data-management-no="51406969"
   data-label="桧川迫11N3W1～桧川迫11N3W1N1"
+  data-jurisdiction="gojo"
   data-search="51406969 51406969 桧川迫11N3W1～桧川迫11N3W1N1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28774" data-multipin-lng="135.7517">
   <div class="card-head">
@@ -3015,6 +3169,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406973"
   data-management-no="51406973"
   data-label="桧川迫11N6～桧川迫11N6E1"
+  data-jurisdiction="gojo"
   data-search="51406973 51406973 桧川迫11N6～桧川迫11N6E1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28915" data-multipin-lng="135.75186">
   <div class="card-head">
@@ -3031,6 +3186,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406981"
   data-management-no="51406981"
   data-label="桧川迫15N2～桧川迫15N3"
+  data-jurisdiction="gojo"
   data-search="51406981 51406981 桧川迫15N2～桧川迫15N3 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28717" data-multipin-lng="135.75412">
   <div class="card-head">
@@ -3047,6 +3203,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406987"
   data-management-no="51406987"
   data-label="沼田原9～10"
+  data-jurisdiction="totsukawa"
   data-search="51406987 51406987 沼田原9～10 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.15227" data-multipin-lng="135.74904">
   <div class="card-head">
@@ -3063,6 +3220,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51406987"
   data-management-no="51406987"
   data-label="桧川迫18S5～桧川迫18S6"
+  data-jurisdiction="gojo"
   data-search="51406987 51406987 桧川迫18S5～桧川迫18S6 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28489" data-multipin-lng="135.75595">
   <div class="card-head">
@@ -3079,6 +3237,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407002"
   data-management-no="51407002"
   data-label="桧川迫27W1～桧川迫27W2"
+  data-jurisdiction="gojo"
   data-search="51407002 51407002 桧川迫27W1～桧川迫27W2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28603" data-multipin-lng="135.76144">
   <div class="card-head">
@@ -3095,6 +3254,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407006"
   data-management-no="51407006"
   data-label="桧川迫42N2～桧川迫42N3"
+  data-jurisdiction="gojo"
   data-search="51407006 51407006 桧川迫42N2～桧川迫42N3 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28333" data-multipin-lng="135.77058">
   <div class="card-head">
@@ -3111,6 +3271,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407008"
   data-management-no="51407008"
   data-label="桧川迫42N3～桧川迫42N5"
+  data-jurisdiction="gojo"
   data-search="51407008 51407008 桧川迫42N3～桧川迫42N5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28352" data-multipin-lng="135.7701">
   <div class="card-head">
@@ -3127,6 +3288,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407009"
   data-management-no="51407009"
   data-label="桧川迫42N5～桧川迫42N6"
+  data-jurisdiction="gojo"
   data-search="51407009 51407009 桧川迫42N5～桧川迫42N6 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28379" data-multipin-lng="135.77016">
   <div class="card-head">
@@ -3143,6 +3305,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407017"
   data-management-no="51407017"
   data-label="桧川迫45G1～桧川迫45S1"
+  data-jurisdiction="gojo"
   data-search="51407017 51407017 桧川迫45G1～桧川迫45S1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.282" data-multipin-lng="135.77115">
   <div class="card-head">
@@ -3159,6 +3322,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407032"
   data-management-no="51407032"
   data-label="桧川迫49S7～桧川迫49S8"
+  data-jurisdiction="gojo"
   data-search="51407032 51407032 桧川迫49S7～桧川迫49S8 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28148" data-multipin-lng="135.77559">
   <div class="card-head">
@@ -3175,6 +3339,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407066"
   data-management-no="51407066"
   data-label="桧川迫75N3～桧川迫75N4"
+  data-jurisdiction="gojo"
   data-search="51407066 51407066 桧川迫75N3～桧川迫75N4 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.2785" data-multipin-lng="135.79551">
   <div class="card-head">
@@ -3191,6 +3356,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407071"
   data-management-no="51407071"
   data-label="桧川迫75N7～桧川迫75N8"
+  data-jurisdiction="gojo"
   data-search="51407071 51407071 桧川迫75N7～桧川迫75N8 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28005" data-multipin-lng="135.79648">
   <div class="card-head">
@@ -3207,6 +3373,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407073"
   data-management-no="51407073"
   data-label="桧川迫75N9～桧川迫75N9N1"
+  data-jurisdiction="gojo"
   data-search="51407073 51407073 桧川迫75N9～桧川迫75N9N1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28091" data-multipin-lng="135.79683">
   <div class="card-head">
@@ -3223,6 +3390,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407079"
   data-management-no="51407079"
   data-label="桧川迫83S4～桧川迫83S4W1"
+  data-jurisdiction="gojo"
   data-search="51407079 51407079 桧川迫83S4～桧川迫83S4W1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27508" data-multipin-lng="135.79879">
   <div class="card-head">
@@ -3239,6 +3407,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407080"
   data-management-no="51407080"
   data-label="桧川迫83S4～桧川迫83S5"
+  data-jurisdiction="gojo"
   data-search="51407080 51407080 桧川迫83S4～桧川迫83S5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27508" data-multipin-lng="135.79879">
   <div class="card-head">
@@ -3255,6 +3424,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407084"
   data-management-no="51407084"
   data-label="桧川迫83S7～桧川迫83S8"
+  data-jurisdiction="gojo"
   data-search="51407084 51407084 桧川迫83S7～桧川迫83S8 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27404" data-multipin-lng="135.79922">
   <div class="card-head">
@@ -3271,6 +3441,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407085"
   data-management-no="51407085"
   data-label="桧川迫83S8～桧川迫83S9"
+  data-jurisdiction="gojo"
   data-search="51407085 51407085 桧川迫83S8～桧川迫83S9 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27381" data-multipin-lng="135.79945">
   <div class="card-head">
@@ -3287,6 +3458,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407098"
   data-management-no="51407098"
   data-label="引土21～22"
+  data-jurisdiction="totsukawa"
   data-search="51407098 51407098 引土21～22 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.16517" data-multipin-lng="135.74774">
   <div class="card-head">
@@ -3303,6 +3475,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407105"
   data-management-no="51407105"
   data-label="引土16G5～16G6"
+  data-jurisdiction="totsukawa"
   data-search="51407105 51407105 引土16G5～16G6 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.16358" data-multipin-lng="135.74864">
   <div class="card-head">
@@ -3319,6 +3492,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407220"
   data-management-no="514 07220"
   data-label="平沼田17～18"
+  data-jurisdiction="gojo"
   data-search="514 07220 51407220 平沼田17～18 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32461" data-multipin-lng="135.75285" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -3335,6 +3509,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407272"
   data-management-no="514 07272"
   data-label="平沼田18～19"
+  data-jurisdiction="gojo"
   data-search="514 07272 51407272 平沼田18～19 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32473" data-multipin-lng="135.75302" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -3351,6 +3526,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407831"
   data-management-no="51407831"
   data-label="八ッ川4～4G1"
+  data-jurisdiction="gojo"
   data-search="51407831 51407831 八ッ川4～4G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30494" data-multipin-lng="135.76389">
   <div class="card-head">
@@ -3367,6 +3543,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407833"
   data-management-no="51407833"
   data-label="八ッ川9～10"
+  data-jurisdiction="gojo"
   data-search="51407833 51407833 八ッ川9～10 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30687" data-multipin-lng="135.76216">
   <div class="card-head">
@@ -3383,6 +3560,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407834"
   data-management-no="51407834"
   data-label="八ッ川10～11"
+  data-jurisdiction="gojo"
   data-search="51407834 51407834 八ッ川10～11 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30686" data-multipin-lng="135.76161">
   <div class="card-head">
@@ -3399,6 +3577,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407835"
   data-management-no="51407835"
   data-label="八ッ川10～10N1"
+  data-jurisdiction="gojo"
   data-search="51407835 51407835 八ッ川10～10N1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30686" data-multipin-lng="135.76161">
   <div class="card-head">
@@ -3415,6 +3594,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407839"
   data-management-no="51407839"
   data-label="八ッ川14～15"
+  data-jurisdiction="gojo"
   data-search="51407839 51407839 八ッ川14～15 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30736" data-multipin-lng="135.75979">
   <div class="card-head">
@@ -3431,6 +3611,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407845"
   data-management-no="51407845"
   data-label="八ッ川19～20"
+  data-jurisdiction="gojo"
   data-search="51407845 51407845 八ッ川19～20 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30982" data-multipin-lng="135.75974">
   <div class="card-head">
@@ -3447,6 +3628,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407847"
   data-management-no="51407847"
   data-label="八ッ川20～20N1"
+  data-jurisdiction="gojo"
   data-search="51407847 51407847 八ッ川20～20N1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31029" data-multipin-lng="135.76017">
   <div class="card-head">
@@ -3463,6 +3645,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407853"
   data-management-no="51407853"
   data-label="八ッ川13W1～13W2"
+  data-jurisdiction="gojo"
   data-search="51407853 51407853 八ッ川13W1～13W2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30666" data-multipin-lng="135.7592">
   <div class="card-head">
@@ -3479,6 +3662,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407855"
   data-management-no="51407855"
   data-label="八ッ川13W2～13W3"
+  data-jurisdiction="gojo"
   data-search="51407855 51407855 八ッ川13W2～13W3 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30653" data-multipin-lng="135.75882">
   <div class="card-head">
@@ -3495,6 +3679,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407873"
   data-management-no="51407873"
   data-label="山際15～16"
+  data-jurisdiction="totsukawa"
   data-search="51407873 51407873 山際15～16 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.2013" data-multipin-lng="135.73213">
   <div class="card-head">
@@ -3511,6 +3696,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407877"
   data-management-no="51407877"
   data-label="山際20～21"
+  data-jurisdiction="totsukawa"
   data-search="51407877 51407877 山際20～21 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.2026" data-multipin-lng="135.73362">
   <div class="card-head">
@@ -3527,6 +3713,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407878"
   data-management-no="51407878"
   data-label="山際21～22"
+  data-jurisdiction="totsukawa"
   data-search="51407878 51407878 山際21～22 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.20303" data-multipin-lng="135.73369">
   <div class="card-head">
@@ -3543,6 +3730,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51407898"
   data-management-no="514 07898"
   data-label="平沼田43N4E1～43N4E2"
+  data-jurisdiction="gojo"
   data-search="514 07898 51407898 平沼田43N4E1～43N4E2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32059" data-multipin-lng="135.7605">
   <div class="card-head">
@@ -3559,6 +3747,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51408008"
   data-management-no="514 08008"
   data-label="湯川4E6～4E7"
+  data-jurisdiction="gojo"
   data-search="514 08008 51408008 湯川4E6～4E7 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.33446" data-multipin-lng="135.74192" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -3575,6 +3764,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51408875"
   data-management-no="51408875"
   data-label="桧川迫51S4～桧川迫51S5"
+  data-jurisdiction="gojo"
   data-search="51408875 51408875 桧川迫51S4～桧川迫51S5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27839" data-multipin-lng="135.77629">
   <div class="card-head">
@@ -3591,6 +3781,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51408927"
   data-management-no="51408927"
   data-label="殿野26～26G1"
+  data-jurisdiction="totsukawa"
   data-search="51408927 51408927 殿野26～26G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.17524" data-multipin-lng="135.76125">
   <div class="card-head">
@@ -3607,6 +3798,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51408929"
   data-management-no="51408929"
   data-label="殿野25～25S1"
+  data-jurisdiction="totsukawa"
   data-search="51408929 51408929 殿野25～25S1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.17523" data-multipin-lng="135.76183">
   <div class="card-head">
@@ -3623,6 +3815,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409097"
   data-management-no="514 09097"
   data-label="赤松1～1G1"
+  data-jurisdiction="gojo"
   data-search="514 09097 51409097 赤松1～1G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.3324" data-multipin-lng="135.7446" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -3639,6 +3832,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409133"
   data-management-no="514 09133"
   data-label="白銀115W6～115W6S1"
+  data-jurisdiction="gojo"
   data-search="514 09133 51409133 白銀115W6～115W6S1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31784" data-multipin-lng="135.73535">
   <div class="card-head">
@@ -3655,6 +3849,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409221"
   data-management-no="51409221"
   data-label="桧川迫83S6～桧川迫83S7"
+  data-jurisdiction="gojo"
   data-search="51409221 51409221 桧川迫83S6～桧川迫83S7 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27448" data-multipin-lng="135.79907">
   <div class="card-head">
@@ -3671,6 +3866,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409228"
   data-management-no="514 09228"
   data-label="西新子14G1～14E3"
+  data-jurisdiction="gojo"
   data-search="514 09228 51409228 西新子14G1～14E3 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31702" data-multipin-lng="135.74864" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -3687,6 +3883,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409399"
   data-management-no="51409399"
   data-label="S今西52～53"
+  data-jurisdiction="totsukawa"
   data-search="51409399 51409399 S今西52～53 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.98813" data-multipin-lng="135.73608">
   <div class="card-head">
@@ -3703,6 +3900,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409459"
   data-management-no="514 09459"
   data-label="西新子12N1～12N2"
+  data-jurisdiction="gojo"
   data-search="514 09459 51409459 西新子12N1～12N2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31831" data-multipin-lng="135.74634" hidden data-portal-moved="negotiation">
   <div class="card-head">
@@ -3719,6 +3917,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409485"
   data-management-no="51409485"
   data-label="十日市59～59N1"
+  data-jurisdiction="gojo"
   data-search="51409485 51409485 十日市59～59N1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30581" data-multipin-lng="135.77306">
   <div class="card-head">
@@ -3735,6 +3934,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409511"
   data-management-no="51409511"
   data-label="鹿場20S1～20S2"
+  data-jurisdiction="gojo"
   data-search="51409511 51409511 鹿場20S1～20S2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.2965" data-multipin-lng="135.75733">
   <div class="card-head">
@@ -3751,6 +3951,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409519"
   data-management-no="51409519"
   data-label="十日市53S4～53S5"
+  data-jurisdiction="gojo"
   data-search="51409519 51409519 十日市53S4～53S5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.30252" data-multipin-lng="135.7701">
   <div class="card-head">
@@ -3767,6 +3968,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409521"
   data-management-no="51409521"
   data-label="桧川迫18～桧川迫19"
+  data-jurisdiction="gojo"
   data-search="51409521 51409521 桧川迫18～桧川迫19 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28661" data-multipin-lng="135.75564">
   <div class="card-head">
@@ -3783,6 +3985,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409602"
   data-management-no="51409602"
   data-label="出谷55～56"
+  data-jurisdiction="totsukawa"
   data-search="51409602 51409602 出谷55～56 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95072" data-multipin-lng="135.71046">
   <div class="card-head">
@@ -3799,6 +4002,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409606"
   data-management-no="51409606"
   data-label="出谷59～60"
+  data-jurisdiction="totsukawa"
   data-search="51409606 51409606 出谷59～60 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95621" data-multipin-lng="135.70919">
   <div class="card-head">
@@ -3815,6 +4019,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409612"
   data-management-no="51409612"
   data-label="出谷39N1～39N2"
+  data-jurisdiction="totsukawa"
   data-search="51409612 51409612 出谷39N1～39N2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95102" data-multipin-lng="135.72452">
   <div class="card-head">
@@ -3831,6 +4036,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409653"
   data-management-no="51409653"
   data-label="西川147E3～147E4"
+  data-jurisdiction="totsukawa"
   data-search="51409653 51409653 西川147E3～147E4 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.96548" data-multipin-lng="135.65727">
   <div class="card-head">
@@ -3847,6 +4053,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409718"
   data-management-no="51409718"
   data-label="出谷49G1～49G1S1"
+  data-jurisdiction="totsukawa"
   data-search="51409718 51409718 出谷49G1～49G1S1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.94938" data-multipin-lng="135.71327">
   <div class="card-head">
@@ -3863,6 +4070,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409724"
   data-management-no="51409724"
   data-label="十日市14N4E2～14N4E3"
+  data-jurisdiction="gojo"
   data-search="51409724 51409724 十日市14N4E2～14N4E3 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29222" data-multipin-lng="135.75786">
   <div class="card-head">
@@ -3879,6 +4087,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409725"
   data-management-no="51409725"
   data-label="越作8G1～9"
+  data-jurisdiction="gojo"
   data-search="51409725 51409725 越作8G1～9 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.29799" data-multipin-lng="135.76691">
   <div class="card-head">
@@ -3895,6 +4104,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409827"
   data-management-no="51409827"
   data-label="殿野19E2～19E3"
+  data-jurisdiction="totsukawa"
   data-search="51409827 51409827 殿野19E2～19E3 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.17461" data-multipin-lng="135.76461">
   <div class="card-head">
@@ -3911,6 +4121,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409888"
   data-management-no="51409888"
   data-label="桧川迫58E4～桧川迫58E5"
+  data-jurisdiction="gojo"
   data-search="51409888 51409888 桧川迫58E4～桧川迫58E5 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.2757" data-multipin-lng="135.78836">
   <div class="card-head">
@@ -3927,6 +4138,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409990"
   data-management-no="51409990"
   data-label="中原19～19G1"
+  data-jurisdiction="totsukawa"
   data-search="51409990 51409990 中原19～19G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.19429" data-multipin-lng="135.72367">
   <div class="card-head">
@@ -3943,6 +4155,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409991"
   data-management-no="514 09991"
   data-label="柴ヶ谷3G1～4"
+  data-jurisdiction="gojo"
   data-search="514 09991 51409991 柴ヶ谷3G1～4 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32879" data-multipin-lng="135.76127">
   <div class="card-head">
@@ -3959,6 +4172,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409997"
   data-management-no="51409997"
   data-label="中原27～28"
+  data-jurisdiction="totsukawa"
   data-search="51409997 51409997 中原27～28 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.19291" data-multipin-lng="135.71825">
   <div class="card-head">
@@ -3975,6 +4189,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51409998"
   data-management-no="514 09998"
   data-label="慎1～2"
+  data-jurisdiction="gojo"
   data-search="514 09998 51409998 慎1～2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.31806" data-multipin-lng="135.73273">
   <div class="card-head">
@@ -3991,6 +4206,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410053"
   data-management-no="51410053"
   data-label="桧川迫53S1K99～桧川迫53S1"
+  data-jurisdiction="gojo"
   data-search="51410053 51410053 桧川迫53S1K99～桧川迫53S1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.27865" data-multipin-lng="135.77874">
   <div class="card-head">
@@ -4007,6 +4223,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410096"
   data-management-no="51410096"
   data-label="出谷56～57G9"
+  data-jurisdiction="totsukawa"
   data-search="51410096 51410096 出谷56～57G9 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.95298" data-multipin-lng="135.71013">
   <div class="card-head">
@@ -4023,6 +4240,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410098"
   data-management-no="51410098"
   data-label="殿野19～19E1"
+  data-jurisdiction="totsukawa"
   data-search="51410098 51410098 殿野19～19E1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.17425" data-multipin-lng="135.76388">
   <div class="card-head">
@@ -4039,6 +4257,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410100"
   data-management-no="51410100"
   data-label="殿野19E9～19E10"
+  data-jurisdiction="totsukawa"
   data-search="51410100 51410100 殿野19E9～19E10 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.1758" data-multipin-lng="135.76729">
   <div class="card-head">
@@ -4055,6 +4274,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410102"
   data-management-no="51410102"
   data-label="殿野19E11～19E12"
+  data-jurisdiction="totsukawa"
   data-search="51410102 51410102 殿野19E11～19E12 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.17609" data-multipin-lng="135.76776">
   <div class="card-head">
@@ -4071,6 +4291,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410113"
   data-management-no="51410113"
   data-label="釜中7～7G1"
+  data-jurisdiction="totsukawa"
   data-search="51410113 51410113 釜中7～7G1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.98153" data-multipin-lng="135.72833">
   <div class="card-head">
@@ -4087,6 +4308,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410139"
   data-management-no="514 10139"
   data-label="江出2N14～生子93E1"
+  data-jurisdiction="gojo"
   data-search="514 10139 51410139 江出2N14～生子93E1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.32005" data-multipin-lng="135.70484">
   <div class="card-head">
@@ -4103,6 +4325,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410178"
   data-management-no="51410178"
   data-label="沼田原46S3E2～46S6"
+  data-jurisdiction="totsukawa"
   data-search="51410178 51410178 沼田原46S3E2～46S6 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.14762" data-multipin-lng="135.76599">
   <div class="card-head">
@@ -4119,6 +4342,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410183"
   data-management-no="51410183"
   data-label="引土18～18W1"
+  data-jurisdiction="totsukawa"
   data-search="51410183 51410183 引土18～18W1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.1663" data-multipin-lng="135.74844">
   <div class="card-head">
@@ -4135,6 +4359,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410273"
   data-management-no="51410273"
   data-label="西川51G6～51E1"
+  data-jurisdiction="totsukawa"
   data-search="51410273 51410273 西川51G6～51E1 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.96736" data-multipin-lng="135.73721">
   <div class="card-head">
@@ -4151,6 +4376,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410293"
   data-management-no="51410293"
   data-label="西川93N3～93N4"
+  data-jurisdiction="totsukawa"
   data-search="51410293 51410293 西川93N3～93N4 —"
   data-requested-action="mark_survey_done" data-multipin-lat="33.97285" data-multipin-lng="135.70608">
   <div class="card-head">
@@ -4167,6 +4393,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410306"
   data-management-no="51410306"
   data-label="中峰3W3～引込"
+  data-jurisdiction="totsukawa"
   data-search="51410306 51410306 中峰3W3～引込 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.14963" data-multipin-lng="135.77774">
   <div class="card-head">
@@ -4183,6 +4410,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410417"
   data-management-no="514 10417"
   data-label="城戸11W1～大日川2"
+  data-jurisdiction="gojo"
   data-search="514 10417 51410417 城戸11W1～大日川2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.28639" data-multipin-lng="135.72521">
   <div class="card-head">
@@ -4199,6 +4427,7 @@ a.portal-menu-item:focus-visible {
   data-management-no-key="51410418"
   data-management-no="514 10418"
   data-label="向山7S1～7S2"
+  data-jurisdiction="gojo"
   data-search="514 10418 51410418 向山7S1～7S2 —"
   data-requested-action="mark_survey_done" data-multipin-lat="34.37851" data-multipin-lng="135.71279">
   <div class="card-head">
@@ -5080,6 +5309,7 @@ a.portal-menu-item:focus-visible {
   var PAGE = "survey";
   var ENDPOINT = "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request";
   var API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
+  var JURISDICTION = "";
   var LABELS = {survey_wait:"現調待ち",negotiation_wait:"交渉待ち",entrustment_wait:"付託待ち",construction_wait:"工事待ち",return_wait:"返却待ち",returned:"返却済み"};
   var ORDER = ["survey_wait","negotiation_wait","entrustment_wait","construction_wait","return_wait"];
   var PAGE_STATUSES = {survey:["survey_wait"],negotiation:["negotiation_wait","return_wait"],entrustment:["entrustment_wait"],cases:ORDER,detail:ORDER};
@@ -5118,6 +5348,10 @@ a.portal-menu-item:focus-visible {
     out.start_lng = out.start_lng || found.start_lng;
     return out;
   }
+  function filterJurisdiction(rows) {
+    if (!JURISDICTION) return rows;
+    return rows.filter(function(r) { return t(r,"jurisdiction") === JURISDICTION; });
+  }
   function searchText(r) { return [t(r,"management_no"),t(r,"management_no_key"),t(r,"internal_management_no"),t(r,"span_key"),t(r,"label"),LABELS[t(r,"status")]||t(r,"status")].join(" "); }
   function setStatus(msg, err) { var el=document.getElementById("liveCasesStatus"); if(!el) return; el.hidden=false; el.textContent=msg; el.classList.toggle("is-error", !!err); }
   function fetchCases(extra) {
@@ -5155,8 +5389,8 @@ a.portal-menu-item:focus-visible {
   function mapBtn(r) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"); return lat&&lng?'<a class="btn btn-map" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q='+encodeURIComponent(lat+","+lng)+'">地図を開く</a>':""; }
   function nearbyBtn(r, idx) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<button type="button" class="btn btn-nearby-map" data-nearby-open data-nearby-wrap="live-nearby-wrap-'+idx+'" data-nearby-map="live-nearby-map-'+idx+'" aria-expanded="false" aria-controls="live-nearby-wrap-'+idx+'">半径200m</button>'; }
   function nearbyWrap(r, idx) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<p class="nearby-map-status muted-tiny" data-nearby-status hidden role="status"></p><div class="nearby-map-wrap" id="live-nearby-wrap-'+idx+'" hidden><div id="live-nearby-map-'+idx+'" class="share-two-map-canvas" role="application" aria-label="半径200m電柱地図"></div></div>'; }
-  function surveyCard(r, idx) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"), mp=(lat&&lng)?' data-multipin-lat="'+esc(lat)+'" data-multipin-lng="'+esc(lng)+'"':""; return '<article class="card survey-update-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'" data-management-no="'+esc(t(r,"management_no"))+'" data-label="'+esc(t(r,"label"))+'"'+mp+'><div class="card-head"><span class="case-status-pill status-survey_wait">現調待ち</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-map-primary">'+mapBtn(r)+nearbyBtn(r, idx)+'</div><div class="card-actions card-actions-portal-request"><div class="survey-case-action-row"><button type="button" class="btn btn-survey-mark-done" data-live-action="mark_survey_done" data-case-id="'+esc(t(r,"id"))+'">現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-live-action="mark_return_candidate" data-case-id="'+esc(t(r,"id"))+'">返却候補にする</button></div></div></div>'+nearbyWrap(r, idx)+'</article>'; }
-  function negotiationCard(r) { var st=t(r,"status"), act=""; if(st==="negotiation_wait") act='<button type="button" class="btn btn-entrustment" data-live-action="mark_entrustment_wait" data-case-id="'+esc(t(r,"id"))+'">付託待ちにする</button>'; if(st==="return_wait") act='<button type="button" class="btn btn-returned" data-live-action="mark_returned" data-case-id="'+esc(t(r,"id"))+'">返却済みにする</button>'; return '<article class="card negotiation-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="card-head"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-revert">'+act+'</div></div></article>'; }
+  function surveyCard(r, idx) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"), mp=(lat&&lng)?' data-multipin-lat="'+esc(lat)+'" data-multipin-lng="'+esc(lng)+'"':""; return '<article class="card survey-update-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'" data-management-no="'+esc(t(r,"management_no"))+'" data-label="'+esc(t(r,"label"))+'" data-jurisdiction="'+esc(t(r,"jurisdiction"))+'"'+mp+'><div class="card-head"><span class="case-status-pill status-survey_wait">現調待ち</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-map-primary">'+mapBtn(r)+nearbyBtn(r, idx)+'</div><div class="card-actions card-actions-portal-request"><div class="survey-case-action-row"><button type="button" class="btn btn-survey-mark-done" data-live-action="mark_survey_done" data-case-id="'+esc(t(r,"id"))+'">現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-live-action="mark_return_candidate" data-case-id="'+esc(t(r,"id"))+'">返却候補にする</button></div></div></div>'+nearbyWrap(r, idx)+'</article>'; }
+  function negotiationCard(r) { var st=t(r,"status"), act=""; if(st==="negotiation_wait") act='<button type="button" class="btn btn-entrustment" data-live-action="mark_entrustment_wait" data-case-id="'+esc(t(r,"id"))+'">付託待ちにする</button>'; if(st==="return_wait") act='<button type="button" class="btn btn-returned" data-live-action="mark_returned" data-case-id="'+esc(t(r,"id"))+'">返却済みにする</button>'; return '<article class="card negotiation-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'" data-jurisdiction="'+esc(t(r,"jurisdiction"))+'"><div class="card-head"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-revert">'+act+'</div></div></article>'; }
   function entrustmentCard(r) { return '<article class="case-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="case-card-main"><span class="case-status-pill status-entrustment_wait">付託待ち</span><h2 class="case-title">'+esc(t(r,"label")||"—")+'</h2><p class="case-meta">'+esc(t(r,"management_no")||"—")+'</p></div><div class="card-actions">'+mapBtn(r)+'<button type="button" class="btn" data-live-action="mark_construction_wait" data-case-id="'+esc(t(r,"id"))+'">工事待ちにする</button></div></article>'; }
   function detailHref(r) { return PAGE==="cases" ? "./detail/?id="+encodeURIComponent(t(r,"id")) : "../cases/detail/?id="+encodeURIComponent(t(r,"id")); }
   function caseRow(r) { var st=t(r,"status"); return '<a class="case-row" href="'+esc(detailHref(r))+'" data-status="'+esc(st)+'" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="case-row-main"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h3>'+esc(t(r,"label")||"—")+'</h3><p class="case-management-no">'+esc(t(r,"management_no")||"—")+'</p></div><div class="case-row-meta">'+(t(r,"updated_at")?'<span>更新 '+esc(t(r,"updated_at").slice(0,10))+'</span>':"")+'</div></a>'; }
@@ -5187,7 +5421,7 @@ a.portal-menu-item:focus-visible {
     rememberSurveyStaticGeo(document);
     var extra={}; if(PAGE==="detail") { extra.id=new URLSearchParams(location.search).get("id")||""; if(!extra.id) { setStatus("case id が指定されていません。", true); return; } }
     setStatus("Supabaseから最新情報を読み込み中...", false);
-    fetchCases(extra).then(function(body){var rows=Array.isArray(body.cases)?body.cases:[]; if(PAGE==="survey") rows=rows.map(enrichSurveyRow); if(PAGE==="cases") renderCases(rows, body.counts||{}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);})
+    fetchCases(extra).then(function(body){var rows=Array.isArray(body.cases)?body.cases:[]; rows=filterJurisdiction(rows); if(PAGE==="survey") rows=rows.map(enrichSurveyRow); if(PAGE==="cases") renderCases(rows, body.counts||{}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);})
       .catch(function(e){setStatus("Supabase最新取得に失敗しました。生成時点の表示を使っています: "+(e&&e.message?e.message:e), true);});
   }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", refresh); else refresh();
