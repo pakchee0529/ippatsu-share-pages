@@ -10379,6 +10379,29 @@ def main() -> int:
         manifest_entries = load_archive_manifest_entries(repo_root)
     archived = {e.date for e in manifest_entries}
 
+    if mode == PORTAL_MODE_COMPLETION_ARCHIVE:
+        detail_entries = [e for e in manifest_entries if e.date == completion_date]
+        if not detail_entries:
+            print(
+                f"Error: archive manifest has no entry for '{completion_date}'; "
+                "refusing completion-archive generation "
+                "(merge archive_manifest.json before generate_portal).",
+                file=sys.stderr,
+            )
+            return 1
+        pub_items, note = load_archive_public_items(repo_root, completion_date)
+        if pub_items is None:
+            print(
+                f"Error: completion_reports JSON for '{completion_date}' is required "
+                "in completion-archive mode; refusing to write placeholder archive "
+                f"detail. root={_completion_reports_root(repo_root)}"
+                + (f"; note={note}" if note else ""),
+                file=sys.stderr,
+            )
+            return 1
+    else:
+        detail_entries = manifest_entries
+
     exclude_folder = (
         target_date if mode == PORTAL_MODE_COMPLETION_ARCHIVE else None
     )
@@ -10413,17 +10436,6 @@ def main() -> int:
     arch_path = repo_root / "portal" / "archive" / "index.html"
     arch_path.parent.mkdir(parents=True, exist_ok=True)
     arch_path.write_text(arch_html, encoding="utf-8", newline="\n")
-    if mode == PORTAL_MODE_COMPLETION_ARCHIVE:
-        detail_entries = [e for e in manifest_entries if e.date == completion_date]
-        if not detail_entries:
-            print(
-                f"Warning: archive manifest has no entry for '{completion_date}'; "
-                "skipping portal/archive/<date>/index.html "
-                "(merge archive_manifest.json before generate_portal).",
-                file=sys.stderr,
-            )
-    else:
-        detail_entries = manifest_entries
     detail_paths = write_archive_detail_pages(repo_root, detail_entries)
     for dp in detail_paths:
         print(f"Wrote {dp}")
