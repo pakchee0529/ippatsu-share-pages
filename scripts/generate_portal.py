@@ -5576,6 +5576,62 @@ def _supplement_map_fields_from_gps(
     pole_coords, _ = load_pole_coords(gps_path)
     if not pole_coords:
         return items
+
+    def _span_head(name: str) -> str:
+        m = re.match(r"^([^0-9]+)", unicodedata.normalize("NFKC", name).strip())
+        return m.group(1) if m else ""
+
+    def _add_steep_slope_g9(name: str) -> str:
+        s = unicodedata.normalize("NFKC", name).strip()
+        if not s or s.endswith("G9") or s in pole_coords:
+            return s
+        if re.search(r"(?:K|G\d+|\d+)$", s):
+            return s + "G9"
+        return s
+
+    def _gps_label_variants(label: str) -> list[str]:
+        base = unicodedata.normalize("NFKC", label).strip()
+        variants = [base]
+        parts = re.split(r"\s*[~～]\s*", base, maxsplit=1)
+        if len(parts) != 2:
+            return variants
+        start, end = parts[0].strip(), parts[1].strip()
+        head = _span_head(start)
+        end_full = end if _span_head(end) else f"{head}{end}"
+        start_g9 = _add_steep_slope_g9(start)
+        end_g9 = _add_steep_slope_g9(end_full)
+        if start_g9 != start or end_g9 != end_full:
+            variants.append(f"{start_g9}～{end_g9}")
+        if start_g9 != start:
+            variants.append(f"{start_g9}～{end}")
+        if end_g9 != end_full:
+            suffix = end_g9[len(head) :] if head and end_g9.startswith(head) else end_g9
+            variants.append(f"{start}～{suffix}")
+        return list(dict.fromkeys(v for v in variants if v))
+
+    def _gps_score(gps: dict[str, Any]) -> int:
+        score = 0
+        if gps.get("map_url") or gps.get("lat") is not None:
+            score += 1
+        if gps.get("start_lat") is not None and gps.get("start_lng") is not None:
+            score += 2
+        if gps.get("end_lat") is not None and gps.get("end_lng") is not None:
+            score += 2
+        return score
+
+    def _best_gps_for_label(label: str) -> dict[str, Any]:
+        best: dict[str, Any] = {}
+        best_score = -1
+        for variant in _gps_label_variants(label):
+            gps = share_gps_autofill(variant, pole_coords)
+            score = _gps_score(gps)
+            if score > best_score:
+                best = gps
+                best_score = score
+            if score >= 5:
+                break
+        return best
+
     out: list[SurveyPublicItem] = []
     for it in items:
         if _validated_two_latlng(it, record=False) is not None:
@@ -5585,7 +5641,7 @@ def _supplement_map_fields_from_gps(
         if not label or label == "—":
             out.append(it)
             continue
-        gps = share_gps_autofill(label, pole_coords)
+        gps = _best_gps_for_label(label)
 
         def _gps_num(v: object) -> float | None:
             if isinstance(v, (int, float)):
@@ -5596,9 +5652,21 @@ def _supplement_map_fields_from_gps(
         s_lng = _gps_num(gps.get("start_lng"))
         e_lat = _gps_num(gps.get("end_lat"))
         e_lng = _gps_num(gps.get("end_lng"))
-        if not (_valid_jp_latlng(s_lat, s_lng) and _valid_jp_latlng(e_lat, e_lng)):
+        s_ok = _valid_jp_latlng(s_lat, s_lng)
+        e_ok = _valid_jp_latlng(e_lat, e_lng)
+        map_lat = _gps_num(gps.get("lat"))
+        map_lng = _gps_num(gps.get("lng"))
+        if not (s_ok or e_ok or _valid_jp_latlng(map_lat, map_lng)):
             out.append(it)
             continue
+        if not s_ok and _valid_jp_latlng(map_lat, map_lng):
+            s_lat, s_lng = map_lat, map_lng
+            s_ok = True
+        if not s_ok and e_ok:
+            s_lat, s_lng = e_lat, e_lng
+            s_ok = True
+        if not e_ok:
+            e_lat, e_lng = None, None
         out.append(
             SurveyPublicItem(
                 management_no=it.management_no,
@@ -5609,8 +5677,8 @@ def _supplement_map_fields_from_gps(
                 start_lat=str(s_lat),
                 start_lng=str(s_lng),
                 end_label=_to_str(gps.get("end_label")) or "",
-                end_lat=str(e_lat),
-                end_lng=str(e_lng),
+                end_lat=str(e_lat) if e_ok else "",
+                end_lng=str(e_lng) if e_ok else "",
                 note=it.note,
             )
         )
@@ -6477,7 +6545,7 @@ def build_survey_html(
         two_btn = ""
         two_json = ""
         two_wrap = ""
-        two = _validated_two_latlng(it)
+        two = _validated_two_latlng(it, record=False)
         if two is not None:
             start_lat, start_lng, end_lat, end_lng = two
             two_json_id = f"two-geo-{idx}"
