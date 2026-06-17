@@ -1105,6 +1105,7 @@ a.portal-menu-item:focus-visible {
   }
   function filterJurisdiction(rows) {
     if (!JURISDICTION) return rows;
+    if (rows.length && !rows.some(function(r) { return !!t(r,"jurisdiction"); })) return null;
     return rows.filter(function(r) { return t(r,"jurisdiction") === JURISDICTION; });
   }
   function searchText(r) { return [t(r,"management_no"),t(r,"management_no_key"),t(r,"internal_management_no"),t(r,"span_key"),t(r,"label"),LABELS[t(r,"status")]||t(r,"status")].join(" "); }
@@ -1176,7 +1177,7 @@ a.portal-menu-item:focus-visible {
     rememberSurveyStaticGeo(document);
     var extra={}; if(PAGE==="detail") { extra.id=new URLSearchParams(location.search).get("id")||""; if(!extra.id) { setStatus("case id が指定されていません。", true); return; } }
     setStatus("Supabaseから最新情報を読み込み中...", false);
-    fetchCases(extra).then(function(body){var rows=Array.isArray(body.cases)?body.cases:[]; rows=filterJurisdiction(rows); if(PAGE==="survey") rows=rows.map(enrichSurveyRow); if(PAGE==="cases") renderCases(rows, body.counts||{}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);})
+    fetchCases(extra).then(function(body){var rows=Array.isArray(body.cases)?body.cases:[]; rows=filterJurisdiction(rows); if(rows===null) { setStatus("Supabase最新に管轄情報がないため、生成時点の管轄別表示を使っています", true); return; } if(PAGE==="survey") rows=rows.map(enrichSurveyRow); if(PAGE==="cases") renderCases(rows, body.counts||{}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);})
       .catch(function(e){setStatus("Supabase最新取得に失敗しました。生成時点の表示を使っています: "+(e&&e.message?e.message:e), true);});
   }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", refresh); else refresh();
