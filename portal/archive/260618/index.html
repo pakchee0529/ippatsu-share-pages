@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>260618 · アーカイブ詳細</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin="">
+<style>
+:root {
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+  --accent2: #0d9488;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
+    "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding: 0.75rem 0.75rem 1.25rem;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.top-bar a {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}
+.page-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 0.8rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
+}
+.disclaimer-note {
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin: -0.35rem 0 0.85rem;
+  line-height: 1.45;
+}
+.archive-section-heading {
+  font-size: 1.05rem;
+  margin: 1rem 0 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.planned-incomplete-section .archive-section-heading {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 1.25rem;
+}
+.card-planned-incomplete {
+  border-color: #e8c4a0;
+}
+.archive-planned-count {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 0.15rem;
+}
+.card {
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.card-done {
+  opacity: 0.78;
+}
+.btn-detail-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 44px;
+  touch-action: manipulation;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border: 2px solid #2563eb;
+  line-height: 1.25;
+}
+.card-actions .btn-detail-edit {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+.btn-detail-edit:hover, .btn-detail-edit:focus-visible {
+  filter: brightness(1.03);
+  outline: none;
+}
+.item-mgmt {
+  margin: -0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+.status-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  margin-left: 0.35rem;
+  vertical-align: baseline;
+}
+.status-done {
+  color: #0f766e;
+  background: #ecfeff;
+  border: 1px solid #99f6e4;
+}
+.status-pending {
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 40px;
+  touch-action: manipulation;
+}
+.btn-map {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-map:hover, .btn-map:focus { filter: brightness(1.05); }
+.btn-note {
+  background: #fff;
+  color: var(--accent2);
+  border: 2px solid var(--accent2);
+}
+.btn-note[aria-expanded="true"] {
+  background: var(--accent2);
+  color: #fff;
+}
+.note-panel {
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  font-size: 0.92rem;
+  color: var(--text);
+}
+.note-panel[hidden] { display: none !important; }
+.archive-status-line,
+.archive-warn-line {
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+}
+.archive-warn-line { color: #b45309; }
+.instr-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.instr-table {
+  width: 100%;
+  min-width: min(100%, 320px);
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-bottom: 0.65rem;
+}
+.instr-table th,
+.instr-table td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+.instr-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.instr-cut-caption {
+  margin: 0.5rem 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.instr-cut-total th,
+.instr-cut-total td {
+  font-weight: 600;
+  background: #f1f5f9;
+}
+.instr-note {
+  margin-top: 0.65rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+  font-size: 0.92rem;
+}
+.two-map-wrap {
+  margin-top: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.two-map-wrap[hidden] { display: none !important; }
+.share-two-map-canvas {
+  width: 100%;
+  height: min(45vh, 320px);
+  min-height: 200px;
+}
+
+.leaflet-tooltip.two-tip-endpoint {
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 3px 8px;
+  border: 1px solid #2563eb;
+  background: #eff6ff;
+  color: #1e3a8a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+}
+.leaflet-tooltip.two-tip-nearby {
+  font-weight: 500;
+  font-size: 0.76rem;
+  padding: 2px 6px;
+  border: 1px solid #94a3b8;
+  background: #f8fafc;
+  color: #334155;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+}
+.leaflet-tooltip.two-tip {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+
+.map-section {
+  margin-top: 1.0rem;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 0.85rem;
+}
+.map-section h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+#share-map {
+  width: 100%;
+  height: min(55vh, 420px);
+  min-height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.map-empty .muted-tiny {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.leaflet-container { font-family: inherit; }
+.footer-note {
+  margin-top: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+@media (min-width: 480px) {
+  .card-head {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .page-title { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+  <nav class="top-bar" aria-label="サイト内リンク">
+    <a href="../../">ポータルTOP</a>
+    <a href="../">アーカイブ</a>
+  </nav>
+  <h1 class="page-title">2026年06月18日</h1>
+  <p class="disclaimer-note">完了報告アーカイブ / 個人情報・内部メモは表示していません。</p>
+  <main>
+<h2 class="archive-section-heading">完了した作業</h2>
+<article class="card" data-card-index="0">
+      <div class="card-head">
+        <h2 class="card-title">江出2N1～2N2 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">514 01046</p>
+        <div class="card-actions"><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-0" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260618&amp;entry.2102936974=514%2001046&amp;entry.932009684=%E6%B1%9F%E5%87%BA2N1%EF%BD%9E2N2&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E4%B8%8D%E5%8F%AF&amp;entry.1713335536=1m&amp;entry.539982619=%E5%82%BE&amp;entry.948358914=0&amp;entry.740813394=0&amp;entry.74377314=0&amp;entry.957344080=0&amp;entry.382023163=0&amp;entry.288483164=0&amp;entry.1467113295=0&amp;entry.108281366=0&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=0&amp;entry.1908811234=52&amp;entry.1406858047=0&amp;entry.1367667439=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
+      </div>
+      <script type="application/json" id="two-geo-0">{"a": {"name": "江出2N1～2N2", "lat": 0.0, "lng": 0.0}, "b": {"name": "江出2N1～2N2", "lat": 0.0, "lng": 0.0}}</script>
+      <div class="two-map-wrap" id="two-wrap-0" hidden><div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-0" hidden><p class="archive-status-line">状態: 完了</p><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>不可</td></tr><tr><th>道幅</th><td>1m</td></tr><tr><th>傾斜</th><td>傾</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>0</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>52本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div></div>
+</article>
+<article class="card" data-card-index="1">
+      <div class="card-head">
+        <h2 class="card-title">湯塩33～34 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">514 08023</p>
+        <div class="card-actions"><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-1" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260618&amp;entry.2102936974=514%2008023&amp;entry.932009684=%E6%B9%AF%E5%A1%A933%EF%BD%9E34&amp;entry.579262382=%E6%8C%81%E5%87%BA%E3%83%BB%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=3m&amp;entry.539982619=%E5%82%BE&amp;entry.948358914=2&amp;entry.740813394=2&amp;entry.74377314=0&amp;entry.957344080=1&amp;entry.382023163=0&amp;entry.288483164=0&amp;entry.1467113295=0&amp;entry.108281366=0&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=0&amp;entry.1908811234=56&amp;entry.1406858047=0&amp;entry.1367667439=%E9%9B%91%E6%9C%A8%E3%81%AF%E6%8C%81%E5%87%BA%E3%80%82%E7%AB%B9%E3%81%AF%E6%9E%9D%E3%82%92%E6%89%95%E3%81%84%E9%81%93%E8%B7%AF%E5%81%B4%E3%81%AB%E3%81%9D%E3%82%8D%E3%81%88%E3%81%A6%E9%9B%86%E7%A9%8D" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
+      </div>
+      <script type="application/json" id="two-geo-1">{"a": {"name": "湯塩33～34", "lat": 0.0, "lng": 0.0}, "b": {"name": "湯塩33～34", "lat": 0.0, "lng": 0.0}}</script>
+      <div class="two-map-wrap" id="two-wrap-1" hidden><div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-1" hidden><p class="archive-status-line">状態: 完了</p><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>処理方法</th><td>持出・集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>3m</td></tr><tr><th>傾斜</th><td>傾</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>2</td><td>0</td></tr><tr><th>〜20未満</th><td>2</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>1</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>5</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>56本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>雑木は持出。竹は枝を払い道路側にそろえて集積</div></div>
+</article>
+<article class="card" data-card-index="2">
+      <div class="card-head">
+        <h2 class="card-title">湯塩35～36 <span class="status-pill status-done">完了</span></h2>
+        <p class="item-mgmt">514 08025</p>
+        <div class="card-actions"><button type="button" class="btn btn-map" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button><button type="button" class="btn btn-note" aria-expanded="false" aria-controls="note-2" data-note-toggle>現場指示</button><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260618&amp;entry.2102936974=514%2008025&amp;entry.932009684=%E6%B9%AF%E5%A1%A935%EF%BD%9E36&amp;entry.579262382=%E6%8C%81%E5%87%BA%E3%83%BB%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=2m&amp;entry.539982619=%E5%82%BE&amp;entry.948358914=0&amp;entry.740813394=6&amp;entry.74377314=4&amp;entry.957344080=0&amp;entry.382023163=0&amp;entry.288483164=1&amp;entry.1467113295=0&amp;entry.108281366=0&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=0&amp;entry.1908811234=0&amp;entry.1406858047=0&amp;entry.1367667439=%E5%90%8A%E3%82%8A%E5%88%87%E3%82%8A%E5%AE%9F%E8%B2%BB%E3%80%82%E5%B1%8B%E6%A0%B9%E3%81%AB%E5%B0%91%E3%81%97%E3%81%82%E3%81%9F%E3%81%A3%E3%81%A6%E3%82%82%E8%89%AF%E3%81%84%E3%81%A8%E3%81%AE%E3%81%93%E3%81%A8%E3%80%82%E9%9B%86%E7%A9%8D%E5%87%BA%E6%9D%A5%E3%82%8B%E3%81%AA%E3%82%89%E9%9B%86%E7%A9%8D%E3%81%97%E3%81%A6%E3%82%82%E3%82%88%E3%81%84%E3%80%82%E5%87%BA%E6%9D%A5%E3%82%8B%E3%81%A0%E3%81%91%E6%A0%B9%E5%88%87%E3%82%8A%E5%B8%8C%E6%9C%9B%E3%81%A8%E3%81%AE%E3%81%93%E3%81%A8%E3%80%82" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div>
+      </div>
+      <script type="application/json" id="two-geo-2">{"a": {"name": "湯塩35～36", "lat": 0.0, "lng": 0.0}, "b": {"name": "湯塩35～36", "lat": 0.0, "lng": 0.0}}</script>
+      <div class="two-map-wrap" id="two-wrap-2" hidden><div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div></div>
+      <div class="note-panel" id="note-2" hidden><p class="archive-status-line">状態: 完了</p><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>処理方法</th><td>持出・集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>2m</td></tr><tr><th>傾斜</th><td>傾</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>0</td></tr><tr><th>〜20未満</th><td>6</td><td>0</td></tr><tr><th>〜30未満</th><td>4</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>1</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>11</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>吊り切り実費。屋根に少しあたっても良いとのこと。集積出来るなら集積してもよい。出来るだけ根切り希望とのこと。</div></div>
+</article>
+
+  <section class="map-section" aria-labelledby="map-heading">
+    <h2 id="map-heading">全体地図</h2>
+    <div id="share-map" role="application" aria-label="全径間の位置"></div>
+  </section>
+
+  </main>
+  <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+  <script>
+(function () {
+  document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
+    var id = btn.getAttribute("aria-controls");
+    var panel = id ? document.getElementById(id) : null;
+    if (!panel) return;
+    btn.addEventListener("click", function() {
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", open ? "false" : "true");
+      panel.hidden = open;
+    });
+  });
+
+  function gmaps(lat, lng) {
+    return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
+  }
+
+  var twoMaps = Object.create(null);
+  document.querySelectorAll("[data-two-open]").forEach(function(btn) {
+    var wrapId = btn.getAttribute("data-two-wrap");
+    var mapId = btn.getAttribute("data-two-map");
+    var jsonId = btn.getAttribute("data-two-json");
+    var wrap = wrapId ? document.getElementById(wrapId) : null;
+    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
+    if (!wrap || !jsonEl) return;
+    btn.addEventListener("click", function() {
+      var nowOpen = btn.getAttribute("aria-expanded") === "true";
+      wrap.hidden = nowOpen;
+      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
+      btn.textContent = nowOpen ? "2点地図を表示" : "2点地図を閉じる";
+      if (nowOpen) return;
+      var geo = null;
+      try {
+        geo = JSON.parse(jsonEl.textContent || "{}");
+      } catch (e) {
+        return;
+      }
+      if (!geo || !geo.a || !geo.b) return;
+      var key = mapId;
+      if (!twoMaps[key]) {
+        var mmap = L.map(mapId, { scrollWheelZoom: false });
+        twoMaps[key] = mmap;
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(mmap);
+      }
+      var mmap = twoMaps[key];
+      mmap.eachLayer(function(layer) {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
+          mmap.removeLayer(layer);
+        }
+      });
+      function addEndpoint(p, cls) {
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.marker([lat, lng]).addTo(mmap);
+        if (p.name) {
+          m.bindTooltip(String(p.name), {
+            permanent: true,
+            direction: "top",
+            className: cls,
+            offset: [0, -6],
+          });
+        }
+        m.on("click", function() {
+          window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer");
+        });
+        return [lat, lng];
+      }
+      function addNearbyPole(p) {
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.circleMarker([lat, lng], {
+          radius: 5,
+          weight: 2,
+          opacity: 0.9,
+          fillOpacity: 0.75,
+          color: "#64748b",
+          fillColor: "#94a3b8",
+        }).addTo(mmap);
+        if (p.name) {
+          m.bindTooltip(String(p.name), {
+            permanent: true,
+            direction: "top",
+            className: "two-tip-nearby",
+            offset: [0, -4],
+          });
+        }
+        m.on("click", function() {
+          window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer");
+        });
+        return [lat, lng];
+      }
+      var aPt = addEndpoint(geo.a, "two-tip-endpoint");
+      var bPt = addEndpoint(geo.b, "two-tip-endpoint");
+      var boundsPts = [];
+      if (aPt) boundsPts.push(aPt);
+      if (bPt) boundsPts.push(bPt);
+      if (aPt && bPt) {
+        L.polyline([aPt, bPt], { weight: 3, opacity: 0.85, color: "#2563eb" }).addTo(mmap);
+      }
+      if (Array.isArray(geo.nearby)) {
+        geo.nearby.forEach(function(p) {
+          var pt = addNearbyPole(p);
+          if (pt) boundsPts.push(pt);
+        });
+      }
+      if (boundsPts.length === 1) {
+        mmap.setView(boundsPts[0], 17);
+      } else if (boundsPts.length > 1) {
+        mmap.fitBounds(boundsPts, {
+          paddingTopLeft: [40, 70],
+          paddingBottomRight: [40, 70],
+          maxZoom: 18,
+        });
+      }
+      setTimeout(function() { mmap.invalidateSize(); }, 60);
+    });
+  });
+
+
+  var points = [{"name": "江出2N1～2N2", "lat": 0.0, "lng": 0.0, "management_no": "514 01046"}, {"name": "湯塩33～34", "lat": 0.0, "lng": 0.0, "management_no": "514 08023"}, {"name": "湯塩35～36", "lat": 0.0, "lng": 0.0, "management_no": "514 08025"}];
+  var mapEl = document.getElementById("share-map");
+  if (mapEl && Array.isArray(points) && points.length) {
+    var map = L.map("share-map", { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
+    var bounds = [];
+    points.forEach(function(p) {
+      var lat = Number(p.lat), lng = Number(p.lng);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      bounds.push([lat, lng]);
+      var m = L.marker([lat, lng]).addTo(map);
+      var label = (p.name || "現場") + (p.management_no ? (" (" + p.management_no + ")") : "");
+      m.bindTooltip(label, { permanent: false, direction: "top" });
+    });
+    if (bounds.length === 1) map.setView(bounds[0], 15);
+    else if (bounds.length > 1) map.fitBounds(bounds, { padding: [28, 28], maxZoom: 16 });
+  }
+})();
+  </script>
+</body>
+</html>
