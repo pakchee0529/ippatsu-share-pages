@@ -1,25 +1,53 @@
 # Immediate survey status workflow (portal side)
 
-See also: `ippatsu-pc/docs/immediate_survey_status_workflow.md` (canonical spec).
+Canonical backend: `ippatsu-pc-prod/supabase/functions/submit-survey-status-request`.
 
-## Portal changes (draft)
+## Portal changes
 
-- `scripts/portal_immediate_status_client.py` — JS snippets for B-plan
-- `scripts/generate_portal.py` — survey/negotiation HTML + client overlay
+- `scripts/portal_immediate_status_client.py` - JS snippets for portal actions
+- `scripts/generate_portal.py` - survey/negotiation HTML + live cases client
 - Default: `PORTAL_IMMEDIATE_STATUS=1` (set `0` for legacy A-plan JS)
 
-## Survey page button
+## Survey page buttons
 
-- Label: **現調済みにする**
-- Confirm → POST `action=mark_survey_done` to `update-portal-case-status`
-- Success: card hidden, status “交渉待ちへ移動済み”
+### 現調済みにする
 
-## Negotiation page button
+- Confirm -> POST `action=mark_survey_done`
+- Backend effect: `cases.status: survey_wait -> negotiation_wait`
+- Event: `case_events.event_type = survey_completed`
+- Success: card is hidden/reloaded into the negotiation list.
 
-- Label: **現調待ちに戻す** (enabled when immediate mode + apikey)
-- Confirm → POST `action=revert_to_survey_wait`
-- Success: card hidden
-- Promoted cards injected from embedded `PROMOTED_SURVEY_CANDIDATES` (survey static items JSON)
+### 返却候補にする
+
+- Confirm -> POST `action=mark_return_candidate`
+- Backend effect: `cases.status -> return_wait`
+- Event: `case_events.event_type = moved_to_return_wait`
+- The button label remains "返却候補にする", but the canonical status is the existing `return_wait`.
+- Success: card is hidden/reloaded into the negotiation/return-wait list.
+
+## Negotiation page buttons
+
+### 現調待ちに戻す
+
+- Confirm -> POST `action=revert_to_survey_wait`
+- Backend effect: `cases.status: negotiation_wait|return_wait -> survey_wait`
+- Event: `case_events.event_type = moved_to_survey`
+- Success: card is hidden/reloaded into the survey list.
+
+### Other live lifecycle buttons
+
+- `mark_entrustment_wait`: `negotiation_wait -> entrustment_wait`
+- `mark_construction_wait`: `entrustment_wait -> construction_wait`
+- `mark_returned`: `return_wait -> returned`
+
+These are already canonical `cases.status` transitions via the same Edge
+Function.
+
+## Overlay role
+
+- `portal_case_status_overrides.negotiation_wait` is legacy data from the old immediate-overlay workflow.
+- `portal_case_status_overrides.return_candidate` is legacy data from the old return-candidate overlay workflow.
+- New portal button operations should update `cases.status`, insert `case_events`, then delete any matching legacy overlay row.
 
 ## Mock generate
 

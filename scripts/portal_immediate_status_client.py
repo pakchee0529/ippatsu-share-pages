@@ -1,4 +1,4 @@
-"""Client-side JS snippets for immediate portal status (B-plan draft).
+"""Client-side JS snippets for immediate portal status (B-plan).
 
 Used by scripts/generate_portal.py. Keeps large JS blocks out of the main generator.
 """
@@ -26,7 +26,7 @@ def portal_immediate_status_enabled() -> bool:
 def fetch_portal_negotiation_wait_keys(endpoint: str, api_key: str) -> set[str]:
     """GET portal status overrides; return management_no_key set for negotiation_wait.
 
-    Used at generate time to omit overlay-promoted cases from the static survey list.
+    Used at generate time to omit legacy overlay-promoted cases from the static survey list.
     Never logs or prints api_key. On failure returns an empty set (non-fatal).
     """
     ep = (endpoint or "").strip()

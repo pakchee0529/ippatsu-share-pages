@@ -135,7 +135,7 @@ SURVEY_REPORT_TYPE_JP_RETURN_CANDIDATE = "返却候補"
 SURVEY_STATUS_REQUEST_ENDPOINT = (
     "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request"
 )
-# B-plan routes through deployed submit-survey-status-request (GET/POST overlay).
+# B-plan routes through deployed submit-survey-status-request (canonical cases.status write).
 PORTAL_CASE_STATUS_ENDPOINT = SURVEY_STATUS_REQUEST_ENDPOINT
 
 
@@ -6582,7 +6582,7 @@ def build_survey_html(
         )
         survey_requested_action = "mark_survey_done"
         survey_disclaimer = (
-            "「現調済みにする」で交渉待ちへ即時反映します（portal status overlay）。"
+            "「現調済みにする」で交渉待ちへ即時反映します（Supabase正本更新）。"
             "「返却候補にする」はサーバーに登録し、この一覧から非表示になります。"
             "誤操作は交渉待ちページの「現調待ちに戻す」で取り消せます。"
             "従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。"
@@ -7343,7 +7343,7 @@ body {{
 {two_map_click_handler_js()}
 {nearby_map_click_handler_js()}
 {render_survey_multipin_js()}
-  // Portal status overlay (B-plan) or legacy pending request (A-plan). Never embed service_role.
+  // Canonical portal status write (B-plan) or legacy pending request (A-plan). Never embed service_role.
 {survey_portal_js}
 }})();
   </script>
@@ -7387,7 +7387,7 @@ def build_negotiation_html(
     if use_immediate:
         negotiation_disclaimer = (
             "「現調待ちに戻す」は誤操作取り消し用です。"
-            "押すと portal status overlay を解除し、現調待ちページへ戻ります。"
+            "押すと Supabase正本を現調待ちへ戻し、現調待ちページへ戻ります。"
             "Google フォーム報告は現調待ちページから行ってください。"
         )
     else:
@@ -7855,7 +7855,7 @@ body {{
     crossorigin=""></script>
   <script>
 (function () {{
-  // Portal status overlay (B-plan immediate). Never embed service_role.
+  // Canonical portal status write (B-plan immediate). Never embed service_role.
 {negotiation_portal_js}
   const input = document.getElementById("caseSearch");
   const visibleCount = document.getElementById("caseVisibleCount");
@@ -10723,7 +10723,7 @@ def main() -> int:
         survey_coord_warnings = _drain_map_coord_warnings()
         if survey_coord_warnings:
             print(f"  survey_map_coord_warnings: {survey_coord_warnings}")
-        # M11 + B-plan: 交渉待ちページ。即時 status overlay（apikey は publishable/anon のみ）。
+        # M11 + B-plan: 交渉待ちページ。即時 cases.status 更新（apikey は publishable/anon のみ）。
         negotiation_items, negotiation_empty_note, negotiation_stats = (
             load_negotiation_public_items(repo_root)
         )
