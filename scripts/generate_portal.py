@@ -95,6 +95,9 @@ _STRICT_COMPLETION_REPORTS_SUMMARY_MISMATCH: bool = False
 _CROWN_HEAD = re.compile(
     r"^([\u3040-\u309F\u30A0-\u30FF\u4e00-\u9fff]+)(?=[0-9０-９]|$)"
 )
+_CROWN_HEAD = re.compile(
+    r"^([\u3040-\u309F\u30A0-\u30FF\u4e00-\u9fff]+)(?=\s*[0-9\uFF10-\uFF19~\uFF5E\u301C]|$)"
+)
 _ARTICLE_CARD = re.compile(
     r'<article\s+[^>]*\bclass\s*=\s*["\']card["\'][^>]*>', re.I
 )
