@@ -355,11 +355,13 @@ def render_live_cases_js(
     if(PAGE==="survey" && typeof bindNearbyButtons==="function") bindNearbyButtons(main);
     if(PAGE==="survey" && typeof bindSurveySearchControls==="function") bindSurveySearchControls();
     if(PAGE==="survey" && typeof applySurveySearchFilter==="function") applySurveySearchFilter();
+    if(PAGE!=="survey" && typeof window.applyPortalCaseSearchFilter==="function") window.applyPortalCaseSearchFilter();
   }}
   function renderCases(rows, counts) {{
     var grid=document.querySelector(".status-grid"); if(grid) grid.innerHTML=ORDER.map(function(st){{return '<a class="status-tile status-'+esc(st)+'" href="#status-'+esc(st)+'"><span>'+esc(LABELS[st])+'</span><strong>'+esc((counts&&counts[st])||0)+'</strong></a>';}}).join("");
     ORDER.forEach(function(st){{var section=document.getElementById("status-"+st); if(!section) return; var list=section.querySelector(".case-list"), group=rows.filter(function(r){{return t(r,"status")===st;}}), count=section.querySelector("[data-section-count]"); if(count) count.textContent=group.length+"件"; if(list) list.innerHTML=group.length?group.map(caseRow).join(""):'<p class="empty-note">対象はありません。</p>'; }});
     updateCount(rows.length);
+    if(typeof window.applyPortalCaseSearchFilter==="function") window.applyPortalCaseSearchFilter();
   }}
   function renderDetail(rows) {{
     var target=document.getElementById("liveCaseDetail"); if(!target) return; var r=rows[0]; if(!r) {{target.innerHTML='<p class="empty-note">対象案件が見つかりません。</p>'; return;}}
@@ -7360,6 +7362,330 @@ body {{
     return finalize_survey_map_html(html_body)
 
 
+def render_excel_reflection_pending_css() -> str:
+    return """
+.excel-reflection-panel {
+  margin: 0 0 0.85rem;
+  padding: 0.72rem 0.78rem;
+  border: 1px solid #fed7aa;
+  border-left: 4px solid #f59e0b;
+  border-radius: 14px;
+  background: #fffaf0;
+  color: var(--text);
+}
+.excel-reflection-panel[hidden] {
+  display: none !important;
+}
+.excel-reflection-panel.is-empty {
+  padding: 0.48rem 0.65rem;
+  border-left-width: 3px;
+  background: #fff;
+}
+.excel-reflection-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+.excel-reflection-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+.excel-reflection-count {
+  flex: 0 0 auto;
+  min-width: 2.2rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: #172033;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-align: center;
+}
+.excel-reflection-note,
+.excel-reflection-status {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.excel-reflection-status.is-error {
+  color: #92400e;
+}
+.excel-reflection-list {
+  display: grid;
+  gap: 0.48rem;
+  margin-top: 0.62rem;
+}
+.excel-reflection-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  background: #fff;
+}
+.excel-reflection-main {
+  min-width: 0;
+}
+.excel-reflection-mgmt {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0 0 0.22rem;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #243044;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.excel-reflection-label {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.excel-reflection-meta {
+  margin: 0.16rem 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+.excel-reflection-action {
+  min-height: 40px;
+  padding: 0.42rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid #d97706;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.excel-reflection-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+.excel-reflection-row-status {
+  grid-column: 1 / -1;
+  margin: -0.18rem 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+.excel-reflection-row-status.is-error {
+  color: #92400e;
+}
+@media (max-width: 560px) {
+  .excel-reflection-row {
+    grid-template-columns: 1fr;
+  }
+  .excel-reflection-action {
+    width: 100%;
+  }
+}
+"""
+
+
+def render_excel_reflection_pending_panel() -> str:
+    return """  <section class="excel-reflection-panel" data-excel-reflection-panel hidden aria-live="polite">
+    <div class="excel-reflection-head">
+      <h2 class="excel-reflection-title">Excel反映待ち</h2>
+      <span class="excel-reflection-count" data-excel-reflection-count>確認中</span>
+    </div>
+    <p class="excel-reflection-note" data-excel-reflection-note>共有HDDの交渉管理Excelへ転記後に反映済みにしてください。</p>
+    <p class="excel-reflection-status" data-excel-reflection-status hidden></p>
+    <div class="excel-reflection-list" data-excel-reflection-list></div>
+  </section>"""
+
+
+def render_excel_reflection_pending_js(
+    *,
+    reflected_status: str,
+    endpoint: str,
+    api_key: str,
+    jurisdiction: str | None = None,
+) -> str:
+    return f"""
+(function () {{
+  var PANEL = document.querySelector("[data-excel-reflection-panel]");
+  if (!PANEL) return;
+  var ENDPOINT = {json.dumps(endpoint, ensure_ascii=False)};
+  var API_KEY = {json.dumps(api_key, ensure_ascii=False)};
+  var REFLECTED_STATUS = {json.dumps(reflected_status, ensure_ascii=False)};
+  var JURISDICTION = {json.dumps(normalize_jurisdiction(jurisdiction), ensure_ascii=False)};
+  var countEl = PANEL.querySelector("[data-excel-reflection-count]");
+  var noteEl = PANEL.querySelector("[data-excel-reflection-note]");
+  var statusEl = PANEL.querySelector("[data-excel-reflection-status]");
+  var listEl = PANEL.querySelector("[data-excel-reflection-list]");
+
+  function esc(v) {{
+    return String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }}
+  function t(row, key) {{
+    return String((row && row[key]) || "").trim();
+  }}
+  function showPanel() {{
+    PANEL.hidden = false;
+  }}
+  function setStatus(message, isError) {{
+    if (!statusEl) return;
+    statusEl.hidden = !message;
+    statusEl.textContent = message || "";
+    statusEl.classList.toggle("is-error", !!isError);
+  }}
+  function compactEmpty(message) {{
+    showPanel();
+    PANEL.classList.add("is-empty");
+    if (countEl) countEl.textContent = "0";
+    if (noteEl) noteEl.textContent = message || "Excel反映待ちはありません。";
+    if (listEl) listEl.innerHTML = "";
+    setStatus("", false);
+  }}
+  function unavailable(message) {{
+    showPanel();
+    PANEL.classList.add("is-empty");
+    if (countEl) countEl.textContent = "-";
+    if (noteEl) noteEl.textContent = "Excel反映待ちを確認できません。";
+    if (listEl) listEl.innerHTML = "";
+    setStatus(message || "再読み込みして確認してください。", true);
+  }}
+  function formatDate(value) {{
+    if (!value) return "遷移日時不明";
+    var d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value;
+    return d.toLocaleString("ja-JP", {{ month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }});
+  }}
+  function rowMeta(row) {{
+    var parts = [];
+    if (t(row, "jurisdiction")) parts.push(t(row, "jurisdiction"));
+    parts.push(formatDate(t(row, "transition_at")));
+    return parts.join(" / ");
+  }}
+  function fetchPending() {{
+    if (!ENDPOINT || !API_KEY) return Promise.reject(new Error("api_key_missing"));
+    var params = new URLSearchParams();
+    params.set("list", "excel_reflection_pending");
+    params.set("statuses", REFLECTED_STATUS);
+    return fetch(ENDPOINT + "?" + params.toString(), {{
+      headers: {{ apikey: API_KEY, Accept: "application/json" }}
+    }}).then(function (res) {{
+      return res.json().catch(function () {{ return {{}}; }}).then(function (body) {{
+        if (!res.ok || !body || body.ok !== true) throw new Error((body && body.error) || ("http_" + res.status));
+        if (!Array.isArray(body.excel_reflection_pending)) throw new Error("excel_reflection_endpoint_not_deployed");
+        return body.excel_reflection_pending;
+      }});
+    }});
+  }}
+  function filterRows(rows) {{
+    rows = rows.filter(function (row) {{ return t(row, "status") === REFLECTED_STATUS; }});
+    if (!JURISDICTION) return rows;
+    var withJurisdiction = rows.filter(function (row) {{ return !!t(row, "jurisdiction"); }});
+    if (rows.length && !withJurisdiction.length) return null;
+    return withJurisdiction.filter(function (row) {{ return t(row, "jurisdiction") === JURISDICTION; }});
+  }}
+  function markReflected(row) {{
+    var payload = {{
+      action: "mark_excel_reflected",
+      management_no_key: t(row, "management_no_key"),
+      reflected_status: REFLECTED_STATUS,
+      source: "portal_excel_reflection"
+    }};
+    return fetch(ENDPOINT, {{
+      method: "POST",
+      headers: {{ "Content-Type": "application/json", apikey: API_KEY }},
+      body: JSON.stringify(payload)
+    }}).then(function (res) {{
+      return res.json().catch(function () {{ return {{}}; }}).then(function (body) {{
+        if (!res.ok || !body || body.ok !== true) throw new Error((body && body.error) || ("http_" + res.status));
+        return body;
+      }});
+    }});
+  }}
+  function bindRows(rows) {{
+    if (!listEl) return;
+    var byKey = Object.create(null);
+    rows.forEach(function (row) {{ byKey[t(row, "management_no_key")] = row; }});
+    listEl.querySelectorAll("[data-excel-reflection-action]").forEach(function (button) {{
+      button.addEventListener("click", function () {{
+        var key = button.getAttribute("data-management-no-key") || "";
+        var row = byKey[key];
+        if (!row || button.disabled) return;
+        var ok = window.confirm("共有HDDの交渉管理Excelへ転記済みですか？\\n確認後、この案件をExcel反映済みにします。");
+        if (!ok) return;
+        var rowEl = button.closest(".excel-reflection-row");
+        var rowStatus = rowEl ? rowEl.querySelector("[data-excel-reflection-row-status]") : null;
+        button.disabled = true;
+        button.textContent = "送信中...";
+        if (rowStatus) {{
+          rowStatus.textContent = "";
+          rowStatus.classList.remove("is-error");
+        }}
+        markReflected(row).then(function () {{
+          if (rowStatus) rowStatus.textContent = "反映済みにしました";
+          if (rowEl) rowEl.remove();
+          var remaining = listEl.querySelectorAll(".excel-reflection-row").length;
+          if (countEl) countEl.textContent = String(remaining);
+          if (!remaining) compactEmpty("Excel反映待ちはありません。");
+        }}).catch(function () {{
+          button.disabled = false;
+          button.textContent = "Excel反映済み";
+          if (rowStatus) {{
+            rowStatus.textContent = "反映できませんでした。再読み込みして確認してください。";
+            rowStatus.classList.add("is-error");
+          }}
+        }});
+      }});
+    }});
+  }}
+  function renderRows(rows) {{
+    if (!rows.length) {{
+      compactEmpty("Excel反映待ちはありません。");
+      return;
+    }}
+    showPanel();
+    PANEL.classList.remove("is-empty");
+    if (countEl) countEl.textContent = String(rows.length);
+    if (noteEl) noteEl.textContent = "共有HDDの交渉管理Excelへ転記後に反映済みにしてください。";
+    setStatus("", false);
+    listEl.innerHTML = rows.map(function (row) {{
+      var key = t(row, "management_no_key");
+      return '<article class="excel-reflection-row" data-management-no-key="' + esc(key) + '">' +
+        '<div class="excel-reflection-main">' +
+          '<p class="excel-reflection-mgmt">' + esc(t(row, "management_no") || key || "-") + '</p>' +
+          '<p class="excel-reflection-label">' + esc(t(row, "label") || t(row, "span_key") || "-") + '</p>' +
+          '<p class="excel-reflection-meta">' + esc(rowMeta(row)) + '</p>' +
+        '</div>' +
+        '<button type="button" class="excel-reflection-action" data-excel-reflection-action data-management-no-key="' + esc(key) + '">Excel反映済み</button>' +
+        '<p class="excel-reflection-row-status" data-excel-reflection-row-status></p>' +
+      '</article>';
+    }}).join("");
+    bindRows(rows);
+  }}
+  function refreshExcelReflection() {{
+    fetchPending().then(function (rows) {{
+      rows = filterRows(rows);
+      if (rows === null) {{
+        unavailable("管轄情報を確認できないため、全件表示はしていません。");
+        return;
+      }}
+      renderRows(rows);
+    }}).catch(function () {{
+      unavailable("反映できませんでした。再読み込みして確認してください。");
+    }});
+  }}
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refreshExcelReflection);
+  else refreshExcelReflection();
+}})();
+"""
+
+
 def build_negotiation_html(
     items: list[SurveyPublicItem],
     empty_note: str,
@@ -7471,6 +7797,13 @@ def build_negotiation_html(
         api_key=status_request_api_key,
         jurisdiction=jurisdiction_key,
     )
+    excel_reflection_panel = render_excel_reflection_pending_panel()
+    excel_reflection_js = render_excel_reflection_pending_js(
+        reflected_status="negotiation_wait",
+        endpoint=portal_status_endpoint,
+        api_key=status_request_api_key,
+        jurisdiction=jurisdiction_key,
+    )
     subpage_header = render_portal_subpage_header(
         f"交渉待ち一覧{jurisdiction_suffix}",
         page="negotiation",
@@ -7534,6 +7867,7 @@ body {{
 }}
 {subpage_menu_css}
 {return_candidate_css}
+{render_excel_reflection_pending_css()}
 .lead {{
   margin: 0 0 0.5rem;
   font-size: 0.9rem;
@@ -7842,6 +8176,7 @@ body {{
     <a href="{subpage_base_prefix}entrustment/">付託待ちへ</a>
   </nav>
   <p id="liveCasesStatus" class="survey-overlay-warning" hidden role="status"></p>
+{excel_reflection_panel}
   <div class="case-toolbar" role="search">
     <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名で検索" autocomplete="off">
     <div class="case-total"><span>表示</span><strong id="caseVisibleCount">{len(items)}</strong></div>
@@ -7863,10 +8198,10 @@ body {{
   const input = document.getElementById("caseSearch");
   const visibleCount = document.getElementById("caseVisibleCount");
   const empty = document.getElementById("caseFilterEmpty");
-  const rows = Array.from(document.querySelectorAll(".negotiation-card"));
   function applyFilter() {{
     const q = (input.value || "").trim().toLowerCase();
     let visible = 0;
+    const rows = Array.from(document.querySelectorAll(".negotiation-card"));
     rows.forEach((row) => {{
       const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
       const hit = !q || haystack.includes(q);
@@ -7877,11 +8212,13 @@ body {{
     if (empty) empty.classList.toggle("is-visible", visible === 0);
   }}
   if (input) input.addEventListener("input", applyFilter);
+  window.applyPortalCaseSearchFilter = applyFilter;
 }})();
   </script>
-  <script>
+<script>
 {subpage_menu_js}
 {live_cases_js}
+{excel_reflection_js}
   </script>
 </body>
 </html>
@@ -8781,6 +9118,12 @@ def build_entrustment_html(
         endpoint=portal_status_endpoint,
         api_key=status_request_api_key,
     )
+    excel_reflection_panel = render_excel_reflection_pending_panel()
+    excel_reflection_js = render_excel_reflection_pending_js(
+        reflected_status="entrustment_wait",
+        endpoint=portal_status_endpoint,
+        api_key=status_request_api_key,
+    )
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -8813,6 +9156,7 @@ body {{
   line-height: 1.5;
 }}
 {subpage_menu_css}
+{render_excel_reflection_pending_css()}
 .lead {{
   margin: 0 0 0.9rem;
   color: var(--muted);
@@ -9007,18 +9351,19 @@ body {{
 </head>
 <body>
 {subpage_header}
-<main>
   <p class="lead">付託待ちのCSを確認する閲覧専用ページです。地主名・住所・連絡先などの個人情報は表示しません。</p>
   <nav class="status-navigation" aria-label="関連ページ">
     <a href="../cases/#status-entrustment_wait">案件管理で見る</a>
     <a href="../negotiation/">交渉待ちへ</a>
   </nav>
   <p id="liveCasesStatus" class="live-cases-status" hidden role="status"></p>
+{excel_reflection_panel}
   <div class="case-toolbar" role="search">
     <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名で検索" autocomplete="off">
     <div class="case-total"><span>表示</span><strong id="caseVisibleCount">{len(items)}</strong></div>
   </div>
   <p id="caseFilterEmpty" class="filter-empty">一致する案件はありません。</p>
+<main>
   <div class="card-list" role="list">
 {items_html}
   </div>
@@ -9027,14 +9372,15 @@ body {{
 <script>
 {subpage_menu_js}
 {live_cases_js}
+{excel_reflection_js}
 (() => {{
   const input = document.getElementById("caseSearch");
   const visibleCount = document.getElementById("caseVisibleCount");
   const empty = document.getElementById("caseFilterEmpty");
-  const rows = Array.from(document.querySelectorAll(".case-card"));
   function applyFilter() {{
     const q = (input.value || "").trim().toLowerCase();
     let visible = 0;
+    const rows = Array.from(document.querySelectorAll(".case-card"));
     rows.forEach((row) => {{
       const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
       const hit = !q || haystack.includes(q);
@@ -9045,6 +9391,7 @@ body {{
     if (empty) empty.classList.toggle("is-visible", visible === 0);
   }}
   if (input) input.addEventListener("input", applyFilter);
+  window.applyPortalCaseSearchFilter = applyFilter;
 }})();
 </script>
 </body>
@@ -9396,11 +9743,11 @@ body {{
   const input = document.getElementById("caseSearch");
   const visibleCount = document.getElementById("caseVisibleCount");
   const empty = document.getElementById("caseFilterEmpty");
-  const rows = Array.from(document.querySelectorAll(".case-row"));
   const sections = Array.from(document.querySelectorAll(".status-section"));
   function applyFilter() {{
     const q = (input.value || "").trim().toLowerCase();
     let visible = 0;
+    const rows = Array.from(document.querySelectorAll(".case-row"));
     rows.forEach((row) => {{
       const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
       const hit = !q || haystack.includes(q);
@@ -9417,6 +9764,7 @@ body {{
     if (empty) empty.classList.toggle("is-visible", visible === 0);
   }}
   if (input) input.addEventListener("input", applyFilter);
+  window.applyPortalCaseSearchFilter = applyFilter;
 }})();
 </script>
 </body>

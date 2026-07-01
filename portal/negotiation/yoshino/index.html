@@ -182,6 +182,134 @@ a.portal-menu-item:focus-visible {
   outline: none;
 }
 
+
+.excel-reflection-panel {
+  margin: 0 0 0.85rem;
+  padding: 0.72rem 0.78rem;
+  border: 1px solid #fed7aa;
+  border-left: 4px solid #f59e0b;
+  border-radius: 14px;
+  background: #fffaf0;
+  color: var(--text);
+}
+.excel-reflection-panel[hidden] {
+  display: none !important;
+}
+.excel-reflection-panel.is-empty {
+  padding: 0.48rem 0.65rem;
+  border-left-width: 3px;
+  background: #fff;
+}
+.excel-reflection-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+.excel-reflection-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+.excel-reflection-count {
+  flex: 0 0 auto;
+  min-width: 2.2rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: #172033;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-align: center;
+}
+.excel-reflection-note,
+.excel-reflection-status {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.excel-reflection-status.is-error {
+  color: #92400e;
+}
+.excel-reflection-list {
+  display: grid;
+  gap: 0.48rem;
+  margin-top: 0.62rem;
+}
+.excel-reflection-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  background: #fff;
+}
+.excel-reflection-main {
+  min-width: 0;
+}
+.excel-reflection-mgmt {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0 0 0.22rem;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #243044;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.excel-reflection-label {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.excel-reflection-meta {
+  margin: 0.16rem 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+.excel-reflection-action {
+  min-height: 40px;
+  padding: 0.42rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid #d97706;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.excel-reflection-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+.excel-reflection-row-status {
+  grid-column: 1 / -1;
+  margin: -0.18rem 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+.excel-reflection-row-status.is-error {
+  color: #92400e;
+}
+@media (max-width: 560px) {
+  .excel-reflection-row {
+    grid-template-columns: 1fr;
+  }
+  .excel-reflection-action {
+    width: 100%;
+  }
+}
+
 .lead {
   margin: 0 0 0.5rem;
   font-size: 0.9rem;
@@ -528,8 +656,8 @@ a.portal-menu-item:focus-visible {
       </div>
     </div>
   </header>
-  <p class="lead">現調済み・対応中の案件です。地主交渉に進む案件を確認します。（表示 0 件）</p>
-  <p class="report-disclaimer">「現調待ちに戻す」は誤操作取り消し用です。押すと portal status overlay を解除し、現調待ちページへ戻ります。Google フォーム報告は現調待ちページから行ってください。</p>
+  <p class="lead">現調済み・対応中の案件です。地主交渉に進む案件を確認します。（表示 7 件）</p>
+  <p class="report-disclaimer">「現調待ちに戻す」は誤操作取り消し用です。押すと Supabase正本を現調待ちへ戻し、現調待ちページへ戻ります。Google フォーム報告は現調待ちページから行ってください。</p>
   <nav class="status-navigation jurisdiction-navigation" aria-label="管轄別ページ">
     <a class="" href="../">全体</a>
     <a class="" href="../gojo/">五條</a>
@@ -542,17 +670,137 @@ a.portal-menu-item:focus-visible {
     <a href="../../entrustment/">付託待ちへ</a>
   </nav>
   <p id="liveCasesStatus" class="survey-overlay-warning" hidden role="status"></p>
+  <section class="excel-reflection-panel" data-excel-reflection-panel hidden aria-live="polite">
+    <div class="excel-reflection-head">
+      <h2 class="excel-reflection-title">Excel反映待ち</h2>
+      <span class="excel-reflection-count" data-excel-reflection-count>確認中</span>
+    </div>
+    <p class="excel-reflection-note" data-excel-reflection-note>共有HDDの交渉管理Excelへ転記後に反映済みにしてください。</p>
+    <p class="excel-reflection-status" data-excel-reflection-status hidden></p>
+    <div class="excel-reflection-list" data-excel-reflection-list></div>
+  </section>
   <div class="case-toolbar" role="search">
     <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名で検索" autocomplete="off">
-    <div class="case-total"><span>表示</span><strong id="caseVisibleCount">0</strong></div>
+    <div class="case-total"><span>表示</span><strong id="caseVisibleCount">7</strong></div>
   </div>
   <p id="caseFilterEmpty" class="filter-empty">一致する案件はありません。</p>
   <main>
-<p class="muted-tiny">交渉待ちリストはまだありません。</p>
+<article class="card negotiation-card" data-card-index="0"
+  data-search="51506304 51506304 千股43n13～43n14 交渉待ち"
+  data-management-no-key="51506304"
+  data-management-no="51506304"
+  data-label="千股43n13～43n14"
+  data-jurisdiction="yoshino">
+  <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
+    <h2 class="card-title">千股43n13～43n14</h2>
+    <p class="item-mgmt">51506304</p>
+    <div class="card-actions"></div>
+    <div class="card-actions card-actions-revert" role="group" aria-label="交渉待ちの状態変更"><button type="button" class="btn btn-entrustment" data-negotiation-entrustment>付託待ちにする</button><button type="button" class="btn btn-revert" data-negotiation-revert>現調待ちに戻す</button><p class="revert-hint muted-tiny">承諾書・地主情報の確認後に付託待ちへ進めます。誤操作時は現調待ちへ戻せます。</p><p class="negotiation-revert-status muted-tiny" data-negotiation-revert-status hidden role="status"></p><p class="portal-transition-status muted-tiny" data-portal-transition-status hidden role="status"></p></div>
+  </div>
+
+
+</article>
+<article class="card negotiation-card" data-card-index="1"
+  data-search="51506475 51506475 津風呂16g4n5～16g4n6 交渉待ち"
+  data-management-no-key="51506475"
+  data-management-no="51506475"
+  data-label="津風呂16g4n5～16g4n6"
+  data-jurisdiction="yoshino">
+  <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
+    <h2 class="card-title">津風呂16g4n5～16g4n6</h2>
+    <p class="item-mgmt">51506475</p>
+    <div class="card-actions"></div>
+    <div class="card-actions card-actions-revert" role="group" aria-label="交渉待ちの状態変更"><button type="button" class="btn btn-entrustment" data-negotiation-entrustment>付託待ちにする</button><button type="button" class="btn btn-revert" data-negotiation-revert>現調待ちに戻す</button><p class="revert-hint muted-tiny">承諾書・地主情報の確認後に付託待ちへ進めます。誤操作時は現調待ちへ戻せます。</p><p class="negotiation-revert-status muted-tiny" data-negotiation-revert-status hidden role="status"></p><p class="portal-transition-status muted-tiny" data-portal-transition-status hidden role="status"></p></div>
+  </div>
+
+
+</article>
+<article class="card negotiation-card" data-card-index="2"
+  data-search="51509102 51509102 三津32～33 交渉待ち"
+  data-management-no-key="51509102"
+  data-management-no="51509102"
+  data-label="三津32～33"
+  data-jurisdiction="yoshino">
+  <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
+    <h2 class="card-title">三津32～33</h2>
+    <p class="item-mgmt">51509102</p>
+    <div class="card-actions"></div>
+    <div class="card-actions card-actions-revert" role="group" aria-label="交渉待ちの状態変更"><button type="button" class="btn btn-entrustment" data-negotiation-entrustment>付託待ちにする</button><button type="button" class="btn btn-revert" data-negotiation-revert>現調待ちに戻す</button><p class="revert-hint muted-tiny">承諾書・地主情報の確認後に付託待ちへ進めます。誤操作時は現調待ちへ戻せます。</p><p class="negotiation-revert-status muted-tiny" data-negotiation-revert-status hidden role="status"></p><p class="portal-transition-status muted-tiny" data-portal-transition-status hidden role="status"></p></div>
+  </div>
+
+
+</article>
+<article class="card negotiation-card" data-card-index="3"
+  data-search="51509103 51509103 三津33～34 交渉待ち"
+  data-management-no-key="51509103"
+  data-management-no="51509103"
+  data-label="三津33～34"
+  data-jurisdiction="yoshino">
+  <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
+    <h2 class="card-title">三津33～34</h2>
+    <p class="item-mgmt">51509103</p>
+    <div class="card-actions"></div>
+    <div class="card-actions card-actions-revert" role="group" aria-label="交渉待ちの状態変更"><button type="button" class="btn btn-entrustment" data-negotiation-entrustment>付託待ちにする</button><button type="button" class="btn btn-revert" data-negotiation-revert>現調待ちに戻す</button><p class="revert-hint muted-tiny">承諾書・地主情報の確認後に付託待ちへ進めます。誤操作時は現調待ちへ戻せます。</p><p class="negotiation-revert-status muted-tiny" data-negotiation-revert-status hidden role="status"></p><p class="portal-transition-status muted-tiny" data-portal-transition-status hidden role="status"></p></div>
+  </div>
+
+
+</article>
+<article class="card negotiation-card" data-card-index="4"
+  data-search="51511213 51511213 千股18～18e1 交渉待ち"
+  data-management-no-key="51511213"
+  data-management-no="51511213"
+  data-label="千股18～18e1"
+  data-jurisdiction="yoshino">
+  <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
+    <h2 class="card-title">千股18～18e1</h2>
+    <p class="item-mgmt">51511213</p>
+    <div class="card-actions"></div>
+    <div class="card-actions card-actions-revert" role="group" aria-label="交渉待ちの状態変更"><button type="button" class="btn btn-entrustment" data-negotiation-entrustment>付託待ちにする</button><button type="button" class="btn btn-revert" data-negotiation-revert>現調待ちに戻す</button><p class="revert-hint muted-tiny">承諾書・地主情報の確認後に付託待ちへ進めます。誤操作時は現調待ちへ戻せます。</p><p class="negotiation-revert-status muted-tiny" data-negotiation-revert-status hidden role="status"></p><p class="portal-transition-status muted-tiny" data-portal-transition-status hidden role="status"></p></div>
+  </div>
+
+
+</article>
+<article class="card negotiation-card" data-card-index="5"
+  data-search="51511528 51511528 竜門67s7e2～67s7e3 交渉待ち"
+  data-management-no-key="51511528"
+  data-management-no="51511528"
+  data-label="竜門67s7e2～67s7e3"
+  data-jurisdiction="yoshino">
+  <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
+    <h2 class="card-title">竜門67s7e2～67s7e3</h2>
+    <p class="item-mgmt">51511528</p>
+    <div class="card-actions"></div>
+    <div class="card-actions card-actions-revert" role="group" aria-label="交渉待ちの状態変更"><button type="button" class="btn btn-entrustment" data-negotiation-entrustment>付託待ちにする</button><button type="button" class="btn btn-revert" data-negotiation-revert>現調待ちに戻す</button><p class="revert-hint muted-tiny">承諾書・地主情報の確認後に付託待ちへ進めます。誤操作時は現調待ちへ戻せます。</p><p class="negotiation-revert-status muted-tiny" data-negotiation-revert-status hidden role="status"></p><p class="portal-transition-status muted-tiny" data-portal-transition-status hidden role="status"></p></div>
+  </div>
+
+
+</article>
+<article class="card negotiation-card" data-card-index="6"
+  data-search="51512137 51512137 鹿路トンネル3w1～3w2 交渉待ち"
+  data-management-no-key="51512137"
+  data-management-no="51512137"
+  data-label="鹿路トンネル3w1～3w2"
+  data-jurisdiction="yoshino">
+  <div class="card-head">
+    <span class="case-status-pill status-negotiation_wait">交渉待ち</span>
+    <h2 class="card-title">鹿路トンネル3w1～3w2</h2>
+    <p class="item-mgmt">51512137</p>
+    <div class="card-actions"></div>
+    <div class="card-actions card-actions-revert" role="group" aria-label="交渉待ちの状態変更"><button type="button" class="btn btn-entrustment" data-negotiation-entrustment>付託待ちにする</button><button type="button" class="btn btn-revert" data-negotiation-revert>現調待ちに戻す</button><p class="revert-hint muted-tiny">承諾書・地主情報の確認後に付託待ちへ進めます。誤操作時は現調待ちへ戻せます。</p><p class="negotiation-revert-status muted-tiny" data-negotiation-revert-status hidden role="status"></p><p class="portal-transition-status muted-tiny" data-portal-transition-status hidden role="status"></p></div>
+  </div>
+
+
+</article>
 
   <section class="return-candidate-section" aria-labelledby="return-wait-heading">
     <h2 id="return-wait-heading">返却待ち（正本）</h2>
-    <p class="muted-tiny return-candidate-note">DB 0 件 / 表示 0 件 / overlay補助 3 件</p>
+    <p class="muted-tiny return-candidate-note">DB 0 件 / 表示 0 件 / overlay補助 4 件</p>
     <div class="return-candidate-list" role="list">
     <p class="muted-tiny">Supabase正本の返却待ちはありません。</p>
     </div>
@@ -566,7 +814,7 @@ a.portal-menu-item:focus-visible {
     crossorigin=""></script>
   <script>
 (function () {
-  // Portal status overlay (B-plan immediate). Never embed service_role.
+  // Canonical portal status write (B-plan immediate). Never embed service_role.
 
   var PORTAL_STATUS_ENDPOINT = "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request";
   var PORTAL_STATUS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
@@ -1018,10 +1266,10 @@ a.portal-menu-item:focus-visible {
   const input = document.getElementById("caseSearch");
   const visibleCount = document.getElementById("caseVisibleCount");
   const empty = document.getElementById("caseFilterEmpty");
-  const rows = Array.from(document.querySelectorAll(".negotiation-card"));
   function applyFilter() {
     const q = (input.value || "").trim().toLowerCase();
     let visible = 0;
+    const rows = Array.from(document.querySelectorAll(".negotiation-card"));
     rows.forEach((row) => {
       const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
       const hit = !q || haystack.includes(q);
@@ -1032,9 +1280,10 @@ a.portal-menu-item:focus-visible {
     if (empty) empty.classList.toggle("is-visible", visible === 0);
   }
   if (input) input.addEventListener("input", applyFilter);
+  window.applyPortalCaseSearchFilter = applyFilter;
 })();
   </script>
-  <script>
+<script>
 
 (function () {
   var btn = document.getElementById("portal-menu-btn");
@@ -1163,11 +1412,13 @@ a.portal-menu-item:focus-visible {
     if(PAGE==="survey" && typeof bindNearbyButtons==="function") bindNearbyButtons(main);
     if(PAGE==="survey" && typeof bindSurveySearchControls==="function") bindSurveySearchControls();
     if(PAGE==="survey" && typeof applySurveySearchFilter==="function") applySurveySearchFilter();
+    if(PAGE!=="survey" && typeof window.applyPortalCaseSearchFilter==="function") window.applyPortalCaseSearchFilter();
   }
   function renderCases(rows, counts) {
     var grid=document.querySelector(".status-grid"); if(grid) grid.innerHTML=ORDER.map(function(st){return '<a class="status-tile status-'+esc(st)+'" href="#status-'+esc(st)+'"><span>'+esc(LABELS[st])+'</span><strong>'+esc((counts&&counts[st])||0)+'</strong></a>';}).join("");
     ORDER.forEach(function(st){var section=document.getElementById("status-"+st); if(!section) return; var list=section.querySelector(".case-list"), group=rows.filter(function(r){return t(r,"status")===st;}), count=section.querySelector("[data-section-count]"); if(count) count.textContent=group.length+"件"; if(list) list.innerHTML=group.length?group.map(caseRow).join(""):'<p class="empty-note">対象はありません。</p>'; });
     updateCount(rows.length);
+    if(typeof window.applyPortalCaseSearchFilter==="function") window.applyPortalCaseSearchFilter();
   }
   function renderDetail(rows) {
     var target=document.getElementById("liveCaseDetail"); if(!target) return; var r=rows[0]; if(!r) {target.innerHTML='<p class="empty-note">対象案件が見つかりません。</p>'; return;}
@@ -1182,6 +1433,178 @@ a.portal-menu-item:focus-visible {
       .catch(function(e){setStatus("Supabase最新取得に失敗しました。生成時点の表示を使っています: "+(e&&e.message?e.message:e), true);});
   }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", refresh); else refresh();
+})();
+
+
+(function () {
+  var PANEL = document.querySelector("[data-excel-reflection-panel]");
+  if (!PANEL) return;
+  var ENDPOINT = "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request";
+  var API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
+  var REFLECTED_STATUS = "negotiation_wait";
+  var JURISDICTION = "yoshino";
+  var countEl = PANEL.querySelector("[data-excel-reflection-count]");
+  var noteEl = PANEL.querySelector("[data-excel-reflection-note]");
+  var statusEl = PANEL.querySelector("[data-excel-reflection-status]");
+  var listEl = PANEL.querySelector("[data-excel-reflection-list]");
+
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function t(row, key) {
+    return String((row && row[key]) || "").trim();
+  }
+  function showPanel() {
+    PANEL.hidden = false;
+  }
+  function setStatus(message, isError) {
+    if (!statusEl) return;
+    statusEl.hidden = !message;
+    statusEl.textContent = message || "";
+    statusEl.classList.toggle("is-error", !!isError);
+  }
+  function compactEmpty(message) {
+    showPanel();
+    PANEL.classList.add("is-empty");
+    if (countEl) countEl.textContent = "0";
+    if (noteEl) noteEl.textContent = message || "Excel反映待ちはありません。";
+    if (listEl) listEl.innerHTML = "";
+    setStatus("", false);
+  }
+  function unavailable(message) {
+    showPanel();
+    PANEL.classList.add("is-empty");
+    if (countEl) countEl.textContent = "-";
+    if (noteEl) noteEl.textContent = "Excel反映待ちを確認できません。";
+    if (listEl) listEl.innerHTML = "";
+    setStatus(message || "再読み込みして確認してください。", true);
+  }
+  function formatDate(value) {
+    if (!value) return "遷移日時不明";
+    var d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value;
+    return d.toLocaleString("ja-JP", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+  }
+  function rowMeta(row) {
+    var parts = [];
+    if (t(row, "jurisdiction")) parts.push(t(row, "jurisdiction"));
+    parts.push(formatDate(t(row, "transition_at")));
+    return parts.join(" / ");
+  }
+  function fetchPending() {
+    if (!ENDPOINT || !API_KEY) return Promise.reject(new Error("api_key_missing"));
+    var params = new URLSearchParams();
+    params.set("list", "excel_reflection_pending");
+    params.set("statuses", REFLECTED_STATUS);
+    return fetch(ENDPOINT + "?" + params.toString(), {
+      headers: { apikey: API_KEY, Accept: "application/json" }
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (body) {
+        if (!res.ok || !body || body.ok !== true) throw new Error((body && body.error) || ("http_" + res.status));
+        if (!Array.isArray(body.excel_reflection_pending)) throw new Error("excel_reflection_endpoint_not_deployed");
+        return body.excel_reflection_pending;
+      });
+    });
+  }
+  function filterRows(rows) {
+    rows = rows.filter(function (row) { return t(row, "status") === REFLECTED_STATUS; });
+    if (!JURISDICTION) return rows;
+    var withJurisdiction = rows.filter(function (row) { return !!t(row, "jurisdiction"); });
+    if (rows.length && !withJurisdiction.length) return null;
+    return withJurisdiction.filter(function (row) { return t(row, "jurisdiction") === JURISDICTION; });
+  }
+  function markReflected(row) {
+    var payload = {
+      action: "mark_excel_reflected",
+      management_no_key: t(row, "management_no_key"),
+      reflected_status: REFLECTED_STATUS,
+      source: "portal_excel_reflection"
+    };
+    return fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: API_KEY },
+      body: JSON.stringify(payload)
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (body) {
+        if (!res.ok || !body || body.ok !== true) throw new Error((body && body.error) || ("http_" + res.status));
+        return body;
+      });
+    });
+  }
+  function bindRows(rows) {
+    if (!listEl) return;
+    var byKey = Object.create(null);
+    rows.forEach(function (row) { byKey[t(row, "management_no_key")] = row; });
+    listEl.querySelectorAll("[data-excel-reflection-action]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var key = button.getAttribute("data-management-no-key") || "";
+        var row = byKey[key];
+        if (!row || button.disabled) return;
+        var ok = window.confirm("共有HDDの交渉管理Excelへ転記済みですか？\n確認後、この案件をExcel反映済みにします。");
+        if (!ok) return;
+        var rowEl = button.closest(".excel-reflection-row");
+        var rowStatus = rowEl ? rowEl.querySelector("[data-excel-reflection-row-status]") : null;
+        button.disabled = true;
+        button.textContent = "送信中...";
+        if (rowStatus) {
+          rowStatus.textContent = "";
+          rowStatus.classList.remove("is-error");
+        }
+        markReflected(row).then(function () {
+          if (rowStatus) rowStatus.textContent = "反映済みにしました";
+          if (rowEl) rowEl.remove();
+          var remaining = listEl.querySelectorAll(".excel-reflection-row").length;
+          if (countEl) countEl.textContent = String(remaining);
+          if (!remaining) compactEmpty("Excel反映待ちはありません。");
+        }).catch(function () {
+          button.disabled = false;
+          button.textContent = "Excel反映済み";
+          if (rowStatus) {
+            rowStatus.textContent = "反映できませんでした。再読み込みして確認してください。";
+            rowStatus.classList.add("is-error");
+          }
+        });
+      });
+    });
+  }
+  function renderRows(rows) {
+    if (!rows.length) {
+      compactEmpty("Excel反映待ちはありません。");
+      return;
+    }
+    showPanel();
+    PANEL.classList.remove("is-empty");
+    if (countEl) countEl.textContent = String(rows.length);
+    if (noteEl) noteEl.textContent = "共有HDDの交渉管理Excelへ転記後に反映済みにしてください。";
+    setStatus("", false);
+    listEl.innerHTML = rows.map(function (row) {
+      var key = t(row, "management_no_key");
+      return '<article class="excel-reflection-row" data-management-no-key="' + esc(key) + '">' +
+        '<div class="excel-reflection-main">' +
+          '<p class="excel-reflection-mgmt">' + esc(t(row, "management_no") || key || "-") + '</p>' +
+          '<p class="excel-reflection-label">' + esc(t(row, "label") || t(row, "span_key") || "-") + '</p>' +
+          '<p class="excel-reflection-meta">' + esc(rowMeta(row)) + '</p>' +
+        '</div>' +
+        '<button type="button" class="excel-reflection-action" data-excel-reflection-action data-management-no-key="' + esc(key) + '">Excel反映済み</button>' +
+        '<p class="excel-reflection-row-status" data-excel-reflection-row-status></p>' +
+      '</article>';
+    }).join("");
+    bindRows(rows);
+  }
+  function refreshExcelReflection() {
+    fetchPending().then(function (rows) {
+      rows = filterRows(rows);
+      if (rows === null) {
+        unavailable("管轄情報を確認できないため、全件表示はしていません。");
+        return;
+      }
+      renderRows(rows);
+    }).catch(function () {
+      unavailable("反映できませんでした。再読み込みして確認してください。");
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refreshExcelReflection);
+  else refreshExcelReflection();
 })();
 
   </script>
