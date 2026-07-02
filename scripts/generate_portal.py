@@ -335,6 +335,10 @@ def render_live_cases_js(
       }});
     }});
   }}
+  function notifyLiveCasesRendered() {{
+    try {{ window.dispatchEvent(new CustomEvent("portal:live-cases-rendered", {{detail: {{page: PAGE}}}})); }}
+    catch (_) {{ window.dispatchEvent(new Event("portal:live-cases-rendered")); }}
+  }}
   function mapBtn(r) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"); return lat&&lng?'<a class="btn btn-map" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q='+encodeURIComponent(lat+","+lng)+'">地図を開く</a>':""; }}
   function nearbyBtn(r, idx) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<button type="button" class="btn btn-nearby-map" data-nearby-open data-nearby-wrap="live-nearby-wrap-'+idx+'" data-nearby-map="live-nearby-map-'+idx+'" aria-expanded="false" aria-controls="live-nearby-wrap-'+idx+'">半径200m</button>'; }}
   function nearbyWrap(r, idx) {{ var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<p class="nearby-map-status muted-tiny" data-nearby-status hidden role="status"></p><div class="nearby-map-wrap" id="live-nearby-wrap-'+idx+'" hidden><div id="live-nearby-map-'+idx+'" class="share-two-map-canvas" role="application" aria-label="半径200m電柱地図"></div></div>'; }}
@@ -355,11 +359,13 @@ def render_live_cases_js(
     if(PAGE==="survey" && typeof bindNearbyButtons==="function") bindNearbyButtons(main);
     if(PAGE==="survey" && typeof bindSurveySearchControls==="function") bindSurveySearchControls();
     if(PAGE==="survey" && typeof applySurveySearchFilter==="function") applySurveySearchFilter();
+    notifyLiveCasesRendered();
   }}
   function renderCases(rows, counts) {{
     var grid=document.querySelector(".status-grid"); if(grid) grid.innerHTML=ORDER.map(function(st){{return '<a class="status-tile status-'+esc(st)+'" href="#status-'+esc(st)+'"><span>'+esc(LABELS[st])+'</span><strong>'+esc((counts&&counts[st])||0)+'</strong></a>';}}).join("");
     ORDER.forEach(function(st){{var section=document.getElementById("status-"+st); if(!section) return; var list=section.querySelector(".case-list"), group=rows.filter(function(r){{return t(r,"status")===st;}}), count=section.querySelector("[data-section-count]"); if(count) count.textContent=group.length+"件"; if(list) list.innerHTML=group.length?group.map(caseRow).join(""):'<p class="empty-note">対象はありません。</p>'; }});
     updateCount(rows.length);
+    notifyLiveCasesRendered();
   }}
   function renderDetail(rows) {{
     var target=document.getElementById("liveCaseDetail"); if(!target) return; var r=rows[0]; if(!r) {{target.innerHTML='<p class="empty-note">対象案件が見つかりません。</p>'; return;}}
@@ -7863,11 +7869,13 @@ body {{
   const input = document.getElementById("caseSearch");
   const visibleCount = document.getElementById("caseVisibleCount");
   const empty = document.getElementById("caseFilterEmpty");
-  const rows = Array.from(document.querySelectorAll(".negotiation-card"));
+  function currentRows() {{
+    return Array.from(document.querySelectorAll(".negotiation-card"));
+  }}
   function applyFilter() {{
     const q = (input.value || "").trim().toLowerCase();
     let visible = 0;
-    rows.forEach((row) => {{
+    currentRows().forEach((row) => {{
       const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
       const hit = !q || haystack.includes(q);
       row.hidden = !hit;
@@ -7877,6 +7885,7 @@ body {{
     if (empty) empty.classList.toggle("is-visible", visible === 0);
   }}
   if (input) input.addEventListener("input", applyFilter);
+  window.addEventListener("portal:live-cases-rendered", applyFilter);
 }})();
   </script>
   <script>
@@ -9031,11 +9040,13 @@ body {{
   const input = document.getElementById("caseSearch");
   const visibleCount = document.getElementById("caseVisibleCount");
   const empty = document.getElementById("caseFilterEmpty");
-  const rows = Array.from(document.querySelectorAll(".case-card"));
+  function currentRows() {{
+    return Array.from(document.querySelectorAll(".case-card"));
+  }}
   function applyFilter() {{
     const q = (input.value || "").trim().toLowerCase();
     let visible = 0;
-    rows.forEach((row) => {{
+    currentRows().forEach((row) => {{
       const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
       const hit = !q || haystack.includes(q);
       row.hidden = !hit;
@@ -9045,6 +9056,7 @@ body {{
     if (empty) empty.classList.toggle("is-visible", visible === 0);
   }}
   if (input) input.addEventListener("input", applyFilter);
+  window.addEventListener("portal:live-cases-rendered", applyFilter);
 }})();
 </script>
 </body>
@@ -9396,18 +9408,22 @@ body {{
   const input = document.getElementById("caseSearch");
   const visibleCount = document.getElementById("caseVisibleCount");
   const empty = document.getElementById("caseFilterEmpty");
-  const rows = Array.from(document.querySelectorAll(".case-row"));
-  const sections = Array.from(document.querySelectorAll(".status-section"));
+  function currentRows() {{
+    return Array.from(document.querySelectorAll(".case-row"));
+  }}
+  function currentSections() {{
+    return Array.from(document.querySelectorAll(".status-section"));
+  }}
   function applyFilter() {{
     const q = (input.value || "").trim().toLowerCase();
     let visible = 0;
-    rows.forEach((row) => {{
+    currentRows().forEach((row) => {{
       const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
       const hit = !q || haystack.includes(q);
       row.hidden = !hit;
       if (hit) visible += 1;
     }});
-    sections.forEach((section) => {{
+    currentSections().forEach((section) => {{
       const shown = Array.from(section.querySelectorAll(".case-row")).filter((row) => !row.hidden).length;
       const count = section.querySelector("[data-section-count]");
       if (count) count.textContent = `${{shown}}件`;
@@ -9417,6 +9433,7 @@ body {{
     if (empty) empty.classList.toggle("is-visible", visible === 0);
   }}
   if (input) input.addEventListener("input", applyFilter);
+  window.addEventListener("portal:live-cases-rendered", applyFilter);
 }})();
 </script>
 </body>
