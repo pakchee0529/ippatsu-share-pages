@@ -4505,9 +4505,58 @@ def _bucket_label_archive(bucket: object) -> str:
 
 
 def _fmt_m2_archive(v: float) -> str:
+    if isinstance(v, str):
+        return v
     if abs(v - round(v)) < 1e-9:
         return f"{int(round(v))}㎡"
     return f"{v:g}㎡"
+
+
+def _archive_felling_formula(src: dict, key: str) -> dict | None:
+    formula = src.get("_completion_felling_formula")
+    if not isinstance(formula, dict):
+        return None
+    row = formula.get(key)
+    return row if isinstance(row, dict) else None
+
+
+def _archive_number_expr(src: dict, key: str, *, suffix: str = "") -> str:
+    final = _as_num(src.get(key))
+    row = _archive_felling_formula(src, key)
+    if row:
+        try:
+            before = int(row.get("before") or 0)
+            added = int(row.get("added") or 0)
+        except (TypeError, ValueError):
+            before = 0
+            added = 0
+        if added > 0:
+            return f"{before} + {added}{suffix}"
+    return f"{final}{suffix}"
+
+
+def _archive_added_amount(src: dict, key: str) -> int:
+    row = _archive_felling_formula(src, key)
+    if not row:
+        return 0
+    try:
+        return int(row.get("added") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _archive_m2_expr(src: dict, key: str) -> str:
+    row = _archive_felling_formula(src, key)
+    if row:
+        try:
+            before = int(row.get("before") or 0)
+            added = int(row.get("added") or 0)
+        except (TypeError, ValueError):
+            before = 0
+            added = 0
+        if added > 0:
+            return f"{before} + {added}緕｡"
+    return _fmt_m2_archive(float(_as_num(src.get(key))))
 
 
 def _share_detail_prefill_from_source_item(
@@ -4551,18 +4600,33 @@ def build_archive_instructions_html_from_source(src: dict) -> str:
     cut_rows: list[str] = []
     branch_sum = 0
     root_sum = 0
+    branch_added_sum = 0
+    root_added_sum = 0
     for label, br_key, rt_key in _SHARE_INSTR_CUT_BAND_PREFILL_ROWS:
         bv = _as_num(src.get(br_key))
         rv = _as_num(src.get(rt_key))
         branch_sum += bv
         root_sum += rv
+        branch_added_sum += _archive_added_amount(src, br_key)
+        root_added_sum += _archive_added_amount(src, rt_key)
         cut_rows.append(
             f"<tr><th>{escape_html(label)}</th>"
-            f"<td>{bv}</td><td>{rv}</td></tr>"
+            f"<td>{escape_html(_archive_number_expr(src, br_key))}</td>"
+            f"<td>{escape_html(_archive_number_expr(src, rt_key))}</td></tr>"
         )
+    branch_total_expr = (
+        f"{branch_sum - branch_added_sum} + {branch_added_sum}"
+        if branch_added_sum
+        else str(branch_sum)
+    )
+    root_total_expr = (
+        f"{root_sum - root_added_sum} + {root_added_sum}"
+        if root_added_sum
+        else str(root_sum)
+    )
     cut_rows.append(
         f'<tr class="instr-cut-total"><th scope="row">{escape_html("合計")}</th>'
-        f"<td>{branch_sum}</td><td>{root_sum}</td></tr>"
+        f"<td>{escape_html(branch_total_expr)}</td><td>{escape_html(root_total_expr)}</td></tr>"
     )
     bucket_txt = _bucket_label_archive(src.get("bucket_available"))
     rw_raw = src.get("road_width_m")
@@ -4571,9 +4635,9 @@ def build_archive_instructions_html_from_source(src: dict) -> str:
     else:
         rw = "未設定"
     slope_disp = _to_str(src.get("slope")) or "—"
-    brush = float(_as_num(src.get("brush_area_m2")))
-    bamboo = _as_num(src.get("bamboo_count"))
-    vine = _as_num(src.get("vine_locations"))
+    brush = _archive_m2_expr(src, "brush_area_m2")
+    bamboo = _archive_number_expr(src, "bamboo_count")
+    vine = _archive_number_expr(src, "vine_locations")
     summary_tbl = (
         '<table class="instr-table instr-summary"><tbody>'
         f"<tr><th>処理方法</th><td>{escape_html(work)}</td></tr>"
