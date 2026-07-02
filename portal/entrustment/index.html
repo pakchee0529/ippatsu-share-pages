@@ -118,6 +118,134 @@ a.portal-menu-item:focus-visible {
   background: #f1f5f9;
 }
 
+
+.excel-reflection-panel {
+  margin: 0 0 0.85rem;
+  padding: 0.72rem 0.78rem;
+  border: 1px solid #fed7aa;
+  border-left: 4px solid #f59e0b;
+  border-radius: 14px;
+  background: #fffaf0;
+  color: var(--text);
+}
+.excel-reflection-panel[hidden] {
+  display: none !important;
+}
+.excel-reflection-panel.is-empty {
+  padding: 0.48rem 0.65rem;
+  border-left-width: 3px;
+  background: #fff;
+}
+.excel-reflection-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+.excel-reflection-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+.excel-reflection-count {
+  flex: 0 0 auto;
+  min-width: 2.2rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: #172033;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-align: center;
+}
+.excel-reflection-note,
+.excel-reflection-status {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.excel-reflection-status.is-error {
+  color: #92400e;
+}
+.excel-reflection-list {
+  display: grid;
+  gap: 0.48rem;
+  margin-top: 0.62rem;
+}
+.excel-reflection-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  background: #fff;
+}
+.excel-reflection-main {
+  min-width: 0;
+}
+.excel-reflection-mgmt {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0 0 0.22rem;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #243044;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.excel-reflection-label {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.excel-reflection-meta {
+  margin: 0.16rem 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+.excel-reflection-action {
+  min-height: 40px;
+  padding: 0.42rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid #d97706;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.excel-reflection-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+.excel-reflection-row-status {
+  grid-column: 1 / -1;
+  margin: -0.18rem 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+.excel-reflection-row-status.is-error {
+  color: #92400e;
+}
+@media (max-width: 560px) {
+  .excel-reflection-row {
+    grid-template-columns: 1fr;
+  }
+  .excel-reflection-action {
+    width: 100%;
+  }
+}
+
 .lead {
   margin: 0 0 0.9rem;
   color: var(--muted);
@@ -331,18 +459,27 @@ a.portal-menu-item:focus-visible {
       </div>
     </div>
   </header>
-<main>
   <p class="lead">付託待ちのCSを確認する閲覧専用ページです。地主名・住所・連絡先などの個人情報は表示しません。</p>
   <nav class="status-navigation" aria-label="関連ページ">
     <a href="../cases/#status-entrustment_wait">案件管理で見る</a>
     <a href="../negotiation/">交渉待ちへ</a>
   </nav>
   <p id="liveCasesStatus" class="live-cases-status" hidden role="status"></p>
+  <section class="excel-reflection-panel" data-excel-reflection-panel hidden aria-live="polite">
+    <div class="excel-reflection-head">
+      <h2 class="excel-reflection-title">Excel反映待ち</h2>
+      <span class="excel-reflection-count" data-excel-reflection-count>確認中</span>
+    </div>
+    <p class="excel-reflection-note" data-excel-reflection-note>共有HDDの交渉管理Excelへ転記後に反映済みにしてください。</p>
+    <p class="excel-reflection-status" data-excel-reflection-status hidden></p>
+    <div class="excel-reflection-list" data-excel-reflection-list></div>
+  </section>
   <div class="case-toolbar" role="search">
     <input id="caseSearch" class="case-search" type="search" placeholder="管理番号・径間名で検索" autocomplete="off">
     <div class="case-total"><span>表示</span><strong id="caseVisibleCount">0</strong></div>
   </div>
   <p id="caseFilterEmpty" class="filter-empty">一致する案件はありません。</p>
+<main>
   <div class="card-list" role="list">
 <p class="empty-note">付託待ちリストはまだありません。</p>
   </div>
@@ -378,11 +515,50 @@ a.portal-menu-item:focus-visible {
   var PAGE = "entrustment";
   var ENDPOINT = "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request";
   var API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
+  var JURISDICTION = "";
   var LABELS = {survey_wait:"現調待ち",negotiation_wait:"交渉待ち",entrustment_wait:"付託待ち",construction_wait:"工事待ち",return_wait:"返却待ち",returned:"返却済み"};
   var ORDER = ["survey_wait","negotiation_wait","entrustment_wait","construction_wait","return_wait"];
   var PAGE_STATUSES = {survey:["survey_wait"],negotiation:["negotiation_wait","return_wait"],entrustment:["entrustment_wait"],cases:ORDER,detail:ORDER};
   function esc(v) { return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
   function t(r,k) { return String((r && r[k]) || "").trim(); }
+  var SURVEY_STATIC_GEO = {};
+  function surveyGeoKeys(r) {
+    return [t(r,"management_no_key"), t(r,"management_no")].filter(Boolean);
+  }
+  function rememberSurveyStaticGeo(root) {
+    if (PAGE !== "survey") return;
+    (root || document).querySelectorAll(".survey-update-card[data-management-no-key]").forEach(function(card) {
+      var lat = card.getAttribute("data-multipin-lat") || "";
+      var lng = card.getAttribute("data-multipin-lng") || "";
+      if (!lat || !lng) return;
+      var record = {
+        start_lat: lat,
+        start_lng: lng,
+        management_no: card.getAttribute("data-management-no") || "",
+        management_no_key: card.getAttribute("data-management-no-key") || "",
+      };
+      surveyGeoKeys(record).forEach(function(key) { SURVEY_STATIC_GEO[key] = record; });
+    });
+  }
+  function enrichSurveyRow(r) {
+    if (PAGE !== "survey" || !r) return r;
+    if (t(r,"start_lat") && t(r,"start_lng")) return r;
+    var found = null;
+    surveyGeoKeys(r).some(function(key) {
+      found = SURVEY_STATIC_GEO[key] || null;
+      return !!found;
+    });
+    if (!found) return r;
+    var out = Object.assign({}, r);
+    out.start_lat = out.start_lat || found.start_lat;
+    out.start_lng = out.start_lng || found.start_lng;
+    return out;
+  }
+  function filterJurisdiction(rows) {
+    if (!JURISDICTION) return rows;
+    if (rows.length && !rows.some(function(r) { return !!t(r,"jurisdiction"); })) return null;
+    return rows.filter(function(r) { return t(r,"jurisdiction") === JURISDICTION; });
+  }
   function searchText(r) { return [t(r,"management_no"),t(r,"management_no_key"),t(r,"internal_management_no"),t(r,"span_key"),t(r,"label"),LABELS[t(r,"status")]||t(r,"status")].join(" "); }
   function setStatus(msg, err) { var el=document.getElementById("liveCasesStatus"); if(!el) return; el.hidden=false; el.textContent=msg; el.classList.toggle("is-error", !!err); }
   function fetchCases(extra) {
@@ -407,6 +583,7 @@ a.portal-menu-item:focus-visible {
         var extra=null, msg="この案件の状態を更新します。よろしいですか？";
         if(action==="mark_survey_done") msg="この案件を交渉待ちにします。よろしいですか？";
         if(action==="mark_return_candidate") msg="この案件を返却候補にします。よろしいですか？";
+        if(action==="revert_to_survey_wait") msg="この案件を現調待ちに戻します。よろしいですか？";
         if(action==="mark_entrustment_wait") msg="この案件を付託待ちにします。よろしいですか？";
         if(action==="mark_construction_wait") msg="この案件を工事待ちにします。よろしいですか？";
         if(action==="mark_returned") { msg="この案件を返却済みにします。よろしいですか？"; extra={return_reason_category:"other",return_reason_text:"ポータルから返却済みに変更"}; }
@@ -417,9 +594,11 @@ a.portal-menu-item:focus-visible {
       });
     });
   }
-  function mapBtn(r) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"); return lat&&lng?'<a class="btn btn-map" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q='+encodeURIComponent(lat+","+lng)+'">地図を表示</a>':""; }
-  function surveyCard(r) { return '<article class="card survey-update-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="card-head"><span class="case-status-pill status-survey_wait">現調待ち</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions">'+mapBtn(r)+'</div><div class="card-actions card-actions-portal-request"><div class="survey-case-action-row"><button type="button" class="btn btn-survey-mark-done" data-live-action="mark_survey_done" data-case-id="'+esc(t(r,"id"))+'">現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-live-action="mark_return_candidate" data-case-id="'+esc(t(r,"id"))+'">返却候補にする</button></div></div></div></article>'; }
-  function negotiationCard(r) { var st=t(r,"status"), act=""; if(st==="negotiation_wait") act='<button type="button" class="btn btn-entrustment" data-live-action="mark_entrustment_wait" data-case-id="'+esc(t(r,"id"))+'">付託待ちにする</button>'; if(st==="return_wait") act='<button type="button" class="btn btn-returned" data-live-action="mark_returned" data-case-id="'+esc(t(r,"id"))+'">返却済みにする</button>'; return '<article class="card negotiation-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="card-head"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-revert">'+act+'</div></div></article>'; }
+  function mapBtn(r) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"); return lat&&lng?'<a class="btn btn-map" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q='+encodeURIComponent(lat+","+lng)+'">地図を開く</a>':""; }
+  function nearbyBtn(r, idx) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<button type="button" class="btn btn-nearby-map" data-nearby-open data-nearby-wrap="live-nearby-wrap-'+idx+'" data-nearby-map="live-nearby-map-'+idx+'" aria-expanded="false" aria-controls="live-nearby-wrap-'+idx+'">半径200m</button>'; }
+  function nearbyWrap(r, idx) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<p class="nearby-map-status muted-tiny" data-nearby-status hidden role="status"></p><div class="nearby-map-wrap" id="live-nearby-wrap-'+idx+'" hidden><div id="live-nearby-map-'+idx+'" class="share-two-map-canvas" role="application" aria-label="半径200m電柱地図"></div></div>'; }
+  function surveyCard(r, idx) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"), mp=(lat&&lng)?' data-multipin-lat="'+esc(lat)+'" data-multipin-lng="'+esc(lng)+'"':""; return '<article class="card survey-update-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'" data-management-no="'+esc(t(r,"management_no"))+'" data-label="'+esc(t(r,"label"))+'" data-jurisdiction="'+esc(t(r,"jurisdiction"))+'"'+mp+'><div class="card-head"><span class="case-status-pill status-survey_wait">現調待ち</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-map-primary">'+mapBtn(r)+nearbyBtn(r, idx)+'</div><div class="card-actions card-actions-portal-request"><div class="survey-case-action-row"><button type="button" class="btn btn-survey-mark-done" data-live-action="mark_survey_done" data-case-id="'+esc(t(r,"id"))+'">現調済みにする</button><button type="button" class="btn btn-survey-mark-return-candidate" data-live-action="mark_return_candidate" data-case-id="'+esc(t(r,"id"))+'">返却候補にする</button></div></div></div>'+nearbyWrap(r, idx)+'</article>'; }
+  function negotiationCard(r) { var st=t(r,"status"), act=""; if(st==="negotiation_wait") act='<button type="button" class="btn btn-entrustment" data-live-action="mark_entrustment_wait" data-case-id="'+esc(t(r,"id"))+'">付託待ちにする</button><button type="button" class="btn btn-revert" data-live-action="revert_to_survey_wait" data-case-id="'+esc(t(r,"id"))+'">現調待ちに戻す</button>'; if(st==="return_wait") act='<button type="button" class="btn btn-returned" data-live-action="mark_returned" data-case-id="'+esc(t(r,"id"))+'">返却済みにする</button><button type="button" class="btn btn-revert" data-live-action="revert_to_survey_wait" data-case-id="'+esc(t(r,"id"))+'">現調待ちに戻す</button>'; return '<article class="card negotiation-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'" data-jurisdiction="'+esc(t(r,"jurisdiction"))+'"><div class="card-head"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h2 class="card-title">'+esc(t(r,"label")||"—")+'</h2><p class="item-mgmt">'+esc(t(r,"management_no")||"—")+'</p><div class="card-actions card-actions-revert">'+act+'</div></div></article>'; }
   function entrustmentCard(r) { return '<article class="case-card" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="case-card-main"><span class="case-status-pill status-entrustment_wait">付託待ち</span><h2 class="case-title">'+esc(t(r,"label")||"—")+'</h2><p class="case-meta">'+esc(t(r,"management_no")||"—")+'</p></div><div class="card-actions">'+mapBtn(r)+'<button type="button" class="btn" data-live-action="mark_construction_wait" data-case-id="'+esc(t(r,"id"))+'">工事待ちにする</button></div></article>'; }
   function detailHref(r) { return PAGE==="cases" ? "./detail/?id="+encodeURIComponent(t(r,"id")) : "../cases/detail/?id="+encodeURIComponent(t(r,"id")); }
   function caseRow(r) { var st=t(r,"status"); return '<a class="case-row" href="'+esc(detailHref(r))+'" data-status="'+esc(st)+'" data-search="'+esc(searchText(r))+'" data-management-no-key="'+esc(t(r,"management_no_key"))+'"><div class="case-row-main"><span class="case-status-pill status-'+esc(st)+'">'+esc(LABELS[st]||st)+'</span><h3>'+esc(t(r,"label")||"—")+'</h3><p class="case-management-no">'+esc(t(r,"management_no")||"—")+'</p></div><div class="case-row-meta">'+(t(r,"updated_at")?'<span>更新 '+esc(t(r,"updated_at").slice(0,10))+'</span>':"")+'</div></a>'; }
@@ -432,11 +611,16 @@ a.portal-menu-item:focus-visible {
     if(PAGE==="entrustment") html='<div class="card-list" role="list">'+rows.map(entrustmentCard).join("")+'</div>';
     main.innerHTML=html || '<p class="empty-note">対象はありません。</p>'; if(map&&PAGE==="survey") main.appendChild(map);
     updateCount(rows.length); bind(main, rows);
+    if(PAGE==="survey" && typeof bindNearbyButtons==="function") bindNearbyButtons(main);
+    if(PAGE==="survey" && typeof bindSurveySearchControls==="function") bindSurveySearchControls();
+    if(PAGE==="survey" && typeof applySurveySearchFilter==="function") applySurveySearchFilter();
+    if(PAGE!=="survey" && typeof window.applyPortalCaseSearchFilter==="function") window.applyPortalCaseSearchFilter();
   }
   function renderCases(rows, counts) {
     var grid=document.querySelector(".status-grid"); if(grid) grid.innerHTML=ORDER.map(function(st){return '<a class="status-tile status-'+esc(st)+'" href="#status-'+esc(st)+'"><span>'+esc(LABELS[st])+'</span><strong>'+esc((counts&&counts[st])||0)+'</strong></a>';}).join("");
     ORDER.forEach(function(st){var section=document.getElementById("status-"+st); if(!section) return; var list=section.querySelector(".case-list"), group=rows.filter(function(r){return t(r,"status")===st;}), count=section.querySelector("[data-section-count]"); if(count) count.textContent=group.length+"件"; if(list) list.innerHTML=group.length?group.map(caseRow).join(""):'<p class="empty-note">対象はありません。</p>'; });
     updateCount(rows.length);
+    if(typeof window.applyPortalCaseSearchFilter==="function") window.applyPortalCaseSearchFilter();
   }
   function renderDetail(rows) {
     var target=document.getElementById("liveCaseDetail"); if(!target) return; var r=rows[0]; if(!r) {target.innerHTML='<p class="empty-note">対象案件が見つかりません。</p>'; return;}
@@ -444,22 +628,195 @@ a.portal-menu-item:focus-visible {
     target.innerHTML='<article class="detail-card"><span class="status-pill">'+esc(LABELS[st]||st)+'</span><h2 class="detail-title">'+esc(t(r,"label")||"—")+'</h2><p class="detail-management">'+esc(t(r,"management_no")||"—")+'</p><dl class="detail-ident"><dt>内部管理番号</dt><dd>'+esc(t(r,"internal_management_no")||"—")+'</dd><dt>径間キー</dt><dd>'+esc(t(r,"span_key")||"—")+'</dd><dt>case id</dt><dd>'+esc(t(r,"id")||"—")+'</dd></dl></article><section class="detail-panel action-panel"><h2>このページでできる操作</h2>'+(action||'<p class="action-note">現在の状態はポータルから変更できません。</p>')+'</section>'; bind(target,[r]);
   }
   function refresh() {
+    rememberSurveyStaticGeo(document);
     var extra={}; if(PAGE==="detail") { extra.id=new URLSearchParams(location.search).get("id")||""; if(!extra.id) { setStatus("case id が指定されていません。", true); return; } }
     setStatus("Supabaseから最新情報を読み込み中...", false);
-    fetchCases(extra).then(function(body){var rows=Array.isArray(body.cases)?body.cases:[]; if(PAGE==="cases") renderCases(rows, body.counts||{}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);})
+    fetchCases(extra).then(function(body){var rows=Array.isArray(body.cases)?body.cases:[]; rows=filterJurisdiction(rows); if(rows===null) { setStatus("Supabase最新に管轄情報がないため、生成時点の管轄別表示を使っています", true); return; } if(PAGE==="survey") rows=rows.map(enrichSurveyRow); if(PAGE==="cases") renderCases(rows, body.counts||{}); else if(PAGE==="detail") renderDetail(rows); else renderList(rows); setStatus("Supabase最新: "+rows.length+"件", false);})
       .catch(function(e){setStatus("Supabase最新取得に失敗しました。生成時点の表示を使っています: "+(e&&e.message?e.message:e), true);});
   }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", refresh); else refresh();
+})();
+
+
+(function () {
+  var PANEL = document.querySelector("[data-excel-reflection-panel]");
+  if (!PANEL) return;
+  var ENDPOINT = "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request";
+  var API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
+  var REFLECTED_STATUS = "entrustment_wait";
+  var JURISDICTION = "";
+  var countEl = PANEL.querySelector("[data-excel-reflection-count]");
+  var noteEl = PANEL.querySelector("[data-excel-reflection-note]");
+  var statusEl = PANEL.querySelector("[data-excel-reflection-status]");
+  var listEl = PANEL.querySelector("[data-excel-reflection-list]");
+
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function t(row, key) {
+    return String((row && row[key]) || "").trim();
+  }
+  function showPanel() {
+    PANEL.hidden = false;
+  }
+  function setStatus(message, isError) {
+    if (!statusEl) return;
+    statusEl.hidden = !message;
+    statusEl.textContent = message || "";
+    statusEl.classList.toggle("is-error", !!isError);
+  }
+  function compactEmpty(message) {
+    showPanel();
+    PANEL.classList.add("is-empty");
+    if (countEl) countEl.textContent = "0";
+    if (noteEl) noteEl.textContent = message || "Excel反映待ちはありません。";
+    if (listEl) listEl.innerHTML = "";
+    setStatus("", false);
+  }
+  function unavailable(message) {
+    showPanel();
+    PANEL.classList.add("is-empty");
+    if (countEl) countEl.textContent = "-";
+    if (noteEl) noteEl.textContent = "Excel反映待ちを確認できません。";
+    if (listEl) listEl.innerHTML = "";
+    setStatus(message || "再読み込みして確認してください。", true);
+  }
+  function formatDate(value) {
+    if (!value) return "遷移日時不明";
+    var d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value;
+    return d.toLocaleString("ja-JP", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+  }
+  function rowMeta(row) {
+    var parts = [];
+    if (t(row, "jurisdiction")) parts.push(t(row, "jurisdiction"));
+    parts.push(formatDate(t(row, "transition_at")));
+    return parts.join(" / ");
+  }
+  function fetchPending() {
+    if (!ENDPOINT || !API_KEY) return Promise.reject(new Error("api_key_missing"));
+    var params = new URLSearchParams();
+    params.set("list", "excel_reflection_pending");
+    params.set("statuses", REFLECTED_STATUS);
+    return fetch(ENDPOINT + "?" + params.toString(), {
+      headers: { apikey: API_KEY, Accept: "application/json" }
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (body) {
+        if (!res.ok || !body || body.ok !== true) throw new Error((body && body.error) || ("http_" + res.status));
+        if (!Array.isArray(body.excel_reflection_pending)) throw new Error("excel_reflection_endpoint_not_deployed");
+        return body.excel_reflection_pending;
+      });
+    });
+  }
+  function filterRows(rows) {
+    rows = rows.filter(function (row) { return t(row, "status") === REFLECTED_STATUS; });
+    if (!JURISDICTION) return rows;
+    var withJurisdiction = rows.filter(function (row) { return !!t(row, "jurisdiction"); });
+    if (rows.length && !withJurisdiction.length) return null;
+    return withJurisdiction.filter(function (row) { return t(row, "jurisdiction") === JURISDICTION; });
+  }
+  function markReflected(row) {
+    var payload = {
+      action: "mark_excel_reflected",
+      management_no_key: t(row, "management_no_key"),
+      reflected_status: REFLECTED_STATUS,
+      source: "portal_excel_reflection"
+    };
+    return fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: API_KEY },
+      body: JSON.stringify(payload)
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (body) {
+        if (!res.ok || !body || body.ok !== true) throw new Error((body && body.error) || ("http_" + res.status));
+        return body;
+      });
+    });
+  }
+  function bindRows(rows) {
+    if (!listEl) return;
+    var byKey = Object.create(null);
+    rows.forEach(function (row) { byKey[t(row, "management_no_key")] = row; });
+    listEl.querySelectorAll("[data-excel-reflection-action]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var key = button.getAttribute("data-management-no-key") || "";
+        var row = byKey[key];
+        if (!row || button.disabled) return;
+        var ok = window.confirm("共有HDDの交渉管理Excelへ転記済みですか？\n確認後、この案件をExcel反映済みにします。");
+        if (!ok) return;
+        var rowEl = button.closest(".excel-reflection-row");
+        var rowStatus = rowEl ? rowEl.querySelector("[data-excel-reflection-row-status]") : null;
+        button.disabled = true;
+        button.textContent = "送信中...";
+        if (rowStatus) {
+          rowStatus.textContent = "";
+          rowStatus.classList.remove("is-error");
+        }
+        markReflected(row).then(function () {
+          if (rowStatus) rowStatus.textContent = "反映済みにしました";
+          if (rowEl) rowEl.remove();
+          var remaining = listEl.querySelectorAll(".excel-reflection-row").length;
+          if (countEl) countEl.textContent = String(remaining);
+          if (!remaining) compactEmpty("Excel反映待ちはありません。");
+        }).catch(function () {
+          button.disabled = false;
+          button.textContent = "Excel反映済み";
+          if (rowStatus) {
+            rowStatus.textContent = "反映できませんでした。再読み込みして確認してください。";
+            rowStatus.classList.add("is-error");
+          }
+        });
+      });
+    });
+  }
+  function renderRows(rows) {
+    if (!rows.length) {
+      compactEmpty("Excel反映待ちはありません。");
+      return;
+    }
+    showPanel();
+    PANEL.classList.remove("is-empty");
+    if (countEl) countEl.textContent = String(rows.length);
+    if (noteEl) noteEl.textContent = "共有HDDの交渉管理Excelへ転記後に反映済みにしてください。";
+    setStatus("", false);
+    listEl.innerHTML = rows.map(function (row) {
+      var key = t(row, "management_no_key");
+      return '<article class="excel-reflection-row" data-management-no-key="' + esc(key) + '">' +
+        '<div class="excel-reflection-main">' +
+          '<p class="excel-reflection-mgmt">' + esc(t(row, "management_no") || key || "-") + '</p>' +
+          '<p class="excel-reflection-label">' + esc(t(row, "label") || t(row, "span_key") || "-") + '</p>' +
+          '<p class="excel-reflection-meta">' + esc(rowMeta(row)) + '</p>' +
+        '</div>' +
+        '<button type="button" class="excel-reflection-action" data-excel-reflection-action data-management-no-key="' + esc(key) + '">Excel反映済み</button>' +
+        '<p class="excel-reflection-row-status" data-excel-reflection-row-status></p>' +
+      '</article>';
+    }).join("");
+    bindRows(rows);
+  }
+  function refreshExcelReflection() {
+    fetchPending().then(function (rows) {
+      rows = filterRows(rows);
+      if (rows === null) {
+        unavailable("管轄情報を確認できないため、全件表示はしていません。");
+        return;
+      }
+      renderRows(rows);
+    }).catch(function () {
+      unavailable("反映できませんでした。再読み込みして確認してください。");
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refreshExcelReflection);
+  else refreshExcelReflection();
 })();
 
 (() => {
   const input = document.getElementById("caseSearch");
   const visibleCount = document.getElementById("caseVisibleCount");
   const empty = document.getElementById("caseFilterEmpty");
-  const rows = Array.from(document.querySelectorAll(".case-card"));
   function applyFilter() {
     const q = (input.value || "").trim().toLowerCase();
     let visible = 0;
+    const rows = Array.from(document.querySelectorAll(".case-card"));
     rows.forEach((row) => {
       const haystack = (row.dataset.search || row.textContent || "").toLowerCase();
       const hit = !q || haystack.includes(q);
@@ -470,6 +827,7 @@ a.portal-menu-item:focus-visible {
     if (empty) empty.classList.toggle("is-visible", visible === 0);
   }
   if (input) input.addEventListener("input", applyFilter);
+  window.applyPortalCaseSearchFilter = applyFilter;
 })();
 </script>
 </body>
