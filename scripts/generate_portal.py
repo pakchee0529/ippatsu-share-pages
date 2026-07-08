@@ -3391,7 +3391,12 @@ def _share_gps_pole_map(repo_root: Path) -> dict[str, tuple[float, float]]:
         poles = load_gps_poles(repo_root)
     except (FileNotFoundError, ValueError, OSError):
         return {}
-    return {name: (lat, lng) for name, lat, lng in poles if name}
+    return {_share_gps_lookup_key(name): (lat, lng) for name, lat, lng in poles if name}
+
+
+def _share_gps_lookup_key(value: str) -> str:
+    text = unicodedata.normalize("NFKC", str(value or ""))
+    return re.sub(r"\s+", "", text).upper()
 
 
 def _share_card_text(card_html: str, class_name: str) -> str:
@@ -3411,8 +3416,8 @@ def _share_split_span_label(label: str) -> tuple[str, str] | None:
     for sep in ("～", "〜", "~", "-"):
         if sep in s:
             a, b = s.split(sep, 1)
-            a = a.strip()
-            b = b.strip()
+            a = _share_gps_lookup_key(a)
+            b = _share_gps_lookup_key(b)
             if a and b:
                 return a, b
     return None
@@ -3437,6 +3442,14 @@ def _share_complete_span_end_label(start: str, end: str, gps: dict[str, tuple[fl
         candidate = f"{m_start.group(1)}{m_start.group(2)}{m_end.group(3)}"
         if candidate in gps:
             return candidate
+    m_branch_only = re.match(r"^([WNESGK]\d+.*)$", end, re.I)
+    m_start_branch = re.match(r"^(.+?\d+(?:[WNESGK]\d+)*)$", start, re.I)
+    if m_branch_only and m_start_branch:
+        parsed = re.match(r"^(.+?\d+)(?:[WNESGK]\d+)*$", start, re.I)
+        if parsed:
+            candidate = parsed.group(1) + end
+            if candidate in gps:
+                return candidate
     return prefixed
 
 
@@ -3568,6 +3581,39 @@ def _replace_share_points_array(html: str, points: list[dict[str, Any]]) -> str:
     return html[:start] + blob + html[end:]
 
 
+def _extract_share_points_array(html: str) -> list[dict[str, Any]]:
+    marker = "var POINTS = "
+    i = html.find(marker)
+    if i < 0:
+        return []
+    i += len(marker)
+    while i < len(html) and html[i] in " \t\r\n":
+        i += 1
+    if i >= len(html) or html[i] != "[":
+        return []
+    depth = 0
+    start = i
+    end = -1
+    for j in range(i, len(html)):
+        c = html[j]
+        if c == "[":
+            depth += 1
+        elif c == "]":
+            depth -= 1
+            if depth == 0:
+                end = j + 1
+                break
+    if end < 0:
+        return []
+    try:
+        raw = json.loads(html[start:end])
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(raw, list):
+        return []
+    return [p for p in raw if isinstance(p, dict)]
+
+
 def _recover_share_page_maps_from_gps(html: str, repo_root: Path | None) -> str:
     if repo_root is None or '<article class="card"' not in html or "var POINTS =" not in html:
         return html
@@ -3596,14 +3642,19 @@ def _recover_share_page_maps_from_gps(html: str, repo_root: Path | None) -> str:
     if not points:
         return out if changed else html
 
-    out2 = _replace_share_points_array(out, points)
+    existing_points = _extract_share_points_array(html)
+    final_points = existing_points if len(existing_points) > len(points) else points
+    out2 = _replace_share_points_array(out, final_points)
     out2 = re.sub(
         r'data-point-count="\d+"',
-        f'data-point-count="{len(points)}"',
+        f'data-point-count="{len(final_points)}"',
         out2,
         count=1,
     )
-    debug = f"<!-- share-multipin-debug: points={len(points)} markers={len(points)} duplicate_groups=0 -->"
+    debug = (
+        f"<!-- share-multipin-debug: points={len(final_points)} "
+        f"markers={len(final_points)} duplicate_groups=0 -->"
+    )
     if "share-multipin-debug:" in out2:
         out2 = re.sub(r"<!-- share-multipin-debug:[\s\S]*?-->", debug, out2, count=1)
     else:
