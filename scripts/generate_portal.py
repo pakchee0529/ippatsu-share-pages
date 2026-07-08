@@ -2634,6 +2634,13 @@ body {{
 .btn-map {{
   background: var(--share-accent);
 }}
+.btn-map-disabled,
+.btn-map:disabled {{
+  background: #e5e7eb;
+  color: #64748b;
+  cursor: not-allowed;
+  filter: none;
+}}
 .btn-note {{
   color: var(--share-accent2);
   border-color: var(--share-accent2);
@@ -3479,6 +3486,45 @@ def _share_map_button(lat: float, lng: float) -> str:
     )
 
 
+def _share_resolve_span_available_points(
+    label: str, gps: dict[str, tuple[float, float]]
+) -> tuple[list[tuple[str, float, float]], bool]:
+    parts = _share_split_span_label(label)
+    if not parts:
+        return [], False
+    start_label, end_raw = parts
+    points: list[tuple[str, float, float]] = []
+    if start_label in gps:
+        a_lat, a_lng = gps[start_label]
+        if _valid_jp_latlng(a_lat, a_lng):
+            points.append((start_label, a_lat, a_lng))
+    end_label = _share_complete_span_end_label(start_label, end_raw, gps)
+    if end_label in gps:
+        b_lat, b_lng = gps[end_label]
+        if _valid_jp_latlng(b_lat, b_lng):
+            points.append((end_label, b_lat, b_lng))
+    return points, len(points) == 2
+
+
+def _share_disabled_two_map_button() -> str:
+    return (
+        '<button type="button" class="btn btn-map btn-map-disabled" '
+        'disabled aria-disabled="true" '
+        'title="2点のうち片側だけ座標があります">2点地図を開く</button>'
+    )
+
+
+def _share_two_map_button(two_json_id: str, idx: int) -> str:
+    two_wrap_id = f"two-wrap-{idx}"
+    two_map_id = f"share-two-map-{idx}"
+    return (
+        f'<button type="button" class="btn btn-map" data-two-open '
+        f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
+        f'data-two-json="{two_json_id}" aria-expanded="false" '
+        f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
+    )
+
+
 def _share_card_two_geo_id(card_html: str, fallback_idx: int) -> str:
     m = re.search(r'id="(two-geo-\d+)"', card_html)
     if m:
@@ -3548,6 +3594,111 @@ def _share_card_with_recovered_map(
         "name": label,
         "lat": mid_lat,
         "lng": mid_lng,
+        "management_no": management_no,
+    }
+    return out, point
+
+
+def _share_card_with_recovered_map_legacy_unused(
+    card_html: str,
+    idx: int,
+    gps: dict[str, tuple[float, float]],
+    gps_poles: list[tuple[str, float, float]],
+) -> tuple[str, dict[str, Any] | None]:
+    label = _share_card_text(card_html, "card-title")
+    management_no = _share_card_text(card_html, "item-mgmt")
+    available_points, has_two_points = _share_resolve_span_available_points(label, gps)
+    if not available_points:
+        return card_html, None
+
+    a_name, a_lat, a_lng = available_points[0]
+    if has_two_points:
+        b_name, b_lat, b_lng = available_points[1]
+        map_lat = round((a_lat + b_lat) / 2.0, 6)
+        map_lng = round((a_lng + b_lng) / 2.0, 6)
+    else:
+        map_lat = round(a_lat, 6)
+        map_lng = round(a_lng, 6)
+
+    two_json_id = _share_card_two_geo_id(card_html, idx)
+    script_re = re.compile(
+        rf'<script\s+type="application/json"\s+id="{re.escape(two_json_id)}"[^>]*>[\s\S]*?</script>',
+        re.I,
+    )
+    if has_two_points:
+        two_geo = build_two_geo_payload(
+            a_name=a_name,
+            a_lat=a_lat,
+            a_lng=a_lng,
+            b_name=b_name,
+            b_lat=b_lat,
+            b_lng=b_lng,
+            gps_poles=gps_poles,
+        )
+        two_json = format_two_geo_script(two_json_id, two_geo)
+        if script_re.search(card_html):
+            out = script_re.sub(two_json, card_html, count=1)
+        else:
+            out = re.sub(
+                r"(</div>\s*)",
+                r"\1\n  " + two_json + "\n",
+                card_html,
+                count=1,
+            )
+        two_btn = _share_two_map_button(two_json_id, idx)
+    else:
+        out = script_re.sub("", card_html, count=1)
+        out = re.sub(
+            r'\s*<div\s+class="two-map-wrap"\s+id="two-wrap-\d+"[\s\S]*?</div>\s*</div>',
+            "",
+            out,
+            count=1,
+            flags=re.I,
+        )
+        two_btn = _share_disabled_two_map_button()
+
+    map_btn = _share_map_button(map_lat, map_lng)
+
+    def _actions_repl(m: re.Match[str]) -> str:
+        body = m.group(2)
+        body = re.sub(
+            r'\s*<a\s+class="btn btn-map"[^>]*href="https://www\.google\.com/maps\?q=[^"]+"[^>]*>[\s\S]*?</a>\s*',
+            "\n      ",
+            body,
+            count=1,
+            flags=re.I,
+        )
+        body = re.sub(
+            r'\s*<button\s+type="button"\s+class="btn btn-map"[^>]*data-two-open[\s\S]*?</button>\s*',
+            "\n      ",
+            body,
+            count=1,
+            flags=re.I,
+        )
+        body = re.sub(
+            r'\s*<button\s+type="button"\s+class="btn btn-map btn-map-disabled"[\s\S]*?</button>\s*',
+            "\n      ",
+            body,
+            count=1,
+            flags=re.I,
+        )
+        body = body.strip()
+        head = "\n      ".join(x for x in [map_btn, two_btn] if x)
+        if body:
+            return f"{m.group(1)}\n      {head}\n      {body}\n    {m.group(3)}"
+        return f"{m.group(1)}\n      {head}\n    {m.group(3)}"
+
+    out = re.sub(
+        r'(<div\s+class="card-actions"[^>]*>)([\s\S]*?)(</div>)',
+        _actions_repl,
+        out,
+        count=1,
+        flags=re.I,
+    )
+    point = {
+        "name": label,
+        "lat": map_lat,
+        "lng": map_lng,
         "management_no": management_no,
     }
     return out, point
@@ -7160,6 +7311,13 @@ body {{
   color: #fff;
 }}
 .btn-map:hover, .btn-map:focus {{ filter: brightness(1.05); }}
+.btn-map-disabled,
+.btn-map:disabled {{
+  background: #e5e7eb;
+  color: #64748b;
+  cursor: not-allowed;
+  filter: none;
+}}
 .btn-nearby-map {{
   background: #eef2ff;
   color: #3730a3;
@@ -7808,6 +7966,13 @@ body {{
   color: #fff;
 }}
 .btn-map:hover, .btn-map:focus {{ filter: brightness(1.05); }}
+.btn-map-disabled,
+.btn-map:disabled {{
+  background: #e5e7eb;
+  color: #64748b;
+  cursor: not-allowed;
+  filter: none;
+}}
 .btn-note {{
   background: #fff;
   color: var(--accent2);
@@ -8358,6 +8523,13 @@ body {{
   color: #fff;
 }}
 .btn-map:hover, .btn-map:focus {{ filter: brightness(1.05); }}
+.btn-map-disabled,
+.btn-map:disabled {{
+  background: #e5e7eb;
+  color: #64748b;
+  cursor: not-allowed;
+  filter: none;
+}}
 .btn-note {{
   background: #fff;
   color: var(--accent2);
