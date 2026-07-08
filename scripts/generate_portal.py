@@ -3420,7 +3420,7 @@ def _share_card_text(card_html: str, class_name: str) -> str:
 
 def _share_split_span_label(label: str) -> tuple[str, str] | None:
     s = html_lib.unescape(label or "").strip()
-    for sep in ("～", "〜", "~", "-"):
+    for sep in ("\uff5e", "\u301c", "~", "-"):
         if sep in s:
             a, b = s.split(sep, 1)
             a = _share_gps_lookup_key(a)
@@ -8201,6 +8201,7 @@ def build_archive_detail_html(
         items_html = '<p class="muted-tiny">この日の現場一覧はありません。</p>'
     else:
         cards: list[str] = []
+        archive_gps = _share_gps_pole_map(Path(__file__).resolve().parent.parent)
         for idx, it in enumerate(public_items):
             map_btn = ""
             if it.map_url and it.map_url.startswith(("http://", "https://")):
@@ -8212,15 +8213,27 @@ def build_archive_detail_html(
             start_lng = _to_float(it.start_lng)
             end_lat = _to_float(it.end_lat)
             end_lng = _to_float(it.end_lng)
+            start_ok = _valid_jp_latlng(start_lat, start_lng)
+            end_ok = _valid_jp_latlng(end_lat, end_lng)
+            if archive_gps and not (start_ok or end_ok):
+                gps_points, _gps_has_two = _share_resolve_span_available_points(
+                    it.label, archive_gps
+                )
+                if gps_points:
+                    _name, start_lat, start_lng = gps_points[0]
+                    start_ok = _valid_jp_latlng(start_lat, start_lng)
+                if len(gps_points) >= 2:
+                    _name, end_lat, end_lng = gps_points[1]
+                    end_ok = _valid_jp_latlng(end_lat, end_lng)
+            if not map_btn:
+                if start_ok:
+                    map_btn = _share_map_button(start_lat, start_lng)  # type: ignore[arg-type]
+                elif end_ok:
+                    map_btn = _share_map_button(end_lat, end_lng)  # type: ignore[arg-type]
             two_btn = ""
             two_json = ""
             two_wrap = ""
-            if (
-                start_lat is not None
-                and start_lng is not None
-                and end_lat is not None
-                and end_lng is not None
-            ):
+            if start_ok and end_ok:
                 two_json_id = f"two-geo-{idx}"
                 two_wrap_id = f"two-wrap-{idx}"
                 two_map_id = f"share-two-map-{idx}"
@@ -8245,6 +8258,9 @@ def build_archive_detail_html(
                     f'<div id="{two_map_id}" class="share-two-map-canvas" '
                     'role="application" aria-label="2点地図"></div></div>'
                 )
+
+            if not two_btn and map_btn:
+                two_btn = _share_disabled_two_map_button()
 
             note_id = f"note-{idx}"
             status_jp = (
