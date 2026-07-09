@@ -142,7 +142,7 @@ ippatsu-pc で完了報告（GUI / `apply_completion_report_batch`）で Supabas
 1. **Supabase verify**（ippatsu-pc・read-only）— `completion_report_ref=YYMMDD` 件数、`completed` / `active=false` / `archive_state=stored`、同 `share_date_key` の未完了残存。
 2. **export** — `python tools/export_completion_reports_from_supabase.py --dates YYMMDD --output-dir output/completion_reports_export`（ippatsu-pc）。`output/` は commit しない。
 3. **未完了枠** — sdk に未完了が残る場合: **DB 変更禁止**（completed 化・ref 付与禁止）。export JSON の `planned_but_incomplete[]` に載せる（例: 260610 **51410041**、260612 **51405397**）。
-4. **manifest** — `portal/archive_manifest.json` に entry merge。`item_count` / `completed_count` / `planned_incomplete_count` を export と整合。根拠なき手編集禁止。
+4. **manifest** — `portal/archive_manifest.json` に entry merge。`item_count` / `completed_count` / `planned_incomplete_count` を export と整合。`href` はアーカイブ一覧基準の `./YYMMDD/` に統一し、削除対象の `../../share/YYMMDD/` は残さない。根拠なき手編集禁止。
 5. **archive 限定再生成:**
 
 ```powershell
@@ -160,6 +160,13 @@ python scripts/verify_archive_pages.py --date YYMMDD `
 ```
 
 7. **publish** — archive 関連と docs のみ明示 `git add` → commit → push（人間 Go 後）。
+
+### 6.2.0 export / manifest の整合ルール
+
+- `output/completion_reports_export/YYMMDD.json` は portal 公開素材の副本であり、commit しない。ただし生成直後に JSON として読めることを確認する。壊れた JSON のまま `completion-archive` 生成へ進めない。
+- `portal/archive_manifest.json` の `href` は `portal/archive/index.html` から見たアーカイブ詳細 `./YYMMDD/` のみを許可する。
+- 完了報告後の active share page は `share/YYMMDD/` から削除されるため、manifest から `../../share/YYMMDD/` を参照しない。
+- `scripts/verify_archive_pages.py` は manifest の date / href、archive TOP の行、archive detail の存在・件数を公開前ガードとして検査する。
 
 ### 6.2.1 アーカイブTOPの件名ルール
 

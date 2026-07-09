@@ -265,6 +265,12 @@ def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None) ->
         date_key = _text(raw_entry.get("date"))
         if not date_key or (dates and date_key not in dates):
             continue
+        href = _text(raw_entry.get("href"))
+        expected_href = f"./{date_key}/"
+        if href != expected_href:
+            failures.append(
+                f"archive manifest {date_key} href must be {expected_href}: {href or '(blank)'}"
+            )
         row = rows_by_date.get(date_key)
         if not row:
             failures.append(f"archive TOP missing manifest date {date_key}")
