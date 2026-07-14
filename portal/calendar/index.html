@@ -1721,10 +1721,10 @@ document.getElementById("importFileInput").addEventListener("change", function (
 });
 
 async function initApp() {
-  if (CALENDAR_SUPABASE_ENABLED && CALENDAR_API_ENDPOINT) {
-    currentYear = 2026;
-    currentMonth = 5;
-  }
+  // The visible month follows the device date, never the event data or API state.
+  const openedAt = new Date();
+  currentYear = openedAt.getFullYear();
+  currentMonth = openedAt.getMonth();
   const loadedRemote = await maybeLoadFromSupabase();
   if (!loadedRemote) initEventsFromLocal();
   updateStorageModeLabel();
