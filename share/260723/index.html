@@ -111,9 +111,16 @@ body {
   border-radius: 6px;
 }
 .card-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
+  width: 100%;
+}
+.card-actions .btn {
+  width: 100%;
+}
+.card-actions .btn-note {
+  grid-column: 1 / -1;
 }
 .btn {
   display: inline-flex;
@@ -149,6 +156,10 @@ body {
 .btn-note[aria-expanded="true"] {
   background: var(--accent2);
   color: #fff;
+}
+@media (max-width: 380px) {
+  .card-actions { grid-template-columns: 1fr; }
+  .card-actions .btn-note { grid-column: 1; }
 }
 .note-panel {
   margin-top: 0.65rem;
@@ -450,7 +461,6 @@ body {
 </style>
 <!-- share-page-readability:end -->
 
-
 </head>
 <body data-share-page-date="260723">
 <header>
@@ -458,7 +468,7 @@ body {
 </header>
 <section class="share-page-summary" aria-label="共有概要">
   <div><span>共有日</span><strong>2026年07月23日</strong></div>
-  <div><span>共有件数</span><strong>6件</strong></div>
+  <div><span>共有件数</span><strong>7件</strong></div>
 </section>
 <nav class="share-quick-nav" aria-label="関連ページ">
   <a href="../../portal/">ポータルTOP</a>
@@ -574,10 +584,29 @@ body {
   </div>
   <div class="note-panel" id="note-5" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51407505</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>1</td><td>23</td></tr><tr><th>〜20未満</th><td>6</td><td>0</td></tr><tr><th>〜30未満</th><td>0</td><td>0</td></tr><tr><th>〜40未満</th><td>0</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>7</td><td>23</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>99㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260723&amp;entry.2102936974=51407505&amp;entry.932009684=%E4%BA%8C%E6%B4%A5%E9%87%8E2G1W9W3%EF%BD%9E2G1W9W4&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=&amp;entry.948358914=1&amp;entry.740813394=6&amp;entry.74377314=0&amp;entry.957344080=0&amp;entry.382023163=0&amp;entry.288483164=0&amp;entry.1467113295=23&amp;entry.108281366=0&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=99%E3%8E%A1&amp;entry.1908811234=0%E6%9C%AC&amp;entry.1406858047=0%E7%AE%87%E6%89%80&amp;entry.1367667439=" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
 </article>
+<article class="card" data-card-index="6" data-date="260723" data-management-no-key="51407462" data-management-no="51407462">
+  <div class="card-head">
+    <h2 class="card-title">二津野69～70</h2>
+    <p class="item-mgmt">51407462</p>
+    
+    <div class="card-actions">
+      <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=33.91997,135.77485" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-5" data-two-map="share-two-map-5" data-two-json="two-geo-6" aria-expanded="false" aria-controls="two-wrap-5">2点地図を開く</button>
+      <button type="button" class="btn btn-note" aria-expanded="false"
+        aria-controls="note-6" data-note-toggle>現場指示</button>
+    </div>
+  </div>
+  <script type="application/json" id="two-geo-6">{"a": {"name": "二津野69", "lat": 33.92026, "lng": 135.77468}, "b": {"name": "二津野70", "lat": 33.91997, "lng": 135.77485}, "nearby": [{"name": "二津野69G1", "lat": 33.92009, "lng": 135.77472, "distance_m": 5.0}, {"name": "二津野68G1", "lat": 33.92053, "lng": 135.77471, "distance_m": 30.1}, {"name": "二津野71", "lat": 33.9197, "lng": 135.77516, "distance_m": 41.5}, {"name": "二津野68", "lat": 33.92087, "lng": 135.77468, "distance_m": 67.8}, {"name": "二津野72", "lat": 33.91933, "lng": 135.77529, "distance_m": 81.9}, {"name": "二津野67", "lat": 33.92125, "lng": 135.77436, "distance_m": 114.0}, {"name": "二津野73", "lat": 33.91891, "lng": 135.7754, "distance_m": 128.3}, {"name": "二津野66", "lat": 33.92135, "lng": 135.77397, "distance_m": 137.8}, {"name": "二津野65", "lat": 33.92143, "lng": 135.77354, "distance_m": 167.3}, {"name": "二津野64", "lat": 33.92138, "lng": 135.77312, "distance_m": 190.3}]}</script>
+  
+  <div class="two-map-wrap" id="two-wrap-6" hidden>
+    <div id="share-two-map-6" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
+  </div>
+  <div class="note-panel" id="note-6" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51407462</td></tr><tr><th>処理方法</th><td>集積</td></tr><tr><th>B車</th><td>可</td></tr><tr><th>道幅</th><td>0m</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td>0</td><td>15</td></tr><tr><th>〜20未満</th><td>0</td><td>1</td></tr><tr><th>〜30未満</th><td>3</td><td>0</td></tr><tr><th>〜40未満</th><td>1</td><td>0</td></tr><tr><th>〜50未満</th><td>0</td><td>0</td></tr><tr><th>50以上</th><td>0</td><td>0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>4</td><td>16</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td>0㎡</td></tr><tr><th>竹伐採本数</th><td>0本</td></tr><tr><th>つる伐採箇所数</th><td>0箇所</td></tr></tbody></table></div><div class="instr-note"><strong>備考</strong><br>一般木は桑原自治会</div><div class="detail-edit-footer"><a class="btn btn-detail-edit btn-detail-edit--panel" href="https://docs.google.com/forms/d/e/1FAIpQLSftmxlaA3vwt1s-AT7MOia5hHy3dtL5vbcsvgZHUinq9ETRQg/viewform?entry.1582884252=260723&amp;entry.2102936974=51407462&amp;entry.932009684=%E4%BA%8C%E6%B4%A5%E9%87%8E69%EF%BD%9E70&amp;entry.579262382=%E9%9B%86%E7%A9%8D&amp;entry.2099732396=%E5%8F%AF&amp;entry.1713335536=0m&amp;entry.539982619=&amp;entry.948358914=0&amp;entry.740813394=0&amp;entry.74377314=3&amp;entry.957344080=1&amp;entry.382023163=0&amp;entry.288483164=0&amp;entry.1467113295=15&amp;entry.108281366=1&amp;entry.77416071=0&amp;entry.792549802=0&amp;entry.1363589096=0&amp;entry.388844699=0&amp;entry.133683289=0%E3%8E%A1&amp;entry.1908811234=0%E6%9C%AC&amp;entry.1406858047=0%E7%AE%87%E6%89%80&amp;entry.1367667439=%E5%82%99%E8%80%83%20%E4%B8%80%E8%88%AC%E6%9C%A8%E3%81%AF%E6%A1%91%E5%8E%9F%E8%87%AA%E6%B2%BB%E4%BC%9A" target="_blank" rel="noopener noreferrer" title="共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）">詳細を修正</a></div></div>
+</article>
   <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
-    <!-- share-multipin-debug: points=5 markers=5 duplicate_groups=0 -->
-    <div id="share-map" role="application" aria-label="全径間の位置" data-point-count="5"></div>
+    <!-- share-multipin-debug: points=6 markers=6 duplicate_groups=0 -->
+    <div id="share-map" role="application" aria-label="全径間の位置" data-point-count="6"></div>
   </section>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -616,6 +645,12 @@ body {
             "lat": 33.93669,
             "lng": 135.75846,
             "management_no": "51407505"
+      },
+      {
+            "name": "二津野69～70",
+            "lat": 33.91997,
+            "lng": 135.77485,
+            "management_no": "51407462"
       }
 ];
     document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
