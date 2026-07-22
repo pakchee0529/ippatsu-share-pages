@@ -52,6 +52,7 @@ def main() -> int:
     assert _single_target(both) == (34.1, 135.1)
     assert "data-two-open" in both
     assert "btn-map-two btn-map-disabled" not in both
+    assert '<div class="two-map-wrap" id="two-wrap-0" hidden>' in both
     _assert_order(both)
 
     partial, _point = portal._share_card_with_recovered_map(
@@ -85,6 +86,19 @@ def main() -> int:
     assert "btn-map-two btn-map-disabled" in invalid
     assert 'type="application/json"' not in invalid
     _assert_order(invalid)
+
+    g9_gps = {
+        "二津野96G9": (33.9138, 135.78144),
+        "二津野97G9": (33.91354, 135.78177),
+    }
+    g9_card = card.replace("二津野4～5", "二津野96～97")
+    g9, _point = portal._share_card_with_recovered_map(g9_card, 0, g9_gps, [])
+    assert _single_target(g9) == (33.91354, 135.78177)
+    assert "btn-map-two btn-map-disabled" not in g9
+    assert '"name": "二津野96G9"' in g9
+    assert '"name": "二津野97G9"' in g9
+    assert '<div class="two-map-wrap" id="two-wrap-0" hidden>' in g9
+    _assert_order(g9)
 
     print("OK: share card map controls use old/young/disabled rules")
     return 0

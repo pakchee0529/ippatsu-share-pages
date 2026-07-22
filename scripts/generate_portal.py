@@ -3464,17 +3464,40 @@ def _share_complete_span_end_label(start: str, end: str, gps: dict[str, tuple[fl
     return prefixed
 
 
+def _share_resolve_gps_pole_label(
+    label: str, gps: dict[str, tuple[float, float]]
+) -> str | None:
+    """Resolve an exact GPS pole, then the established steep-slope G9 alias."""
+    key = _share_gps_lookup_key(label)
+    if key in gps:
+        return key
+    if not key or key.endswith("G9"):
+        return None
+    g9 = key + "G9"
+    if g9 not in gps:
+        return None
+
+    # Parent poles use G9 only when it is the isolated hazard alias. Branch
+    # poles follow the PC search rule and may append G9 directly (e.g. G1G9).
+    if re.search(r"\d$", key):
+        if key + "G8" in gps or key + "G10" in gps:
+            return None
+    return g9
+
+
 def _share_resolve_span_points(
     label: str, gps: dict[str, tuple[float, float]]
 ) -> tuple[str, float, float, str, float, float] | None:
     parts = _share_split_span_label(label)
     if not parts:
         return None
-    start_label, end_raw = parts
-    if start_label not in gps:
+    start_raw, end_raw = parts
+    start_label = _share_resolve_gps_pole_label(start_raw, gps)
+    if not start_label:
         return None
-    end_label = _share_complete_span_end_label(start_label, end_raw, gps)
-    if end_label not in gps:
+    end_candidate = _share_complete_span_end_label(start_raw, end_raw, gps)
+    end_label = _share_resolve_gps_pole_label(end_candidate, gps)
+    if not end_label:
         return None
     a_lat, a_lng = gps[start_label]
     b_lat, b_lng = gps[end_label]
@@ -3511,14 +3534,16 @@ def _share_resolve_span_available_points(
     parts = _share_split_span_label(label)
     if not parts:
         return [], False
-    start_label, end_raw = parts
+    start_raw, end_raw = parts
     points: list[tuple[str, float, float]] = []
-    if start_label in gps:
+    start_label = _share_resolve_gps_pole_label(start_raw, gps)
+    if start_label:
         a_lat, a_lng = gps[start_label]
         if _valid_jp_latlng(a_lat, a_lng):
             points.append((start_label, a_lat, a_lng))
-    end_label = _share_complete_span_end_label(start_label, end_raw, gps)
-    if end_label in gps:
+    end_candidate = _share_complete_span_end_label(start_raw, end_raw, gps)
+    end_label = _share_resolve_gps_pole_label(end_candidate, gps)
+    if end_label:
         b_lat, b_lng = gps[end_label]
         if _valid_jp_latlng(b_lat, b_lng):
             points.append((end_label, b_lat, b_lng))
@@ -3541,6 +3566,15 @@ def _share_two_map_button(two_json_id: str, idx: int) -> str:
         f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
         f'data-two-json="{two_json_id}" aria-expanded="false" '
         f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
+    )
+
+
+def _share_two_map_panel(idx: int) -> str:
+    return (
+        f'<div class="two-map-wrap" id="two-wrap-{idx}" hidden>\n'
+        f'    <div id="share-two-map-{idx}" class="share-two-map-canvas" '
+        'role="application" aria-label="2点地図"></div>\n'
+        "  </div>"
     )
 
 
@@ -3604,6 +3638,10 @@ def _share_card_with_recovered_map(
         rf'<script\s+type="application/json"\s+id="{re.escape(two_json_id)}"[^>]*>[\s\S]*?</script>',
         re.I,
     )
+    panel_re = re.compile(
+        r'\s*<div\s+class="two-map-wrap"\s+id="two-wrap-\d+"[\s\S]*?</div>\s*</div>',
+        re.I,
+    )
     if has_two_points:
         old_name, old_lat, old_lng = available_points[1]
         two_geo = build_two_geo_payload(
@@ -3616,20 +3654,22 @@ def _share_card_with_recovered_map(
             gps_poles=gps_poles,
         )
         two_json = format_two_geo_script(two_json_id, two_geo)
-        if script_re.search(card_html):
-            out = script_re.sub(two_json, card_html, count=1)
+        base = panel_re.sub("", card_html, count=1)
+        if script_re.search(base):
+            out = script_re.sub(two_json, base, count=1)
         else:
-            out = re.sub(r"(</div>\s*)", r"\1\n  " + two_json + "\n", card_html, count=1)
+            out = re.sub(
+                r'(\s*<div\s+class="note-panel")',
+                lambda m: "\n  " + two_json + m.group(1),
+                base,
+                count=1,
+                flags=re.I,
+            )
+        out = out.replace(two_json, two_json + "\n  " + _share_two_map_panel(idx), 1)
         two_btn = _share_two_map_button(two_json_id, idx)
     else:
         out = script_re.sub("", card_html, count=1)
-        out = re.sub(
-            r'\s*<div\s+class="two-map-wrap"\s+id="two-wrap-\d+"[\s\S]*?</div>\s*</div>',
-            "",
-            out,
-            count=1,
-            flags=re.I,
-        )
+        out = panel_re.sub("", out, count=1)
         two_btn = _share_disabled_two_map_button()
 
     map_btn = (
@@ -3665,6 +3705,7 @@ def _share_card_with_recovered_map(
         count=1,
         flags=re.I,
     )
+    out = re.sub(r"(?m)^[ \t]+$", "", out)
     point = None
     if available_points:
         point = {
