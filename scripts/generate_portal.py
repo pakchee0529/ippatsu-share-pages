@@ -2483,8 +2483,12 @@ def _strip_share_live_edit_inject_block(html: str) -> str:
     if _SHARE_LIVE_EDIT_BEGIN not in html:
         return html
     return re.sub(
-        re.escape(_SHARE_LIVE_EDIT_BEGIN) + r"[\s\S]*?" + re.escape(_SHARE_LIVE_EDIT_END),
-        "",
+        r"\s*"
+        + re.escape(_SHARE_LIVE_EDIT_BEGIN)
+        + r"[\s\S]*?"
+        + re.escape(_SHARE_LIVE_EDIT_END)
+        + r"\s*",
+        "\n",
         html,
         count=1,
     )
@@ -3481,8 +3485,23 @@ def _share_resolve_span_points(
 
 def _share_map_button(lat: float, lng: float) -> str:
     return (
-        f'<a class="btn btn-map" href="https://www.google.com/maps?q={lat},{lng}" '
-        'target="_blank" rel="noopener noreferrer">現場地図を開く</a>'
+        f'<a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q={lat},{lng}" '
+        'target="_blank" rel="noopener noreferrer">地図を開く</a>'
+    )
+
+
+def _share_float(value: object) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _share_disabled_map_button() -> str:
+    return (
+        '<button type="button" class="btn btn-map btn-map-single btn-map-disabled" '
+        'disabled aria-disabled="true" '
+        'title="若番・老番の座標がありません">地図を開く</button>'
     )
 
 
@@ -3508,9 +3527,9 @@ def _share_resolve_span_available_points(
 
 def _share_disabled_two_map_button() -> str:
     return (
-        '<button type="button" class="btn btn-map btn-map-disabled" '
+        '<button type="button" class="btn btn-map btn-map-two btn-map-disabled" '
         'disabled aria-disabled="true" '
-        'title="2点のうち片側だけ座標があります">2点地図を開く</button>'
+        'title="若番・老番の両方の座標が必要です">2点地図を開く</button>'
     )
 
 
@@ -3518,7 +3537,7 @@ def _share_two_map_button(two_json_id: str, idx: int) -> str:
     two_wrap_id = f"two-wrap-{idx}"
     two_map_id = f"share-two-map-{idx}"
     return (
-        f'<button type="button" class="btn btn-map" data-two-open '
+        f'<button type="button" class="btn btn-map btn-map-two" data-two-open '
         f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
         f'data-two-json="{two_json_id}" aria-expanded="false" '
         f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
@@ -3532,74 +3551,35 @@ def _share_card_two_geo_id(card_html: str, fallback_idx: int) -> str:
     return f"two-geo-{fallback_idx}"
 
 
-def _share_card_with_recovered_map(
+def _share_card_embedded_span_points(
     card_html: str,
-    idx: int,
-    gps: dict[str, tuple[float, float]],
-    gps_poles: list[tuple[str, float, float]],
-) -> tuple[str, dict[str, Any] | None]:
-    label = _share_card_text(card_html, "card-title")
-    management_no = _share_card_text(card_html, "item-mgmt")
-    resolved = _share_resolve_span_points(label, gps)
-    if resolved is None:
-        return card_html, None
-    a_name, a_lat, a_lng, b_name, b_lat, b_lng = resolved
-    mid_lat = round((a_lat + b_lat) / 2.0, 6)
-    mid_lng = round((a_lng + b_lng) / 2.0, 6)
-
-    two_json_id = _share_card_two_geo_id(card_html, idx)
-    two_geo = build_two_geo_payload(
-        a_name=a_name,
-        a_lat=a_lat,
-        a_lng=a_lng,
-        b_name=b_name,
-        b_lat=b_lat,
-        b_lng=b_lng,
-        gps_poles=gps_poles,
-    )
-    two_json = format_two_geo_script(two_json_id, two_geo)
-    script_re = re.compile(
-        rf'<script\s+type="application/json"\s+id="{re.escape(two_json_id)}"[^>]*>[\s\S]*?</script>',
-        re.I,
-    )
-    if script_re.search(card_html):
-        out = script_re.sub(two_json, card_html, count=1)
-    else:
-        out = re.sub(r"(</div>\s*)", r"\1\n  " + two_json + "\n", card_html, count=1)
-
-    map_btn = _share_map_button(mid_lat, mid_lng)
-
-    def _actions_repl(m: re.Match[str]) -> str:
-        body = m.group(2)
-        body = re.sub(
-            r'\s*<a\s+class="btn btn-map"[^>]*>現場地図を開く</a>\s*',
-            "\n      ",
-            body,
-            count=1,
-            flags=re.I,
-        )
-        body = body.strip()
-        if body:
-            return f"{m.group(1)}\n      {map_btn}\n      {body}\n    {m.group(3)}"
-        return f"{m.group(1)}\n      {map_btn}\n    {m.group(3)}"
-
-    out = re.sub(
-        r'(<div\s+class="card-actions"[^>]*>)([\s\S]*?)(</div>)',
-        _actions_repl,
-        out,
-        count=1,
+) -> tuple[list[tuple[str, float, float]], bool]:
+    m = re.search(
+        r'<script\s+type="application/json"\s+id="two-geo-\d+"[^>]*>'
+        r'([\s\S]*?)</script>',
+        card_html,
         flags=re.I,
     )
-    point = {
-        "name": label,
-        "lat": mid_lat,
-        "lng": mid_lng,
-        "management_no": management_no,
-    }
-    return out, point
+    if not m:
+        return [], False
+    try:
+        raw = json.loads(m.group(1))
+    except (TypeError, json.JSONDecodeError):
+        return [], False
+    points: list[tuple[str, float, float]] = []
+    for key in ("a", "b"):
+        point = raw.get(key) if isinstance(raw, dict) else None
+        if not isinstance(point, dict):
+            continue
+        lat = _share_float(point.get("lat"))
+        lng = _share_float(point.get("lng"))
+        if not _valid_jp_latlng(lat, lng):
+            continue
+        points.append((_to_str(point.get("name")) or "(不明)", lat, lng))
+    return points, len(points) == 2
 
 
-def _share_card_with_recovered_map_legacy_unused(
+def _share_card_with_recovered_map(
     card_html: str,
     idx: int,
     gps: dict[str, tuple[float, float]],
@@ -3609,16 +3589,15 @@ def _share_card_with_recovered_map_legacy_unused(
     management_no = _share_card_text(card_html, "item-mgmt")
     available_points, has_two_points = _share_resolve_span_available_points(label, gps)
     if not available_points:
-        return card_html, None
-
-    a_name, a_lat, a_lng = available_points[0]
-    if has_two_points:
-        b_name, b_lat, b_lng = available_points[1]
-        map_lat = round((a_lat + b_lat) / 2.0, 6)
-        map_lng = round((a_lng + b_lng) / 2.0, 6)
+        available_points, has_two_points = _share_card_embedded_span_points(card_html)
+    if available_points:
+        young_name, young_lat, young_lng = available_points[0]
+        map_name, map_lat_raw, map_lng_raw = available_points[-1]
+        map_lat = round(map_lat_raw, 6)
+        map_lng = round(map_lng_raw, 6)
     else:
-        map_lat = round(a_lat, 6)
-        map_lng = round(a_lng, 6)
+        young_name = map_name = label or "(不明)"
+        young_lat = young_lng = map_lat = map_lng = 0.0
 
     two_json_id = _share_card_two_geo_id(card_html, idx)
     script_re = re.compile(
@@ -3626,25 +3605,21 @@ def _share_card_with_recovered_map_legacy_unused(
         re.I,
     )
     if has_two_points:
+        old_name, old_lat, old_lng = available_points[1]
         two_geo = build_two_geo_payload(
-            a_name=a_name,
-            a_lat=a_lat,
-            a_lng=a_lng,
-            b_name=b_name,
-            b_lat=b_lat,
-            b_lng=b_lng,
+            a_name=young_name,
+            a_lat=young_lat,
+            a_lng=young_lng,
+            b_name=old_name,
+            b_lat=old_lat,
+            b_lng=old_lng,
             gps_poles=gps_poles,
         )
         two_json = format_two_geo_script(two_json_id, two_geo)
         if script_re.search(card_html):
             out = script_re.sub(two_json, card_html, count=1)
         else:
-            out = re.sub(
-                r"(</div>\s*)",
-                r"\1\n  " + two_json + "\n",
-                card_html,
-                count=1,
-            )
+            out = re.sub(r"(</div>\s*)", r"\1\n  " + two_json + "\n", card_html, count=1)
         two_btn = _share_two_map_button(two_json_id, idx)
     else:
         out = script_re.sub("", card_html, count=1)
@@ -3657,33 +3632,28 @@ def _share_card_with_recovered_map_legacy_unused(
         )
         two_btn = _share_disabled_two_map_button()
 
-    map_btn = _share_map_button(map_lat, map_lng)
+    map_btn = (
+        _share_map_button(map_lat, map_lng)
+        if available_points
+        else _share_disabled_map_button()
+    )
 
     def _actions_repl(m: re.Match[str]) -> str:
         body = m.group(2)
         body = re.sub(
-            r'\s*<a\s+class="btn btn-map"[^>]*href="https://www\.google\.com/maps\?q=[^"]+"[^>]*>[\s\S]*?</a>\s*',
+            r'\s*<a\s+class="[^"]*btn-map[^"]*"[^>]*>[\s\S]*?</a>\s*',
             "\n      ",
             body,
-            count=1,
             flags=re.I,
         )
         body = re.sub(
-            r'\s*<button\s+type="button"\s+class="btn btn-map"[^>]*data-two-open[\s\S]*?</button>\s*',
+            r'\s*<button\s+type="button"\s+class="[^"]*btn-map[^"]*"[\s\S]*?</button>\s*',
             "\n      ",
             body,
-            count=1,
-            flags=re.I,
-        )
-        body = re.sub(
-            r'\s*<button\s+type="button"\s+class="btn btn-map btn-map-disabled"[\s\S]*?</button>\s*',
-            "\n      ",
-            body,
-            count=1,
             flags=re.I,
         )
         body = body.strip()
-        head = "\n      ".join(x for x in [map_btn, two_btn] if x)
+        head = "\n      ".join((map_btn, two_btn))
         if body:
             return f"{m.group(1)}\n      {head}\n      {body}\n    {m.group(3)}"
         return f"{m.group(1)}\n      {head}\n    {m.group(3)}"
@@ -3695,12 +3665,14 @@ def _share_card_with_recovered_map_legacy_unused(
         count=1,
         flags=re.I,
     )
-    point = {
-        "name": label,
-        "lat": map_lat,
-        "lng": map_lng,
-        "management_no": management_no,
-    }
+    point = None
+    if available_points:
+        point = {
+            "name": label or map_name,
+            "lat": map_lat,
+            "lng": map_lng,
+            "management_no": management_no,
+        }
     return out, point
 
 
@@ -3793,7 +3765,13 @@ def _recover_share_page_maps_from_gps(html: str, repo_root: Path | None) -> str:
     if not points:
         return out if changed else html
 
-    existing_points = _extract_share_points_array(html)
+    existing_points = [
+        point
+        for point in _extract_share_points_array(html)
+        if _valid_jp_latlng(
+            _share_float(point.get("lat")), _share_float(point.get("lng"))
+        )
+    ]
     final_points = existing_points if len(existing_points) > len(points) else points
     out2 = _replace_share_points_array(out, final_points)
     out2 = re.sub(
@@ -8203,12 +8181,6 @@ def build_archive_detail_html(
         cards: list[str] = []
         archive_gps = _share_gps_pole_map(Path(__file__).resolve().parent.parent)
         for idx, it in enumerate(public_items):
-            map_btn = ""
-            if it.map_url and it.map_url.startswith(("http://", "https://")):
-                map_btn = (
-                    f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
-                    'target="_blank" rel="noopener noreferrer">地図を開く</a>'
-                )
             start_lat = _to_float(it.start_lat)
             start_lng = _to_float(it.start_lng)
             end_lat = _to_float(it.end_lat)
@@ -8225,11 +8197,17 @@ def build_archive_detail_html(
                 if len(gps_points) >= 2:
                     _name, end_lat, end_lng = gps_points[1]
                     end_ok = _valid_jp_latlng(end_lat, end_lng)
-            if not map_btn:
-                if start_ok:
-                    map_btn = _share_map_button(start_lat, start_lng)  # type: ignore[arg-type]
-                elif end_ok:
-                    map_btn = _share_map_button(end_lat, end_lng)  # type: ignore[arg-type]
+            if end_ok:
+                map_btn = _share_map_button(end_lat, end_lng)  # type: ignore[arg-type]
+            elif start_ok:
+                map_btn = _share_map_button(start_lat, start_lng)  # type: ignore[arg-type]
+            elif it.map_url and it.map_url.startswith(("http://", "https://")):
+                map_btn = (
+                    f'<a class="btn btn-map btn-map-single" href="{escape_html(it.map_url)}" '
+                    'target="_blank" rel="noopener noreferrer">地図を開く</a>'
+                )
+            else:
+                map_btn = _share_disabled_map_button()
             two_btn = ""
             two_json = ""
             two_wrap = ""
@@ -8259,7 +8237,7 @@ def build_archive_detail_html(
                     'role="application" aria-label="2点地図"></div></div>'
                 )
 
-            if not two_btn and map_btn:
+            if not two_btn:
                 two_btn = _share_disabled_two_map_button()
 
             note_id = f"note-{idx}"
