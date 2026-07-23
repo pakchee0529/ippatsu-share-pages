@@ -1,6 +1,16 @@
 {
   "entries": [
     {
+      "date": "260723",
+      "title": "2026年07月23日 2件",
+      "item_count": 2,
+      "completed_count": 2,
+      "incomplete_count": 0,
+      "reported_at": "2026-07-23T17:49:53",
+      "href": "./260723/",
+      "planned_incomplete_count": 5
+    },
+    {
       "date": "260722",
       "title": "2026年07月22日 5件",
       "item_count": 5,
