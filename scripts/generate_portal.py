@@ -3434,34 +3434,94 @@ def _share_split_span_label(label: str) -> tuple[str, str] | None:
     return None
 
 
+_SHARE_BRANCH_LETTERS = "WNESGK"
+_SHARE_POLE_RE = re.compile(
+    rf"^(.*?)(\d+)((?:[{_SHARE_BRANCH_LETTERS}]\d+)*)$", re.I
+)
+
+
+def _share_parse_pole_label(label: str) -> tuple[str, int, list[tuple[str, int]]] | None:
+    match = _SHARE_POLE_RE.match(_share_gps_lookup_key(label))
+    if not match:
+        return None
+    branches = [
+        (letter.upper(), int(number))
+        for letter, number in re.findall(
+            rf"([{_SHARE_BRANCH_LETTERS}])(\d+)", match.group(3), re.I
+        )
+    ]
+    return match.group(1), int(match.group(2)), branches
+
+
+def _share_build_pole_label(
+    place: str, parent: int, branches: list[tuple[str, int]]
+) -> str:
+    return f"{place}{parent}" + "".join(
+        f"{letter}{number}" for letter, number in branches
+    )
+
+
 def _share_complete_span_end_label(start: str, end: str, gps: dict[str, tuple[float, float]]) -> str:
-    if end in gps:
-        return end
-    crown = extract_crown_name(start) or ""
-    if crown and not end.startswith(crown):
-        prefixed = crown + end
-        if prefixed in gps:
-            return prefixed
+    start_key = _share_gps_lookup_key(start)
+    end_key = _share_gps_lookup_key(end)
+    if _share_resolve_gps_pole_label(end_key, gps):
+        return end_key
+
+    start_parsed = _share_parse_pole_label(start_key)
+    candidate = end_key
+    if start_parsed:
+        place, parent, front_branches = start_parsed
+        branch_only = re.fullmatch(
+            rf"(?:[{_SHARE_BRANCH_LETTERS}]\d+)+", end_key, re.I
+        )
+        numeric = re.fullmatch(
+            rf"(\d+)((?:[{_SHARE_BRANCH_LETTERS}]\d+)*)", end_key, re.I
+        )
+        end_parsed = _share_parse_pole_label(end_key)
+        if branch_only:
+            back_branches = [
+                (letter.upper(), int(number))
+                for letter, number in re.findall(
+                    rf"([{_SHARE_BRANCH_LETTERS}])(\d+)", end_key, re.I
+                )
+            ]
+            first = back_branches[0]
+            matched = next(
+                (i for i, branch in enumerate(front_branches) if branch == first),
+                None,
+            )
+            prefix = front_branches[:matched] if matched is not None else front_branches
+            candidate = _share_build_pole_label(place, parent, prefix + back_branches)
+        elif numeric:
+            branches = [
+                (letter.upper(), int(number))
+                for letter, number in re.findall(
+                    rf"([{_SHARE_BRANCH_LETTERS}])(\d+)", numeric.group(2), re.I
+                )
+            ]
+            candidate = _share_build_pole_label(place, int(numeric.group(1)), branches)
+        elif end_parsed and end_parsed[0]:
+            candidate = _share_build_pole_label(*end_parsed)
     else:
-        prefixed = end
+        crown = extract_crown_name(start_key) or ""
+        if not crown:
+            crown_match = re.match(r"^(.+?)(?=\d)", start_key)
+            crown = crown_match.group(1) if crown_match else ""
+        if crown and re.match(r"^\d", end_key):
+            candidate = crown + end_key
+
+    if _share_resolve_gps_pole_label(candidate, gps):
+        return candidate
 
     # Some CS labels arrive as "津風呂24N6～26N7" while GPS has "津風呂24N7".
     # Prefer the start-side route prefix when the literal end pole is absent.
-    m_start = re.match(r"^(.+?)(\d+[A-Z])(\d+[A-Z]?)$", start, re.I)
-    m_end = re.match(r"^(.+?)(\d+[A-Z])(\d+[A-Z]?)$", prefixed, re.I)
+    m_start = re.match(r"^(.+?)(\d+[A-Z])(\d+[A-Z]?)$", start_key, re.I)
+    m_end = re.match(r"^(.+?)(\d+[A-Z])(\d+[A-Z]?)$", candidate, re.I)
     if m_start and m_end and m_start.group(1) == m_end.group(1):
-        candidate = f"{m_start.group(1)}{m_start.group(2)}{m_end.group(3)}"
-        if candidate in gps:
-            return candidate
-    m_branch_only = re.match(r"^([WNESGK]\d+.*)$", end, re.I)
-    m_start_branch = re.match(r"^(.+?\d+(?:[WNESGK]\d+)*)$", start, re.I)
-    if m_branch_only and m_start_branch:
-        parsed = re.match(r"^(.+?\d+)(?:[WNESGK]\d+)*$", start, re.I)
-        if parsed:
-            candidate = parsed.group(1) + end
-            if candidate in gps:
-                return candidate
-    return prefixed
+        route_candidate = f"{m_start.group(1)}{m_start.group(2)}{m_end.group(3)}"
+        if _share_resolve_gps_pole_label(route_candidate, gps):
+            return route_candidate
+    return candidate
 
 
 def _share_resolve_gps_pole_label(
@@ -3622,6 +3682,12 @@ def _share_card_with_recovered_map(
     label = _share_card_text(card_html, "card-title")
     management_no = _share_card_text(card_html, "item-mgmt")
     available_points, has_two_points = _share_resolve_span_available_points(label, gps)
+    if not available_points and _share_split_span_label(label) is None:
+        single_label = _share_resolve_gps_pole_label(label, gps)
+        if single_label:
+            single_lat, single_lng = gps[single_label]
+            if _valid_jp_latlng(single_lat, single_lng):
+                available_points = [(single_label, single_lat, single_lng)]
     if not available_points:
         available_points, has_two_points = _share_card_embedded_span_points(card_html)
     if available_points:
@@ -5364,47 +5430,93 @@ def _planned_incomplete_count_for_date(repo_root: Path, date_key: str) -> int:
     return len(load_archive_planned_incomplete(repo_root, date_key))
 
 
+def _archive_resolved_item_points(
+    item: ArchivePublicItem | PlannedIncompleteItem,
+    gps: dict[str, tuple[float, float]] | None,
+) -> tuple[
+    tuple[str, float, float] | None,
+    tuple[str, float, float] | None,
+]:
+    start_lat = _to_float(item.start_lat)
+    start_lng = _to_float(item.start_lng)
+    end_lat = _to_float(item.end_lat)
+    end_lng = _to_float(item.end_lng)
+    start = (
+        (item.label, start_lat, start_lng)
+        if _valid_jp_latlng(start_lat, start_lng)
+        else None
+    )
+    end = (
+        (item.label, end_lat, end_lng)
+        if _valid_jp_latlng(end_lat, end_lng)
+        else None
+    )
+    if gps:
+        parts = _share_split_span_label(item.label)
+        if parts:
+            gps_points, _has_two = _share_resolve_span_available_points(item.label, gps)
+            if start is None and gps_points:
+                start = gps_points[0]
+            if end is None and len(gps_points) >= 2:
+                end = gps_points[1]
+        elif start is None and end is None:
+            pole = _share_resolve_gps_pole_label(item.label, gps)
+            if pole:
+                lat, lng = gps[pole]
+                if _valid_jp_latlng(lat, lng):
+                    start = (pole, lat, lng)
+    return start, end
+
+
+def _share_points_are_distinct(
+    start: tuple[str, float, float] | None,
+    end: tuple[str, float, float] | None,
+) -> bool:
+    if start is None or end is None:
+        return False
+    return abs(start[1] - end[1]) > 1e-9 or abs(start[2] - end[2]) > 1e-9
+
+
 def build_planned_incomplete_section_html(
     items: list[PlannedIncompleteItem],
+    gps: dict[str, tuple[float, float]] | None = None,
 ) -> str:
     if not items:
         return ""
     cards: list[str] = []
     for idx, it in enumerate(items):
-        map_btn = ""
-        if it.map_url.startswith(("http://", "https://")):
+        start, end = _archive_resolved_item_points(it, gps)
+        representative = end or start
+        if representative:
+            map_btn = _share_map_button(representative[1], representative[2])
+        elif it.map_url.startswith(("http://", "https://")):
             map_btn = (
-                f'<a class="btn btn-map" href="{escape_html(it.map_url)}" '
+                f'<a class="btn btn-map btn-map-single" href="{escape_html(it.map_url)}" '
                 'target="_blank" rel="noopener noreferrer">地図を開く</a>'
             )
-        start_lat = _to_float(it.start_lat)
-        start_lng = _to_float(it.start_lng)
-        end_lat = _to_float(it.end_lat)
-        end_lng = _to_float(it.end_lng)
+        else:
+            map_btn = _share_disabled_map_button()
+        two_btn = _share_disabled_two_map_button()
         two_json = ""
         two_wrap = ""
-        if (
-            start_lat is not None
-            and start_lng is not None
-            and end_lat is not None
-            and end_lng is not None
-        ):
+        if _share_points_are_distinct(start, end):
+            assert start is not None and end is not None
             two_json_id = f"planned-two-geo-{idx}"
             two_wrap_id = f"planned-two-wrap-{idx}"
             two_map_id = f"planned-two-map-{idx}"
             two_btn = (
-                f'<button type="button" class="btn btn-map" data-two-open '
+                f'<button type="button" class="btn btn-map btn-map-two" data-two-open '
                 f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
                 f'data-two-json="{two_json_id}" aria-expanded="false" '
                 f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
             )
             two_geo = build_two_geo_payload(
-                a_name=it.label,
-                a_lat=start_lat,
-                a_lng=start_lng,
-                b_name=it.label,
-                b_lat=end_lat,
-                b_lng=end_lng,
+                a_name=start[0],
+                a_lat=start[1],
+                a_lng=start[2],
+                b_name=end[0],
+                b_lat=end[1],
+                b_lng=end[2],
                 gps_poles=None,
             )
             two_json = format_two_geo_script(two_json_id, two_geo)
@@ -8209,6 +8321,7 @@ def build_archive_detail_html(
     items_html = ""
     points: list[dict] = []
     planned_items = planned_incomplete or []
+    archive_gps = _share_gps_pole_map(Path(__file__).resolve().parent.parent)
     completed_heading = ""
     if public_items and len(public_items) > 0:
         completed_heading = (
@@ -8220,28 +8333,11 @@ def build_archive_detail_html(
         items_html = '<p class="muted-tiny">この日の現場一覧はありません。</p>'
     else:
         cards: list[str] = []
-        archive_gps = _share_gps_pole_map(Path(__file__).resolve().parent.parent)
         for idx, it in enumerate(public_items):
-            start_lat = _to_float(it.start_lat)
-            start_lng = _to_float(it.start_lng)
-            end_lat = _to_float(it.end_lat)
-            end_lng = _to_float(it.end_lng)
-            start_ok = _valid_jp_latlng(start_lat, start_lng)
-            end_ok = _valid_jp_latlng(end_lat, end_lng)
-            if archive_gps and not (start_ok or end_ok):
-                gps_points, _gps_has_two = _share_resolve_span_available_points(
-                    it.label, archive_gps
-                )
-                if gps_points:
-                    _name, start_lat, start_lng = gps_points[0]
-                    start_ok = _valid_jp_latlng(start_lat, start_lng)
-                if len(gps_points) >= 2:
-                    _name, end_lat, end_lng = gps_points[1]
-                    end_ok = _valid_jp_latlng(end_lat, end_lng)
-            if end_ok:
-                map_btn = _share_map_button(end_lat, end_lng)  # type: ignore[arg-type]
-            elif start_ok:
-                map_btn = _share_map_button(start_lat, start_lng)  # type: ignore[arg-type]
+            start, end = _archive_resolved_item_points(it, archive_gps)
+            representative = end or start
+            if representative:
+                map_btn = _share_map_button(representative[1], representative[2])
             elif it.map_url and it.map_url.startswith(("http://", "https://")):
                 map_btn = (
                     f'<a class="btn btn-map btn-map-single" href="{escape_html(it.map_url)}" '
@@ -8252,23 +8348,24 @@ def build_archive_detail_html(
             two_btn = ""
             two_json = ""
             two_wrap = ""
-            if start_ok and end_ok:
+            if _share_points_are_distinct(start, end):
+                assert start is not None and end is not None
                 two_json_id = f"two-geo-{idx}"
                 two_wrap_id = f"two-wrap-{idx}"
                 two_map_id = f"share-two-map-{idx}"
                 two_btn = (
-                    f'<button type="button" class="btn btn-map" data-two-open '
+                    f'<button type="button" class="btn btn-map btn-map-two" data-two-open '
                     f'data-two-wrap="{two_wrap_id}" data-two-map="{two_map_id}" '
                     f'data-two-json="{two_json_id}" aria-expanded="false" '
                     f'aria-controls="{two_wrap_id}">2点地図を開く</button>'
                 )
                 two_geo = build_two_geo_payload(
-                    a_name=it.label,
-                    a_lat=start_lat,
-                    a_lng=start_lng,
-                    b_name=it.label,
-                    b_lat=end_lat,
-                    b_lng=end_lng,
+                    a_name=start[0],
+                    a_lat=start[1],
+                    a_lng=start[2],
+                    b_name=end[0],
+                    b_lat=end[1],
+                    b_lng=end[2],
                     gps_poles=None,
                 )
                 two_json = format_two_geo_script(two_json_id, two_geo)
@@ -8342,30 +8439,26 @@ def build_archive_detail_html(
       <div class="note-panel" id="{note_id}" hidden>{note_body}</div>
 </article>"""
             )
-            p_lat, p_lng = _pick_item_latlng(it)
-            f_lat = _to_float(p_lat)
-            f_lng = _to_float(p_lng)
-            if f_lat is not None and f_lng is not None:
+            if representative:
                 points.append(
                     {
                         "name": it.label,
-                        "lat": f_lat,
-                        "lng": f_lng,
+                        "lat": representative[1],
+                        "lng": representative[2],
                         "management_no": it.management_no,
                     }
                 )
         items_html = "\n".join(cards)
-    planned_html = build_planned_incomplete_section_html(planned_items)
+    planned_html = build_planned_incomplete_section_html(planned_items, archive_gps)
     for it in planned_items:
-        p_lat, p_lng = _pick_item_latlng(it)
-        f_lat = _to_float(p_lat)
-        f_lng = _to_float(p_lng)
-        if f_lat is not None and f_lng is not None:
+        start, end = _archive_resolved_item_points(it, archive_gps)
+        representative = end or start
+        if representative:
             points.append(
                 {
                     "name": it.label,
-                    "lat": f_lat,
-                    "lng": f_lng,
+                    "lat": representative[1],
+                    "lng": representative[2],
                     "management_no": it.management_no,
                 }
             )

@@ -100,6 +100,49 @@ def main() -> int:
     assert '<div class="two-map-wrap" id="two-wrap-0" hidden>' in g9
     _assert_order(g9)
 
+    prefixed_gps = {
+        "S今西68": (34.0, 135.0),
+        "S今西69": (34.1, 135.1),
+        "P百谷38S10": (34.2, 135.2),
+        "P百谷38S11": (34.3, 135.3),
+        "白銀63N5E9G2": (34.4, 135.4),
+        "白銀63N5E9G3": (34.5, 135.5),
+        "入谷1": (34.6, 135.6),
+        "上湯川167G9": (34.7, 135.7),
+    }
+    for label, expected in (
+        ("S今西68～69", (34.1, 135.1)),
+        ("P百谷38S10～38S11", (34.3, 135.3)),
+        ("白銀63N5E9G2～E9G3", (34.5, 135.5)),
+        ("入谷1～上湯川167", (34.7, 135.7)),
+    ):
+        recovered_card = card.replace("二津野4～5", label)
+        recovered, _point = portal._share_card_with_recovered_map(
+            recovered_card, 0, prefixed_gps, []
+        )
+        assert _single_target(recovered) == expected
+        assert "btn-map-two btn-map-disabled" not in recovered
+        _assert_order(recovered)
+
+    single_card = card.replace("二津野4～5", "二津野96")
+    single, _point = portal._share_card_with_recovered_map(
+        single_card, 0, g9_gps, []
+    )
+    assert _single_target(single) == (33.9138, 135.78144)
+    assert "btn-map-two btn-map-disabled" in single
+    _assert_order(single)
+
+    virtual_start_card = card.replace("二津野4～5", "沼田原85K～86N1")
+    virtual_start, _point = portal._share_card_with_recovered_map(
+        virtual_start_card,
+        0,
+        {"沼田原86N1": (34.8, 135.8)},
+        [],
+    )
+    assert _single_target(virtual_start) == (34.8, 135.8)
+    assert "btn-map-two btn-map-disabled" in virtual_start
+    _assert_order(virtual_start)
+
     print("OK: share card map controls use old/young/disabled rules")
     return 0
 
