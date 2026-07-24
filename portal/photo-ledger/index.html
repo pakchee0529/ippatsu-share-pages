@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#13251f">
+  <meta name="description" content="写真台帳整理用QR仕切り札 PoC">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <title>写真台帳 QR仕切り札</title>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">写真台帳 PoC 0</p>
+        <h1>QR仕切り札</h1>
+      </div>
+      <span id="networkStatus" class="status">確認中</span>
+    </header>
+
+    <section class="notice" aria-label="重要な注意">
+      整理用QRです。正式看板ではありません。
+    </section>
+
+    <section class="case-card">
+      <dl>
+        <div><dt>管理番号</dt><dd id="managementNo">—</dd></div>
+        <div><dt>径間</dt><dd id="spanLabel">—</dd></div>
+        <div><dt>カメラ</dt><dd>FinePix XP140</dd></div>
+      </dl>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>撮る札を選ぶ</h2>
+        <span id="markerCount"></span>
+      </div>
+      <div id="markerList" class="marker-list"></div>
+    </section>
+
+    <footer class="footer-actions">
+      <button id="restoreButton" class="secondary" type="button">最後の札を再表示</button>
+      <button id="exportButton" class="secondary" type="button">履歴JSONを保存</button>
+    </footer>
+  </main>
+
+  <dialog id="markerDialog" class="marker-dialog">
+    <div class="marker-screen">
+      <div class="marker-warning">整理用QR・正式看板ではありません</div>
+      <div class="marker-copy">
+        <p id="dialogManagement" class="management"></p>
+        <p id="dialogSpan" class="span"></p>
+        <h2 id="dialogLabel"></h2>
+        <p id="dialogSequence" class="sequence"></p>
+      </div>
+      <div id="qrTarget" class="qr-target" aria-live="polite"></div>
+      <p class="instruction">この札の次から ① ② ③… と自動連番</p>
+      <div class="dialog-actions">
+        <button id="brightnessButton" class="secondary" type="button">画面を明るく</button>
+        <button id="closeButton" class="primary" type="button">札を閉じる</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="pack.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

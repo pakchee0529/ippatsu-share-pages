@@ -1610,6 +1610,7 @@ def render_portal_subpage_header(
         (base + "entrustment/", "付託待ち", "entrustment"),
         (base + "cases/", "案件管理", "cases"),
         (base + "archive/", "アーカイブ", "archive"),
+        (base + "photo-ledger/", "QR仕切り札（PoC）", None),
     ]
     link_lines: list[str] = []
     for href, label, page_id in items:
@@ -6323,6 +6324,7 @@ def render_cases_detail_header(page_title: str) -> str:
         ("../../entrustment/", "付託待ち", "entrustment"),
         ("../", "案件管理", "cases"),
         ("../../archive/", "アーカイブ", "archive"),
+        ("../../photo-ledger/", "QR仕切り札（PoC）", None),
     ]
     link_lines: list[str] = []
     for href, label, page_id in items:
@@ -9100,6 +9102,7 @@ a.portal-menu-item:focus-visible {{
           <a class="portal-menu-item" role="menuitem" href="./entrustment/">付託待ち</a>
           <a class="portal-menu-item" role="menuitem" href="./cases/">案件管理</a>
           <a class="portal-menu-item" role="menuitem" href="./archive/">アーカイブ</a>
+          <a class="portal-menu-item" role="menuitem" href="./photo-ledger/">QR仕切り札（PoC）</a>
         </nav>
       </div>
     </div>
@@ -10674,6 +10677,7 @@ def validate_portal_top_only_output(repo_root: Path) -> list[str]:
             ("loadTodaySchedule", "function loadTodaySchedule"),
             ("company-calendar-events", "company-calendar-events"),
             ("calendar link", 'href="./calendar/"'),
+            ("photo ledger link", 'href="./photo-ledger/"'),
             ("portal-menu-btn", "portal-menu-btn"),
         ],
     )
