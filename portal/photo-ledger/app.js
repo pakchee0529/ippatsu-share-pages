@@ -1,7 +1,14 @@
 (() => {
   "use strict";
 
-  const pack = window.PHOTO_LEDGER_PACK;
+  const packRegistry = window.PHOTO_LEDGER_PACK;
+  const workDateStorageKey = "photo-ledger-selected-work-date";
+  const packDays = Array.isArray(packRegistry?.days) && packRegistry.days.length
+    ? packRegistry.days
+    : packRegistry
+    ? [packRegistry]
+    : [];
+  const pack = chooseWorkDatePack(packDays);
   const packCases = Array.isArray(pack?.cases) && pack.cases.length
     ? pack.cases
     : pack
@@ -14,7 +21,8 @@
       }]
     : [];
   if (
-    !pack
+    !packRegistry
+    || !pack
     || !packCases.length
     || packCases.some((item) => !Array.isArray(item.markers))
     || typeof qrcode !== "function"
@@ -27,6 +35,8 @@
   const activePanel = document.getElementById("activePanel");
   const dialog = document.getElementById("markerDialog");
   const toast = document.getElementById("toast");
+  const workDateSwitcher = document.getElementById("workDateSwitcher");
+  const workDateSelect = document.getElementById("workDateSelect");
   const caseSelect = document.getElementById("caseSelect");
   const eventKey = `photo-ledger-events:${pack.sessionId}`;
   const lastKey = `photo-ledger-last:${pack.sessionId}`;
@@ -59,6 +69,51 @@
     } catch {
       return fallback;
     }
+  }
+
+  function localTodayKey() {
+    const today = new Date();
+    return [
+      String(today.getFullYear()).slice(-2),
+      String(today.getMonth() + 1).padStart(2, "0"),
+      String(today.getDate()).padStart(2, "0")
+    ].join("");
+  }
+
+  function chooseWorkDatePack(days) {
+    if (!days.length) return null;
+    const saved = localStorage.getItem(workDateStorageKey);
+    const savedPack = days.find((item) => item.workDate === saved);
+    if (savedPack) return savedPack;
+    const today = localTodayKey();
+    const todayPack = days.find((item) => item.workDate === today);
+    if (todayPack) return todayPack;
+    const sorted = [...days].sort((a, b) =>
+      String(a.workDate).localeCompare(String(b.workDate))
+    );
+    return sorted.find((item) => String(item.workDate) > today)
+      || sorted.at(-1);
+  }
+
+  function workDateLabel(value) {
+    const text = String(value || "");
+    return /^\d{6}$/.test(text)
+      ? `20${text.slice(0, 2)}/${text.slice(2, 4)}/${text.slice(4, 6)}`
+      : text;
+  }
+
+  function renderWorkDates() {
+    workDateSelect.replaceChildren();
+    for (const day of [...packDays].sort((a, b) =>
+      String(a.workDate).localeCompare(String(b.workDate))
+    )) {
+      const option = document.createElement("option");
+      option.value = day.workDate;
+      option.textContent = `${workDateLabel(day.workDate)}・${day.caseCount || day.cases?.length || 0}案件`;
+      workDateSelect.appendChild(option);
+    }
+    workDateSelect.value = pack.workDate;
+    workDateSwitcher.hidden = packDays.length < 2;
   }
 
   function saveJson(key, value) {
@@ -701,6 +756,28 @@
     switchCase(packCases[nextIndex].caseId);
   }
 
+  function switchWorkDate(workDate) {
+    if (workDate === pack.workDate) return;
+    const nextPack = packDays.find((item) => item.workDate === workDate);
+    if (!nextPack) {
+      workDateSelect.value = pack.workDate;
+      return;
+    }
+    if (active && active.endMode !== "NONE") {
+      workDateSelect.value = pack.workDate;
+      showToast("先に現在グループの終了札を作ってください");
+      return;
+    }
+    rememberPendingBefore(active);
+    active = null;
+    localStorage.removeItem(activeKey);
+    localStorage.setItem(workDateStorageKey, nextPack.workDate);
+    window.location.reload();
+  }
+
+  workDateSelect.addEventListener(
+    "change", () => switchWorkDate(workDateSelect.value)
+  );
   caseSelect.addEventListener("change", () => switchCase(caseSelect.value));
   document.getElementById("previousCase").addEventListener(
     "click", () => moveCase(-1)
@@ -723,6 +800,7 @@
       version: 2,
       sessionId: pack.sessionId,
       packHash: pack.packHash,
+      workDate: pack.workDate,
       currentCaseId: currentCase.caseId,
       exportedAt: new Date().toISOString(),
       activeGroup: active,
@@ -744,6 +822,7 @@
   window.addEventListener("online", updateNetworkStatus);
   window.addEventListener("offline", updateNetworkStatus);
   updateNetworkStatus();
+  renderWorkDates();
   renderCaseHeader();
   renderMarkerList();
   renderActive();
