@@ -2,7 +2,23 @@
   "use strict";
 
   const pack = window.PHOTO_LEDGER_PACK;
-  if (!pack || !Array.isArray(pack.markers) || typeof qrcode !== "function") {
+  const packCases = Array.isArray(pack?.cases) && pack.cases.length
+    ? pack.cases
+    : pack
+    ? [{
+        caseId: pack.caseId,
+        managementNo: pack.managementNo,
+        spanLabel: pack.spanLabel,
+        planned: {},
+        markers: pack.markers
+      }]
+    : [];
+  if (
+    !pack
+    || !packCases.length
+    || packCases.some((item) => !Array.isArray(item.markers))
+    || typeof qrcode !== "function"
+  ) {
     document.body.textContent = "札パックまたはQR生成機能を読み込めませんでした。";
     return;
   }
@@ -11,19 +27,31 @@
   const activePanel = document.getElementById("activePanel");
   const dialog = document.getElementById("markerDialog");
   const toast = document.getElementById("toast");
+  const caseSelect = document.getElementById("caseSelect");
   const eventKey = `photo-ledger-events:${pack.sessionId}`;
   const lastKey = `photo-ledger-last:${pack.sessionId}`;
   const activeKey = `photo-ledger-active:${pack.sessionId}`;
   const sequenceKey = `photo-ledger-sequence:${pack.sessionId}`;
-  const pendingPairKey = `photo-ledger-pending-overview-before:${pack.sessionId}`;
+  const selectedCaseKey = `photo-ledger-selected-case:${pack.sessionId}`;
+  const pendingPairKey = `photo-ledger-pending-before:${pack.sessionId}`;
+  const legacyOverviewPairKey =
+    `photo-ledger-pending-overview-before:${pack.sessionId}`;
   let wakeLock = null;
   let shownCard = null;
   let active = loadJson(activeKey, null);
-  let pendingOverviewBefore = loadJson(pendingPairKey, null);
-
-  document.getElementById("managementNo").textContent = pack.managementNo;
-  document.getElementById("spanLabel").textContent = pack.spanLabel;
-  document.getElementById("markerCount").textContent = `${pack.markers.length}種類`;
+  const activeCase = active
+    ? packCases.find((item) => caseWireId(item) === active.values.c)
+    : null;
+  let currentCase = activeCase || packCases.find(
+    (item) => item.caseId === localStorage.getItem(selectedCaseKey)
+  ) || packCases[0];
+  let pendingBeforeByCategory = loadJson(pendingPairKey, {});
+  const legacyOverviewBefore = loadJson(legacyOverviewPairKey, null);
+  if (legacyOverviewBefore && !pendingBeforeByCategory.O) {
+    pendingBeforeByCategory.O = legacyOverviewBefore;
+    saveJson(pendingPairKey, pendingBeforeByCategory);
+    localStorage.removeItem(legacyOverviewPairKey);
+  }
 
   function loadJson(key, fallback) {
     try {
@@ -35,6 +63,71 @@
 
   function saveJson(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function caseWireId(caseItem) {
+    return caseItem.markers[0]?.payloadValues?.c || "";
+  }
+
+  const plannedLabels = {
+    branch_cut_under_10: "枝10未満",
+    branch_cut_10_20: "枝20未満",
+    branch_cut_20_30: "枝30未満",
+    branch_cut_30_40: "枝40未満",
+    branch_cut_40_50: "枝50未満",
+    branch_cut_over_50: "枝50超過",
+    root_cut_under_10: "根10未満",
+    root_cut_10_20: "根20未満",
+    root_cut_20_30: "根30未満",
+    root_cut_30_40: "根40未満",
+    root_cut_40_50: "根50未満",
+    root_cut_over_50: "根50超過",
+    brush_area_m2: "柴",
+    bamboo_count: "竹",
+    vine_locations: "つる",
+    carry_out: "持出あり",
+    collect: "集積あり"
+  };
+
+  function plannedSummary(caseItem) {
+    const entries = [];
+    for (const [field, value] of Object.entries(caseItem.planned || {})) {
+      if (!plannedLabels[field] || !value) continue;
+      if (field === "carry_out" || field === "collect") {
+        entries.push(plannedLabels[field]);
+      } else {
+        const unit = field === "brush_area_m2"
+          ? "㎡"
+          : field === "vine_locations"
+          ? "箇所"
+          : "本";
+        entries.push(`${plannedLabels[field]} ${value}${unit}`);
+      }
+    }
+    return entries.length ? `BA前後、${entries.join("、")}` : "BA前後";
+  }
+
+  function renderCaseHeader() {
+    caseSelect.replaceChildren();
+    for (const [index, caseItem] of packCases.entries()) {
+      const option = document.createElement("option");
+      option.value = caseItem.caseId;
+      option.textContent =
+        `${index + 1}. ${caseItem.managementNo} ${caseItem.spanLabel}`;
+      caseSelect.appendChild(option);
+    }
+    caseSelect.value = currentCase.caseId;
+    const currentIndex = packCases.indexOf(currentCase);
+    document.getElementById("casePosition").textContent =
+      `${currentIndex + 1} / ${packCases.length}`;
+    document.getElementById("managementNo").textContent =
+      currentCase.managementNo;
+    document.getElementById("spanLabel").textContent =
+      currentCase.spanLabel;
+    document.getElementById("plannedSummary").textContent =
+      plannedSummary(currentCase);
+    document.getElementById("markerCount").textContent =
+      `${currentCase.markers.length}種類`;
   }
 
   function nextSequence() {
@@ -79,24 +172,57 @@
     return values;
   }
 
+  function isPairedCategory(categoryWire) {
+    return ["O", "S", "B"].includes(categoryWire);
+  }
+
+  function isPairedBefore(values) {
+    return isPairedCategory(values.k) && values.p === "B";
+  }
+
+  function isPairedAfter(values) {
+    return isPairedCategory(values.k) && values.p === "A";
+  }
+
+  function pairedWorkLabel(categoryWire) {
+    return ({ O: "伐採", S: "柴伐採", B: "竹伐採" })[categoryWire] || "前後";
+  }
+
+  function pairedPhaseLabel(categoryWire, phase) {
+    return `${pairedWorkLabel(categoryWire)}${phase === "BEFORE" ? "前" : "後"}`;
+  }
+
+  function pendingPairId(values) {
+    return `${values.c}:${values.k}`;
+  }
+
+  function rememberPendingBefore(group) {
+    if (!group || !isPairedBefore(group.values)) return;
+    pendingBeforeByCategory[pendingPairId(group.values)] = {
+      startSequence: group.startSequence,
+      values: group.values,
+      label: group.label
+    };
+    saveJson(pendingPairKey, pendingBeforeByCategory);
+  }
+
   function startGroup(marker) {
     if (active && active.endMode !== "NONE") {
       showToast("先に現在グループの終了札を作ってください");
       activePanel.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    if (active?.values.k === "O" && active.values.p === "B") {
-      pendingOverviewBefore = {
-        startSequence: active.startSequence,
-        values: active.values,
-        label: active.label
-      };
-      saveJson(pendingPairKey, pendingOverviewBefore);
+    if (active && isPairedBefore(active.values)) {
+      rememberPendingBefore(active);
     }
-    const isOverviewAfter =
-      marker.payloadValues.k === "O" && marker.payloadValues.p === "A";
-    if (isOverviewAfter && !pendingOverviewBefore) {
-      showToast("先に伐採前候補を撮影してください");
+    const isAfter = isPairedAfter(marker.payloadValues);
+    const pendingBefore =
+      pendingBeforeByCategory[pendingPairId(marker.payloadValues)]
+      || pendingBeforeByCategory[marker.payloadValues.k];
+    if (isAfter && !pendingBefore) {
+      showToast(
+        `先に${pairedPhaseLabel(marker.payloadValues.k, "BEFORE")}候補を撮影してください`
+      );
       return;
     }
     const sequence = nextSequence();
@@ -105,6 +231,8 @@
       kind: "START",
       sequence,
       label: marker.label,
+      managementNo: currentCase.managementNo,
+      spanLabel: currentCase.spanLabel,
       instruction: "この札の次から、同じ区分の候補写真を撮影",
       payload: encodeValues("IP1:", values)
     };
@@ -119,8 +247,8 @@
       currentClaim: sourceClaim(values.d),
       selected: [],
       reusePhoto: null,
-      pairedStartSequence: isOverviewAfter
-        ? pendingOverviewBefore.startSequence
+      pairedStartSequence: isAfter
+        ? pendingBefore.startSequence
         : null,
       pairedSelected: [],
       pairedReusePhoto: null
@@ -192,7 +320,10 @@
         values.h = active.pairedStartSequence;
         values.j = [...active.pairedSelected].sort((a, b) => a - b);
         if (active.pairedReusePhoto) {
-          values.y = [[active.pairedReusePhoto, "B"]];
+          values.y = [[
+            active.pairedReusePhoto,
+            start.k === "O" ? "B" : "O"
+          ]];
         }
       }
     }
@@ -212,7 +343,8 @@
       active.endMode === "PAIRED_PICK"
       && (active.pairedSelected.length === 0 || active.selected.length === 0)
     ) {
-      showToast("伐採前・伐採後をそれぞれ1枚以上選んでください");
+      const work = pairedWorkLabel(active.values.k);
+      showToast(`${work}前・${work}後をそれぞれ1枚以上選んでください`);
       return;
     }
     const sequence = nextSequence();
@@ -226,6 +358,8 @@
       kind: active.endMode,
       sequence,
       label: `${active.shortLabel} ${active.endMode === "COUNT" ? "集計" : "採用"}`,
+      managementNo: currentCase.managementNo,
+      spanLabel: currentCase.spanLabel,
       instruction: `${summary}／この札までが同じグループ`,
       payload: encodeValues("IP2:", values),
       closesGroup: true
@@ -281,16 +415,18 @@
           <button id="finishGroup" class="primary" type="button">採用QRを表示</button>
         </div>`;
     } else if (active.endMode === "PAIRED_PICK") {
+      const beforeLabel = pairedPhaseLabel(active.values.k, "BEFORE");
+      const afterLabel = pairedPhaseLabel(active.values.k, "AFTER");
       activePanel.innerHTML = `${head}
-        <p class="mode-title">伐採前・伐採後の採用写真をまとめて選ぶ</p>
-        <p class="pick-subtitle">伐採前候補（開始札 G${active.pairedStartSequence}）</p>
+        <p class="mode-title">${beforeLabel}・${afterLabel}の採用写真をまとめて選ぶ</p>
+        <p class="pick-subtitle">${beforeLabel}候補（開始札 G${active.pairedStartSequence}）</p>
         <div class="pick-grid">
           ${Array.from({ length: 12 }, (_, index) => index + 1).map((value) =>
             `<button class="pick-button ${active.pairedSelected.includes(value) ? "selected" : ""}" data-paired-pick="${value}" type="button">${value}</button>`
           ).join("")}
         </div>
         ${pairedReuseEditor()}
-        <p class="pick-subtitle">伐採後候補（開始札 G${active.startSequence}）</p>
+        <p class="pick-subtitle">${afterLabel}候補（開始札 G${active.startSequence}）</p>
         <div class="pick-grid">
           ${Array.from({ length: 12 }, (_, index) => index + 1).map((value) =>
             `<button class="pick-button ${active.selected.includes(value) ? "selected" : ""}" data-pick="${value}" type="button">${value}</button>`
@@ -302,8 +438,8 @@
           <button id="finishGroup" class="primary" type="button">前後採用QRを表示</button>
         </div>`;
     } else {
-      const help = active.values.k === "O" && active.values.p === "B"
-        ? "採用QRは撮りません。伐採後の撮影後に、前後候補をまとめて選びます。"
+      const help = isPairedBefore(active.values)
+        ? `採用QRは撮りません。${pairedPhaseLabel(active.values.k, "AFTER")}の撮影後に、前後候補をまとめて選びます。`
         : "この区分は終了札なし。次の開始札までを同じグループとして扱います。";
       activePanel.innerHTML = `${head}
         <p class="empty-help">${help}</p>`;
@@ -330,9 +466,14 @@
   }
 
   function pairedReuseEditor() {
-    if (active.pairedSelected.length === 0) return "";
+    if (
+      !["O", "B"].includes(active.values.k)
+      || active.pairedSelected.length === 0
+    ) return "";
+    const source = pairedPhaseLabel(active.values.k, "BEFORE");
+    const target = active.values.k === "O" ? "竹伐採前" : "伐採前";
     return `<div class="reuse-block">
-      <p>伐採前の同じ写真を竹伐採前にも流用</p>
+      <p>${source}の同じ写真を${target}にも流用</p>
       <div class="reuse-buttons">
         <button type="button" data-paired-reuse="0" class="${active.pairedReusePhoto ? "" : "selected"}">流用なし</button>
         ${[...active.pairedSelected].sort((a, b) => a - b).map((value) =>
@@ -440,8 +581,10 @@
   async function showCard(card) {
     const startedAt = performance.now();
     shownCard = card;
-    document.getElementById("dialogManagement").textContent = `管理番号 ${pack.managementNo}`;
-    document.getElementById("dialogSpan").textContent = pack.spanLabel;
+    document.getElementById("dialogManagement").textContent =
+      `管理番号 ${card.managementNo || currentCase.managementNo}`;
+    document.getElementById("dialogSpan").textContent =
+      card.spanLabel || currentCase.spanLabel;
     document.getElementById("dialogLabel").textContent = card.label;
     document.getElementById("dialogSequence").textContent = `当日札 ${card.sequence}`;
     document.getElementById("instruction").textContent = card.instruction;
@@ -459,8 +602,9 @@
     dialog.close();
     if (shownCard?.closesGroup) {
       if (shownCard.kind === "PAIRED_PICK") {
-        pendingOverviewBefore = null;
-        localStorage.removeItem(pendingPairKey);
+        delete pendingBeforeByCategory[pendingPairId(active.values)];
+        delete pendingBeforeByCategory[active.values.k];
+        saveJson(pendingPairKey, pendingBeforeByCategory);
       }
       active = null;
       localStorage.removeItem(activeKey);
@@ -479,7 +623,10 @@
       : marker.endMode === "PAIRED_PICK"
       ? "＋前後採用札"
       : "開始札";
-    button.innerHTML = `${escapeHtml(marker.shortLabel)}${marker.priority ? "<b>必要</b>" : ""}<small>${escapeHtml(marker.label)}</small><em>${endLabel}</em>`;
+    const priority = marker.priority
+      ? `<b>${escapeHtml(marker.priorityLabel || "必要")}</b>`
+      : "";
+    button.innerHTML = `${escapeHtml(marker.shortLabel)}${priority}<small>${escapeHtml(marker.label)}</small><em>${endLabel}</em>`;
     button.addEventListener("click", () => startGroup(marker));
     return button;
   }
@@ -490,34 +637,77 @@
   ];
   const nestedCategories = new Set(folders.map((item) => item.category));
   function appendFolder(folder) {
-    const markers = pack.markers.filter(
+    const markers = currentCase.markers.filter(
       (item) => item.payloadValues.k === folder.category
     );
     if (!markers.length) return;
     const details = document.createElement("details");
     details.className = "marker-folder";
     const summary = document.createElement("summary");
-    summary.innerHTML = `<strong>${folder.label}</strong><span>${markers.length}区分から選ぶ</span>`;
+    const plannedCount = markers.filter((item) => item.priority).length;
+    summary.innerHTML = `<strong>${folder.label}</strong><span>${plannedCount ? `予定 ${plannedCount}区分` : `${markers.length}区分から選ぶ`}</span>`;
     const grid = document.createElement("div");
     grid.className = "folder-grid";
     for (const marker of markers) grid.appendChild(markerButton(marker));
     details.append(summary, grid);
     list.appendChild(details);
   }
-  for (const marker of pack.markers.filter(
-    (item) => item.payloadValues.k === "O"
-  )) {
-    list.appendChild(markerButton(marker));
-  }
-  for (const folder of folders) appendFolder(folder);
-  for (const marker of pack.markers.filter(
-    (item) =>
-      item.payloadValues.k !== "O"
-      && !nestedCategories.has(item.payloadValues.k)
-  )) {
-    list.appendChild(markerButton(marker));
+
+  function renderMarkerList() {
+    list.replaceChildren();
+    for (const marker of currentCase.markers.filter(
+      (item) => item.payloadValues.k === "O"
+    )) {
+      list.appendChild(markerButton(marker));
+    }
+    for (const folder of folders) appendFolder(folder);
+    for (const marker of currentCase.markers.filter(
+      (item) =>
+        item.payloadValues.k !== "O"
+        && !nestedCategories.has(item.payloadValues.k)
+    )) {
+      list.appendChild(markerButton(marker));
+    }
   }
 
+  function switchCase(caseId) {
+    const nextCase = packCases.find((item) => item.caseId === caseId);
+    if (!nextCase || nextCase === currentCase) {
+      caseSelect.value = currentCase.caseId;
+      return;
+    }
+    if (active && active.endMode !== "NONE") {
+      caseSelect.value = currentCase.caseId;
+      showToast("先に現在グループの終了札を作ってください");
+      return;
+    }
+    rememberPendingBefore(active);
+    active = null;
+    localStorage.removeItem(activeKey);
+    currentCase = nextCase;
+    localStorage.setItem(selectedCaseKey, currentCase.caseId);
+    renderCaseHeader();
+    renderMarkerList();
+    renderActive();
+    showToast(
+      `${currentCase.managementNo} ${currentCase.spanLabel}へ切り替えました`
+    );
+  }
+
+  function moveCase(offset) {
+    const currentIndex = packCases.indexOf(currentCase);
+    const nextIndex =
+      (currentIndex + offset + packCases.length) % packCases.length;
+    switchCase(packCases[nextIndex].caseId);
+  }
+
+  caseSelect.addEventListener("change", () => switchCase(caseSelect.value));
+  document.getElementById("previousCase").addEventListener(
+    "click", () => moveCase(-1)
+  );
+  document.getElementById("nextCase").addEventListener(
+    "click", () => moveCase(1)
+  );
   document.getElementById("closeButton").addEventListener("click", closeDialog);
   document.getElementById("brightnessButton").addEventListener("click", () => {
     requestWakeLock();
@@ -533,6 +723,7 @@
       version: 2,
       sessionId: pack.sessionId,
       packHash: pack.packHash,
+      currentCaseId: currentCase.caseId,
       exportedAt: new Date().toISOString(),
       activeGroup: active,
       events: loadJson(eventKey, [])
@@ -553,6 +744,8 @@
   window.addEventListener("online", updateNetworkStatus);
   window.addEventListener("offline", updateNetworkStatus);
   updateNetworkStatus();
+  renderCaseHeader();
+  renderMarkerList();
   renderActive();
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {

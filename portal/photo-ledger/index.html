@@ -24,9 +24,19 @@
     </section>
 
     <section class="case-card">
+      <div class="case-switcher">
+        <label for="caseSelect">現場案件</label>
+        <select id="caseSelect" aria-label="現場案件"></select>
+        <div class="case-nav">
+          <button id="previousCase" class="secondary compact" type="button">前の案件</button>
+          <span id="casePosition"></span>
+          <button id="nextCase" class="primary compact" type="button">次の案件</button>
+        </div>
+      </div>
       <dl>
         <div><dt>管理番号</dt><dd id="managementNo">—</dd></div>
         <div><dt>径間</dt><dd id="spanLabel">—</dd></div>
+        <div><dt>予定写真</dt><dd id="plannedSummary">—</dd></div>
         <div><dt>カメラ</dt><dd>FinePix XP140</dd></div>
       </dl>
     </section>
