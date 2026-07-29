@@ -1,10 +1,12 @@
-const CACHE_NAME = "photo-ledger-poc0-d6cbb48aa79853c7";
+const CACHE_NAME = "photo-ledger-poc0-1a5ff0722b2c6c29";
 const ASSETS = [
   "./",
   "./index.html",
   "./app.js",
   "./styles.css",
   "./pack.js",
+  "./qrcode.js",
+  "./qrcode_UTF8.js",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png"
