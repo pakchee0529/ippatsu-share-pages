@@ -39,6 +39,8 @@
       <div id="markerList" class="marker-list"></div>
     </section>
 
+    <section id="activePanel" class="active-panel" hidden></section>
+
     <footer class="footer-actions">
       <button id="restoreButton" class="secondary" type="button">最後の札を再表示</button>
       <button id="exportButton" class="secondary" type="button">履歴JSONを保存</button>
@@ -55,7 +57,7 @@
         <p id="dialogSequence" class="sequence"></p>
       </div>
       <div id="qrTarget" class="qr-target" aria-live="polite"></div>
-      <p class="instruction">この札の次から ① ② ③… と自動連番</p>
+      <p id="instruction" class="instruction"></p>
       <div class="dialog-actions">
         <button id="brightnessButton" class="secondary" type="button">画面を明るく</button>
         <button id="closeButton" class="primary" type="button">札を閉じる</button>
@@ -65,6 +67,8 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="pack.js"></script>
+  <script src="qrcode.js"></script>
+  <script src="qrcode_UTF8.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

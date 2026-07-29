@@ -125,6 +125,15 @@ h1 { margin-bottom: 0; font-size: clamp(1.65rem, 6vw, 2.35rem); }
   text-align: left;
   box-shadow: 0 5px 16px rgb(19 37 31 / 8%);
 }
+.marker-button.priority { border-color: #e2a900; background: #fff9df; }
+.marker-button b {
+  float: right;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #e2a900;
+  color: #352700;
+  font-size: .7rem;
+}
 
 .marker-button:active,
 .marker-button:focus-visible {
@@ -137,6 +146,93 @@ h1 { margin-bottom: 0; font-size: clamp(1.65rem, 6vw, 2.35rem); }
   margin-top: 5px;
   color: var(--muted);
   font-weight: 700;
+}
+.marker-button em {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #edf5ef;
+  color: var(--green);
+  font-size: .72rem;
+  font-style: normal;
+}
+
+.marker-folder {
+  grid-column: 1 / -1;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  overflow: hidden;
+}
+.marker-folder summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 68px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 900;
+}
+.marker-folder summary span { color: var(--muted); font-size: .8rem; }
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 10px 10px;
+}
+
+.active-panel {
+  margin-top: 22px;
+  padding: 16px;
+  border: 3px solid var(--green);
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.active-head,
+.editor-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.active-head span { display: block; color: var(--green); font-size: .78rem; font-weight: 900; }
+.active-head strong { display: block; margin-top: 3px; font-size: 1.15rem; }
+.text-button { min-height: 40px; padding: 5px 9px; background: transparent; color: var(--muted); }
+.mode-title { margin: 16px 0 8px; font-weight: 900; }
+.claim-tabs,
+.number-pad,
+.pick-grid { display: grid; gap: 8px; }
+.claim-tabs { grid-template-columns: repeat(3, 1fr); }
+.number-pad { grid-template-columns: repeat(3, 1fr); margin-top: 10px; }
+.pick-grid { grid-template-columns: repeat(6, 1fr); }
+.claim-tabs button,
+.count-button,
+.pick-button { min-height: 48px; border-color: var(--line); background: white; color: var(--ink); }
+.claim-tabs button.selected,
+.pick-button.selected { border-color: var(--green); background: var(--green); color: white; }
+.count-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.count-chip { padding: 6px 8px; border-radius: 8px; background: #e8ecea; font-weight: 800; }
+.count-chip.added { background: #fff0cc; }
+.count-chip.changed { background: #f6dfed; }
+.empty-help { margin: 14px 0; color: var(--muted); font-weight: 700; }
+.editor-actions { margin-top: 14px; }
+.editor-actions button { flex: 1; }
+.reuse-block { margin-top: 12px; }
+.reuse-block p { margin-bottom: 7px; font-weight: 900; }
+.reuse-buttons { display: flex; flex-wrap: wrap; gap: 7px; }
+.reuse-buttons button {
+  min-height: 44px;
+  padding: 7px 10px;
+  border-color: var(--line);
+  background: white;
+}
+.reuse-buttons button.selected {
+  border-color: var(--green);
+  background: var(--green);
+  color: white;
 }
 
 .footer-actions {
@@ -225,5 +321,6 @@ h1 { margin-bottom: 0; font-size: clamp(1.65rem, 6vw, 2.35rem); }
 .toast.show { opacity: 1; translate: -50% 0; }
 
 @media (max-width: 420px) {
-  .marker-list { grid-template-columns: 1fr; }
+  .marker-list,
+  .folder-grid { grid-template-columns: 1fr; }
 }

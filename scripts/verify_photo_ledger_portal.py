@@ -22,6 +22,8 @@ def main() -> int:
         "app.js",
         "styles.css",
         "pack.js",
+        "qrcode.js",
+        "qrcode_UTF8.js",
         "service-worker.js",
         "manifest.webmanifest",
         "icon-192.png",
@@ -51,9 +53,19 @@ def main() -> int:
     )
 
     require("整理用QRです。正式看板ではありません。" in index, "notice missing")
-    require(index.index("pack.js") < index.index("app.js"), "pack load order")
-    require(pack.count('"payload":"IP1:') == 13, "expected 13 QR markers")
+    require(
+        index.index("pack.js")
+        < index.index("qrcode.js")
+        < index.index("qrcode_UTF8.js")
+        < index.index("app.js"),
+        "QR runtime load order",
+    )
+    require(pack.count('"payload":"IP1:') == 22, "expected 22 QR markers")
+    require('"endMode":"COUNT"' in pack, "COUNT marker is missing")
+    require('"endMode":"PICK"' in pack, "PICK marker is missing")
     require("FinePix XP140" in pack, "camera label missing")
+    require('encodeValues("IP2:"' in app, "dynamic IP2 generation is missing")
+    require("marker-folder" in app, "branch/root folders are missing")
     require("fetch(" not in app, "phone app must not call a network API")
     require("http://" not in app and "https://" not in app, "external URL in app")
     require(manifest.get("display") == "standalone", "PWA display mode")
@@ -65,6 +77,8 @@ def main() -> int:
         )
     require("icon-192.png" in worker, "192 icon cache entry")
     require("icon-512.png" in worker, "512 icon cache entry")
+    require("qrcode.js" in worker, "QR generator cache entry")
+    require("qrcode_UTF8.js" in worker, "UTF-8 QR cache entry")
 
     combined = "\n".join((index, app, pack, worker))
     require(not re.search(r"[A-Za-z]:\\\\", combined), "local absolute path exposed")
