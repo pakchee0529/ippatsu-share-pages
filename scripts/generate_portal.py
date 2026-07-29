@@ -243,6 +243,43 @@ def strip_trailing_whitespace(text: str) -> str:
     return "\n".join(line.rstrip() for line in text.splitlines()) + suffix
 
 
+_SITE_ICON_MARKER = "share-page-site-icons"
+
+
+def _strip_site_icon_links(html: str) -> str:
+    return re.sub(
+        rf"\n?\s*<!-- {re.escape(_SITE_ICON_MARKER)} -->[\s\S]*?<!-- /{re.escape(_SITE_ICON_MARKER)} -->\s*",
+        "\n",
+        html,
+        count=1,
+        flags=re.I,
+    )
+
+
+def _site_icon_links(icon_base_href: str) -> str:
+    base = icon_base_href.rstrip("/")
+    return f"""<!-- {_SITE_ICON_MARKER} -->
+<link rel="icon" type="image/svg+xml" href="{escape_html(base)}/share-page-icon.svg">
+<link rel="manifest" href="{escape_html(base)}/site.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="{escape_html(base)}/apple-touch-icon.png">
+<meta name="theme-color" content="#f7b7c8">
+<!-- /{_SITE_ICON_MARKER} -->"""
+
+
+def inject_site_icon_links(html: str, icon_base_href: str) -> str:
+    out = _strip_site_icon_links(html)
+    links = _site_icon_links(icon_base_href)
+    if re.search(r"</head>", out, flags=re.I):
+        return re.sub(r"</head>", links + "\n</head>", out, count=1, flags=re.I)
+    return links + "\n" + out
+
+
+def _portal_icon_base_href(rel: str) -> str:
+    depth = max(len(Path(rel).parent.parts) - 1, 0)
+    prefix = "../" * depth
+    return f"{prefix}assets"
+
+
 def render_live_cases_js(
     *,
     page: str,
@@ -10174,6 +10211,10 @@ def _build_archive_index_parts(
 def _write_portal_html(repo_root: Path, rel: str, html: str) -> Path:
     out_path = repo_root / rel
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    if rel == "portal/index.html":
+        html = inject_site_icon_links(html, _portal_icon_base_href(rel))
+    else:
+        html = _strip_site_icon_links(html)
     out_path.write_text(strip_trailing_whitespace(html), encoding="utf-8", newline="\n")
     return out_path
 
@@ -11085,9 +11126,7 @@ def main() -> int:
     )
 
     out = build_html(entries, calendar_api_key=portal_calendar_api_key(repo_root))
-    out_path = repo_root / "portal" / "index.html"
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(out, encoding="utf-8", newline="\n")
+    out_path = _write_portal_html(repo_root, "portal/index.html", out)
     print(
         f"Wrote {out_path} ({len(entries)} cards, "
         f"{len(archived)} date(s) hidden on top per manifest)"
@@ -11108,9 +11147,7 @@ def main() -> int:
 
     recent_parts, sections, _, arch_index_stats = _build_archive_index_parts(repo_root)
     arch_html = build_archive_html(recent_parts, sections)
-    arch_path = repo_root / "portal" / "archive" / "index.html"
-    arch_path.parent.mkdir(parents=True, exist_ok=True)
-    arch_path.write_text(arch_html, encoding="utf-8", newline="\n")
+    arch_path = _write_portal_html(repo_root, "portal/archive/index.html", arch_html)
     detail_paths = write_archive_detail_pages(repo_root, detail_entries)
     for dp in detail_paths:
         print(f"Wrote {dp}")
@@ -11144,13 +11181,7 @@ def main() -> int:
             initial_hidden_overlay_keys=overlay_neg_keys,
             repo_root=repo_root,
         )
-        survey_path = repo_root / "portal" / "survey" / "index.html"
-        survey_path.parent.mkdir(parents=True, exist_ok=True)
-        survey_path.write_text(
-            strip_trailing_whitespace(survey_html),
-            encoding="utf-8",
-            newline="\n",
-        )
+        survey_path = _write_portal_html(repo_root, "portal/survey/index.html", survey_html)
         print(
             f"Wrote {survey_path} (survey_items={len(survey_items)}, "
             f"survey_items_total={survey_stats['total']}, "
@@ -11180,10 +11211,8 @@ def main() -> int:
             portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
             repo_root=repo_root,
         )
-        negotiation_path = repo_root / "portal" / "negotiation" / "index.html"
-        negotiation_path.parent.mkdir(parents=True, exist_ok=True)
-        negotiation_path.write_text(
-            negotiation_html, encoding="utf-8", newline="\n"
+        negotiation_path = _write_portal_html(
+            repo_root, "portal/negotiation/index.html", negotiation_html
         )
         print(
             f"Wrote {negotiation_path} "
@@ -11209,10 +11238,8 @@ def main() -> int:
             portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
             status_request_api_key=portal_api_key,
         )
-        entrustment_path = repo_root / "portal" / "entrustment" / "index.html"
-        entrustment_path.parent.mkdir(parents=True, exist_ok=True)
-        entrustment_path.write_text(
-            entrustment_html, encoding="utf-8", newline="\n"
+        entrustment_path = _write_portal_html(
+            repo_root, "portal/entrustment/index.html", entrustment_html
         )
         print(
             f"Wrote {entrustment_path} "
@@ -11229,9 +11256,7 @@ def main() -> int:
             portal_status_endpoint=PORTAL_CASE_STATUS_ENDPOINT,
             status_request_api_key=portal_api_key,
         )
-        cases_path = repo_root / "portal" / "cases" / "index.html"
-        cases_path.parent.mkdir(parents=True, exist_ok=True)
-        cases_path.write_text(cases_html, encoding="utf-8", newline="\n")
+        cases_path = _write_portal_html(repo_root, "portal/cases/index.html", cases_html)
         case_detail_rels = write_case_detail_pages(
             repo_root,
             case_items,
