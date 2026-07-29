@@ -63,9 +63,33 @@ def main() -> int:
     require(pack.count('"payload":"IP1:') == 22, "expected 22 QR markers")
     require('"endMode":"COUNT"' in pack, "COUNT marker is missing")
     require('"endMode":"PICK"' in pack, "PICK marker is missing")
+    require(
+        '"endMode":"PAIRED_PICK"' in pack,
+        "paired overview PICK marker is missing",
+    )
+    pack_values = json.loads(
+        pack.removeprefix("window.PHOTO_LEDGER_PACK=").rstrip(";\n")
+    )
+    overview_modes = {
+        item["payloadValues"]["p"]: item["endMode"]
+        for item in pack_values["markers"]
+        if item["payloadValues"]["k"] == "O"
+    }
+    require(
+        overview_modes == {"B": "NONE", "A": "PAIRED_PICK"},
+        "overview before/after end modes are incorrect",
+    )
     require("FinePix XP140" in pack, "camera label missing")
     require('encodeValues("IP2:"' in app, "dynamic IP2 generation is missing")
     require("marker-folder" in app, "branch/root folders are missing")
+    require("前後採用QRを表示" in app, "paired overview picker is missing")
+    require("採用QRは撮りません" in app, "overview-before guidance is missing")
+    require(
+        app.index('item.payloadValues.k === "O"')
+        < app.index("for (const folder of folders) appendFolder(folder);")
+        < app.index('item.payloadValues.k !== "O"'),
+        "marker display order must be overview, branch/root, then bush and others",
+    )
     require("fetch(" not in app, "phone app must not call a network API")
     require("http://" not in app and "https://" not in app, "external URL in app")
     require(manifest.get("display") == "standalone", "PWA display mode")

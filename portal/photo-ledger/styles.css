@@ -202,6 +202,11 @@ h1 { margin-bottom: 0; font-size: clamp(1.65rem, 6vw, 2.35rem); }
 .active-head strong { display: block; margin-top: 3px; font-size: 1.15rem; }
 .text-button { min-height: 40px; padding: 5px 9px; background: transparent; color: var(--muted); }
 .mode-title { margin: 16px 0 8px; font-weight: 900; }
+.pick-subtitle {
+  margin: 14px 0 7px;
+  color: var(--green);
+  font-weight: 900;
+}
 .claim-tabs,
 .number-pad,
 .pick-grid { display: grid; gap: 8px; }
