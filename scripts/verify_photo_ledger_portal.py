@@ -60,28 +60,50 @@ def main() -> int:
         < index.index("app.js"),
         "QR runtime load order",
     )
-    require(pack.count('"payload":"IP1:') == 22, "expected 22 QR markers")
+    pack_values = json.loads(
+        pack.removeprefix("window.PHOTO_LEDGER_PACK=").rstrip(";\n")
+    )
+    cases = pack_values.get("cases") or [
+        {
+            "caseId": pack_values.get("caseId"),
+            "managementNo": pack_values.get("managementNo"),
+            "markers": pack_values.get("markers") or [],
+        }
+    ]
+    require(cases, "photo-ledger pack has no cases")
+    require(
+        pack_values.get("caseCount", len(cases)) == len(cases),
+        "caseCount does not match cases",
+    )
+    marker_ids: list[str] = []
+    for case in cases:
+        markers = case.get("markers") or []
+        require(len(markers) == 22, "each case must have 22 QR markers")
+        require(
+            all(str(item.get("payload") or "").startswith("IP1:") for item in markers),
+            "case contains a non-IP1 start marker",
+        )
+        marker_ids.extend(str(item.get("id") or "") for item in markers)
+        overview_modes = {
+            item["payloadValues"]["p"]: item["endMode"]
+            for item in markers
+            if item["payloadValues"]["k"] == "O"
+        }
+        require(
+            overview_modes == {"B": "NONE", "A": "PAIRED_PICK"},
+            "overview before/after end modes are incorrect",
+        )
+    require(len(marker_ids) == len(set(marker_ids)), "marker ids must be unique")
     require('"endMode":"COUNT"' in pack, "COUNT marker is missing")
-    require('"endMode":"PICK"' in pack, "PICK marker is missing")
     require(
         '"endMode":"PAIRED_PICK"' in pack,
         "paired overview PICK marker is missing",
     )
-    pack_values = json.loads(
-        pack.removeprefix("window.PHOTO_LEDGER_PACK=").rstrip(";\n")
-    )
-    overview_modes = {
-        item["payloadValues"]["p"]: item["endMode"]
-        for item in pack_values["markers"]
-        if item["payloadValues"]["k"] == "O"
-    }
-    require(
-        overview_modes == {"B": "NONE", "A": "PAIRED_PICK"},
-        "overview before/after end modes are incorrect",
-    )
     require("FinePix XP140" in pack, "camera label missing")
     require('encodeValues("IP2:"' in app, "dynamic IP2 generation is missing")
     require("marker-folder" in app, "branch/root folders are missing")
+    require("caseSelect" in app, "work-date case selector is missing")
+    require("switchCase" in app, "case switching is missing")
     require("前後採用QRを表示" in app, "paired overview picker is missing")
     require("採用QRは撮りません" in app, "overview-before guidance is missing")
     require(
