@@ -63,6 +63,22 @@ def main() -> int:
     pack_values = json.loads(
         pack.removeprefix("window.PHOTO_LEDGER_PACK=").rstrip(";\n")
     )
+    if pack_values.get("version") == 4:
+        days = pack_values.get("days") or []
+        require(days, "date registry has no day packs")
+        require(
+            pack_values.get("workDateCount") == len(days),
+            "workDateCount does not match days",
+        )
+        day_keys = [str(day.get("workDate") or "") for day in days]
+        require(
+            pack_values.get("defaultWorkDate") in day_keys,
+            "defaultWorkDate is not registered",
+        )
+        require(
+            len(day_keys) == len(set(day_keys)),
+            "work dates must be unique",
+        )
     cases = pack_values.get("cases") or [
         {
             "caseId": pack_values.get("caseId"),
@@ -102,6 +118,8 @@ def main() -> int:
     require("FinePix XP140" in pack, "camera label missing")
     require('encodeValues("IP2:"' in app, "dynamic IP2 generation is missing")
     require("marker-folder" in app, "branch/root folders are missing")
+    require("workDateSelect" in app, "work-date selector is missing")
+    require("chooseWorkDatePack" in app, "work-date auto selection is missing")
     require("caseSelect" in app, "work-date case selector is missing")
     require("switchCase" in app, "case switching is missing")
     require("前後採用QRを表示" in app, "paired overview picker is missing")
