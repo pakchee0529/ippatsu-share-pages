@@ -15,9 +15,11 @@
   const lastKey = `photo-ledger-last:${pack.sessionId}`;
   const activeKey = `photo-ledger-active:${pack.sessionId}`;
   const sequenceKey = `photo-ledger-sequence:${pack.sessionId}`;
+  const pendingPairKey = `photo-ledger-pending-overview-before:${pack.sessionId}`;
   let wakeLock = null;
   let shownCard = null;
   let active = loadJson(activeKey, null);
+  let pendingOverviewBefore = loadJson(pendingPairKey, null);
 
   document.getElementById("managementNo").textContent = pack.managementNo;
   document.getElementById("spanLabel").textContent = pack.spanLabel;
@@ -83,6 +85,20 @@
       activePanel.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
+    if (active?.values.k === "O" && active.values.p === "B") {
+      pendingOverviewBefore = {
+        startSequence: active.startSequence,
+        values: active.values,
+        label: active.label
+      };
+      saveJson(pendingPairKey, pendingOverviewBefore);
+    }
+    const isOverviewAfter =
+      marker.payloadValues.k === "O" && marker.payloadValues.p === "A";
+    if (isOverviewAfter && !pendingOverviewBefore) {
+      showToast("先に伐採前候補を撮影してください");
+      return;
+    }
     const sequence = nextSequence();
     const values = startValues(marker, sequence);
     const card = {
@@ -102,7 +118,12 @@
       counts: [],
       currentClaim: sourceClaim(values.d),
       selected: [],
-      reusePhoto: null
+      reusePhoto: null,
+      pairedStartSequence: isOverviewAfter
+        ? pendingOverviewBefore.startSequence
+        : null,
+      pairedSelected: [],
+      pairedReusePhoto: null
     };
     saveJson(activeKey, active);
     persistIssued(card);
@@ -167,6 +188,13 @@
           start.k === "O" ? "B" : "O"
         ]];
       }
+      if (active.endMode === "PAIRED_PICK") {
+        values.h = active.pairedStartSequence;
+        values.j = [...active.pairedSelected].sort((a, b) => a - b);
+        if (active.pairedReusePhoto) {
+          values.y = [[active.pairedReusePhoto, "B"]];
+        }
+      }
     }
     return values;
   }
@@ -180,10 +208,19 @@
       showToast("採用する写真を1つ以上選んでください");
       return;
     }
+    if (
+      active.endMode === "PAIRED_PICK"
+      && (active.pairedSelected.length === 0 || active.selected.length === 0)
+    ) {
+      showToast("伐採前・伐採後をそれぞれ1枚以上選んでください");
+      return;
+    }
     const sequence = nextSequence();
     const values = endValues(sequence);
     const summary = active.endMode === "COUNT"
       ? `${active.counts.length}枚・計${active.counts.reduce((sum, item) => sum + item.count, 0)}本`
+      : active.endMode === "PAIRED_PICK"
+      ? `前 ${active.pairedSelected.join("・")}／後 ${active.selected.join("・")}枚目`
       : `採用 ${active.selected.join("・")}枚目`;
     const card = {
       kind: active.endMode,
@@ -243,9 +280,33 @@
           <button id="clearPick" class="secondary" type="button">選択解除</button>
           <button id="finishGroup" class="primary" type="button">採用QRを表示</button>
         </div>`;
-    } else {
+    } else if (active.endMode === "PAIRED_PICK") {
       activePanel.innerHTML = `${head}
-        <p class="empty-help">この区分は終了札なし。次の開始札までを同じグループとして扱います。</p>`;
+        <p class="mode-title">伐採前・伐採後の採用写真をまとめて選ぶ</p>
+        <p class="pick-subtitle">伐採前候補（開始札 G${active.pairedStartSequence}）</p>
+        <div class="pick-grid">
+          ${Array.from({ length: 12 }, (_, index) => index + 1).map((value) =>
+            `<button class="pick-button ${active.pairedSelected.includes(value) ? "selected" : ""}" data-paired-pick="${value}" type="button">${value}</button>`
+          ).join("")}
+        </div>
+        ${pairedReuseEditor()}
+        <p class="pick-subtitle">伐採後候補（開始札 G${active.startSequence}）</p>
+        <div class="pick-grid">
+          ${Array.from({ length: 12 }, (_, index) => index + 1).map((value) =>
+            `<button class="pick-button ${active.selected.includes(value) ? "selected" : ""}" data-pick="${value}" type="button">${value}</button>`
+          ).join("")}
+        </div>
+        ${reuseEditor()}
+        <div class="editor-actions">
+          <button id="clearPick" class="secondary" type="button">選択解除</button>
+          <button id="finishGroup" class="primary" type="button">前後採用QRを表示</button>
+        </div>`;
+    } else {
+      const help = active.values.k === "O" && active.values.p === "B"
+        ? "採用QRは撮りません。伐採後の撮影後に、前後候補をまとめて選びます。"
+        : "この区分は終了札なし。次の開始札までを同じグループとして扱います。";
+      activePanel.innerHTML = `${head}
+        <p class="empty-help">${help}</p>`;
     }
     bindActiveEvents();
   }
@@ -263,6 +324,19 @@
         <button type="button" data-reuse="0" class="${active.reusePhoto ? "" : "selected"}">流用なし</button>
         ${[...active.selected].sort((a, b) => a - b).map((value) =>
           `<button type="button" data-reuse="${value}" class="${active.reusePhoto === value ? "selected" : ""}">${value}枚目を流用</button>`
+        ).join("")}
+      </div>
+    </div>`;
+  }
+
+  function pairedReuseEditor() {
+    if (active.pairedSelected.length === 0) return "";
+    return `<div class="reuse-block">
+      <p>伐採前の同じ写真を竹伐採前にも流用</p>
+      <div class="reuse-buttons">
+        <button type="button" data-paired-reuse="0" class="${active.pairedReusePhoto ? "" : "selected"}">流用なし</button>
+        ${[...active.pairedSelected].sort((a, b) => a - b).map((value) =>
+          `<button type="button" data-paired-reuse="${value}" class="${active.pairedReusePhoto === value ? "selected" : ""}">${value}枚目を流用</button>`
         ).join("")}
       </div>
     </div>`;
@@ -303,6 +377,19 @@
         renderActive();
       });
     });
+    activePanel.querySelectorAll("[data-paired-pick]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const value = Number(button.dataset.pairedPick);
+        active.pairedSelected = active.pairedSelected.includes(value)
+          ? active.pairedSelected.filter((item) => item !== value)
+          : [...active.pairedSelected, value];
+        if (!active.pairedSelected.includes(active.pairedReusePhoto)) {
+          active.pairedReusePhoto = null;
+        }
+        saveJson(activeKey, active);
+        renderActive();
+      });
+    });
     document.getElementById("undoCount")?.addEventListener("click", () => {
       active.counts.pop();
       saveJson(activeKey, active);
@@ -311,12 +398,21 @@
     document.getElementById("clearPick")?.addEventListener("click", () => {
       active.selected = [];
       active.reusePhoto = null;
+      active.pairedSelected = [];
+      active.pairedReusePhoto = null;
       saveJson(activeKey, active);
       renderActive();
     });
     activePanel.querySelectorAll("[data-reuse]").forEach((button) => {
       button.addEventListener("click", () => {
         active.reusePhoto = Number(button.dataset.reuse) || null;
+        saveJson(activeKey, active);
+        renderActive();
+      });
+    });
+    activePanel.querySelectorAll("[data-paired-reuse]").forEach((button) => {
+      button.addEventListener("click", () => {
+        active.pairedReusePhoto = Number(button.dataset.pairedReuse) || null;
         saveJson(activeKey, active);
         renderActive();
       });
@@ -362,6 +458,10 @@
     }
     dialog.close();
     if (shownCard?.closesGroup) {
+      if (shownCard.kind === "PAIRED_PICK") {
+        pendingOverviewBefore = null;
+        localStorage.removeItem(pendingPairKey);
+      }
       active = null;
       localStorage.removeItem(activeKey);
       renderActive();
@@ -372,7 +472,14 @@
     const button = document.createElement("button");
     button.type = "button";
     button.className = `marker-button${marker.priority ? " priority" : ""}`;
-    button.innerHTML = `${escapeHtml(marker.shortLabel)}${marker.priority ? "<b>必要</b>" : ""}<small>${escapeHtml(marker.label)}</small><em>${marker.endMode === "COUNT" ? "＋集計札" : marker.endMode === "PICK" ? "＋採用札" : "開始札"}</em>`;
+    const endLabel = marker.endMode === "COUNT"
+      ? "＋集計札"
+      : marker.endMode === "PICK"
+      ? "＋採用札"
+      : marker.endMode === "PAIRED_PICK"
+      ? "＋前後採用札"
+      : "開始札";
+    button.innerHTML = `${escapeHtml(marker.shortLabel)}${marker.priority ? "<b>必要</b>" : ""}<small>${escapeHtml(marker.label)}</small><em>${endLabel}</em>`;
     button.addEventListener("click", () => startGroup(marker));
     return button;
   }
@@ -382,16 +489,11 @@
     { category: "N", label: "根切り" }
   ];
   const nestedCategories = new Set(folders.map((item) => item.category));
-  for (const marker of pack.markers.filter(
-    (item) => !nestedCategories.has(item.payloadValues.k)
-  )) {
-    list.appendChild(markerButton(marker));
-  }
-  for (const folder of folders) {
+  function appendFolder(folder) {
     const markers = pack.markers.filter(
       (item) => item.payloadValues.k === folder.category
     );
-    if (!markers.length) continue;
+    if (!markers.length) return;
     const details = document.createElement("details");
     details.className = "marker-folder";
     const summary = document.createElement("summary");
@@ -401,6 +503,19 @@
     for (const marker of markers) grid.appendChild(markerButton(marker));
     details.append(summary, grid);
     list.appendChild(details);
+  }
+  for (const marker of pack.markers.filter(
+    (item) => item.payloadValues.k === "O"
+  )) {
+    list.appendChild(markerButton(marker));
+  }
+  for (const folder of folders) appendFolder(folder);
+  for (const marker of pack.markers.filter(
+    (item) =>
+      item.payloadValues.k !== "O"
+      && !nestedCategories.has(item.payloadValues.k)
+  )) {
+    list.appendChild(markerButton(marker));
   }
 
   document.getElementById("closeButton").addEventListener("click", closeDialog);
