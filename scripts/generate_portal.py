@@ -1648,6 +1648,7 @@ def render_portal_subpage_header(
         (base + "cases/", "案件管理", "cases"),
         (base + "archive/", "アーカイブ", "archive"),
         (base + "photo-ledger/", "QR仕切り札（PoC）", None),
+        (base + "photo-ledger-generic/", "汎用QR仕切り札（最大8案件）", None),
     ]
     link_lines: list[str] = []
     for href, label, page_id in items:
@@ -9140,6 +9141,7 @@ a.portal-menu-item:focus-visible {{
           <a class="portal-menu-item" role="menuitem" href="./cases/">案件管理</a>
           <a class="portal-menu-item" role="menuitem" href="./archive/">アーカイブ</a>
           <a class="portal-menu-item" role="menuitem" href="./photo-ledger/">QR仕切り札（PoC）</a>
+          <a class="portal-menu-item" role="menuitem" href="./photo-ledger-generic/">汎用QR仕切り札（最大8案件）</a>
         </nav>
       </div>
     </div>

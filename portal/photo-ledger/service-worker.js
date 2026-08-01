@@ -1,4 +1,4 @@
-const CACHE_NAME = "photo-ledger-poc0-b39dd9989df3be3e";
+const CACHE_NAME = "photo-ledger-poc0-02b23a99c542c467";
 const ASSETS = [
   "./",
   "./index.html",

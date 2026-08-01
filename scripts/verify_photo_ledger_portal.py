@@ -9,6 +9,7 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 PAGE_DIR = ROOT / "portal" / "photo-ledger"
+GENERIC_PAGE = ROOT / "portal" / "photo-ledger-generic" / "index.html"
 
 
 def require(condition: bool, message: str) -> None:
@@ -39,6 +40,11 @@ def main() -> int:
         'href="./photo-ledger/"' in portal_top,
         "portal hamburger menu link is missing",
     )
+    require(
+        'href="./photo-ledger-generic/"' in portal_top,
+        "generic QR divider menu link is missing",
+    )
+    require(GENERIC_PAGE.is_file(), "generic QR divider page is missing")
     require(
         "QR仕切り札（PoC）" in portal_top,
         "portal hamburger menu label is missing",
@@ -94,7 +100,7 @@ def main() -> int:
     marker_ids: list[str] = []
     for case in cases:
         markers = case.get("markers") or []
-        require(len(markers) == 22, "each case must have 22 QR markers")
+        require(len(markers) in {22, 23}, "each case must have 22 or 23 QR markers")
         require(
             all(str(item.get("payload") or "").startswith("IP1:") for item in markers),
             "case contains a non-IP1 start marker",
@@ -109,6 +115,20 @@ def main() -> int:
             overview_modes == {"B": "NONE", "A": "PAIRED_PICK"},
             "overview before/after end modes are incorrect",
         )
+        if len(markers) == 23:
+            transport = [
+                index for index, item in enumerate(markers)
+                if item["payloadValues"].get("k") == "T"
+            ]
+            require(len(transport) >= 2, "transport markers are missing")
+            require(
+                markers[transport[0]]["payloadValues"].get("w") == "CU",
+                "normal transport marker is not first",
+            )
+            require(
+                markers[transport[1]]["payloadValues"].get("w") == "DT",
+                "designated transport marker is not second",
+            )
     require(len(marker_ids) == len(set(marker_ids)), "marker ids must be unique")
     require('"endMode":"COUNT"' in pack, "COUNT marker is missing")
     require(
