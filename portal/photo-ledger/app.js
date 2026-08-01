@@ -301,6 +301,7 @@
       startSequence: sequence,
       values,
       counts: [],
+      plannedCount: Number(marker.plannedValue) || 0,
       currentClaim: sourceClaim(values.d),
       selected: [],
       reusePhoto: null,
@@ -351,6 +352,30 @@
       }
     }
     return segments;
+  }
+
+  function appendCount(value) {
+    const count = Number(value);
+    if (!Number.isFinite(count) || count < 1) return;
+    const plannedTotal = active.counts
+      .filter((item) => item.claim === "PLANNED")
+      .reduce((sum, item) => sum + item.count, 0);
+    const remaining = active.plannedCount > 0
+      ? Math.max(active.plannedCount - plannedTotal, 0)
+      : 0;
+    if (remaining > 0) {
+      const plannedPart = Math.min(count, remaining);
+      if (plannedPart > 0) active.counts.push({ count: plannedPart, claim: "PLANNED" });
+      const addedPart = count - plannedPart;
+      if (addedPart > 0) active.counts.push({ count: addedPart, claim: "ADDED" });
+      active.currentClaim = addedPart > 0 || plannedPart === remaining
+        ? "ADDED"
+        : "PLANNED";
+    } else {
+      active.counts.push({ count, claim: active.currentClaim });
+    }
+    saveJson(activeKey, active);
+    renderActive();
   }
 
   function endValues(sequence) {
@@ -556,12 +581,7 @@
     });
     activePanel.querySelectorAll("[data-count]").forEach((button) => {
       button.addEventListener("click", () => {
-        active.counts.push({
-          count: Number(button.dataset.count),
-          claim: active.currentClaim
-        });
-        saveJson(activeKey, active);
-        renderActive();
+        appendCount(button.dataset.count);
       });
     });
     activePanel.querySelectorAll("[data-pick]").forEach((button) => {
