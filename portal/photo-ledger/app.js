@@ -353,6 +353,24 @@
     return segments;
   }
 
+  function appendCount(value) {
+    const count = Number(value);
+    if (!Number.isFinite(count) || count < 1) return;
+    active.counts.push({ count, claim: active.currentClaim });
+    saveJson(activeKey, active);
+    renderActive();
+  }
+
+  function countSummary() {
+    const labels = { PLANNED: "予定", ADDED: "追加", CHANGED: "変更" };
+    const segments = countSegments();
+    const total = active.counts.reduce((sum, item) => sum + item.count, 0);
+    const detail = segments
+      .map((segment) => `${labels[segment.claim] || segment.claim}:${segment.counts.join("+")}本`)
+      .join(" / ");
+    return `合計${total}本（${detail}）`;
+  }
+
   function endValues(sequence) {
     const start = active.values;
     const values = {
@@ -421,6 +439,9 @@
       payload: encodeValues("IP2:", values),
       closesGroup: true
     };
+    if (active.endMode === "COUNT") {
+      card.instruction = `${countSummary()}・集計QRを撮影してください`;
+    }
     persistIssued(card);
     showCard(card);
   }
@@ -556,12 +577,7 @@
     });
     activePanel.querySelectorAll("[data-count]").forEach((button) => {
       button.addEventListener("click", () => {
-        active.counts.push({
-          count: Number(button.dataset.count),
-          claim: active.currentClaim
-        });
-        saveJson(activeKey, active);
-        renderActive();
+        appendCount(button.dataset.count);
       });
     });
     activePanel.querySelectorAll("[data-pick]").forEach((button) => {
