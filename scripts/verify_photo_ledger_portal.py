@@ -100,7 +100,10 @@ def main() -> int:
     marker_ids: list[str] = []
     for case in cases:
         markers = case.get("markers") or []
-        require(len(markers) in {22, 23}, "each case must have 22 or 23 QR markers")
+        require(
+            len(markers) in {22, 23, 26},
+            "each case must have 22, 23, or 26 QR markers",
+        )
         require(
             all(str(item.get("payload") or "").startswith("IP1:") for item in markers),
             "case contains a non-IP1 start marker",
@@ -115,7 +118,7 @@ def main() -> int:
             overview_modes == {"B": "NONE", "A": "PAIRED_PICK"},
             "overview before/after end modes are incorrect",
         )
-        if len(markers) == 23:
+        if len(markers) in {23, 26}:
             transport = [
                 index for index, item in enumerate(markers)
                 if item["payloadValues"].get("k") == "T"
@@ -128,6 +131,20 @@ def main() -> int:
             require(
                 markers[transport[1]]["payloadValues"].get("w") == "DT",
                 "designated transport marker is not second",
+            )
+        if len(markers) == 26:
+            special_pairs = [
+                item for item in markers
+                if item["payloadValues"].get("k") == "X"
+            ]
+            require(len(special_pairs) == 4, "special paired markers are missing")
+            require(
+                sum(item["payloadValues"].get("p") == "B" for item in special_pairs) == 2,
+                "special before markers are missing",
+            )
+            require(
+                sum(item["endMode"] == "PAIRED_PICK" for item in special_pairs) == 2,
+                "special after pick markers are missing",
             )
     require(len(marker_ids) == len(set(marker_ids)), "marker ids must be unique")
     require('"endMode":"COUNT"' in pack, "COUNT marker is missing")
