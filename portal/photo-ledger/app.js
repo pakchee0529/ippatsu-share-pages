@@ -301,7 +301,6 @@
       startSequence: sequence,
       values,
       counts: [],
-      plannedCount: Number(marker.plannedValue) || 0,
       currentClaim: sourceClaim(values.d),
       selected: [],
       reusePhoto: null,
@@ -357,25 +356,19 @@
   function appendCount(value) {
     const count = Number(value);
     if (!Number.isFinite(count) || count < 1) return;
-    const plannedTotal = active.counts
-      .filter((item) => item.claim === "PLANNED")
-      .reduce((sum, item) => sum + item.count, 0);
-    const remaining = active.plannedCount > 0
-      ? Math.max(active.plannedCount - plannedTotal, 0)
-      : 0;
-    if (remaining > 0) {
-      const plannedPart = Math.min(count, remaining);
-      if (plannedPart > 0) active.counts.push({ count: plannedPart, claim: "PLANNED" });
-      const addedPart = count - plannedPart;
-      if (addedPart > 0) active.counts.push({ count: addedPart, claim: "ADDED" });
-      active.currentClaim = addedPart > 0 || plannedPart === remaining
-        ? "ADDED"
-        : "PLANNED";
-    } else {
-      active.counts.push({ count, claim: active.currentClaim });
-    }
+    active.counts.push({ count, claim: active.currentClaim });
     saveJson(activeKey, active);
     renderActive();
+  }
+
+  function countSummary() {
+    const labels = { PLANNED: "予定", ADDED: "追加", CHANGED: "変更" };
+    const segments = countSegments();
+    const total = active.counts.reduce((sum, item) => sum + item.count, 0);
+    const detail = segments
+      .map((segment) => `${labels[segment.claim] || segment.claim}:${segment.counts.join("+")}本`)
+      .join(" / ");
+    return `合計${total}本（${detail}）`;
   }
 
   function endValues(sequence) {
@@ -446,6 +439,9 @@
       payload: encodeValues("IP2:", values),
       closesGroup: true
     };
+    if (active.endMode === "COUNT") {
+      card.instruction = `${countSummary()}・集計QRを撮影してください`;
+    }
     persistIssued(card);
     showCard(card);
   }
