@@ -228,7 +228,7 @@
   }
 
   function isPairedCategory(categoryWire) {
-    return ["O", "S", "B"].includes(categoryWire);
+    return ["O", "S", "B", "X"].includes(categoryWire);
   }
 
   function isPairedBefore(values) {
@@ -248,7 +248,7 @@
   }
 
   function pendingPairId(values) {
-    return `${values.c}:${values.k}`;
+    return `${values.c}:${values.k}:${values.w || ""}:${values.n || ""}`;
   }
 
   function rememberPendingBefore(group) {
@@ -271,9 +271,11 @@
       rememberPendingBefore(active);
     }
     const isAfter = isPairedAfter(marker.payloadValues);
-    const pendingBefore =
-      pendingBeforeByCategory[pendingPairId(marker.payloadValues)]
-      || pendingBeforeByCategory[marker.payloadValues.k];
+    const exactPending = pendingBeforeByCategory[pendingPairId(marker.payloadValues)];
+    const legacyPending = marker.payloadValues.k === "X"
+      ? null
+      : pendingBeforeByCategory[marker.payloadValues.k];
+    const pendingBefore = exactPending || legacyPending;
     if (isAfter && !pendingBefore) {
       showToast(
         `先に${pairedPhaseLabel(marker.payloadValues.k, "BEFORE")}候補を撮影してください`
