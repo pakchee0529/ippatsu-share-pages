@@ -281,6 +281,18 @@ button.compact { min-height: 44px; padding: 8px 10px; }
   background: var(--green);
   color: white;
 }
+.selection-order { margin-top: 12px; }
+.selection-order > p { margin-bottom: 7px; font-weight: 900; }
+.selection-order-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 9px;
+  border-top: 1px solid var(--line);
+}
+.selection-order-row span { display: flex; gap: 6px; }
+.selection-order-row button { min-height: 36px; min-width: 42px; }
 
 .footer-actions {
   margin-top: 18px;

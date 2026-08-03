@@ -1,4 +1,5 @@
-const CACHE_NAME = "photo-ledger-poc0-0be0c468a5d0bd12";
+// Bumped when static PWA behavior changes, even when the day-pack data does not.
+const CACHE_NAME = "photo-ledger-poc0-0719f6e81f93cf2a";
 const ASSETS = [
   "./",
   "./index.html",
