@@ -316,6 +316,13 @@ a.portal-menu-item:focus-visible {
   color: #fff;
 }
 .btn-map:hover, .btn-map:focus { filter: brightness(1.05); }
+.btn-map-disabled,
+.btn-map:disabled {
+  background: #e5e7eb;
+  color: #64748b;
+  cursor: not-allowed;
+  filter: none;
+}
 .btn-nearby-map {
   background: #eef2ff;
   color: #3730a3;
@@ -618,12 +625,14 @@ a.portal-menu-item:focus-visible {
           <a class="portal-menu-item" role="menuitem" href="../../entrustment/">付託待ち</a>
           <a class="portal-menu-item" role="menuitem" href="../../cases/">案件管理</a>
           <a class="portal-menu-item" role="menuitem" href="../../archive/">アーカイブ</a>
+          <a class="portal-menu-item" role="menuitem" href="../../photo-ledger/">QR仕切り札（PoC）</a>
+          <a class="portal-menu-item" role="menuitem" href="../../photo-ledger-generic/">汎用QR仕切り札（最大8案件）</a>
         </nav>
       </div>
     </div>
   </header>
   <p class="lead" id="survey-count-lead" data-survey-candidate-total="0">径間ごとに地図・操作ボタンがあります。<span class="survey-visible-count-line">表示中 <strong id="survey-visible-count">0</strong> 件</span><span class="survey-count-hint muted-tiny" id="survey-count-hint" hidden>（候補 0 件・交渉待ち・返却候補は除く）</span></p>
-  <p class="report-disclaimer">「現調済みにする」で交渉待ちへ即時反映します（portal status overlay）。「返却候補にする」はサーバーに登録し、この一覧から非表示になります。誤操作は交渉待ちページの「現調待ちに戻す」で取り消せます。従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。</p>
+  <p class="report-disclaimer">「現調済みにする」で交渉待ちへ即時反映します（Supabase正本更新）。「返却候補にする」はサーバーに登録し、この一覧から非表示になります。誤操作は交渉待ちページの「現調待ちに戻す」で取り消せます。従来の PC 承認待ち方式は PORTAL_IMMEDIATE_STATUS=0 で再生成できます。</p>
   <nav class="status-navigation jurisdiction-navigation" aria-label="管轄別ページ">
     <a class="" href="../">全体</a>
     <a class="" href="../gojo/">五條</a>
@@ -1102,7 +1111,7 @@ a.portal-menu-item:focus-visible {
   bindSurveySearchControls();
   applySurveySearchFilter();
 
-  // Portal status overlay (B-plan) or legacy pending request (A-plan). Never embed service_role.
+  // Canonical portal status write (B-plan) or legacy pending request (A-plan). Never embed service_role.
 
   var PORTAL_STATUS_ENDPOINT = "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/submit-survey-status-request";
   var PORTAL_STATUS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2bWdzcWRyb2p4cHB4a25yemZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDk4MTYsImV4cCI6MjA5NDQ4NTgxNn0.FyhidR3nXqPNblJ09idpFtWeYoNJXdm5atOm3BlwNkA";
@@ -1597,6 +1606,10 @@ a.portal-menu-item:focus-visible {
       });
     });
   }
+  function notifyLiveCasesRendered() {
+    try { window.dispatchEvent(new CustomEvent("portal:live-cases-rendered", {detail: {page: PAGE}})); }
+    catch (_) { window.dispatchEvent(new Event("portal:live-cases-rendered")); }
+  }
   function mapBtn(r) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"); return lat&&lng?'<a class="btn btn-map" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q='+encodeURIComponent(lat+","+lng)+'">地図を開く</a>':""; }
   function nearbyBtn(r, idx) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<button type="button" class="btn btn-nearby-map" data-nearby-open data-nearby-wrap="live-nearby-wrap-'+idx+'" data-nearby-map="live-nearby-map-'+idx+'" aria-expanded="false" aria-controls="live-nearby-wrap-'+idx+'">半径200m</button>'; }
   function nearbyWrap(r, idx) { var lat=t(r,"start_lat"), lng=t(r,"start_lng"); if(!lat||!lng) return ""; return '<p class="nearby-map-status muted-tiny" data-nearby-status hidden role="status"></p><div class="nearby-map-wrap" id="live-nearby-wrap-'+idx+'" hidden><div id="live-nearby-map-'+idx+'" class="share-two-map-canvas" role="application" aria-label="半径200m電柱地図"></div></div>'; }
@@ -1617,11 +1630,13 @@ a.portal-menu-item:focus-visible {
     if(PAGE==="survey" && typeof bindNearbyButtons==="function") bindNearbyButtons(main);
     if(PAGE==="survey" && typeof bindSurveySearchControls==="function") bindSurveySearchControls();
     if(PAGE==="survey" && typeof applySurveySearchFilter==="function") applySurveySearchFilter();
+    notifyLiveCasesRendered();
   }
   function renderCases(rows, counts) {
     var grid=document.querySelector(".status-grid"); if(grid) grid.innerHTML=ORDER.map(function(st){return '<a class="status-tile status-'+esc(st)+'" href="#status-'+esc(st)+'"><span>'+esc(LABELS[st])+'</span><strong>'+esc((counts&&counts[st])||0)+'</strong></a>';}).join("");
     ORDER.forEach(function(st){var section=document.getElementById("status-"+st); if(!section) return; var list=section.querySelector(".case-list"), group=rows.filter(function(r){return t(r,"status")===st;}), count=section.querySelector("[data-section-count]"); if(count) count.textContent=group.length+"件"; if(list) list.innerHTML=group.length?group.map(caseRow).join(""):'<p class="empty-note">対象はありません。</p>'; });
     updateCount(rows.length);
+    notifyLiveCasesRendered();
   }
   function renderDetail(rows) {
     var target=document.getElementById("liveCaseDetail"); if(!target) return; var r=rows[0]; if(!r) {target.innerHTML='<p class="empty-note">対象案件が見つかりません。</p>'; return;}
