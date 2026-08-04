@@ -384,7 +384,7 @@
         claimWire(segment.claim), segment.counts
       ]);
     } else {
-      values.o = [...active.selected].sort((a, b) => a - b);
+      values.o = [...active.selected];
       if (active.reusePhoto) {
         values.r = [[
           active.reusePhoto,
@@ -393,7 +393,7 @@
       }
       if (active.endMode === "PAIRED_PICK") {
         values.h = active.pairedStartSequence;
-        values.j = [...active.pairedSelected].sort((a, b) => a - b);
+        values.j = [...active.pairedSelected];
         if (active.pairedReusePhoto) {
           values.y = [[
             active.pairedReusePhoto,
@@ -487,6 +487,7 @@
             `<button class="pick-button ${active.selected.includes(value) ? "selected" : ""}" data-pick="${value}" type="button">${value}</button>`
           ).join("")}
         </div>
+        ${selectionOrderEditor(active.selected, "after", "台帳の表示順")}
         ${reuseEditor()}
         <div class="editor-actions">
           <button id="clearPick" class="secondary" type="button">選択解除</button>
@@ -503,6 +504,7 @@
             `<button class="pick-button ${active.pairedSelected.includes(value) ? "selected" : ""}" data-paired-pick="${value}" type="button">${value}</button>`
           ).join("")}
         </div>
+        ${selectionOrderEditor(active.pairedSelected, "before", `${beforeLabel}の台帳表示順`)}
         ${pairedReuseEditor()}
         <p class="pick-subtitle">${afterLabel}候補（開始札 G${active.startSequence}）</p>
         <div class="pick-grid">
@@ -510,6 +512,7 @@
             `<button class="pick-button ${active.selected.includes(value) ? "selected" : ""}" data-pick="${value}" type="button">${value}</button>`
           ).join("")}
         </div>
+        ${selectionOrderEditor(active.selected, "after", `${afterLabel}の台帳表示順`)}
         ${reuseEditor()}
         <div class="editor-actions">
           <button id="clearPick" class="secondary" type="button">選択解除</button>
@@ -529,6 +532,20 @@
     return `<button class="${active.currentClaim === value ? "selected" : ""}" data-claim="${value}" type="button">${label}</button>`;
   }
 
+  function selectionOrderEditor(selection, kind, label) {
+    if (selection.length < 2) return "";
+    return `<div class="selection-order">
+      <p>${label}（↑↓で入れ替え）</p>
+      ${selection.map((value, index) => `<div class="selection-order-row">
+        <strong>${index + 1}番目：写真 ${value}</strong>
+        <span>
+          <button type="button" data-order-move="${kind}" data-order-index="${index}" data-order-direction="up" ${index === 0 ? "disabled" : ""}>↑</button>
+          <button type="button" data-order-move="${kind}" data-order-index="${index}" data-order-direction="down" ${index === selection.length - 1 ? "disabled" : ""}>↓</button>
+        </span>
+      </div>`).join("")}
+    </div>`;
+  }
+
   function reuseEditor() {
     if (!["O", "B"].includes(active.values.k) || active.selected.length === 0) return "";
     const target = active.values.k === "O" ? "竹伐採前後" : "伐採前後";
@@ -536,7 +553,7 @@
       <p>同じ写真を${target}にも流用</p>
       <div class="reuse-buttons">
         <button type="button" data-reuse="0" class="${active.reusePhoto ? "" : "selected"}">流用なし</button>
-        ${[...active.selected].sort((a, b) => a - b).map((value) =>
+        ${active.selected.map((value) =>
           `<button type="button" data-reuse="${value}" class="${active.reusePhoto === value ? "selected" : ""}">${value}枚目を流用</button>`
         ).join("")}
       </div>
@@ -554,7 +571,7 @@
       <p>${source}の同じ写真を${target}にも流用</p>
       <div class="reuse-buttons">
         <button type="button" data-paired-reuse="0" class="${active.pairedReusePhoto ? "" : "selected"}">流用なし</button>
-        ${[...active.pairedSelected].sort((a, b) => a - b).map((value) =>
+        ${active.pairedSelected.map((value) =>
           `<button type="button" data-paired-reuse="${value}" class="${active.pairedReusePhoto === value ? "selected" : ""}">${value}枚目を流用</button>`
         ).join("")}
       </div>
@@ -600,6 +617,22 @@
         if (!active.pairedSelected.includes(active.pairedReusePhoto)) {
           active.pairedReusePhoto = null;
         }
+        saveJson(activeKey, active);
+        renderActive();
+      });
+    });
+    activePanel.querySelectorAll("[data-order-move]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.orderMove === "before"
+          ? "pairedSelected"
+          : "selected";
+        const index = Number(button.dataset.orderIndex);
+        const offset = button.dataset.orderDirection === "up" ? -1 : 1;
+        const nextIndex = index + offset;
+        if (!Number.isInteger(index) || nextIndex < 0 || nextIndex >= active[key].length) return;
+        [active[key][index], active[key][nextIndex]] = [
+          active[key][nextIndex], active[key][index]
+        ];
         saveJson(activeKey, active);
         renderActive();
       });
