@@ -95,17 +95,21 @@ h1 { margin-bottom: 0; font-size: clamp(1.65rem, 6vw, 2.35rem); }
   box-shadow: var(--shadow);
 }
 
+.work-date-switcher,
 .case-switcher {
   display: grid;
   gap: 8px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--line);
 }
+.work-date-switcher { margin-bottom: 12px; }
+.work-date-switcher label,
 .case-switcher label {
   color: var(--muted);
   font-size: .8rem;
   font-weight: 900;
 }
+.work-date-switcher select,
 .case-switcher select {
   width: 100%;
   min-height: 52px;
