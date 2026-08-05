@@ -33,6 +33,22 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const path = new URL(event.request.url).pathname;
+  // A new PWA shell must never keep interpreting an old date pack while the
+  // handset is online.  Offline use remains safe because a network failure
+  // falls back to the last verified cached pack.
+  if (path.endsWith("/pack.js") || path.endsWith("/release-manifest.json")) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request))
   );
