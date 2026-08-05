@@ -1,4 +1,3 @@
-// Bumped when static PWA behavior changes, even when the day-pack data does not.
 const CACHE_NAME = "photo-ledger-poc0-0719f6e81f93cf2a";
 const ASSETS = [
   "./",
@@ -6,6 +5,7 @@ const ASSETS = [
   "./app.js",
   "./styles.css",
   "./pack.js",
+  "./release-manifest.json",
   "./qrcode.js",
   "./qrcode_UTF8.js",
   "./manifest.webmanifest",

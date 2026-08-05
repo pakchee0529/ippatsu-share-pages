@@ -1,14 +1,7 @@
 (() => {
   "use strict";
 
-  const packRegistry = window.PHOTO_LEDGER_PACK;
-  const workDateStorageKey = "photo-ledger-selected-work-date";
-  const packDays = Array.isArray(packRegistry?.days) && packRegistry.days.length
-    ? packRegistry.days
-    : packRegistry
-    ? [packRegistry]
-    : [];
-  const pack = chooseWorkDatePack(packDays);
+  const pack = window.PHOTO_LEDGER_PACK;
   const packCases = Array.isArray(pack?.cases) && pack.cases.length
     ? pack.cases
     : pack
@@ -21,8 +14,7 @@
       }]
     : [];
   if (
-    !packRegistry
-    || !pack
+    !pack
     || !packCases.length
     || packCases.some((item) => !Array.isArray(item.markers))
     || typeof qrcode !== "function"
@@ -35,8 +27,6 @@
   const activePanel = document.getElementById("activePanel");
   const dialog = document.getElementById("markerDialog");
   const toast = document.getElementById("toast");
-  const workDateSwitcher = document.getElementById("workDateSwitcher");
-  const workDateSelect = document.getElementById("workDateSelect");
   const caseSelect = document.getElementById("caseSelect");
   const eventKey = `photo-ledger-events:${pack.sessionId}`;
   const lastKey = `photo-ledger-last:${pack.sessionId}`;
@@ -44,10 +34,24 @@
   const sequenceKey = `photo-ledger-sequence:${pack.sessionId}`;
   const selectedCaseKey = `photo-ledger-selected-case:${pack.sessionId}`;
   const pendingPairKey = `photo-ledger-pending-before:${pack.sessionId}`;
+  const genericCasesKey = `photo-ledger-generic-cases:${pack.sessionId}`;
   const legacyOverviewPairKey =
     `photo-ledger-pending-overview-before:${pack.sessionId}`;
   let wakeLock = null;
   let shownCard = null;
+  const savedGenericCases = loadJson(genericCasesKey, {});
+  if (pack.mode === "generic") {
+    for (const caseItem of packCases) {
+      const saved = savedGenericCases[caseItem.caseId];
+      if (!saved) continue;
+      if (saved.managementNo) caseItem.managementNo = saved.managementNo;
+      if (saved.spanLabel) caseItem.spanLabel = saved.spanLabel;
+      for (const marker of caseItem.markers) {
+        marker.payloadValues.m = caseItem.managementNo;
+        marker.payloadValues.l = caseItem.spanLabel;
+      }
+    }
+  }
   let active = loadJson(activeKey, null);
   const activeCase = active
     ? packCases.find((item) => caseWireId(item) === active.values.c)
@@ -69,51 +73,6 @@
     } catch {
       return fallback;
     }
-  }
-
-  function localTodayKey() {
-    const today = new Date();
-    return [
-      String(today.getFullYear()).slice(-2),
-      String(today.getMonth() + 1).padStart(2, "0"),
-      String(today.getDate()).padStart(2, "0")
-    ].join("");
-  }
-
-  function chooseWorkDatePack(days) {
-    if (!days.length) return null;
-    const saved = localStorage.getItem(workDateStorageKey);
-    const savedPack = days.find((item) => item.workDate === saved);
-    if (savedPack) return savedPack;
-    const today = localTodayKey();
-    const todayPack = days.find((item) => item.workDate === today);
-    if (todayPack) return todayPack;
-    const sorted = [...days].sort((a, b) =>
-      String(a.workDate).localeCompare(String(b.workDate))
-    );
-    return sorted.find((item) => String(item.workDate) > today)
-      || sorted.at(-1);
-  }
-
-  function workDateLabel(value) {
-    const text = String(value || "");
-    return /^\d{6}$/.test(text)
-      ? `20${text.slice(0, 2)}/${text.slice(2, 4)}/${text.slice(4, 6)}`
-      : text;
-  }
-
-  function renderWorkDates() {
-    workDateSelect.replaceChildren();
-    for (const day of [...packDays].sort((a, b) =>
-      String(a.workDate).localeCompare(String(b.workDate))
-    )) {
-      const option = document.createElement("option");
-      option.value = day.workDate;
-      option.textContent = `${workDateLabel(day.workDate)}・${day.caseCount || day.cases?.length || 0}案件`;
-      workDateSelect.appendChild(option);
-    }
-    workDateSelect.value = pack.workDate;
-    workDateSwitcher.hidden = packDays.length < 2;
   }
 
   function saveJson(key, value) {
@@ -185,6 +144,17 @@
       `${currentCase.markers.length}種類`;
   }
 
+  function syncGenericEditor() {
+    const editor = document.getElementById("genericEditor");
+    if (!editor) return;
+    editor.hidden = pack.mode !== "generic";
+    if (pack.mode !== "generic") return;
+    document.getElementById("genericManagementNo").value =
+      currentCase.managementNo.startsWith("汎用") ? "" : currentCase.managementNo;
+    document.getElementById("genericSpanLabel").value =
+      currentCase.spanLabel === "現場入力待ち" ? "" : currentCase.spanLabel;
+  }
+
   function nextSequence() {
     const next = Number(localStorage.getItem(sequenceKey) || "0") + 1;
     localStorage.setItem(sequenceKey, String(next));
@@ -208,6 +178,16 @@
     return `${prefix}${JSON.stringify({ ...values, x: crc32(canonical) })}`;
   }
 
+  function recoveryCode(payload) {
+    try {
+      const values = JSON.parse(payload.slice(4));
+      if (!values.s || !values.q || !values.x) return "";
+      return `IPR1:${values.s}:${values.q}:${String(values.x).toUpperCase()}`;
+    } catch {
+      return "";
+    }
+  }
+
   function createQrSvg(payload) {
     const code = qrcode(0, "Q");
     code.addData(payload, "Byte");
@@ -219,7 +199,9 @@
     const source = marker.payloadValues;
     const values = {
       v: 1, t: "G", s: pack.sessionId, q: sequence,
-      c: source.c, m: source.m, l: source.l,
+      c: source.c,
+      m: pack.mode === "generic" ? currentCase.managementNo : source.m,
+      l: pack.mode === "generic" ? currentCase.spanLabel : source.l,
       k: source.k, b: source.b, p: source.p, d: source.d
     };
     if (source.w) values.w = source.w;
@@ -261,7 +243,16 @@
     saveJson(pendingPairKey, pendingBeforeByCategory);
   }
 
-  function startGroup(marker) {
+  function startGroup(marker, vehicle = "") {
+    if (
+      pack.mode === "generic"
+      && (currentCase.managementNo.startsWith("汎用")
+        || currentCase.spanLabel === "現場入力待ち")
+    ) {
+      showToast("先にこの案件スロットの管理番号と径間名を保存してください");
+      document.getElementById("genericManagementNo")?.focus();
+      return;
+    }
     if (active && active.endMode !== "NONE") {
       showToast("先に現在グループの終了札を作ってください");
       activePanel.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -284,18 +275,23 @@
     }
     const sequence = nextSequence();
     const values = startValues(marker, sequence);
+    const transportLabel = vehicle
+      ? `${marker.vehicleLabel || marker.label} ${vehicle}`
+      : marker.label;
+    if (vehicle) values.n = transportLabel;
     const card = {
       kind: "START",
       sequence,
-      label: marker.label,
+      label: transportLabel,
       managementNo: currentCase.managementNo,
       spanLabel: currentCase.spanLabel,
       instruction: "この札の次から、同じ区分の候補写真を撮影",
       payload: encodeValues("IP1:", values)
     };
+    card.recoveryCode = recoveryCode(card.payload);
     active = {
       markerId: marker.id,
-      label: marker.label,
+      label: transportLabel,
       shortLabel: marker.shortLabel,
       endMode: marker.endMode || "NONE",
       startSequence: sequence,
@@ -334,6 +330,7 @@
       startSequence: active ? active.startSequence : null,
       issuedAt: new Date().toISOString(),
       packHash: pack.packHash,
+      recoveryCode: card.recoveryCode || recoveryCode(card.payload),
       payload: card.payload
     });
     saveJson(eventKey, events);
@@ -439,6 +436,7 @@
       payload: encodeValues("IP2:", values),
       closesGroup: true
     };
+    card.recoveryCode = recoveryCode(card.payload);
     if (active.endMode === "COUNT") {
       card.instruction = `${countSummary()}・集計QRを撮影してください`;
     }
@@ -693,6 +691,9 @@
       card.spanLabel || currentCase.spanLabel;
     document.getElementById("dialogLabel").textContent = card.label;
     document.getElementById("dialogSequence").textContent = `当日札 ${card.sequence}`;
+    document.getElementById("dialogRecovery").textContent = card.recoveryCode
+      ? `復元コード ${card.recoveryCode}`
+      : "";
     document.getElementById("instruction").textContent = card.instruction;
     document.getElementById("qrTarget").innerHTML = createQrSvg(card.payload);
     dialog.showModal();
@@ -733,8 +734,28 @@
       ? `<b>${escapeHtml(marker.priorityLabel || "必要")}</b>`
       : "";
     button.innerHTML = `${escapeHtml(marker.shortLabel)}${priority}<small>${escapeHtml(marker.label)}</small><em>${endLabel}</em>`;
-    button.addEventListener("click", () => startGroup(marker));
-    return button;
+    const vehicles = Array.isArray(marker.vehicleOptions)
+      ? marker.vehicleOptions.filter((item) => typeof item === "string" && item)
+      : [];
+    if (!vehicles.length) {
+      button.addEventListener("click", () => startGroup(marker));
+      return button;
+    }
+    const container = document.createElement("div");
+    container.className = "marker-vehicle-card";
+    button.addEventListener("click", () => showToast("車種を選択してください"));
+    const vehicleChoices = document.createElement("div");
+    vehicleChoices.className = "vehicle-choices";
+    for (const vehicle of vehicles) {
+      const choice = document.createElement("button");
+      choice.type = "button";
+      choice.className = "vehicle-choice";
+      choice.textContent = vehicle;
+      choice.addEventListener("click", () => startGroup(marker, vehicle));
+      vehicleChoices.appendChild(choice);
+    }
+    container.append(button, vehicleChoices);
+    return container;
   }
 
   const folders = [
@@ -793,6 +814,7 @@
     currentCase = nextCase;
     localStorage.setItem(selectedCaseKey, currentCase.caseId);
     renderCaseHeader();
+    syncGenericEditor();
     renderMarkerList();
     renderActive();
     showToast(
@@ -807,29 +829,28 @@
     switchCase(packCases[nextIndex].caseId);
   }
 
-  function switchWorkDate(workDate) {
-    if (workDate === pack.workDate) return;
-    const nextPack = packDays.find((item) => item.workDate === workDate);
-    if (!nextPack) {
-      workDateSelect.value = pack.workDate;
-      return;
-    }
-    if (active && active.endMode !== "NONE") {
-      workDateSelect.value = pack.workDate;
-      showToast("先に現在グループの終了札を作ってください");
-      return;
-    }
-    rememberPendingBefore(active);
-    active = null;
-    localStorage.removeItem(activeKey);
-    localStorage.setItem(workDateStorageKey, nextPack.workDate);
-    window.location.reload();
-  }
-
-  workDateSelect.addEventListener(
-    "change", () => switchWorkDate(workDateSelect.value)
-  );
   caseSelect.addEventListener("change", () => switchCase(caseSelect.value));
+  document.getElementById("saveGenericCase")?.addEventListener("click", () => {
+    if (pack.mode !== "generic") return;
+    const managementNo = document.getElementById("genericManagementNo").value.trim();
+    const spanLabel = document.getElementById("genericSpanLabel").value.trim();
+    if (!managementNo || !spanLabel) {
+      showToast("管理番号と径間名を入力してください");
+      return;
+    }
+    currentCase.managementNo = managementNo;
+    currentCase.spanLabel = spanLabel;
+    for (const marker of currentCase.markers) {
+      marker.payloadValues.m = managementNo;
+      marker.payloadValues.l = spanLabel;
+    }
+    const next = loadJson(genericCasesKey, {});
+    next[currentCase.caseId] = { managementNo, spanLabel };
+    saveJson(genericCasesKey, next);
+    renderCaseHeader();
+    syncGenericEditor();
+    showToast("案件スロットを保存しました");
+  });
   document.getElementById("previousCase").addEventListener(
     "click", () => moveCase(-1)
   );
@@ -851,7 +872,6 @@
       version: 2,
       sessionId: pack.sessionId,
       packHash: pack.packHash,
-      workDate: pack.workDate,
       currentCaseId: currentCase.caseId,
       exportedAt: new Date().toISOString(),
       activeGroup: active,
@@ -873,8 +893,8 @@
   window.addEventListener("online", updateNetworkStatus);
   window.addEventListener("offline", updateNetworkStatus);
   updateNetworkStatus();
-  renderWorkDates();
   renderCaseHeader();
+  syncGenericEditor();
   renderMarkerList();
   renderActive();
 

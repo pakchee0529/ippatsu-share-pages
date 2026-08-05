@@ -95,23 +95,17 @@ h1 { margin-bottom: 0; font-size: clamp(1.65rem, 6vw, 2.35rem); }
   box-shadow: var(--shadow);
 }
 
-.work-date-switcher,
 .case-switcher {
   display: grid;
   gap: 8px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--line);
 }
-.work-date-switcher {
-  margin-bottom: 12px;
-}
-.work-date-switcher label,
 .case-switcher label {
   color: var(--muted);
   font-size: .8rem;
   font-weight: 900;
 }
-.work-date-switcher select,
 .case-switcher select {
   width: 100%;
   min-height: 52px;
@@ -148,6 +142,26 @@ button.compact { min-height: 44px; padding: 8px 10px; }
 .case-card dt { color: var(--muted); font-weight: 700; }
 .case-card dd { margin: 0; font-size: 1.08rem; font-weight: 900; }
 #plannedSummary { font-size: .9rem; line-height: 1.5; }
+
+.generic-editor {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 14px;
+  padding: 12px;
+  border: 2px dashed var(--accent);
+  border-radius: 14px;
+  background: #fff8ea;
+}
+.generic-editor-title { margin: 0; font-weight: 900; }
+.generic-editor label { color: var(--muted); font-size: .8rem; font-weight: 900; }
+.generic-editor input {
+  min-height: 46px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+}
+.generic-editor-help { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.45; }
 
 .section-title h2 { margin-bottom: 10px; }
 .section-title span { color: var(--muted); font-weight: 700; }
@@ -281,6 +295,30 @@ button.compact { min-height: 44px; padding: 8px 10px; }
   background: var(--green);
   color: white;
 }
+
+.marker-vehicle-card {
+  display: grid;
+  gap: 6px;
+}
+.marker-vehicle-card .marker-button { width: 100%; }
+.vehicle-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.vehicle-choice {
+  min-height: 42px;
+  padding: 7px 8px;
+  border-color: var(--accent);
+  background: #edf5ef;
+  color: var(--green);
+  font-weight: 900;
+}
+.vehicle-choice:active,
+.vehicle-choice:focus-visible {
+  background: var(--accent);
+  color: white;
+}
 .selection-order { margin-top: 12px; }
 .selection-order > p { margin-bottom: 7px; font-weight: 900; }
 .selection-order-row {
@@ -339,6 +377,7 @@ button.compact { min-height: 44px; padding: 8px 10px; }
 .marker-copy .span { font-size: clamp(1.15rem, 5vw, 1.75rem); font-weight: 900; }
 .marker-copy h2 { margin: 3px 0; font-size: clamp(1.35rem, 6vw, 2.2rem); }
 .sequence { color: var(--muted); font-weight: 800; }
+.recovery-code { font-size: .72rem; letter-spacing: .02em; overflow-wrap: anywhere; }
 
 .qr-target {
   display: grid;

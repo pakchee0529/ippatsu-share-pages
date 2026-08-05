@@ -24,10 +24,6 @@
     </section>
 
     <section class="case-card">
-      <div id="workDateSwitcher" class="work-date-switcher" hidden>
-        <label for="workDateSelect">作業日</label>
-        <select id="workDateSelect" aria-label="作業日"></select>
-      </div>
       <div class="case-switcher">
         <label for="caseSelect">現場案件</label>
         <select id="caseSelect" aria-label="現場案件"></select>
@@ -43,6 +39,15 @@
         <div><dt>予定写真</dt><dd id="plannedSummary">—</dd></div>
         <div><dt>カメラ</dt><dd>FinePix XP140</dd></div>
       </dl>
+      <div id="genericEditor" class="generic-editor" hidden>
+        <p class="generic-editor-title">汎用仕切り札：この案件スロットを現場入力</p>
+        <label for="genericManagementNo">管理番号</label>
+        <input id="genericManagementNo" inputmode="numeric" maxlength="8" placeholder="例：51402860">
+        <label for="genericSpanLabel">径間名</label>
+        <input id="genericSpanLabel" maxlength="80" placeholder="例：津風呂 20G8～21">
+        <button id="saveGenericCase" class="primary compact" type="button">この案件を保存</button>
+        <p class="generic-editor-help">最大8案件。保存後にカテゴリを選ぶと、入力した管理番号・径間名入りのQRを表示します。</p>
+      </div>
     </section>
 
     <section>
@@ -69,6 +74,7 @@
         <p id="dialogSpan" class="span"></p>
         <h2 id="dialogLabel"></h2>
         <p id="dialogSequence" class="sequence"></p>
+        <p id="dialogRecovery" class="sequence recovery-code"></p>
       </div>
       <div id="qrTarget" class="qr-target" aria-live="polite"></div>
       <p id="instruction" class="instruction"></p>
