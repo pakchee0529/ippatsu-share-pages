@@ -1,11 +1,11 @@
-// Bumped when static PWA behavior changes, even when the day-pack data does not.
-const CACHE_NAME = "photo-ledger-poc0-0719f6e81f93cf2a";
+const CACHE_NAME = "photo-ledger-poc0-09391fe461b98ee3";
 const ASSETS = [
   "./",
   "./index.html",
   "./app.js",
   "./styles.css",
   "./pack.js",
+  "./release-manifest.json",
   "./qrcode.js",
   "./qrcode_UTF8.js",
   "./manifest.webmanifest",
