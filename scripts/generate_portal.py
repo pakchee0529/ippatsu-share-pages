@@ -59,6 +59,7 @@ import json
 import math
 import os
 import re
+from urllib.parse import urlencode
 import sys
 import unicodedata
 import urllib.error
@@ -813,6 +814,11 @@ _SHARE_DETAIL_EDIT_CARD_CSS = """
   font-size: 0.8rem;
   min-height: 44px;
 }
+"""
+
+_PHOTO_LEDGER_INPUT_CARD_CSS = """
+.photo-ledger-input-footer { margin-top: .55rem; }
+.btn-photo-ledger-input { width: 100%; max-width: 100%; background:#ecfdf5; color:#065f46; border:1px solid #34d399; }
 """
 
 
@@ -2426,6 +2432,37 @@ def _share_detail_edit_footer_html(url: str, *, fallback: bool = False) -> str:
     return f'<div class="{cls}">' + _share_detail_edit_footer_inner_html(url) + "</div>"
 
 
+def build_photo_ledger_input_url(item: ShareDetailEditPrefill, date_key: str) -> str | None:
+    """A local-only instruction JSON input link; no secret or write authority."""
+    mno = _to_str(item.management_no)
+    label = _to_str(item.label)
+    if not mno or not label or not re.fullmatch(r"\d{6}", date_key):
+        return None
+    def quantity(value: str) -> str:
+        match = re.search(r"\d+", _to_str(value))
+        return match.group(0) if match else "0"
+
+    params = {
+        "date": date_key, "management_no": mno, "label": label,
+        "E10": item.branch_cut_under_10, "E20": item.branch_cut_10_20,
+        "E30": item.branch_cut_20_30, "E40": item.branch_cut_30_40,
+        "E50": item.branch_cut_40_50, "E60": item.branch_cut_over_50,
+        "N10": item.root_cut_under_10, "N20": item.root_cut_10_20,
+        "N30": item.root_cut_20_30, "N40": item.root_cut_30_40,
+        "N50": item.root_cut_40_50, "N60": item.root_cut_over_50,
+        "TK": quantity(item.bamboo_count), "SB": quantity(item.bush_area), "TR": quantity(item.vine_count),
+    }
+    return "../../portal/ledger-input/?" + urlencode(params)
+
+
+def _photo_ledger_input_footer_html(url: str) -> str:
+    return (
+        '<div class="photo-ledger-input-footer">'
+        f'<a class="btn btn-photo-ledger-input" href="{escape_html(url)}" '
+        'target="_blank" rel="noopener noreferrer">台帳入力</a></div>'
+    )
+
+
 def _share_detail_edit_link_html(url: str) -> str:
     """アーカイブ詳細など、共有メイン以外でカードアクション行に単体リンクを置く場合用。"""
     t = escape_html(_SHARE_DETAIL_EDIT_BTN_TITLE)
@@ -2483,8 +2520,11 @@ def apply_share_detail_edit_to_share_html(html: str, date_key: str) -> str:
         "",
         out,
     )
+    out = re.sub(r'<div class="photo-ledger-input-footer"[^>]*>[\s\S]*?</div>\s*', "", out)
     if ".detail-edit-footer {" not in out:
         out = out.replace("</style>", _SHARE_DETAIL_EDIT_CARD_CSS + "\n</style>", 1)
+    if ".photo-ledger-input-footer {" not in out:
+        out = out.replace("</style>", _PHOTO_LEDGER_INPUT_CARD_CSS + "\n</style>", 1)
     parts = re.split(r"(?=<article class=\"card\")", out)
     rebuilt: list[str] = [parts[0]]
     for chunk in parts[1:]:
@@ -2495,11 +2535,12 @@ def apply_share_detail_edit_to_share_html(html: str, date_key: str) -> str:
         if pre is None:
             rebuilt.append(chunk)
             continue
+        input_url = build_photo_ledger_input_url(pre, date_key)
         url = build_share_detail_edit_prefill_url(pre, date_key)
-        if not url:
+        if not url and not input_url:
             rebuilt.append(chunk)
             continue
-        footer = _share_detail_edit_footer_html(url, fallback=False)
+        footer = ("" if not input_url else _photo_ledger_input_footer_html(input_url)) + ("" if not url else _share_detail_edit_footer_html(url, fallback=False))
         placed = _inject_detail_edit_footer_into_note_panel(chunk, footer)
         if placed is not None:
             rebuilt.append(placed)
