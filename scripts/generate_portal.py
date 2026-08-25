@@ -2463,6 +2463,18 @@ def _photo_ledger_input_footer_html(url: str) -> str:
     )
 
 
+def _photo_ledger_plan_edit_footer_html(url: str) -> str:
+    """台帳JSON専用の予定・実績修正導線。共有正本やフォームには書き込まない。"""
+    edit_url = url + ("&" if "?" in url else "?") + "edit_plan=1"
+    return (
+        '<div class="detail-edit-footer">'
+        f'<a class="btn btn-detail-edit btn-detail-edit--panel" href="{escape_html(edit_url)}" '
+        'target="_blank" rel="noopener noreferrer" '
+        'title="台帳用JSONだけに使う予定・実績値を修正します。共有ページとDBは変更しません。">'
+        '台帳用の予定を修正</a></div>'
+    )
+
+
 def _share_detail_edit_link_html(url: str) -> str:
     """アーカイブ詳細など、共有メイン以外でカードアクション行に単体リンクを置く場合用。"""
     t = escape_html(_SHARE_DETAIL_EDIT_BTN_TITLE)
@@ -2540,7 +2552,9 @@ def apply_share_detail_edit_to_share_html(html: str, date_key: str) -> str:
         if not url and not input_url:
             rebuilt.append(chunk)
             continue
-        footer = ("" if not input_url else _photo_ledger_input_footer_html(input_url)) + ("" if not url else _share_detail_edit_footer_html(url, fallback=False))
+        # 台帳入力の直下は、DB/共有ページを更新しない台帳JSON専用の修正導線に置換する。
+        # 台帳入力URLを作れない旧カードだけは、従来の詳細修正フォームを残す。
+        footer = ("" if not input_url else _photo_ledger_input_footer_html(input_url) + _photo_ledger_plan_edit_footer_html(input_url)) + ("" if input_url or not url else _share_detail_edit_footer_html(url, fallback=False))
         placed = _inject_detail_edit_footer_into_note_panel(chunk, footer)
         if placed is not None:
             rebuilt.append(placed)

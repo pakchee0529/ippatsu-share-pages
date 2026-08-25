@@ -6,6 +6,7 @@
   <title>写真台帳入力</title>
   <style>
     body{font-family:system-ui,sans-serif;max-width:720px;margin:auto;padding:16px;background:#f6f8fa;color:#172033}h1{font-size:1.3rem}h2{font-size:1.05rem;margin:0 0 8px}section{background:#fff;border:1px solid #d8dee8;border-radius:10px;padding:12px;margin:10px 0}label{display:block;font-weight:700;margin-top:8px}input,textarea,select{font:inherit;width:100%;box-sizing:border-box;padding:9px;border:1px solid #94a3b8;border-radius:7px}textarea{min-height:62px}small,.note{color:#475569}.choice{background:#fff;color:#172033;border:1px solid #94a3b8}.choice[aria-pressed=true]{background:#dcfce7;border-color:#15803d;color:#14532d}button{font:inherit;font-weight:700;padding:9px 11px;border:0;border-radius:8px;background:#047857;color:#fff;margin:7px 6px 0 0}.secondary,.key{background:#e2e8f0;color:#172033}.hidden{display:none}.pair,.transport-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.run,.transport-row{border-top:1px solid #d8dee8;margin-top:10px;padding-top:10px}.transport-check{display:flex;align-items:center;gap:6px;margin-top:8px}.transport-check input{width:auto}.counts{padding:8px;background:#f1f5f9;border-radius:7px;min-height:22px}.keys{display:grid;grid-template-columns:repeat(3,70px);gap:5px;margin-top:8px}.key{margin:0;border:1px solid #94a3b8}.enter{background:#047857;color:#fff}.status,.message{font-weight:700;margin:8px 0}.short{color:#b91c1c}.ok{color:#15803d}.added{color:#0369a1}.warn{color:#9a3412}.fatal{padding:10px;border:1px solid #b91c1c;background:#fef2f2;color:#991b1b;border-radius:8px;font-weight:700}.footer{position:sticky;bottom:0;background:#f6f8fa;padding:8px 0}@media(max-width:460px){.pair,.transport-row{grid-template-columns:1fr}.keys{grid-template-columns:repeat(3,1fr)}}
+    .plan-edit{border-color:#60a5fa;background:#eff6ff}.plan-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:6px;align-items:center}.plan-grid label{margin:0;font-size:.92rem}.plan-grid input{text-align:right}.plan-head{font-weight:700;color:#475569;font-size:.86rem}.plan-other{display:grid;grid-template-columns:1fr 120px;gap:8px;align-items:center}.plan-other label{margin:0}.plan-delta{font-weight:700;color:#475569;font-size:.86rem}@media(max-width:460px){.plan-grid{grid-template-columns:1fr 1fr}.plan-grid .plan-head:first-child{display:none}.plan-grid .plan-label{grid-column:1/-1}.plan-other{grid-template-columns:1fr 100px}}
   </style>
 </head>
 <body>
@@ -14,10 +15,20 @@
   <p><small>端末内で下書き・JSONを作るだけです。Supabaseと写真原本は変更しません。</small></p>
   <p id="app-error" class="fatal hidden" role="alert">台帳入力の読み込みに失敗しました。入力内容を削除せず、画面を閉じて連絡してください。</p>
   <label>設計番号<input id="design" placeholder="例: B 6186"></label>
+  <p><button id="open-plan-edit" type="button" class="secondary">予定・実績を修正</button></p>
+  <section id="plan-edit" class="plan-edit hidden">
+    <h2>予定・実績を修正</h2>
+    <p class="note">元の指示書の値は変えません。この画面で直した最終値だけを、保存する台帳用JSONへ反映します。</p>
+    <div class="plan-grid plan-head"><span>区分</span><span>枝切り</span><span>根切り</span></div>
+    <div id="plan-cut-fields"></div>
+    <div id="plan-other-fields"></div>
+    <p id="plan-summary" class="note"></p>
+    <button id="reset-plan" type="button" class="secondary">元の予定に戻す</button>
+  </section>
   <section><h2>入力する項目を選ぶ</h2><div id="choices"></div></section>
   <main id="form"></main>
   <p id="message" class="message" aria-live="polite"></p>
   <div class="footer"><button id="save" class="secondary">端末に下書き保存</button><button id="clear" class="secondary">下書きを削除</button><button id="download">指示書JSONを保存</button></div>
-  <script src="./app.js?v=20260826a" onerror="document.getElementById('app-error').classList.remove('hidden')"></script>
+  <script src="./app.js?v=20260826b" onerror="document.getElementById('app-error').classList.remove('hidden')"></script>
 </body>
 </html>
