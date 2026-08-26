@@ -19,6 +19,7 @@
   <section id="plan-edit" class="plan-edit hidden">
     <h2>予定・実績を修正</h2>
     <p class="note">元の指示書の値は変えません。この画面で直した最終値だけを、保存する台帳用JSONへ反映します。</p>
+    <label>設計番号<input id="plan-design" placeholder="例: B6245"></label>
     <div class="plan-grid plan-head"><span>区分</span><span>枝切り</span><span>根切り</span></div>
     <div id="plan-cut-fields"></div>
     <div id="plan-other-fields"></div>
@@ -29,6 +30,6 @@
   <main id="form"></main>
   <p id="message" class="message" aria-live="polite"></p>
   <div class="footer"><button id="save" class="secondary">端末に下書き保存</button><button id="clear" class="secondary">下書きを削除</button><button id="download">指示書JSONを保存</button></div>
-  <script src="./app.js?v=20260826b" onerror="document.getElementById('app-error').classList.remove('hidden')"></script>
+  <script src="./app.js?v=20260826c" onerror="document.getElementById('app-error').classList.remove('hidden')"></script>
 </body>
 </html>
