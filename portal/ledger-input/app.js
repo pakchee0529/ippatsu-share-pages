@@ -16,4 +16,41 @@ const get=k=>{try{return localStorage.getItem(k)}catch(e){say(`端末内下書�
 function collect(){const planned=Object.fromEntries(cuts.map(c=>[c,plan[c]])),original=Object.fromEntries(cuts.map(c=>[c,base[c]]));const data={schema:"ippatsu-photo-ledger-instruction/v1",created_at:new Date().toISOString(),case:{share_date_key:q.get("date")||"",design_no:document.querySelector("#design").value.trim(),management_no:mno,span_label:span,planned,original_planned:original,felling_plan:{branch_cuts:[plan.E10,plan.E20,plan.E30,plan.E40,plan.E50,plan.E60],root_cuts:[plan.N10,plan.N20,plan.N30,plan.N40,plan.N50,plan.N60],brush_area_m2:plan.brush_area_m2,bamboo_count:plan.bamboo_count,vine_locations:plan.vine_locations},plan_adjustment:{original:{...base},final:{...plan},delta:delta(),storage:"instruction_json_only"}},pairs:{BA:[],TK:[],SB:[],TR:[]},cuts:Object.fromEntries(cuts.map(c=>[c,[]])),transport:[],special:[]};chosen().forEach(c=>{const e=sec(c);if(pairs.includes(c)){e.querySelectorAll(".pair").forEach(r=>{const a=r.querySelector(".before").value.trim(),b=r.querySelector(".after").value.trim();if(a||b)data.pairs[c].push({before:no(a),after:no(b)})});if(c==="TK")e.querySelector(".reuse").value.split(",").map(x=>x.trim()).filter(Boolean).forEach(v=>{const i=Number(v),ba=data.pairs.BA[i-1];if(!Number.isInteger(i)||!ba)throw Error("竹のBA流用組番号を確認してください");data.pairs.TK.push({...ba,reuse_ba_pair_indexes:[i]})})}else if(c==="E10"||c==="N10")e.querySelectorAll(".run").forEach(r=>{const s=r.querySelector(".start").value.trim(),v=(r.dataset.counts||"").split(",").filter(Boolean).map(Number);if(s||v.length){if(!s||!v.length)throw Error(`${c} の開始写真番号と本数を入力してください`);data.cuts[c].push({start_photo:no(s),counts:v})}});else if(cuts.includes(c))data.cuts[c]=photos(e.querySelector(".photos").value);else if(c==="US")e.querySelectorAll(".transport-row").forEach(r=>{const p=photos(r.querySelector(".transport-photos").value);if(p.length)data.transport.push({label:`${r.querySelector(".specified").checked?"指定場所運搬":"運搬"} ${r.querySelector(".vehicle").value}`,photos:p})});else if(c==="DF"){const p=photos(e.querySelector(".photos").value);if(p.length)data.special.push({label:"倒木実費",photos:p})}else{const l=e.querySelector(".free-label").value.trim(),p=photos(e.querySelector(".photos").value);if(l||p.length){if(!l||!p.length)throw Error("自由記述は区分と写真番号の両方を入力してください");data.special.push({label:l,photos:p})}}});return data}
 codes.forEach(c=>choices.insertAdjacentHTML("beforeend",`<button type="button" class="choice" data-code="${c}" aria-pressed="${c==="BA"||qty(c)>0}"></button>`));choices.addEventListener("click",e=>{const b=e.target.closest("[data-code]");if(!b)return;b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")!=="true");render();persist()});form.addEventListener("click",e=>{const s=e.target.closest("section[data-s]");if(!s)return;if(e.target.closest(".add-pair"))s.querySelector(".pair-list").insertAdjacentHTML("beforeend",pair());if(e.target.closest(".add-run"))s.querySelector(".runs").insertAdjacentHTML("beforeend",run());if(e.target.closest(".add-transport"))s.querySelector(".transport-list").insertAdjacentHTML("beforeend",transport());const b=e.target.closest("[data-key]");if(b){const r=b.closest(".run"),k=b.dataset.key;let p=r.dataset.pending||"";if(k==="back")p=p.slice(0,-1);else if(k==="enter"){if(p&&Number(p)>0){r.dataset.counts=[...(r.dataset.counts?r.dataset.counts.split(","):[]),String(Number(p))].join(",");p=""}}else p+=k;r.dataset.pending=p;refreshUnder(s)}persist()});form.addEventListener("input",()=>{refresh();persist()});form.addEventListener("change",persist);designInput.addEventListener("input",()=>{planDesignInput.value=designInput.value;persist()});document.querySelector("#save").onclick=persist;document.querySelector("#open-plan-edit").onclick=()=>{planEdit.classList.toggle("hidden");if(!planEdit.classList.contains("hidden"))planEdit.scrollIntoView({behavior:"smooth",block:"start"})};planEdit.addEventListener("input",e=>{if(e.target===planDesignInput){designInput.value=planDesignInput.value;persist();return}readPlan();persist()});document.querySelector("#reset-plan").onclick=()=>{plan={...base};renderPlan();refreshChoices();refresh();persist();say("台帳用の予定値を元の指示書の値へ戻しました","ok")};document.querySelector("#clear").onclick=()=>{if(!window.confirm("このケースの端末内下書きと予備下書きを削除しますか？ JSONを保存済みか確認してください。"))return;try{[key,backupKey,olderBackupKey,oldKey].forEach(k=>localStorage.removeItem(k));say("このケースの端末内下書きを削除しました","ok")}catch(e){say(`下書きを削除できませんでした: ${e.message}`,"warn")}};document.querySelector("#download").onclick=()=>{try{const d=collect(),blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${q.get("date")||"date"}_${mno}_写真台帳指示.json`;a.click();URL.revokeObjectURL(a.href);persist();say("JSONを保存しました。端末内下書きと予備下書きは残しています。","ok")}catch(e){persist();say(e.message,"warn")}};restore();planDesignInput.value=designInput.value;renderPlan();render();if(q.get("edit_plan")==="1")planEdit.classList.remove("hidden");
 async function savePortalDraft(){const button=document.querySelector("#portal-save");try{const document=collect();button.disabled=true;say("ポータルへ保存中…");const response=await fetch(portalDraftEndpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(document)});if(!response.ok)throw Error("ポータル保存に失敗しました");persist();say("ポータルに保存しました。PC GUIから直接開けます。","ok")}catch(error){persist();say(error.message||"ポータル保存に失敗しました。端末内下書きは残っています。","warn")}finally{button.disabled=false}}document.querySelector("#portal-save").onclick=savePortalDraft;
+function installBaReuseControls(){
+  const reusableCodes=["TR","SB"];
+  const controls=[];
+  const sync=control=>{
+    const values=control.input.value.split(",").map(value=>value.trim()).filter(Boolean);
+    const selected=[];
+    const baPairs=[...sec("BA").querySelectorAll(".pair")];
+    for(const value of values){
+      const index=Number(value),source=baPairs[index-1];
+      if(!Number.isInteger(index)||!source||!source.querySelector(".before").value.trim()||!source.querySelector(".after").value.trim()){
+        control.input.setCustomValidity("BA流用する組番号を確認してください");
+        return;
+      }
+      selected.push({before:source.querySelector(".before").value.trim(),after:source.querySelector(".after").value.trim()});
+    }
+    control.input.setCustomValidity("");
+    const list=control.section.querySelector(".pair-list");
+    list.querySelectorAll("[data-ba-reuse=true]").forEach(row=>row.remove());
+    selected.forEach(row=>{
+      list.insertAdjacentHTML("beforeend",pair(row.before,row.after));
+      list.lastElementChild.dataset.baReuse="true";
+    });
+    refresh();persist();
+  };
+  reusableCodes.forEach(code=>{
+    const section=sec(code);
+    section.insertAdjacentHTML("beforeend",'<label class="ba-reuse"><span>BA流用する組番号（例: 1,2）</span><input inputmode="numeric" placeholder="例: 1,2"></label><p class="note">指定した伐採前後の組を、この区分にも掲載します。</p>');
+    const input=section.querySelector(".ba-reuse input");
+    const control={section,input};
+    controls.push(control);
+    input.addEventListener("input",()=>sync(control));
+  });
+  sec("BA").addEventListener("input",()=>controls.forEach(control=>{
+    if(control.input.value.trim())sync(control);
+  }));
+}
+installBaReuseControls();
 })();
