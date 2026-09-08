@@ -18,14 +18,14 @@
     /* 予定カテゴリ（行事・不在・出張・祝日・その他） */
     --cat-company: #2563eb;
     --cat-company-bg: #dbeafe;
-    --cat-absent: #e11d48;
-    --cat-absent-bg: #ffe4e6;
+    --cat-absent: #15803d;
+    --cat-absent-bg: #dcfce7;
     --cat-trip: #7c3aed;
     --cat-trip-bg: #ede9fe;
-    --cat-holiday: #d97706;
-    --cat-holiday-bg: #fef3c7;
-    --cat-other: #475569;
-    --cat-other-bg: #e2e8f0;
+    --cat-holiday: #b91c1c;
+    --cat-holiday-bg: #fee2e2;
+    --cat-other: #0f766e;
+    --cat-other-bg: #ccfbf1;
     --blue: #1a5276;
     --blue-light: #eaf2fb;
     --yellow: #b7950b;
@@ -321,7 +321,7 @@
   .event-tag.absent {
     background: var(--cat-absent-bg);
     color: var(--cat-absent);
-    border-color: rgba(225, 29, 72, 0.28);
+    border-color: rgba(21, 128, 61, 0.3);
     border-left: 3px solid var(--cat-absent);
   }
   .event-tag.business_trip {
@@ -334,13 +334,13 @@
   .event-tag.holiday-tag {
     background: var(--cat-holiday-bg);
     color: var(--cat-holiday);
-    border-color: rgba(217, 119, 6, 0.32);
+    border-color: rgba(185, 28, 28, 0.32);
     border-left: 3px solid var(--cat-holiday);
   }
   .event-tag.other {
     background: var(--cat-other-bg);
     color: var(--cat-other);
-    border-color: rgba(71, 85, 105, 0.28);
+    border-color: rgba(15, 118, 110, 0.3);
     border-left: 3px solid var(--cat-other);
   }
 
@@ -688,7 +688,7 @@
   .badge-absent {
     background: var(--cat-absent-bg);
     color: var(--cat-absent);
-    border: 1px solid rgba(225, 29, 72, 0.35);
+    border: 1px solid rgba(21, 128, 61, 0.36);
   }
   .badge-business_trip {
     background: var(--cat-trip-bg);
@@ -698,12 +698,12 @@
   .badge-holiday {
     background: var(--cat-holiday-bg);
     color: var(--cat-holiday);
-    border: 1px solid rgba(217, 119, 6, 0.38);
+    border: 1px solid rgba(185, 28, 28, 0.38);
   }
   .badge-other {
     background: var(--cat-other-bg);
     color: var(--cat-other);
-    border: 1px solid rgba(71, 85, 105, 0.35);
+    border: 1px solid rgba(15, 118, 110, 0.36);
   }
 
   /* ===== FAB ===== */
@@ -927,10 +927,10 @@ const IMPORT_REJECTED_TYPES = ["health"];
 
 const TYPE_META = {
   company: { emoji: "🔵", badge: "行事", badgeClass: "badge-company" },
-  absent: { emoji: "🔴", badge: "不在", badgeClass: "badge-absent" },
+  absent: { emoji: "🟢", badge: "不在", badgeClass: "badge-absent" },
   business_trip: { emoji: "🟣", badge: "出張", badgeClass: "badge-business_trip" },
-  holiday: { emoji: "🟠", badge: "祝日", badgeClass: "badge-holiday" },
-  other: { emoji: "⚫", badge: "その他", badgeClass: "badge-other" },
+  holiday: { emoji: "🔴", badge: "祝日", badgeClass: "badge-holiday" },
+  other: { emoji: "🟦", badge: "その他", badgeClass: "badge-other" },
 };
 
 const seedEvents = [
