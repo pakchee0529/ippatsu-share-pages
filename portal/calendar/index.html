@@ -1194,6 +1194,35 @@ function calendarApiHeaders(includeSession) {
   return headers;
 }
 
+function monthBounds(year, month) {
+  const monthStart = year + "-" + String(month).padStart(2, "0") + "-01";
+  const lastDay = new Date(year, month, 0).getDate();
+  const monthEnd = year + "-" + String(month).padStart(2, "0") + "-" + String(lastDay).padStart(2, "0");
+  return { monthStart, monthEnd };
+}
+
+function eventOverlapsMonth(ev, year, month) {
+  const bounds = monthBounds(year, month);
+  const start = String(ev.dateStart || "");
+  const end = String(ev.dateEnd || start);
+  return Boolean(start) && start <= bounds.monthEnd && end >= bounds.monthStart;
+}
+
+function eventIdKey(ev) {
+  return String(ev && ev.id != null ? ev.id : "");
+}
+
+function calendarWriteErrorCode(data, status) {
+  const code = data && typeof data.error === "string" ? data.error : "";
+  const allowed = new Set([
+    "invalid_date_start", "invalid_date_end", "empty_title", "invalid_type",
+    "rejected_type", "session_required", "session_expired", "session_invalid",
+    "unauthorized", "db_error", "server_error",
+  ]);
+  if (allowed.has(code)) return code;
+  return status >= 500 ? "server_error" : "request_failed";
+}
+
 async function calendarGetMonth(year, month) {
   const url =
     CALENDAR_API_ENDPOINT +
@@ -1253,9 +1282,22 @@ async function ensureEditSession(forcePrompt) {
 }
 
 function mergeMonthEvents(year, month, monthEvents) {
-  const prefix = year + "-" + String(month).padStart(2, "0");
-  const kept = events.filter((e) => !String(e.dateStart || "").startsWith(prefix));
-  events = kept.concat(monthEvents);
+  // The API returns every event that overlaps the visible month, including
+  // events that began in the preceding month.  Replace that full overlap set,
+  // rather than only events whose *start* has this month, so cross-month
+  // events cannot accumulate as duplicates when navigating back and forth.
+  const incomingById = new Map();
+  monthEvents.forEach((raw) => {
+    const ev = normalizeEvent(raw);
+    const key = eventIdKey(ev);
+    if (key) incomingById.set(key, ev);
+  });
+  const kept = events.filter((ev) => {
+    const key = eventIdKey(ev);
+    if (key && incomingById.has(key)) return false;
+    return !eventOverlapsMonth(ev, year, month);
+  });
+  events = kept.concat(Array.from(incomingById.values()));
   recomputeNextId();
 }
 
@@ -1550,11 +1592,11 @@ async function saveEvent() {
       if (!(await ensureEditSession(true))) return;
       const retry = await calendarPost(body, true);
       if (!retry.res.ok || !retry.data.ok) {
-        alert("保存に失敗しました");
+        alert("保存に失敗しました（" + calendarWriteErrorCode(retry.data, retry.res.status) + "）");
         return;
       }
     } else if (!res.ok || !data.ok) {
-      alert("保存に失敗しました");
+      alert("保存に失敗しました（" + calendarWriteErrorCode(data, res.status) + "）");
       return;
     }
     editingId = null;
