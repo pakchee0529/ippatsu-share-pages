@@ -6,6 +6,27 @@ export const LABELS={BA:'伐採前後',TK:'竹伐採前後',TR:'つる伐採前�
 export const label=c=>LABELS[c]||`${c[0]==='E'?'枝切り':'根切り'} ${c.slice(1)==='60'?'50cm以上':c.slice(1)+'cm未満'}`;
 export const clone=x=>JSON.parse(JSON.stringify(x));
 export const key=p=>`${p.date}:${String(p.no).padStart(3,'0')}`;
+export function parsePhotoNumbers(text){
+const normalized=String(text??'').replace(/[０-９]/g,c=>String(c.charCodeAt(0)-0xff10)).replace(/[－–—〜～]/g,'-').trim();
+if(!normalized)return [];
+const result=[],seen=new Set();
+for(const token of normalized.split(/[,、\s]+/).filter(Boolean)){
+ const match=token.match(/^(\d{1,3})(?:-(\d{1,3}))?$/);
+ if(!match)throw Error(`写真番号「${token}」を確認してください（例 05-10,15）`);
+ const first=Number(match[1]),last=match[2]===undefined?first:Number(match[2]);
+ if(first<1||last>999||last<first)throw Error(`写真番号「${token}」は001〜999の昇順で指定してください`);
+ for(let n=first;n<=last;n++){const no=String(n).padStart(3,'0');if(seen.has(no))throw Error(`写真${no}が重複しています`);seen.add(no);result.push(no);}
+}
+return result;
+}
+export function applyPhotoAdjustments(document,{date,numbers,rotation,banner}){
+if(!validDate(date))throw Error('撮影日を6桁で入力してください');
+const photos=parsePhotoNumbers(numbers);if(!photos.length)throw Error('写真番号を入力してください（例 05-10）');
+if(rotation!==''&&![0,90,180,270].includes(Number(rotation)))throw Error('回転の指定を確認してください');
+if(rotation===''&&banner==='')throw Error('回転またはバナーを選んでください');
+for(const no of photos){let row=document.adjustments.find(r=>key(r)===`${date}:${no}`);if(!row){row={date,no,rotation:0,banner:false};document.adjustments.push(row);}if(rotation!=='')row.rotation=Number(rotation);if(banner!=='')row.banner=banner==='on';}
+return photos.length;
+}
 export function validDate(s){if(!/^\d{6}$/.test(s))return false;const d=new Date(2000+ +s.slice(0,2),+s.slice(2,4)-1,+s.slice(4));return d.getFullYear()===2000+ +s.slice(0,2)&&d.getMonth()===+s.slice(2,4)-1&&d.getDate()===+s.slice(4);}
 export const validRef=p=>p&&validDate(p.date)&&/^\d{1,3}$/.test(String(p.no));
 export function partition(rows,target){const sums=new Map([[0,[]]]);rows.forEach((r,i)=>[...sums].forEach(([n,ids])=>{const next=n+Number(r.count);if(next<=target&&!sums.has(next))sums.set(next,[...ids,i]);}));const total=rows.reduce((a,r)=>a+Number(r.count||0),0),chosen=new Set(total<=target?rows.map((_,i)=>i):sums.get(target)||[]);let n=1;return {exact:total<=target||sums.has(target),total,ordered:[...rows.filter((_,i)=>chosen.has(i)).map(r=>({...r,claim:'PLANNED'})),...rows.filter((_,i)=>!chosen.has(i)).map(r=>({...r,claim:'ADDED'}))].map(r=>{const out={...r,start:n,end:n+ +r.count-1};n+= +r.count;return out;})};}
