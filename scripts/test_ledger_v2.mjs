@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {createDocument,inspect,partition,fromLegacy} from '../portal/ledger-v2/model.js';
+const d=createDocument(new URLSearchParams('date=261001&management_no=51405255&label=test&E10=5'));
+d.case.design_no='B6251';d.pairs.BA=[{before:{date:'260930',no:'001'},after:{date:'261001',no:'001'}}];
+d.cuts.E10=[2,2,2,1,2].map((count,i)=>({date:'260930',no:String(i+2),count}));
+assert.deepEqual(inspect(d).errors,[]);assert.equal(inspect(d).branchPhotos,5);
+assert.deepEqual(partition(d.cuts.E10,5).ordered.map(r=>r.count),[2,2,1,2,2]);
+assert.deepEqual(partition(d.cuts.E10,5).ordered.map(r=>r.start),[1,3,5,6,8]);
+assert.equal(partition(d.cuts.E10.slice(0,3),5).exact,false);
+const b=createDocument(new URLSearchParams('date=261001&management_no=51405255&label=test&TK=4'));
+assert.ok(!b.selected.includes('BA'));assert.ok(b.selected.includes('TK'));
+const legacy={schema:'ippatsu-photo-ledger-instruction/v1',case:{share_date_key:'261001',management_no:'51405255',span_label:'test',planned:{E10:2},plan_adjustment:{final:{E10:5}}},pairs:{},cuts:{E10:[{start_photo:'3',counts:[2,2,1]}]},special:[{label:'one',photos:['4']},{label:'two',photos:['5']}]};
+const migrated=fromLegacy(legacy);assert.equal(migrated.special.length,2);assert.equal(migrated.case.planned.E10,5);assert.deepEqual(migrated.cuts.E10.map(r=>r.no),['003','004','005']);
+console.log('ledger-v2 domain smoke: OK');

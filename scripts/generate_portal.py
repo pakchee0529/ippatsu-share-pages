@@ -2456,10 +2456,13 @@ def build_photo_ledger_input_url(item: ShareDetailEditPrefill, date_key: str) ->
 
 
 def _photo_ledger_input_footer_html(url: str) -> str:
+    new_url = url.replace('/ledger-input/', '/ledger-v2/', 1)
     return (
         '<div class="photo-ledger-input-footer">'
         f'<a class="btn btn-photo-ledger-input" href="{escape_html(url)}" '
-        'target="_blank" rel="noopener noreferrer">台帳入力</a></div>'
+        'target="_blank" rel="noopener noreferrer">台帳入力（既存版）</a>'
+        f'<a class="btn btn-photo-ledger-input" href="{escape_html(new_url)}" '
+        'target="_blank" rel="noopener noreferrer" style="margin-top:6px">台帳入力（新版）</a></div>'
     )
 
 
