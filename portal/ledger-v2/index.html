@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#164e63"><title>写真台帳 新版</title><link rel="stylesheet" href="style.css"><link rel="manifest" href="manifest.webmanifest"></head>
+<body><header><div><small>いっぱつちゃん / 写真台帳</small><h1>台帳入力 <span class="badge">新版</span></h1></div><a id="old-link" href="../ledger-input/">既存版</a></header>
+<main><section class="case"><h2 id="case-label">案件を読み込んでいます</h2><div id="case-meta"></div><p id="load-status" role="status"></p><div class="row"><label>設計番号<input id="design" placeholder="B 6251" autocomplete="off"></label><label>入力する写真の撮影日<input id="capture" inputmode="numeric" maxlength="6" placeholder="261001"></label></div><details id="plan"><summary>予定本数・面積と案件情報を修正</summary><div id="plan-fields"></div></details></section>
+<section><h2>入力する項目</h2><p class="muted">必要な項目だけ開きます。閉じても入力は残ります。</p><div id="choices"></div></section>
+<section id="overview" aria-live="polite"></section><div id="form"></div>
+<section><details><summary>写真の向き・サシあて困難</summary><p class="muted">撮影日と写真番号で指定。バナーは回転した後の台帳用コピーに付きます。</p><div id="adjustments"></div><button id="add-adjustment" class="secondary">写真補正を追加</button></details></section>
+<section><details><summary>ファイル読込・バックアップ・保存履歴</summary><p>旧版JSONも読み込めます。旧版の保存内容は変更しません。</p><input type="file" id="import" accept=".json"><button id="download" class="secondary">ファイルに保存</button><button id="restore" class="secondary">直前の端末下書きに戻す</button><button id="reload-cloud" class="secondary">ポータル保存を読み直す</button><div id="history"></div></details></section>
+</main><footer><div id="save-state" role="status">端末に自動保存します</div><button id="cloud-save">途中でもポータルに保存</button></footer><script type="module" src="app.js"></script></body></html>
