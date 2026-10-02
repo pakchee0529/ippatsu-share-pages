@@ -24,3 +24,11 @@ applyPhotoAdjustments(a,{date:'261001',numbers:'07',rotation:'180',banner:'on'})
 assert.equal(a.adjustments.length,7);
 const snapshot=JSON.stringify(a);assert.throws(()=>applyPhotoAdjustments(a,{date:'261001',numbers:'09-07',rotation:'90',banner:''}));assert.equal(JSON.stringify(a),snapshot);
 console.log('ledger-v2 photo ranges and bulk corrections: OK');
+const billable=createDocument(new URLSearchParams('date=261002&management_no=51405397&label=test&E10=12&N10=20'));
+billable.selected=['E10','E20','E60','N10','N20'];
+billable.cuts.E10=[2,2,2,1,1,2,2].map((count,i)=>({date:'261002',no:String(i+1),count}));
+billable.cuts.E20=[{date:'261002',no:'20',count:1}];billable.cuts.E60=[{date:'261002',no:'21',count:1}];
+billable.cuts.N10=[{date:'261002',no:'30',count:9},{date:'261002',no:'31',count:9}];billable.cuts.N20=[{date:'261002',no:'32',count:1}];
+assert.equal(inspect(billable).branchPhotos,9);assert.equal(inspect(billable).photos,12);
+billable.selected=billable.selected.filter(c=>c!=='E20'&&c!=='E60');assert.equal(inspect(billable).branchPhotos,7);
+console.log('ledger-v2 billable branch photo count: OK');
