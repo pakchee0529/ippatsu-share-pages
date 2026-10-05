@@ -1,4 +1,4 @@
-const CACHE='ippatsu-ledger-v2-20261005-1';
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./app.js','./model.js','./style.css'])));self.skipWaiting();});
+const CACHE='ippatsu-ledger-v2-20261005-2';
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./app.js','./app.js?v=20261005-1','./model.js','./style.css'])));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('ippatsu-ledger-v2-')&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(u.origin!==location.origin||e.request.method!=='GET'||!u.pathname.startsWith(new URL('./',location.href).pathname))return;const req=e.request.mode==='navigate'?new Request(new URL('./index.html',location.href)):e.request;e.respondWith(fetch(req).then(r=>{if(r.ok){const copy=r.clone();caches.open(CACHE).then(c=>c.put(req,copy));}return r;}).catch(()=>caches.match(req)));});
