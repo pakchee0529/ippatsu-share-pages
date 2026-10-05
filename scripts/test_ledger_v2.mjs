@@ -1,4 +1,9 @@
 import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+const uiCompile=spawnSync(process.execPath,['--experimental-vm-modules',fileURLToPath(new URL('./test_ledger_v2_modules.mjs',import.meta.url))],{encoding:'utf8'});
+assert.equal(uiCompile.status,0,uiCompile.stderr);
+console.log(uiCompile.stdout.trim());
 import {createDocument,inspect,partition,fromLegacy,parsePhotoNumbers,applyPhotoAdjustments} from '../portal/ledger-v2/model.js';
 const d=createDocument(new URLSearchParams('date=261001&management_no=51405255&label=test&E10=5'));
 d.case.design_no='B6251';d.pairs.BA=[{before:{date:'260930',no:'001'},after:{date:'261001',no:'001'}}];
