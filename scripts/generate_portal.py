@@ -2809,7 +2809,7 @@ def _normalize_share_page_heading(html: str, date_key: str) -> str:
     out = re.sub(r"<title>[\s\S]*?</title>", f"<title>{title}</title>", html, count=1, flags=re.I)
     return re.sub(
         r'(<h1\s+class="page-title"[^>]*>)[\s\S]*?(</h1>)',
-        rf"\1{title}\2",
+        lambda m: m.group(1) + title + m.group(2),
         out,
         count=1,
         flags=re.I,
