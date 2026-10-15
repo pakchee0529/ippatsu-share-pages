@@ -760,13 +760,7 @@ SHARE_DETAIL_EDIT_ENTRY_VINE_COUNT = "entry.1406858047"
 SHARE_DETAIL_EDIT_ENTRY_NOTE = "entry.1367667439"
 
 # 未確定修正の表示上書き（Apps Script Web アプリ JSON）。空のときは fetch しない。
-SHARE_DETAIL_EDIT_API_URL = (
-    "https://script.google.com/macros/s/AKfycbzLtv-yZP5QNjXQSEybhxBTmWrNaujJJfyb_okMcuSzjKyREFthJTwI_Y5fc0PKfGuOnA/exec"
-)
-SHARE_DETAIL_EDIT_API_TOKEN = "ippatsu_share_detail_edit_202605_long_token"
 
-_SHARE_LIVE_EDIT_BEGIN = "<!-- share-live-edit-inject:begin -->"
-_SHARE_LIVE_EDIT_END = "<!-- share-live-edit-inject:end -->"
 
 _SHARE_DETAIL_EDIT_BTN_TITLE = (
     "共有ページの表示内容の修正をフォームへ送ります（送信後も即時反映されません）"
@@ -2551,6 +2545,8 @@ def apply_share_detail_edit_to_share_html(html: str, date_key: str) -> str:
             rebuilt.append(chunk)
             continue
         input_url = build_photo_ledger_input_url(pre, date_key)
+        from quantity_link_contract import preserve_quantity_query
+        input_url = preserve_quantity_query(input_url, chunk)
         url = build_share_detail_edit_prefill_url(pre, date_key)
         if not url and not input_url:
             rebuilt.append(chunk)
@@ -2566,27 +2562,25 @@ def apply_share_detail_edit_to_share_html(html: str, date_key: str) -> str:
     return "".join(rebuilt)
 
 
-def _strip_share_live_edit_identity_attrs(html: str) -> str:
+def _strip_share_card_identity_attrs(html: str) -> str:
     return re.sub(
         r'\s+data-date="[^"]*"\s+data-management-no-key="[^"]*"\s+data-management-no="[^"]*"',
-        "",
-        html,
+        '', html,
     )
 
 
-def _strip_share_live_edit_inject_block(html: str) -> str:
-    if _SHARE_LIVE_EDIT_BEGIN not in html:
-        return html
-    return re.sub(
-        r"\s*"
-        + re.escape(_SHARE_LIVE_EDIT_BEGIN)
-        + r"[\s\S]*?"
-        + re.escape(_SHARE_LIVE_EDIT_END)
-        + r"\s*",
-        "\n",
-        html,
-        count=1,
+def strip_retired_share_overlay(html: str) -> str:
+    """Remove the retired opaque block without parsing any old settings."""
+    out = re.sub(
+        r'<!-- share-live-edit-inject:begin -->[\s\S]*?<!-- share-live-edit-inject:end -->',
+        '', html,
     )
+    if any(marker in out for marker in (
+        'share-detail-edit-api-config', '__ippatsuShareLiveEditNs',
+        '<!-- share-live-edit-inject:begin -->', '<!-- share-live-edit-inject:end -->',
+    )):
+        raise ValueError('Unrecognized retired overlay remains; do not decode settings')
+    return out
 
 
 def _inject_body_data_share_page_date(html: str, date_key: str) -> str:
@@ -2905,585 +2899,18 @@ def _inject_article_card_identity_attrs(html: str, date_key: str) -> str:
     return "".join(rebuilt)
 
 
-_SHARE_LIVE_EDIT_CARD_CSS = """
-.share-pending-overlay-banner {
-  margin: 0 0 0.55rem;
-  padding: 0.45rem 0.55rem;
-  font-size: 0.8rem;
-  line-height: 1.45;
-  color: #92400e;
-  background: #fffbeb;
-  border: 1px solid #fcd34d;
-  border-radius: 8px;
-}
-.share-pending-overlay-banner[hidden] { display: none !important; }
-.share-pending-overlay-title {
-  display: block;
-  font-weight: 700;
-}
-.share-pending-overlay-sub {
-  display: block;
-  margin-top: 0.15rem;
-  font-size: 0.76rem;
-  color: #a16207;
-  font-weight: 500;
-}
-.instr-cut-pending-total th,
-.instr-cut-pending-total td {
-  background: #fffbeb;
-  font-weight: 600;
-}
-"""
 
 
-_SHARE_LIVE_EDIT_RUNNER_JS = r"""
-(function () {
-  function esc(t) {
-    var d = document.createElement("div");
-    d.textContent = t == null ? "" : String(t);
-    return d.innerHTML;
-  }
-  function normKey(s) {
-    return String(s || "").replace(/\s+/g, "");
-  }
-  function cfg() {
-    var el = document.getElementById("share-detail-edit-api-config");
-    if (!el) return null;
-    try {
-      return JSON.parse(el.textContent || "{}");
-    } catch (e) {
-      return null;
-    }
-  }
-  function setSummaryCell(panel, label, value) {
-    var rows = panel.querySelectorAll(".instr-summary tbody tr");
-    for (var i = 0; i < rows.length; i++) {
-      var th = rows[i].querySelector("th");
-      var td = rows[i].querySelector("td");
-      if (!th || !td) continue;
-      if (String(th.textContent || "").trim() === label) {
-        td.textContent = value == null ? "" : String(value);
-        return;
-      }
-    }
-  }
-  function setOtherCell(panel, label, value) {
-    var rows = panel.querySelectorAll(".instr-other tbody tr");
-    for (var i = 0; i < rows.length; i++) {
-      var th = rows[i].querySelector("th");
-      var td = rows[i].querySelector("td");
-      if (!th || !td) continue;
-      if (String(th.textContent || "").trim() === label) {
-        td.textContent = value == null ? "" : String(value);
-        return;
-      }
-    }
-  }
-  function applyCutTotals(panel, branch, root) {
-    var tb = panel.querySelector(".instr-cut tbody");
-    if (!tb) return;
-    var prev = tb.querySelectorAll("tr.instr-cut-pending-total");
-    for (var i = 0; i < prev.length; i++) {
-      prev[i].parentNode.removeChild(prev[i]);
-    }
-    var bStr = branch != null && String(branch).length ? String(branch) : "";
-    var rStr = root != null && String(root).length ? String(root) : "";
-    if (!bStr && !rStr) return;
-    var bCell = bStr ? esc(bStr) : "\u2014";
-    var rCell = rStr ? esc(rStr) : "\u2014";
-    var tr = document.createElement("tr");
-    tr.className = "instr-cut-pending-total";
-    tr.innerHTML =
-      '<th scope="row">\u5408\u8a08\uff08\u672a\u78ba\u5b9a\u4fee\u6b63\uff09</th><td>' +
-      bCell +
-      "</td><td>" +
-      rCell +
-      "</td>";
-    tb.appendChild(tr);
-  }
-  function ensureBanner(article) {
-    var b = article.querySelector(".share-pending-overlay-banner");
-    if (!b) {
-      b = document.createElement("div");
-      b.className = "share-pending-overlay-banner";
-      b.setAttribute("role", "status");
-      b.innerHTML =
-        '<span class="share-pending-overlay-title">\u73fe\u5834\u4fee\u6b63\u3042\u308a\uff08\u672a\u78ba\u5b9a\uff09</span>' +
-        '<span class="share-pending-overlay-sub">\u4f1a\u793e\u78ba\u8a8d\u524d\u306e\u4fee\u6b63\u5185\u5bb9\u3092\u8868\u793a\u4e2d</span>';
-      var head = article.querySelector(".card-head");
-      if (head && head.parentNode === article) {
-        article.insertBefore(b, head);
-      } else {
-        article.insertBefore(b, article.firstChild);
-      }
-    }
-    b.hidden = false;
-  }
-  var V2_BRANCH_KEYS = [
-    "branch_cut_under_10",
-    "branch_cut_10_20",
-    "branch_cut_20_30",
-    "branch_cut_30_40",
-    "branch_cut_40_50",
-    "branch_cut_over_50",
-  ];
-  var V2_ROOT_KEYS = [
-    "root_cut_under_10",
-    "root_cut_10_20",
-    "root_cut_20_30",
-    "root_cut_30_40",
-    "root_cut_40_50",
-    "root_cut_over_50",
-  ];
-  function hasV2CutFields(f) {
-    if (!f || typeof f !== "object") return false;
-    var i;
-    for (i = 0; i < V2_BRANCH_KEYS.length; i++) {
-      if (V2_BRANCH_KEYS[i] in f) return true;
-    }
-    for (i = 0; i < V2_ROOT_KEYS.length; i++) {
-      if (V2_ROOT_KEYS[i] in f) return true;
-    }
-    return false;
-  }
-  function parseInt0(s) {
-    var t = String(s == null ? "" : s)
-      .trim()
-      .replace(/[^\d-]/g, "");
-    if (!t) return 0;
-    var n = parseInt(t, 10);
-    return isNaN(n) ? 0 : n;
-  }
-  var CUT_LABELS = [
-    "\u301c10\u672a\u6e80",
-    "\u301c20\u672a\u6e80",
-    "\u301c30\u672a\u6e80",
-    "\u301c40\u672a\u6e80",
-    "\u301c50\u672a\u6e80",
-    "50\u4ee5\u4e0a",
-  ];
-  var CUT_B_BY_LABEL = {
-    "\u301c10\u672a\u6e80": "branch_cut_under_10",
-    "\u301c20\u672a\u6e80": "branch_cut_10_20",
-    "\u301c30\u672a\u6e80": "branch_cut_20_30",
-    "\u301c40\u672a\u6e80": "branch_cut_30_40",
-    "\u301c50\u672a\u6e80": "branch_cut_40_50",
-    "50\u4ee5\u4e0a": "branch_cut_over_50",
-  };
-  var CUT_R_BY_LABEL = {
-    "\u301c10\u672a\u6e80": "root_cut_under_10",
-    "\u301c20\u672a\u6e80": "root_cut_10_20",
-    "\u301c30\u672a\u6e80": "root_cut_20_30",
-    "\u301c40\u672a\u6e80": "root_cut_30_40",
-    "\u301c50\u672a\u6e80": "root_cut_40_50",
-    "50\u4ee5\u4e0a": "root_cut_over_50",
-  };
-  function applyCutBandsFromFields(panel, f) {
-    var tb = panel.querySelector(".instr-cut tbody");
-    if (!tb) return;
-    var prev = tb.querySelectorAll("tr.instr-cut-pending-total");
-    for (var i = 0; i < prev.length; i++) {
-      prev[i].parentNode.removeChild(prev[i]);
-    }
-    var trs = tb.getElementsByTagName("tr");
-    var j, tr, th, tds, lab, bk, rk;
-    for (j = 0; j < trs.length; j++) {
-      tr = trs[j];
-      if (tr.classList.contains("instr-cut-total")) continue;
-      if (tr.classList.contains("instr-cut-pending-total")) continue;
-      th = tr.querySelector("th");
-      tds = tr.querySelectorAll("td");
-      if (!th || tds.length < 2) continue;
-      lab = String(th.textContent || "").trim();
-      bk = CUT_B_BY_LABEL[lab];
-      rk = CUT_R_BY_LABEL[lab];
-      if (bk && bk in f) tds[0].textContent = String(f[bk] == null ? "" : f[bk]);
-      if (rk && rk in f) tds[1].textContent = String(f[rk] == null ? "" : f[rk]);
-    }
-    recalcInstrCutTotal(panel);
-  }
-  function recalcInstrCutTotal(panel) {
-    var tb = panel.querySelector(".instr-cut tbody");
-    if (!tb) return;
-    var totalRow = tb.querySelector("tr.instr-cut-total");
-    if (!totalRow) return;
-    var sumB = 0;
-    var sumR = 0;
-    var trs = tb.getElementsByTagName("tr");
-    var li, j, tr, th, tds, lab;
-    for (li = 0; li < CUT_LABELS.length; li++) {
-      lab = CUT_LABELS[li];
-      for (j = 0; j < trs.length; j++) {
-        tr = trs[j];
-        if (tr.classList.contains("instr-cut-total")) continue;
-        if (tr.classList.contains("instr-cut-pending-total")) continue;
-        th = tr.querySelector("th");
-        tds = tr.querySelectorAll("td");
-        if (!th || tds.length < 2) continue;
-        if (String(th.textContent || "").trim() !== lab) continue;
-        sumB += parseInt0(tds[0].textContent);
-        sumR += parseInt0(tds[1].textContent);
-      }
-    }
-    var tdt = totalRow.querySelectorAll("td");
-    if (tdt.length >= 2) {
-      tdt[0].textContent = String(sumB);
-      tdt[1].textContent = String(sumR);
-    }
-  }
-  function applyNoteHtml(panel, htmlStr) {
-    var n = panel.querySelector(".instr-note");
-    if (!n) return;
-    n.innerHTML = "<strong>\u5099\u8003</strong><br>" + (htmlStr || "");
-  }
-  function logWarn(msg, detail) {
-    try {
-      if (detail !== undefined) {
-        console.warn("[share-live-edit]", msg, detail);
-      } else {
-        console.warn("[share-live-edit]", msg);
-      }
-    } catch (e) {}
-  }
-  function logInfo(msg, detail) {
-    try {
-      if (detail !== undefined) {
-        console.info("[share-live-edit]", msg, detail);
-      } else {
-        console.info("[share-live-edit]", msg);
-      }
-    } catch (e) {}
-  }
-  function isApiOk(v) {
-    if (v === true || v === 1) return true;
-    if (typeof v === "string") {
-      var t = v.trim().toLowerCase();
-      return t === "true" || t === "yes" || t === "1";
-    }
-    return false;
-  }
-  function editsArray(data) {
-    var e = data && data.edits;
-    if (Array.isArray(e)) return e;
-    if (e && typeof e === "object") {
-      try {
-        return Object.keys(e).map(function (k) {
-          return e[k];
-        });
-      } catch (err) {
-        return [];
-      }
-    }
-    return [];
-  }
-  function pickEditsByKey(data, pageDate) {
-    var best = {};
-    var list = editsArray(data);
-    var pd = String(pageDate || "").trim();
-    for (var i = 0; i < list.length; i++) {
-      var ed = list[i];
-      if (!ed) continue;
-      var d = String(ed.date != null ? ed.date : "").trim();
-      if (d !== pd) continue;
-      var k = normKey(ed.management_no_key || ed.management_no || "");
-      if (!k) continue;
-      var ts = String(ed.timestamp || ed.id || "");
-      if (!best[k] || ts > String(best[k].timestamp || best[k].id || "")) {
-        best[k] = ed;
-      }
-    }
-    return best;
-  }
-  function applyEditToArticle(article, ed) {
-    var panel = article.querySelector(".note-panel");
-    if (!panel) {
-      logWarn("note-panel missing on card; cannot apply overlay", article);
-      return;
-    }
-    ensureBanner(article);
-    var f = ed.fields || {};
-    if ("work_method" in f) setSummaryCell(panel, "\u51e6\u7406\u65b9\u6cd5", f.work_method);
-    if ("bucket_truck" in f) setSummaryCell(panel, "B\u8eca", f.bucket_truck);
-    if ("road_width" in f) setSummaryCell(panel, "\u9053\u5e45", f.road_width);
-    if ("slope" in f) setSummaryCell(panel, "\u50be\u659c", f.slope);
-    if (hasV2CutFields(f)) {
-      applyCutBandsFromFields(panel, f);
-    } else if ("branch_count" in f || "root_count" in f) {
-      applyCutTotals(
-        panel,
-        "branch_count" in f ? f.branch_count : "",
-        "root_count" in f ? f.root_count : ""
-      );
-    }
-    if ("bush_area" in f) {
-      setOtherCell(panel, "\u67f4\u4f10\u63a1\u9762\u7a4d", f.bush_area);
-    }
-    if ("bamboo_count" in f) {
-      setOtherCell(panel, "\u7af9\u4f10\u63a1\u672c\u6570", f.bamboo_count);
-    }
-    if ("vine_count" in f) {
-      setOtherCell(panel, "\u3064\u308b\u4f10\u63a1\u7b87\u6240\u6570", f.vine_count);
-    }
-    if ("note" in f) applyNoteHtml(panel, esc(f.note));
-  }
-  function handlePayload(data, pageDate) {
-    var pd = String(pageDate || "").trim();
-    if (!data || typeof data !== "object") {
-      logWarn("JSONP payload is not an object", data);
-      return;
-    }
-    if (!isApiOk(data.ok)) {
-      logWarn("API ok flag is false or missing", { ok: data.ok, keys: Object.keys(data) });
-      return;
-    }
-    var byKey = pickEditsByKey(data, pd);
-    var list = editsArray(data);
-    var forPage = 0;
-    for (var j = 0; j < list.length; j++) {
-      var ed0 = list[j];
-      if (ed0 && String(ed0.date != null ? ed0.date : "").trim() === pd) forPage++;
-    }
-    var cardKeys = [];
-    document.querySelectorAll("article.card[data-management-no-key]").forEach(function (a) {
-      var kk = normKey(a.getAttribute("data-management-no-key"));
-      if (kk) cardKeys.push(kk);
-    });
-    if (forPage > 0 && Object.keys(byKey).length === 0) {
-      var rel0 = list
-        .filter(function (e) {
-          return e && String(e.date != null ? e.date : "").trim() === pd;
-        })
-        .slice(0, 6)
-        .map(function (e) {
-          return {
-            date: e.date,
-            management_no_key: e.management_no_key,
-            management_no: e.management_no
-          };
-        });
-      logWarn("edits for page date but no usable management_no_key", {
-        pageDate: pd,
-        editsForPageSample: rel0
-      });
-    }
-    var applied = 0;
-    document.querySelectorAll("article.card[data-management-no-key]").forEach(function (article) {
-      var k = normKey(article.getAttribute("data-management-no-key"));
-      if (!k || !byKey[k]) return;
-      try {
-        applyEditToArticle(article, byKey[k]);
-        applied++;
-      } catch (e) {
-        logWarn("applyEditToArticle threw", e);
-      }
-    });
-    if (forPage > 0 && applied === 0) {
-      var rel = list
-        .filter(function (e) {
-          return e && String(e.date != null ? e.date : "").trim() === pd;
-        })
-        .slice(0, 8)
-        .map(function (e) {
-          return {
-            date: e.date,
-            management_no_key: e.management_no_key,
-            management_no: e.management_no
-          };
-        });
-      logWarn("No card matched API edits for this page", {
-        pageDate: pd,
-        cardKeys: cardKeys.slice(0, 12),
-        apiKeysFromPicker: Object.keys(byKey),
-        editsForPageSample: rel
-      });
-    }
-    try {
-      logInfo("jsonp payload handled", {
-        pageDate: pd,
-        editsTotal: list.length,
-        forPage: forPage,
-        applied: applied
-      });
-    } catch (e3) {}
-  }
-  function run() {
-    var c = cfg();
-    if (!c) {
-      logWarn("share-detail-edit-api-config missing or invalid JSON");
-      return;
-    }
-    var apiUrl = (c && c.url) || "";
-    if (!String(apiUrl).trim()) {
-      logWarn("API URL empty in config; skip JSONP load");
-      return;
-    }
-    var token = (c && c.token) || "";
-    var pageDate = String(document.body.getAttribute("data-share-page-date") || "").trim();
-    if (!pageDate) {
-      logWarn("body[data-share-page-date] missing; skip");
-      return;
-    }
-    var sep = apiUrl.indexOf("?") >= 0 ? "&" : "?";
-    var handlerId =
-      "h" + String(Date.now()) + "_" + String(Math.floor(Math.random() * 1e9));
-    var cbName = "__ippatsuShareLiveEditNs." + handlerId;
-    window.__ippatsuShareLiveEditNs = window.__ippatsuShareLiveEditNs || {};
-    var s = document.createElement("script");
-    var tid = 0;
-    var done = false;
-    function finish() {
-      if (done) return;
-      done = true;
-      if (tid) clearTimeout(tid);
-      try {
-        delete window.__ippatsuShareLiveEditNs[handlerId];
-      } catch (e2) {}
-      if (s && s.parentNode) s.parentNode.removeChild(s);
-    }
-    window.__ippatsuShareLiveEditNs[handlerId] = function (data) {
-      if (done) return;
-      try {
-        handlePayload(data, pageDate);
-      } catch (e) {
-        logWarn("JSONP callback threw", e);
-      } finally {
-        var fin = function () {
-          finish();
-        };
-        if (typeof requestAnimationFrame === "function") {
-          requestAnimationFrame(fin);
-        } else {
-          setTimeout(fin, 0);
-        }
-      }
-    };
-    var url =
-      apiUrl +
-      sep +
-      "token=" +
-      encodeURIComponent(token) +
-      "&callback=" +
-      encodeURIComponent(cbName) +
-      "&_ts=" +
-      String(Date.now());
-    s.async = true;
-    s.src = url;
-    s.charset = "utf-8";
-    tid = setTimeout(function () {
-      logWarn("JSONP timeout (check Apps Script JSONP deploy + callback param)");
-      finish();
-    }, 30000);
-    s.onerror = function () {
-      logWarn("JSONP script failed to load (network, 404, or non-JavaScript response)");
-      finish();
-    };
-    var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
-    head.appendChild(s);
-  }
-  function scheduleRun() {
-    function go() {
-      try {
-        run();
-      } catch (e) {
-        logWarn("run threw", e);
-      }
-    }
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function () {
-        if (typeof requestAnimationFrame === "function") {
-          requestAnimationFrame(go);
-        } else {
-          setTimeout(go, 0);
-        }
-      });
-    } else {
-      if (typeof requestAnimationFrame === "function") {
-        requestAnimationFrame(go);
-      } else {
-        setTimeout(go, 0);
-      }
-    }
-  }
-  scheduleRun();
-})();
-"""
 
 
-def _build_share_live_edit_inject_html(api_url: str, api_token: str) -> str:
-    cfg_obj = {"url": (api_url or "").strip(), "token": (api_token or "").strip()}
-    cfg_json = json.dumps(cfg_obj, ensure_ascii=False)
-    cfg_json = cfg_json.replace("<", "\\u003c")
-    parts = [
-        _SHARE_LIVE_EDIT_BEGIN,
-        "<!-- share-live-edit: JSONP load (CORS-safe); Apps Script must echo callback when token=...&callback=... -->",
-        "<style>",
-        _SHARE_LIVE_EDIT_CARD_CSS,
-        "</style>",
-        '<script type="application/json" id="share-detail-edit-api-config">',
-        cfg_json,
-        "</script>",
-        "<script>",
-        _SHARE_LIVE_EDIT_RUNNER_JS,
-        "</script>",
-        _SHARE_LIVE_EDIT_END,
-    ]
-    return "\n".join(parts)
 
 
-def apply_share_live_edit_to_share_html(html: str, date_key: str) -> str:
-    """未確定修正オーバーレイ用の data 属性・クライアント JS を注入（正本 JSON は触らない）。"""
-    out = _strip_share_live_edit_inject_block(html)
-    out = _strip_share_live_edit_identity_attrs(out)
-    out = _inject_body_data_share_page_date(out, date_key)
-    out = _inject_article_card_identity_attrs(out, date_key)
-    inject = _build_share_live_edit_inject_html(
-        SHARE_DETAIL_EDIT_API_URL, SHARE_DETAIL_EDIT_API_TOKEN
-    )
-    if "</body>" in out:
-        out = out.replace("</body>", inject + "\n</body>", 1)
-    else:
-        out = out + "\n" + inject
-    return out
 
 
-def _share_detail_edit_api_config_obj() -> dict[str, str]:
-    return {
-        "url": (SHARE_DETAIL_EDIT_API_URL or "").strip(),
-        "token": (SHARE_DETAIL_EDIT_API_TOKEN or "").strip(),
-    }
 
 
-def _share_live_edit_api_config_matches_html(html: str) -> bool:
-    """HTML 内の API 設定 JSON が generate_portal.py 定数と一致するか。"""
-    m = re.search(
-        r'<script\s+type="application/json"\s+id="share-detail-edit-api-config"\s*>\s*'
-        r"(\{[^<]+\})\s*</script>",
-        html,
-        re.I,
-    )
-    if not m:
-        return False
-    try:
-        got = json.loads(m.group(1))
-    except json.JSONDecodeError:
-        return False
-    exp = _share_detail_edit_api_config_obj()
-    return got.get("url") == exp.get("url") and got.get("token") == exp.get("token")
 
 
-def _share_live_edit_layer_complete(html: str) -> bool:
-    """未確定修正オーバーレイに必要なマークアップが揃っているか。"""
-    if _SHARE_LIVE_EDIT_BEGIN not in html or _SHARE_LIVE_EDIT_END not in html:
-        return False
-    if 'id="share-detail-edit-api-config"' not in html:
-        return False
-    if not re.search(r"<body[^>]*\sdata-share-page-date=\"[^\"]+\"", html, re.I):
-        return False
-    if "<article class=\"card\"" in html and 'data-management-no-key="' not in html:
-        return False
-    if (SHARE_DETAIL_EDIT_API_URL or "").strip():
-        return _share_live_edit_api_config_matches_html(html)
-    return True
 
 
 _SHARE_ARTICLE_CARD_BLOCK_RE = re.compile(
@@ -3996,14 +3423,15 @@ def _recover_share_page_maps_from_gps(html: str, repo_root: Path | None) -> str:
 def ensure_share_detail_edit_on_share_html(
     html: str, date_key: str, repo_root: Path | None = None
 ) -> str:
-    """詳細修正リンク・未確定修正オーバーレイを idempotent に適用する。"""
-    out = _strip_share_live_edit_inject_block(html)
-    out = _strip_share_live_edit_identity_attrs(out)
+    """Apply active presentation/ledger helpers; never build retired integration."""
+    out = strip_retired_share_overlay(html)
+    out = _strip_share_card_identity_attrs(out)
     out = apply_share_page_readability_to_share_html(out, date_key)
     out = _recover_share_page_maps_from_gps(out, repo_root)
     if share_detail_edit_form_enabled():
         out = apply_share_detail_edit_to_share_html(out, date_key)
-    return apply_share_live_edit_to_share_html(out, date_key)
+    out = _inject_body_data_share_page_date(out, date_key)
+    return _inject_article_card_identity_attrs(out, date_key)
 
 
 def inject_share_detail_edit_into_share_pages(repo_root: Path) -> int:
@@ -4025,13 +3453,13 @@ def inject_share_detail_edit_into_share_pages(repo_root: Path) -> int:
         except OSError:
             continue
         new_t = ensure_share_detail_edit_on_share_html(raw, sub.name, repo_root)
-        needs_write = new_t != raw or not _share_live_edit_layer_complete(raw)
+        needs_write = new_t != raw
         if not needs_write:
             continue
         idx.write_text(new_t, encoding="utf-8", newline="\n")
         n += 1
         action = "updated" if new_t != raw else "repaired"
-        print(f"Wrote {idx} (share detail-edit + live overlay: {action})")
+        print(f"Wrote {idx} (share detail-edit; retired layer absent: {action})")
     return n
 
 
@@ -4049,12 +3477,12 @@ def inject_share_detail_edit_into_share_page_for_date(
     except OSError:
         return 0
     new_t = ensure_share_detail_edit_on_share_html(raw, date_key, repo_root)
-    needs_write = new_t != raw or not _share_live_edit_layer_complete(raw)
+    needs_write = new_t != raw
     if not needs_write:
         return 0
     idx.write_text(new_t, encoding="utf-8", newline="\n")
     action = "updated" if new_t != raw else "repaired"
-    print(f"Wrote {idx} (share detail-edit + live overlay: {action})")
+    print(f"Wrote {idx} (share detail-edit; retired layer absent: {action})")
     return 1
 
 
@@ -8971,8 +8399,15 @@ def write_archive_detail_pages(
             n_items,
             strict_mismatch=_STRICT_COMPLETION_REPORTS_SUMMARY_MISMATCH,
         )
+        archive_html = build_archive_detail_html(ent, pub_items, note, planned_items)
+        export_path = _completion_reports_root(repo_root) / f"{ent.date}.json"
+        if export_path.is_file():
+            from archive_presentation_contract import apply_archive_contract, verify_archive_contract
+            archive_doc = json.loads(export_path.read_text(encoding="utf-8"))
+            archive_html = apply_archive_contract(archive_html, archive_doc)
+            verify_archive_contract(archive_doc, archive_html)
         out_path.write_text(
-            build_archive_detail_html(ent, pub_items, note, planned_items),
+            archive_html,
             encoding="utf-8",
             newline="\n",
         )
