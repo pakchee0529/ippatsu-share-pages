@@ -3,6 +3,20 @@ from html.parser import HTMLParser
 from urllib.parse import urlsplit,urlunsplit,parse_qsl,urlencode
 import re
 QUERY_FIELDS={**{f'E{n}':key for n,key in zip((10,20,30,40,50,60),('branch_cut_under_10','branch_cut_10_20','branch_cut_20_30','branch_cut_30_40','branch_cut_40_50','branch_cut_over_50'))},**{f'N{n}':key for n,key in zip((10,20,30,40,50,60),('root_cut_under_10','root_cut_10_20','root_cut_20_30','root_cut_30_40','root_cut_40_50','root_cut_over_50'))},'TK':'bamboo_count','SB':'bush_area_m2','TR':'vine_count'}
+
+# Units belong to the field's presentation, never to its numeric value.
+# Counts require integers; only area accepts a decimal fraction.
+def _confirmed_quantity_text(field, raw):
+ if field == 'bush_area_m2':
+  pattern = r'([0-9]+(?:\.[0-9]+)?)(?:㎡|m²)?'
+ elif field == 'vine_count':
+  pattern = r'([0-9]+)(?:箇所)?'
+ else:
+  pattern = r'([0-9]+)(?:本)?'
+ match = re.fullmatch(pattern, raw)
+ if match is None:raise ValueError('Invalid confirmed quantity text')
+ return match.group(1)
+
 def html_quantities(card):
  class Parser(HTMLParser):
   def __init__(self):super().__init__();self.active=None;self.data=[];self.values={}
@@ -18,8 +32,7 @@ def html_quantities(card):
    _,field,state=self.active;raw=''.join(self.data).strip()
    value=None
    if state!='unknown':
-    if not re.fullmatch(r'\d+(?:\.\d+)?',raw):raise ValueError('Invalid confirmed quantity text')
-    value=raw
+    value=_confirmed_quantity_text(field,raw)
    if field in self.values and self.values[field]!=value:raise ValueError('Conflicting quantity confirmation states')
    self.values[field]=value;self.active=None;self.data=[]
  p=Parser();p.feed(card)
