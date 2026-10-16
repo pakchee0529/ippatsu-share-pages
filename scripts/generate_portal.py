@@ -3434,6 +3434,13 @@ def ensure_share_detail_edit_on_share_html(
     return _inject_article_card_identity_attrs(out, date_key)
 
 
+_display_original_ensure = ensure_share_detail_edit_on_share_html
+def ensure_share_detail_edit_on_share_html(*args, **kwargs):
+    from quantity_display_contract import display_html,preserve_ledger_quantities_and_valid_maps
+    before=args[0] if args else kwargs['html']
+    return display_html(preserve_ledger_quantities_and_valid_maps(before,_display_original_ensure(*args, **kwargs)))
+
+
 def inject_share_detail_edit_into_share_pages(repo_root: Path) -> int:
     """share/<6桁>/index.html へ詳細修正ボタン・未確定修正オーバーレイ用マークアップを書き込む。"""
     root = repo_root / "share"

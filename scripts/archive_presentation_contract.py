@@ -127,3 +127,9 @@ def verify_archive_contract(document,text):
   actual=[a for a in p.links if '/ledger-input/' in a['href'] or '/ledger-v2/' in a['href']]
   if actual!=expected_links.links:raise ValueError('Archive photo ledger links differ')
   if any('edit_plan' in a['href'] for a in p.links):raise ValueError('Archive plan edit URL forbidden')
+
+
+_display_original_apply = apply_archive_contract
+def apply_archive_contract(text,document):
+    from quantity_display_contract import display_html
+    return display_html(_display_original_apply(text,document))
