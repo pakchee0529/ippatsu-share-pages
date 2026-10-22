@@ -8425,10 +8425,11 @@ def write_archive_detail_pages(
 def render_ojt_intake_entry() -> str:
     """Optional response link only. No private store, embedded form or runtime."""
     return """  <section class="card ojt-intake" aria-labelledby="ojt-intake-heading">
-    <h2 class="card-title" id="ojt-intake-heading">OJTアンケート（任意）</h2>
-    <p class="ojt-intake-note">集積場所を新人に伝える言い方や目印を、具体例ひとつ。経験なしでも構いません。</p>
-    <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSfP0c_dxxE_ynIncNpX4HYeXUA8ct56n4Cv8Hjii9UlCBN-Iw/viewform?usp=publish-editor" rel="noopener noreferrer">1問のアンケートに答える</a>
-    <p class="ojt-intake-note">30〜60秒。回答前に利用目的などの説明を確認できます。</p>
+    <div class="ojt-intake-copy">
+      <h2 class="card-title" id="ojt-intake-heading">OJTアンケート（任意）</h2>
+      <p class="ojt-intake-note">1問・30〜60秒。経験なしでも構いません。</p>
+    </div>
+    <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSfP0c_dxxE_ynIncNpX4HYeXUA8ct56n4Cv8Hjii9UlCBN-Iw/viewform?usp=publish-editor" rel="noopener noreferrer" aria-label="OJTアンケートに回答する">回答する</a>
   </section>"""
 
 
@@ -8622,12 +8623,29 @@ a.portal-menu-item:focus-visible {{
   background: var(--accent-b-hover);
 }}
 .ojt-intake {{
-  margin-top: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 0.85rem;
+  padding: 0.7rem 0.85rem;
+}}
+.ojt-intake-copy {{
+  flex: 1;
+  min-width: 0;
+}}
+.ojt-intake .card-title {{
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
 }}
 .ojt-intake-note {{
-  margin: 0.65rem 0;
+  margin: 0;
   color: var(--muted-b);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
+}}
+.ojt-intake a.btn {{
+  flex-shrink: 0;
+  min-width: 6rem;
+  padding: 0.65rem 0.75rem;
 }}
 {PORTAL_TOP_TODAY_SCHEDULE_CSS}
 .footer-note {{
@@ -8660,6 +8678,8 @@ a.portal-menu-item:focus-visible {{
     </div>
   </header>
 
+{render_ojt_intake_entry()}
+
   <div class="intro">
     <p class="lead">このページは現場共有ページへの入口です。</p>
     <p style="margin:0">今日・今週の作業内容は、次のリンクから日付ごとの共有ページを開いて確認してください。スマホのブックマークに登録して使えます。</p>
@@ -8675,8 +8695,6 @@ a.portal-menu-item:focus-visible {{
   <div class="card-list" role="list">
 {cards_str}
   </div>
-
-{render_ojt_intake_entry()}
 
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
   <script>
