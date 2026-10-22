@@ -8422,6 +8422,16 @@ def write_archive_detail_pages(
     return written
 
 
+def render_ojt_intake_entry() -> str:
+    """Optional response link only. No private store, embedded form or runtime."""
+    return """  <section class="card ojt-intake" aria-labelledby="ojt-intake-heading">
+    <h2 class="card-title" id="ojt-intake-heading">OJTアンケート（任意）</h2>
+    <p class="ojt-intake-note">集積場所を新人に伝える言い方や目印を、具体例ひとつ。経験なしでも構いません。</p>
+    <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSfP0c_dxxE_ynIncNpX4HYeXUA8ct56n4Cv8Hjii9UlCBN-Iw/viewform?usp=publish-editor" rel="noopener noreferrer">1問のアンケートに答える</a>
+    <p class="ojt-intake-note">30〜60秒。回答前に利用目的などの説明を確認できます。</p>
+  </section>"""
+
+
 def build_html(
     entries: list[tuple[str, str]],
     *,
@@ -8611,6 +8621,14 @@ a.portal-menu-item:focus-visible {{
 .card a.btn:hover {{
   background: var(--accent-b-hover);
 }}
+.ojt-intake {{
+  margin-top: 0.85rem;
+}}
+.ojt-intake-note {{
+  margin: 0.65rem 0;
+  color: var(--muted-b);
+  font-size: 0.95rem;
+}}
 {PORTAL_TOP_TODAY_SCHEDULE_CSS}
 .footer-note {{
   margin-top: 1.5rem;
@@ -8657,6 +8675,8 @@ a.portal-menu-item:focus-visible {{
   <div class="card-list" role="list">
 {cards_str}
   </div>
+
+{render_ojt_intake_entry()}
 
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
   <script>
