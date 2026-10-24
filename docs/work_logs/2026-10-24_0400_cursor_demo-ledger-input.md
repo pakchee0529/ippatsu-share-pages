@@ -1,0 +1,3 @@
+# Demo ledger input follow-up
+
+Trial subtree only. Group selector rows; remove count expansion and web drawing UI; permit one-decimal clearance while retaining integer bush dimensions. Additional-only species/diameter/count rows grow automatically until required additional stems are allocated, without photo linkage. E10/N10 keypads collapse at fulfillment and reopen. Restore transport destination checkbox and default 2t dump. Existing original quantities, photo references, stored review/changed detail data remain preserved. Local model 16 tests, prior frozen model 32 tests and new browser 41 tests at each width passed. No production database or regular portal changes.
