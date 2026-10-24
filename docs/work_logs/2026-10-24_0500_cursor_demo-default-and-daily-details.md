@@ -1,0 +1,3 @@
+# Trial-only default and daily read model
+
+Default new/unset/empty transport vehicle to 2t dump; preserve explicitly saved vehicles, including legacy values. Display saved E/N additional species/diameter/stem breakdown with required totals, shortage/overage/missing fields, same revision and no photo linkage. Add unique branch-photo reference counts using E categories only, deduplicated by capture date plus normalized photo number; never imply image existence or shooting completion. Approved fixture scope unchanged. Model checks: 16 current +14 default +8 breakdown +9 photo references; browser each width: 41 regression +12 defaults +14 daily. No normal page, OJT, database or source ledger changes. Normal weekly path audit is separate and has no write/apply.

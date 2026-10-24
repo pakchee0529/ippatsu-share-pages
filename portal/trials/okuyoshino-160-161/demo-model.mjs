@@ -42,3 +42,9 @@ export const refCount=d=>Object.values(d.cuts).flat().length+Object.values(d.pai
 
 export function additionalBalance(d,c){const r=d.records.find(x=>x.code===c),rows=d.details[c].filter(x=>x.kind==='added');return {required:r.additional,total:rows.reduce((n,x)=>n+(x.count??0),0),complete:rows.filter(x=>x.species&&x.diameter!==''&&x.count!==null).reduce((n,x)=>n+x.count,0)};}
 export function ensureAdditionalRows(d,c){const b=additionalBalance(d,c);const blank=x=>x.kind==='added'&&!x.species&&x.diameter===''&&x.count===null;d.details[c]=d.details[c].filter(x=>!(x.auto&&blank(x)&&b.required!==null&&b.total>=b.required));const pending=d.details[c].some(x=>x.kind==='added'&&(!x.species||x.diameter===''||x.count===null));if(b.required>0&&b.complete<b.required&&!pending)d.details[c].push({id:uid('detail'),kind:'added',species:'',diameter:'',oldDiameter:'',count:null,photoIds:[],auto:true});return d.details[c];}
+
+export function transportVehicle(row){return typeof row?.vehicle==='string'&&row.vehicle.trim()?row.vehicle:'2tダンプ';}
+
+export function additionalReport(d){validate(d);return CUTS.map(code=>{const b=additionalBalance(d,code),rows=d.details[code].filter(x=>x.kind==='added'&&(x.species||x.diameter!==''||x.count!==null)).map(x=>({species:x.species,diameter:x.diameter,count:x.count}));const incomplete=rows.some(x=>!x.species||x.diameter===''||x.count===null);return {code,required:b.required,total:b.total,rows,incomplete,state:b.required===null?'追加必要数未確認':b.total<b.required?'不足 '+(b.required-b.total)+'本':b.total>b.required?'過剰 '+(b.total-b.required)+'本':incomplete?'数量一致・項目未入力':'一致'};});}
+
+export function branchPhotoCount(d){const refs=new Set();for(const c of CUTS.filter(x=>x.startsWith('E')))for(const r of d.cuts[c]||[])if(validRef(r))refs.add(r.date+':'+Number(r.no));return refs.size;}
