@@ -3438,7 +3438,20 @@ _display_original_ensure = ensure_share_detail_edit_on_share_html
 def ensure_share_detail_edit_on_share_html(*args, **kwargs):
     from quantity_display_contract import display_html,preserve_ledger_quantities_and_valid_maps
     before=args[0] if args else kwargs['html']
-    return display_html(preserve_ledger_quantities_and_valid_maps(before,_display_original_ensure(*args, **kwargs)))
+    date_key = args[1] if len(args) > 1 else kwargs.get("date_key")
+    # Shared-page generation always uses the same saved-ledger presentation.
+    prepared = re.sub(r'(<article)\s+id="case-\d{8}"(?=\s+class="card")', r'\1', before)
+    if args:
+        args = (prepared, *args[1:])
+    else:
+        kwargs["html"] = prepared
+    out = display_html(preserve_ledger_quantities_and_valid_maps(before,_display_original_ensure(*args, **kwargs)))
+    root = args[2] if len(args) > 2 else kwargs.get("repo_root")
+    if root is None:
+        root = Path(__file__).resolve().parents[1]
+    from apply_saved_ledger_views import transform
+    out = transform(root, date_key, out)
+    return out
 
 
 def inject_share_detail_edit_into_share_pages(repo_root: Path) -> int:
