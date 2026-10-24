@@ -52,7 +52,7 @@ dirty=JSON.stringify(doc)!==JSON.stringify(sent);
 localStorage.setItem(storageKey,JSON.stringify({document:doc,revision,dirty,updated_at:new Date().toISOString()}));
 $('#save-state').textContent=dirty?'保存中に追加入力あり · もう一度保存してください':`${local?'PCに':'ポータルに'}保存・読戻し確認済み（${new Date().toLocaleTimeString()}）`;
 say('保存しました。未入力や不足があっても、続きから入力できます。');
-}catch(e){say(e.message,true);}finally{busy=false;$('#cloud-save').disabled=false;}}
+return !dirty;}catch(e){say(e.message,true);return false;}finally{busy=false;$('#cloud-save').disabled=false;}}
 function sort(x){return Array.isArray(x)?x.map(sort):x&&typeof x==='object'?Object.fromEntries(Object.keys(x).sort().map(k=>[k,sort(x[k])])):x;}
 $('#cloud-save').onclick=saveCloud;
 $('#reload-cloud').onclick=async()=>{if(!confirm('端末の現在の入力はバックアップし、ポータル保存の内容を読み直しますか？'))return;try{const saved=await request({id:doc.id});if(!saved.document)throw Error('保存済みデータがありません');doc=saved.document;revision=saved.revision;persist();render();say('保存済みの内容を読み込みました');}catch(e){say(e.message,true);}};
@@ -83,4 +83,14 @@ if(q.get('edit_plan'))$('#plan').open=true;
 if(!local){$('#history').innerHTML='<button type="button" class="secondary" id="show-history">ポータルの保存履歴を表示</button>';$('#show-history').onclick=async()=>{try{const data=await request({id:doc.id,history:'1'});$('#history').innerHTML=(data.items||[]).map(r=>`<p><button type="button" class="link" data-version="${r.revision}">${esc(r.saved_at)} の内容を開く（版${r.revision}）</button></p>`).join('')||'保存履歴はありません';}catch(e){say(e.message,true);}};}
 }
 $('#history').onclick=async e=>{const v=e.target.dataset.version;if(!v)return;try{const result=await request({id:doc.id,revision:v});doc=result.document;persist();render();say('以前の内容を開きました。ポータル保存すると新しい版として残ります。');}catch(e){say(e.message,true);}};
+// share-261026-ledger-bridge: saved JSON only, existing save/CAS endpoint.
+if(q.get('date')==='261026'&&!local){
+  try{
+    const bridge=await import('../../share/261026/assets/ledger-bridge.mjs');
+    const nativeRender=render,nativeSave=saveCloud;
+    render=function(){nativeRender();bridge.render({document:doc,persist,render,save:()=>saveCloud(),say});};
+    saveCloud=async function(){try{await bridge.prepare(doc);return await nativeSave();}catch(error){say(error.message,true);return false;}};
+    $('#cloud-save').onclick=saveCloud;
+  }catch(error){say('共有表示用の入力補助を読み込めません。再読込してください。',true);$('#cloud-save').disabled=true;}
+}
 start();
