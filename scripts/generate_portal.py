@@ -8442,7 +8442,7 @@ def render_ojt_intake_entry() -> str:
       <h2 class="card-title" id="ojt-intake-heading">OJTアンケート（任意）</h2>
       <p class="ojt-intake-note">1問・30〜60秒。</p>
     </div>
-    <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSfP0c_dxxE_ynIncNpX4HYeXUA8ct56n4Cv8Hjii9UlCBN-Iw/viewform?usp=publish-editor" rel="noopener noreferrer" aria-label="OJTアンケートに回答する">回答する</a>
+    <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSedANDEtDlcaRUbiGUNTGNmYd40IHM0zj6Y7tLktkRNCJuhKQ/viewform?usp=publish-editor" rel="noopener noreferrer" aria-label="OJTアンケートに回答する">回答する</a>
   </section>"""
 
 
