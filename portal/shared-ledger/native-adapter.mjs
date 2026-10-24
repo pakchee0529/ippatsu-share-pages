@@ -1,3 +1,4 @@
+import {normalizedSelection} from './special-summary.mjs';
 // Pure translation: the normal v2 envelope, unknown fields and original quantities survive.
 export const UI_SCHEMA='ippatsu-photo-ledger-ui/3';
 export const codes=['E10','E20','E30','E40','E50','E60','N10','N20','N30','N40','N50','N60','SB','TK','TR'];
@@ -12,16 +13,16 @@ export function projectUI(ui,base,caseId){
 }
 export function fromNative(native,source,revision,seed){
  const base=source.planned;if(native&&(native.schema!=='ippatsu-photo-ledger/v2'||native.id!==source.case_id||native.case?.case_id!==source.case_id||Object.entries(base).some(([c,n])=>native.case.original_planned?.[c]!==n)))throw Error('保存済み台帳の案件・付託基準が一致しません。元データは保持しています');
- if(native?.ledger_ui_v3){const ui=clone(native.ledger_ui_v3);projectUI(ui,base,source.case_id);ui.revision=revision;return ui;}
+ if(native?.ledger_ui_v3){const ui=clone(native.ledger_ui_v3);if(!Array.isArray(ui.selected)){ui.selectionCompatibility={original:clone(ui.selected??null)};ui.selected=normalizedSelection(native,['BA',...codes,'US','DF','SL','HL','BV','RT','FR']);if(ui.selectionCompatibility.original!==false)ui.migrationWarnings=[...(ui.migrationWarnings||[]),'旧形式の選択状態を保存済み入力から復元しました。内容を確認してください'];}projectUI(ui,base,source.case_id);ui.revision=revision;return ui;}
  const ui=seed();ui.schema=UI_SCHEMA;ui.trialId=source.case_id;ui.revision=revision;
  if(!native)return ui;
- ui.selected=[...new Set([...native.selected,...codes.filter(c=>base[c]>0)])];
+ ui.selected=normalizedSelection(native,['BA',...codes,'US','DF','SL','HL','BV','RT','FR']);if(!Array.isArray(native.selected)){ui.selectionCompatibility={original:clone(native.selected??null)};if(native.selected!==false)ui.migrationWarnings.push('旧形式の選択状態を保存済み入力から復元しました。内容を確認してください');}
  for(const r of ui.records){const n=native.case.planned?.[r.code];r.mode=n===base[r.code]?'unchanged':'replace';r.revised=r.mode==='replace'?n:null;const explicit=native.share_quantity_adjustments?.additional;if(Object.hasOwn(explicit||{},r.code))r.additional=explicit[r.code];else if(/^[EN]/.test(r.code))r.additional=Math.max(0,(native.cuts?.[r.code]||[]).reduce((n,p)=>n+p.count,0)-(n??0));}
  for(const c of ['BA','TK','TR','SB'])if(native.pairs?.[c]?.length)ui.pairs[c]=native.pairs[c].map((p,i)=>({...clone(p),id:p.id||c+'-saved-'+i,width:p.width??null,height:p.height??null}));
  for(const c of codes.filter(c=>/^[EN]/.test(c)))ui.cuts[c]=(native.cuts?.[c]||[]).map((r,i)=>({...clone(r),id:r.id||c+'-saved-'+i}));
  ui.special.US=(native.transport||[]).map((r,i)=>({...clone(r),id:r.id||'US-saved-'+i,vehicle:r.vehicle||(r.label?.includes('軽四輪')?'軽四輪':r.label?.includes('2t')?'2tダンプ':r.label?.replace(/^(指定場所運搬|運搬|運　搬　)\s*/,'').trim()||undefined)}));for(const r of native.special||[])if(ui.special[r.code])ui.special[r.code].push({...clone(r),id:r.id||r.code+'-saved-'+ui.special[r.code].length});
  ui.adjustments=clone(native.adjustments||[]);ui.clearanceM=native.clearanceM??null;
- for(const c of ['BA','TK','TR','SB'])if(ui.pairs[c].some(p=>p.before.no||p.after.no||p.width!==null||p.height!==null))ui.selected.push(c);
+ // Explicit OFF remains OFF even when saved photo/dimension rows exist.
  ui.selected=[...new Set(ui.selected)];return ui;
 }
 export function toNative(ui,previous,source){
