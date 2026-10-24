@@ -15,6 +15,7 @@ export function save(storage,draft,expected){validate(draft);const previous=load
 export function reset(storage){storage.removeItem(KEY);return seed();}
 export function projections(d){validate(d);const values=Object.fromEntries(d.records.map(r=>[r.code,quantity(r)]));return {ledger:copy(values),clearance:copy(values)};}
 export function historyText(r){const show=v=>v===null?'未確認':String(v);let text=r.mode==='replace'?show(r.initial)+'→'+show(r.revised):show(r.initial);if(r.additional!==0)text+='＋'+show(r.additional);return text;}
+export function otherSummary(d){validate(d);return [['SB','柴','㎡'],['TK','竹','本'],['TR','つる','箇所']].map(([code,label,unit])=>{const r=d.records.find(x=>x.code===code);return {code,label,unit,history:historyText(r),total:quantity(r)};});}
 export function cutSummary(d){validate(d);const byCode=Object.fromEntries(d.records.map(r=>[r.code,r]));const total=prefix=>{const values=CUTS.filter(c=>c[0]===prefix).map(c=>quantity(byCode[c]));return values.some(v=>v===null)?null:values.reduce((n,v)=>n+v,0);};return {rows:[10,20,30,40,50,60].map(n=>({band:n===60?'50以上':'〜'+n+'未満',branch:historyText(byCode['E'+n]),root:historyText(byCode['N'+n])})),branchTotal:total('E'),rootTotal:total('N')};}
 export function allRefs(){return [...Object.values(fixture.cuts).flat().map(r=>({date:r.date,no:r.no})),...Object.values(fixture.pairs).flat().flatMap(r=>[r.before,r.after]),...fixture.otherRefs];}
 if(allRefs().length!==41||!allRefs().every(validRef))throw Error('写真番号入力の不整合');
