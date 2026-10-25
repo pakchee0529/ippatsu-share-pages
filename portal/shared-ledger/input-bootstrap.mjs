@@ -1,1 +1,1 @@
-try{await import('./input.mjs');}catch(e){document.querySelector('#save-state').textContent='台帳を開けません：'+e.message;for(const b of document.querySelectorAll('button'))b.disabled=true;document.documentElement.dataset.ready='error';}
+try{await import('./input.mjs?v=20261025-v5');}catch(e){document.querySelector('#save-state').textContent='台帳を開けません：'+e.message;for(const b of document.querySelectorAll('button'))b.disabled=true;document.documentElement.dataset.ready='error';}

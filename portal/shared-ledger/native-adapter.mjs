@@ -1,4 +1,4 @@
-import {normalizedSelection} from './special-summary.mjs';
+import {normalizedSelection} from './special-summary.mjs?v=20261025-v5';
 // Pure translation: the normal v2 envelope, unknown fields and original quantities survive.
 export const UI_SCHEMA='ippatsu-photo-ledger-ui/3';
 export const codes=['E10','E20','E30','E40','E50','E60','N10','N20','N30','N40','N50','N60','SB','TK','TR'];

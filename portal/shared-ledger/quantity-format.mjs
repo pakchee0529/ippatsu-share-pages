@@ -1,0 +1,2 @@
+export const quantityTotal=r=>(r.mode==='replace'?r.revised:r.initial)===null||r.additional===null?null:(r.mode==='replace'?r.revised:r.initial)+r.additional;
+export function totalText(rows){const sum=values=>values.some(x=>x===null||x===undefined)?null:values.reduce((a,b)=>a+b,0),before=sum(rows.map(r=>r.initial)),after=sum(rows.map(quantityTotal)),show=n=>n===null?'—':String(n);return before===after?show(before):show(before)+'→'+show(after);}
