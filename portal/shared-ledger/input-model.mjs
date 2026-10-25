@@ -1,8 +1,8 @@
-import {equipmentSpec,validMeasurement} from './special-summary.mjs?v=20261025-v5n1';
+import {equipmentSpec,validMeasurement} from './special-summary.mjs?v=20261025-v5n2';
 // Pure ledger-v2 input model; the normal runtime owns persistence.
-import fixture from './runtime-context.mjs?v=20261025-v5n1';
-import {CUTS,PAIRS,partition,parsePhotoNumbers,validDate,validRef,applyPhotoAdjustments} from './ledger-model.mjs?v=20261025-v5n1';
-import {KEY as LEGACY_KEY,load as loadLegacy,seed as legacySeed,historyText,cutSummary,otherSummary,projections} from './legacy-projection.mjs?v=20261025-v5n1';
+import fixture from './runtime-context.mjs?v=20261025-v5n2';
+import {CUTS,PAIRS,partition,parsePhotoNumbers,validDate,validRef,applyPhotoAdjustments} from './ledger-model.mjs?v=20261025-v5n2';
+import {KEY as LEGACY_KEY,load as loadLegacy,seed as legacySeed,historyText,cutSummary,otherSummary,projections} from './legacy-projection.mjs?v=20261025-v5n2';
 export {fixture,CUTS,PAIRS,parsePhotoNumbers,validDate,validRef};
 export const KEY='ippatsu-native-ledger-ui-v3:'+fixture.caseId;
 export const DRAFT_KEY=KEY+':draft',BACKUP_KEY=KEY+':previous';
