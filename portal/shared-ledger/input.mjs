@@ -64,7 +64,7 @@ function recalculateChangedQuantities(next,previous){const zero=Object.fromEntri
 function assertCompleteLinkedChanges(d){for(const c of CUTS)for(const r of d.details[c])if(r.kind==='changed'&&r.quantityLinked){if(!SPECIES.includes(r.oldSpecies)||!SPECIES.includes(r.species)||!CUTS.includes(r.oldCode)||!diameterOptions(r.oldCode).includes(r.oldDiameter)||!diameterOptions(c).includes(r.diameter)||!Number.isSafeInteger(r.oldCount)||r.oldCount<0||!Number.isSafeInteger(r.count)||r.count<0)throw Error('変更内訳の樹種・太さ・前後本数を完成してください。途中の入力は端末に保全しています');}}
 
 if(hasPending(localStorage,date,cs,context.case.case_id)){blocked=true;render();say('前回の保存結果が未確認です。入力は保持しています。通信復帰後に保存済みを再読込してください',true);}
-if(context.offline&&!blocked)say('オフライン：端末の案件情報と下書きを復元しました。通信復帰後にポータル保存してください');
+if(context.offline&&!blocked)say((navigator.onLine===false?'オフライン：':'通信確認待ち：')+'端末の案件情報と下書きを復元しました。通信復帰後にポータル保存してください');
 if(context.cacheError)say(context.cacheError+'。現在の入力は保持しています',true);
 
 const offlineStatus=document.createElement('p');offlineStatus.id='offline-status';offlineStatus.className='muted';document.querySelector('.save-controls').append(offlineStatus);Promise.resolve(window.ledgerOfflineReady).then(ready=>{offlineStatus.textContent=ready&&!context.cacheError?'オフライン準備済み（この案件・端末）':'オフライン準備未完了：通信できる状態で再読み込みしてください';});
