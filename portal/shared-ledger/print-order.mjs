@@ -1,5 +1,5 @@
-import {photoGridHTML} from './photo-grid.mjs?v=20261025-v5n2';
-import {partition} from './ledger-model.mjs?v=20261025-v5n2';
+import {photoGridHTML} from './photo-grid.mjs?v=20261025-v5n3';
+import {partition} from './ledger-model.mjs?v=20261025-v5n3';
 // Same subset selection, stable order and target used by adopted print model.partition.
 export function printedPhotos(rows,target){if(target===null||!Number.isSafeInteger(target)||target<0)return {ordered:rows.map(x=>({...x})),exact:false};return partition(rows,target);}
 

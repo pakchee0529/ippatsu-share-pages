@@ -1,4 +1,4 @@
-import {compatiblePublishedBase} from './published-basis.mjs?v=20261025-v5n2';
+import {compatiblePublishedBase} from './published-basis.mjs?v=20261025-v5n3';
 // Validated, per-case browser snapshot. No credentials or automatic submission.
 export const cacheKey=(date,cs)=>'ippatsu-shared-ledger-context/v1:'+date+':'+cs;
 export const pendingKey=(date,cs)=>cacheKey(date,cs)+':pending';
