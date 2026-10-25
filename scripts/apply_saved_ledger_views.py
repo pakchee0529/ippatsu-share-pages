@@ -8,9 +8,25 @@ from html import escape,unescape
 import re,json
 
 CODES=['E10','E20','E30','E40','E50','E60','N10','N20','N30','N40','N50','N60','SB','TK','TR']
-ASSET_VERSION='20261025-v5'
+ASSET_VERSION='20261025-offline1'
 FIELDS=['branch_cut_under_10','branch_cut_10_20','branch_cut_20_30','branch_cut_30_40','branch_cut_40_50','branch_cut_over_50','root_cut_under_10','root_cut_10_20','root_cut_20_30','root_cut_30_40','root_cut_40_50','root_cut_over_50','brush_area_m2','bamboo_count','vine_locations']
+def validate_asset_generation(root):
+    assets=root/'portal'/'shared-ledger'
+    html=(assets/'input.html').read_text(encoding='utf-8')
+    if 'input-bootstrap.mjs?v='+ASSET_VERSION not in html:raise ValueError('Ledger input generation mismatch')
+    worker=(assets/'sw.js').read_text(encoding='utf-8')
+    if "ippatsu-shared-ledger-"+ASSET_VERSION not in worker:raise ValueError('Offline cache generation mismatch')
+    names=json.loads(re.search(r'const ASSETS=(\[.*?\]);',worker,re.S)[1])
+    for name in names:
+        if not (assets/name.split('?')[0]).is_file():raise ValueError('Missing offline shell asset: '+name)
+        if name.endswith('.mjs') or '.mjs?' in name or '.css?' in name:
+            if '?v='+ASSET_VERSION not in name:raise ValueError('Offline asset generation mismatch: '+name)
+    for path in assets.glob('*.mjs'):
+        for target in re.findall(r"['\"](\./[^'\"]+\.mjs(?:\?[^'\"]*)?)['\"]",path.read_text(encoding='utf-8')):
+            if not target.endswith('?v='+ASSET_VERSION):raise ValueError('Mixed ledger module generation: '+target)
+
 def transform(root:Path,date:str,text:str)->str:
+    validate_asset_generation(root)
     if not re.fullmatch(r'\d{6}',date):raise ValueError('Invalid shared date')
     entries=[]
     def card_replace(m):

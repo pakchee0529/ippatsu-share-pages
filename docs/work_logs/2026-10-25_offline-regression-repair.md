@@ -1,0 +1,11 @@
+# Restore normal ledger offline reopening
+
+Regression from the previous ledger-v2 shell: the normal input waited for API startup before restoring drafts and did not register the earlier offline shell. Restore the same feature in its own scope. Only exact versioned static shell assets use Service Worker CacheStorage; no API/case responses or credentials are cached there. A validated per-date/per-management context lives in existing browser localStorage alongside drafts.
+
+Startup can restore verified context when offline or on network failure. Logical/authorization errors never silently fall back. Cloud save still requires a fresh matching case/date/base/revision and expected_revision CAS. No auto POST or background submission. A pending outcome marker survives reload and prevents duplicate submission until explicit readback. Successful save/reload updates the offline snapshot without destroying drafts; conflict preserves them.
+
+All module imports, cached URLs and generated entries use generation 20261025-offline1. Install fetches shell with cache reload. Exact prior version requests may use their exact prior caches, never a new body under an old version. The common GUI/CLI adapter rejects mixed generations/missing assets before generation. Browser navigation and layout are unchanged except offline readiness/status text.
+
+Validation: real browser offline17 plus complete browser restart3, pure fallback9, generation guard5, frozen adopted GUI/CLI6; existing browser37 at390/1100px. Pre-fix live test4 reproduces failure. Synthetic fixture POSTs only. Production API, DDL, authorization, business quantities and saved documents are untouched. November unknown-quantity candidate is not included.
+
+Recovery: original files/manifests are in the private offline-repair/backups/before-offline folder. Do not simply remove sw.js while existing clients still control a cached shell. If rolling back, serve the prepared rollback-sw.js at the same shared-ledger/sw.js URL together with the reviewed source/output rollback; on the next ONLINE reload it unregisters only this worker and removes only ippatsu-shared-ledger-* static caches. It never removes localStorage/drafts or touches ledger-v2/other apps. Then reload online. Prefer a forward fix; cached offline clients cannot receive a new deployment until online.
