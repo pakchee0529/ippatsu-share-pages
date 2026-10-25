@@ -8,7 +8,7 @@ from html import escape,unescape
 import re,json
 
 CODES=['E10','E20','E30','E40','E50','E60','N10','N20','N30','N40','N50','N60','SB','TK','TR']
-ASSET_VERSION='20261025-offline1'
+ASSET_VERSION='20261025-v5n1'
 FIELDS=['branch_cut_under_10','branch_cut_10_20','branch_cut_20_30','branch_cut_30_40','branch_cut_40_50','branch_cut_over_50','root_cut_under_10','root_cut_10_20','root_cut_20_30','root_cut_30_40','root_cut_40_50','root_cut_over_50','brush_area_m2','bamboo_count','vine_locations']
 def validate_asset_generation(root):
     assets=root/'portal'/'shared-ledger'
@@ -38,6 +38,7 @@ def transform(root:Path,date:str,text:str)->str:
         for code,field in zip(CODES,FIELDS):
             value=re.search(r'<td[^>]*data-quantity-field="'+field+r'"[^>]*data-quantity-state="([^"]+)"[^>]*>([^<]+)</td>',card)
             assert value,cs+' '+field
+            if value[1] not in {'confirmed','unknown'}:raise ValueError(cs+' '+field+': invalid quantity state')
             base[code]=float(re.sub(r'(㎡|本|箇所)$','',value[2])) if value[1]=='confirmed' else None
             if base[code] is not None and base[code].is_integer():base[code]=int(base[code])
         entries.append({'cs':cs,'label':unescape(re.sub('<[^>]+>','',title[1])),'base':base})

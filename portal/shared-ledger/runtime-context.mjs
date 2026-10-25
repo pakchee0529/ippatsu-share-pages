@@ -1,4 +1,5 @@
-import {resolveContext,validateContext,writeContext} from './offline-context.mjs?v=20261025-offline1';
+import {publishedSource} from './published-basis.mjs?v=20261025-v5n1';
+import {resolveContext,validateContext,writeContext} from './offline-context.mjs?v=20261025-v5n1';
 // Existing normal ledger API only. Never imports a trial fixture or demo storage.
 export const API='https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/photo-ledger-v2';
 export const params=new URLSearchParams(location.search),date=params.get('date'),cs=params.get('management_no');
@@ -9,7 +10,7 @@ const page=await fetch('../../share/'+date+'/',{cache:'no-store'});if(!page.ok)t
 const html=await page.text(),match=html.match(/<script id="shared-ledger-config" type="application\/json">([\s\S]*?)<\/script>/);if(!match)throw Error('この日の正式な新版台帳接続はまだ生成されていません');
 const published=JSON.parse(match[1]),entry=published.cases.find(x=>x.cs===cs);if(!entry)throw Error('共有対象の案件ではありません');
 const data=await request({date,management_no:cs});
-return {data,entry};}});
+data.case=publishedSource(data.case,entry);return {data,entry};}});
 const entry=context.entry;
 export function rememberContext(data){validateContext(data,entry,date,cs);Object.assign(context,data,{offline:false});try{writeContext(localStorage,data,entry,date,cs);context.cacheError='';}catch(e){context.cacheError=e.message;}}
 const codes=Object.keys(entry.base),native=context.document;

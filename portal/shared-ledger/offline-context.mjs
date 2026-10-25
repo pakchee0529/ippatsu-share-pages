@@ -1,8 +1,9 @@
+import {compatiblePublishedBase} from './published-basis.mjs?v=20261025-v5n1';
 // Validated, per-case browser snapshot. No credentials or automatic submission.
 export const cacheKey=(date,cs)=>'ippatsu-shared-ledger-context/v1:'+date+':'+cs;
 export const pendingKey=(date,cs)=>cacheKey(date,cs)+':pending';
 export function validateContext(data,entry,date,cs){
- if(!entry||entry.cs!==cs||!data?.case||!/^[0-9a-f-]{36}$/i.test(data.case.case_id||'')||data.case.management_no.replace(/\D/g,'')!==cs||data.case.work_date!==date||Object.keys(entry.base||{}).length!==15||Object.entries(entry.base).some(([c,n])=>!Number.isSafeInteger(n)||n<0||data.case.planned?.[c]!==n))throw Error('現在の案件・予定日・数量基準を確認してください');
+ if(!entry||entry.cs!==cs||!data?.case||!/^[0-9a-f-]{36}$/i.test(data.case.case_id||'')||data.case.management_no.replace(/\D/g,'')!==cs||data.case.work_date!==date||!compatiblePublishedBase(data.case.planned,entry.base))throw Error('現在の案件・予定日・数量基準を確認してください');
  if(!Number.isSafeInteger(data.revision)||data.revision<0||data.document===null&&data.revision!==0||data.document!==null&&(!data.document||data.document.id!==data.case.case_id||data.document.case?.case_id!==data.case.case_id))throw Error('保存版と台帳の状態が一致しません。入力を保全して確認してください');return data;
 }
 export function readContext(storage,date,cs){try{const c=JSON.parse(storage.getItem(cacheKey(date,cs))||'null');if(c?.version!==1||c.date!==date||c.cs!==cs)return null;validateContext(c.data,c.entry,date,cs);return c;}catch{return null;}}

@@ -1,13 +1,13 @@
-import fixture from './runtime-context.mjs?v=20261025-offline1';
-import {CUTS,partition,validRef} from './ledger-model.mjs?v=20261025-offline1';
-import {base,quantity,dimensionView,parseDimensionRaw,blankDimensions} from './clearance-math.mjs?v=20261025-offline1';
+import fixture from './runtime-context.mjs?v=20261025-v5n1';
+import {CUTS,partition,validRef} from './ledger-model.mjs?v=20261025-v5n1';
+import {base,quantity,dimensionView,parseDimensionRaw,blankDimensions} from './clearance-math.mjs?v=20261025-v5n1';
 export {fixture,partition,base,quantity,dimensionView,parseDimensionRaw};
 export const KEY='ippatsu-native-ui-legacy:'+fixture.caseId;
 export const codes=[...CUTS,'SB','TK','TR'];
 export const label=c=>c==='SB'?'柴伐採（㎡）':c==='TK'?'竹（本）':c==='TR'?'つる（箇所）':(c[0]==='E'?'枝切':'根切')+' '+(c.slice(1)==='60'?'50cm以上':c.slice(1)+'cm未満');
 export const copy=x=>JSON.parse(JSON.stringify(x));
 export const sourceTotals=()=>Object.fromEntries(codes.map(c=>[c,CUTS.includes(c)?fixture.cuts[c].reduce((n,r)=>n+r.count,0):fixture.revised[c]]));
-export function seed(){return {schema:'clearance-readonly-replay/1',trialId:fixture.trialId,revision:0,records:codes.map(c=>({code:c,initial:fixture.original[c],mode:fixture.original[c]===fixture.revised[c]?'unchanged':'replace',revised:fixture.original[c]===fixture.revised[c]?null:fixture.revised[c],additional:CUTS.includes(c)?Math.max(0,partition(fixture.cuts[c],fixture.revised[c]).total-fixture.revised[c]):0})),clearanceM:null,inspection:'unconfirmed',workStatus:'unconfirmed',sizeRaw:'',bushDimensions:blankDimensions()};}
+export function seed(){return {schema:'clearance-readonly-replay/1',trialId:fixture.trialId,revision:0,records:codes.map(c=>({code:c,initial:fixture.original[c],mode:fixture.original[c]===fixture.revised[c]?'unchanged':'replace',revised:fixture.original[c]===fixture.revised[c]?null:fixture.revised[c],additional:CUTS.includes(c)?(fixture.revised[c]===null?null:Math.max(0,partition(fixture.cuts[c],fixture.revised[c]).total-fixture.revised[c])):0})),clearanceM:null,inspection:'unconfirmed',workStatus:'unconfirmed',sizeRaw:'',bushDimensions:blankDimensions()};}
 const fail=m=>{throw Error(m);};
 export function validate(d){if(d?.schema!=='clearance-readonly-replay/1'||d.trialId!==fixture.trialId||!Number.isSafeInteger(d.revision)||d.revision<0)fail('試験データの形式が違います');if(d.records?.length!==15||d.records.some((r,i)=>r.code!==codes[i]))fail('15数量区分が一致しません');for(const r of d.records){if(!['unchanged','replace'].includes(r.mode))fail('変更区分が不正です');for(const k of ['initial','revised','additional']){const v=r[k];if(v!==null&&(typeof v!=='number'||!Number.isFinite(v)||v<0||v>1e6||r.code!=='SB'&&!Number.isInteger(v)))fail('数量は0以上の値を入力してください');}if(r.initial!==fixture.original[r.code])fail('元の当初数量は変更できません');if(r.mode==='unchanged'&&r.revised!==null)fail('変更なしの変更後数量は空欄です');}if(d.clearanceM!==null&&(!Number.isFinite(d.clearanceM)||d.clearanceM<0||d.clearanceM>1000))fail('離隔値を確認してください');if(!['unconfirmed','clear','not_done'].includes(d.inspection)||!['unconfirmed','unfinished','completed'].includes(d.workStatus))fail('状態が不正です');if(typeof d.sizeRaw!=='string'||d.sizeRaw.length>100)fail('サイズの入力が長すぎます');const b=d.bushDimensions,p=parseDimensionRaw(b.raw);if(b.raw.length>100||b.first!==p.first||b.second!==p.second||!['unconfirmed','m','cm'].includes(b.lengthUnit)||!['unconfirmed','width_height','height_width'].includes(b.axisOrder))fail('寸法を確認してください');return d;}
 export function load(storage){const raw=storage.getItem(KEY);return raw===null?seed():validate(JSON.parse(raw));}
