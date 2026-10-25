@@ -8437,7 +8437,7 @@ def write_archive_detail_pages(
 
 def render_ojt_guide_entry() -> str:
     """Published static OJT guide; questionnaire links remain separate."""
-    return '  <section class="card ojt-intake" aria-labelledby="ojt-guide-heading">\n    <div class="ojt-intake-copy">\n      <h2 class="card-title" id="ojt-guide-heading">OJTガイド</h2>\n      <p class="ojt-intake-note">仕事の流れと道具を確認できます。</p>\n    </div>\n    <a class="btn" href="./ojt/" aria-label="OJTガイドを見る">OJTを見る</a>\n  </section>'
+    return ""  # Owner paused only the TOP guide entry; guide files remain.
 
 
 def render_ojt_intake_entry() -> str:
