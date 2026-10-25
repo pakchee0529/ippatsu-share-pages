@@ -1647,6 +1647,7 @@ def render_portal_subpage_header(
         (base + "entrustment/", "付託待ち", "entrustment"),
         (base + "cases/", "案件管理", "cases"),
         (base + "archive/", "アーカイブ", "archive"),
+        (base + "ojt/", "OJTガイドライン", "ojt"),
     ]
     link_lines: list[str] = []
     for href, label, page_id in items:
@@ -5866,6 +5867,7 @@ def render_cases_detail_header(page_title: str) -> str:
         ("../../entrustment/", "付託待ち", "entrustment"),
         ("../", "案件管理", "cases"),
         ("../../archive/", "アーカイブ", "archive"),
+        ("../../ojt/", "OJTガイドライン", "ojt"),
     ]
     link_lines: list[str] = []
     for href, label, page_id in items:
@@ -8702,6 +8704,7 @@ a.portal-menu-item:focus-visible {{
           <a class="portal-menu-item" role="menuitem" href="./entrustment/">付託待ち</a>
           <a class="portal-menu-item" role="menuitem" href="./cases/">案件管理</a>
           <a class="portal-menu-item" role="menuitem" href="./archive/">アーカイブ</a>
+          <a class="portal-menu-item" role="menuitem" href="./ojt/">OJTガイドライン</a>
         </nav>
       </div>
     </div>
