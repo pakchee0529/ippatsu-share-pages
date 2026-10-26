@@ -1,0 +1,3 @@
+# Confirmed CS conditions for four cases
+
+Updated only 261029 and 261030 shared pages after guarded DB save/readback. North Uchi slope corrected; three Kabashiba/Tohkaichi conditions reflect CS, including both carry-out and collection where checked. B-vehicle values unchanged. All60 quantities, saved ledgers, dates, lifecycle and maps retained. Regenerated using adopted ordinary generator; incidental TOP diff excluded. Print-test shared assets and OJT unchanged. Verified page bytes differ only in condition summaries and processing tags. RPC durable-key repair is tracked separately in database migration; no secrets/raw CS included here.
