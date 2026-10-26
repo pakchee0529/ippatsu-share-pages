@@ -1,0 +1,3 @@
+# OJT reference photo follow-up
+
+Updated only the tree identification page and four derived public-source photos: two Trachycarpus leaf views and Zanthoxylum overall/trunk crop. Source file pages and CC BY3/CC BY-SA3/CC BY-SA4 author/license/change notices verified. Derived images have no EXIF. Company-photo/public business-data additions0, deletions0. Reference photo pairs reach17/17 while species/user-name uncertainty and guide qualification remain. Existing OJT index/portal return and hamburger route retained; bundle's older index excluded. Other portal dates, ledger, printing-test, API/auth/SW unchanged. Bundle SHA cddf72a39c6ebb92219efaf8974a7a6c017565c6dac056907e3129cc2ae01693.
