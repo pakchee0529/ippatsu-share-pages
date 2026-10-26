@@ -9690,6 +9690,9 @@ def _build_portal_top_entries(
         html_text = path.read_text(encoding="utf-8", errors="replace")
         date_line = card_heading(folder, path)
         summary = summarize_share_html(html_text, folder)
+        # Moving the last case away leaves a historical URL, not a current date.
+        if summary.item_count == 0:
+            continue
         heading = build_portal_heading(date_line, summary)
         entries.append((folder, heading))
     return entries
