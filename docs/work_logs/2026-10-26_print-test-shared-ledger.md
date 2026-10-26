@@ -1,0 +1,7 @@
+# 仮現場3件の共有保存
+
+本人の具体承認により既存photo-ledger-v2 APIのstandalone文書契約を使用。3件だけ別UUID、record.case_id=NULL、90007211～13、作業日260721、印刷テスト表示。元数量は本人指定値、柴は確認済み15㎡。写真番号は生成しない。cases/予定/業務数量/完了は変更しない。新DDL/API/認証/GRANTなし。初期3文書revision1をexpected_revision0で保存し完全読戻し。既存7/21はcases/itemsとも0、3ID未使用を直前確認。
+
+通常入力UIとnative adapterをそのまま再利用し、試験ページ限定runtimeがID固定のGET/POSTを既存APIへ渡す。UI仮case_idを保存wireから外し、既存standalone契約で実案件への誤紐付けを防ぐ。CAS/結果不明停止/読戻し/オフライン下書きは通常入力処理を維持。会社GUIの既存date読込みに載る。端末内だけの旧試験保存は消さず、別スコープの共有ページへTOP導線を切替。
+
+退避は作業証拠のseed-before/command/journal/after。復旧は限定公開差分を戻し、必要時3テストIDのみ期待revision付きで初期文書へ戻す。履歴purgeや物理削除なし。実案件の復旧は不要。新しい恒久参照ルールの確定を含めない。

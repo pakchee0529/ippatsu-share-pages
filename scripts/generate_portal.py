@@ -8705,7 +8705,7 @@ a.portal-menu-item:focus-visible {{
           <a class="portal-menu-item" role="menuitem" href="./cases/">案件管理</a>
           <a class="portal-menu-item" role="menuitem" href="./archive/">アーカイブ</a>
           <a class="portal-menu-item" role="menuitem" href="./ojt/">OJTガイドライン</a>
-          <a class="portal-menu-item" role="menuitem" href="./tests/print-260721/">一括印刷テスト（3現場）</a>
+          <a class="portal-menu-item" role="menuitem" href="./tests/print-260721/shared/">一括印刷テスト（3現場）</a>
         </nav>
       </div>
     </div>
@@ -8725,7 +8725,7 @@ a.portal-menu-item:focus-visible {{
   <section class="card print-test-entry" aria-labelledby="print-test-heading">
     <h2 id="print-test-heading" class="card-title">一括印刷テスト用・仮現場3件</h2>
     <p>別PCでの印刷操作確認用です。通常の予定・実案件ではありません。</p>
-    <a class="btn" href="./tests/print-260721/">印刷テストを開く</a>
+    <a class="btn" href="./tests/print-260721/shared/">印刷テストを開く</a>
   </section>
 
   <section class="today-schedule" aria-labelledby="today-schedule-heading">
