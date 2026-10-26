@@ -1,0 +1,5 @@
+# 印刷テストを通常入力UIへ接続
+
+ユーザー訂正によりJSON取得だけの入口を修正。通常portal/shared-ledger/input.htmlの同じフォームと、同じinput.mjs/input-model/native-adapterを再利用。import mapで試験ページだけの保存transportへ接続。通常ページ/保存API/認証は不変更。Web Locksと期待revisionで端末内CAS、保存読戻し、旧保存保持、未保存下書きを維持。試験専用ID・localStorage keyのみ。端末内保存と別端末自動同期なしを明示。保存版のnative JSONを既存印刷GUIのJSON取込へ渡す。通常の日別APIへテスト行を作らず、実案件や過去7/21に混ぜない。
+
+専用SWはテストpathのみ、通常UIの現在版資産を試験専用cacheに保持。API/ユーザー入力をcacheへ入れず、他cacheを削除しない。復旧はこの限定コミットの取消、端末試験保存は自動削除しない。
