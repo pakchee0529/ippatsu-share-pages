@@ -1,0 +1,3 @@
+# Complete October 29 three-case share
+
+Added the two confirmed 2026 receptions using ordinary registration, approved initial phase adoption, B6326 initial quantity receipt and schedule planner with CAS. Shared page has Namioka, Momodani and existing Kita Uchi in PDF order. All45 displayed quantities match database proof. Namioka's explicit suspended-cut/crane13t note retained, CS conditions reflect verified sources, B-vehicle remains unconfirmed rather than inferred. Maps/GPS endpoints verified. TOP changes only October29 title/count. Other days, OJT and shared printing test assets unchanged. No raw PDFs or private reception metadata published.
