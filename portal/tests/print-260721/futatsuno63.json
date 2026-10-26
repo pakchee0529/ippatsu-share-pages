@@ -1,0 +1,41 @@
+{
+  "schema": "ippatsu-photo-ledger/v2",
+  "id": "ee23f4f9-89d6-528e-8a78-a79a44547817",
+  "case": {
+    "management_no": "90007213",
+    "span_label": "二津野63～63G1",
+    "work_date": "260721",
+    "design_no": "0",
+    "planned": {
+      "E10": 0,
+      "E20": 0,
+      "E30": 0,
+      "E40": 0,
+      "E50": 0,
+      "E60": 0,
+      "N10": 11,
+      "N20": 1,
+      "N30": 0,
+      "N40": 0,
+      "N50": 0,
+      "N60": 0,
+      "TK": 0,
+      "TR": 0,
+      "SB": 15
+    }
+  },
+  "selected": [],
+  "pairs": {},
+  "cuts": {},
+  "transport": [],
+  "special": [],
+  "adjustments": [],
+  "test_context": {
+    "test_only": true,
+    "date_interpretation": "2026-07-21 printing test; not construction history",
+    "synthetic_management_no": true,
+    "synthetic_design_no": true,
+    "source": "user supplied three-site text, no photographs or numbers supplied",
+    "note": "原文「芝 3*5」。本人確認により柴3×5m＝15㎡として採用。"
+  }
+}

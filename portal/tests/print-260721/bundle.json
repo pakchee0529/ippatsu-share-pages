@@ -1,0 +1,164 @@
+{
+  "test_only": true,
+  "schema": "ippatsu-print-test-bundle/v1",
+  "date": "260721",
+  "items": [
+    {
+      "slug": "hiratani",
+      "label": "平谷94～95",
+      "quantities": {
+        "E60": 2
+      },
+      "document": {
+        "schema": "ippatsu-photo-ledger/v2",
+        "id": "5c75e6f3-d051-5f80-bbb7-725be3576d22",
+        "case": {
+          "management_no": "90007211",
+          "span_label": "平谷94～95",
+          "work_date": "260721",
+          "design_no": "0",
+          "planned": {
+            "E10": 0,
+            "E20": 0,
+            "E30": 0,
+            "E40": 0,
+            "E50": 0,
+            "E60": 2,
+            "N10": 0,
+            "N20": 0,
+            "N30": 0,
+            "N40": 0,
+            "N50": 0,
+            "N60": 0,
+            "TK": 0,
+            "TR": 0,
+            "SB": 0
+          }
+        },
+        "selected": [],
+        "pairs": {},
+        "cuts": {},
+        "transport": [],
+        "special": [],
+        "adjustments": [],
+        "test_context": {
+          "test_only": true,
+          "date_interpretation": "2026-07-21 printing test; not construction history",
+          "synthetic_management_no": true,
+          "synthetic_design_no": true,
+          "source": "user supplied three-site text, no photographs or numbers supplied",
+          "note": ""
+        }
+      },
+      "file": "hiratani.json",
+      "note": ""
+    },
+    {
+      "slug": "futatsuno26",
+      "label": "二津野26～27",
+      "quantities": {
+        "E20": 3,
+        "E30": 8,
+        "E40": 2,
+        "E50": 3,
+        "E60": 2,
+        "N30": 1
+      },
+      "document": {
+        "schema": "ippatsu-photo-ledger/v2",
+        "id": "222daba6-e11b-5173-a8a7-af8472ad8dad",
+        "case": {
+          "management_no": "90007212",
+          "span_label": "二津野26～27",
+          "work_date": "260721",
+          "design_no": "0",
+          "planned": {
+            "E10": 0,
+            "E20": 3,
+            "E30": 8,
+            "E40": 2,
+            "E50": 3,
+            "E60": 2,
+            "N10": 0,
+            "N20": 0,
+            "N30": 1,
+            "N40": 0,
+            "N50": 0,
+            "N60": 0,
+            "TK": 0,
+            "TR": 0,
+            "SB": 0
+          }
+        },
+        "selected": [],
+        "pairs": {},
+        "cuts": {},
+        "transport": [],
+        "special": [],
+        "adjustments": [],
+        "test_context": {
+          "test_only": true,
+          "date_interpretation": "2026-07-21 printing test; not construction history",
+          "synthetic_management_no": true,
+          "synthetic_design_no": true,
+          "source": "user supplied three-site text, no photographs or numbers supplied",
+          "note": ""
+        }
+      },
+      "file": "futatsuno26.json",
+      "note": ""
+    },
+    {
+      "slug": "futatsuno63",
+      "label": "二津野63～63G1",
+      "quantities": {
+        "SB": 15,
+        "N10": 11,
+        "N20": 1
+      },
+      "document": {
+        "schema": "ippatsu-photo-ledger/v2",
+        "id": "ee23f4f9-89d6-528e-8a78-a79a44547817",
+        "case": {
+          "management_no": "90007213",
+          "span_label": "二津野63～63G1",
+          "work_date": "260721",
+          "design_no": "0",
+          "planned": {
+            "E10": 0,
+            "E20": 0,
+            "E30": 0,
+            "E40": 0,
+            "E50": 0,
+            "E60": 0,
+            "N10": 11,
+            "N20": 1,
+            "N30": 0,
+            "N40": 0,
+            "N50": 0,
+            "N60": 0,
+            "TK": 0,
+            "TR": 0,
+            "SB": 15
+          }
+        },
+        "selected": [],
+        "pairs": {},
+        "cuts": {},
+        "transport": [],
+        "special": [],
+        "adjustments": [],
+        "test_context": {
+          "test_only": true,
+          "date_interpretation": "2026-07-21 printing test; not construction history",
+          "synthetic_management_no": true,
+          "synthetic_design_no": true,
+          "source": "user supplied three-site text, no photographs or numbers supplied",
+          "note": "原文「芝 3*5」。本人確認により柴3×5m＝15㎡として採用。"
+        }
+      },
+      "file": "futatsuno63.json",
+      "note": "原文「芝 3*5」。本人確認により柴3×5m＝15㎡として採用。"
+    }
+  ]
+}

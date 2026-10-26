@@ -1,0 +1,41 @@
+{
+  "schema": "ippatsu-photo-ledger/v2",
+  "id": "222daba6-e11b-5173-a8a7-af8472ad8dad",
+  "case": {
+    "management_no": "90007212",
+    "span_label": "二津野26～27",
+    "work_date": "260721",
+    "design_no": "0",
+    "planned": {
+      "E10": 0,
+      "E20": 3,
+      "E30": 8,
+      "E40": 2,
+      "E50": 3,
+      "E60": 2,
+      "N10": 0,
+      "N20": 0,
+      "N30": 1,
+      "N40": 0,
+      "N50": 0,
+      "N60": 0,
+      "TK": 0,
+      "TR": 0,
+      "SB": 0
+    }
+  },
+  "selected": [],
+  "pairs": {},
+  "cuts": {},
+  "transport": [],
+  "special": [],
+  "adjustments": [],
+  "test_context": {
+    "test_only": true,
+    "date_interpretation": "2026-07-21 printing test; not construction history",
+    "synthetic_management_no": true,
+    "synthetic_design_no": true,
+    "source": "user supplied three-site text, no photographs or numbers supplied",
+    "note": ""
+  }
+}
