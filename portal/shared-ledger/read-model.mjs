@@ -1,9 +1,9 @@
-import {compatiblePublishedBase} from './published-basis.mjs?v=20261026-carry1';
-import {totalText,publicHistoryText} from './quantity-format.mjs?v=20261026-carry1';
-import {sectionActive} from './special-summary.mjs?v=20261026-carry1';
-import {projectUI} from './native-adapter.mjs?v=20261026-carry1';
+import {compatiblePublishedBase} from './published-basis.mjs?v=20261027-species1';
+import {totalText,publicHistoryText} from './quantity-format.mjs?v=20261027-species1';
+import {sectionActive} from './special-summary.mjs?v=20261027-species1';
+import {projectUI} from './native-adapter.mjs?v=20261027-species1';
 // Saved ledger projection only. No storage access or production writes.
-import {config} from './config.mjs?v=20261026-carry1';
+import {config} from './config.mjs?v=20261027-species1';
 export const CODES=['E10','E20','E30','E40','E50','E60','N10','N20','N30','N40','N50','N60','SB','TK','TR'];
 export const FIELDS=['branch_cut_under_10','branch_cut_10_20','branch_cut_20_30','branch_cut_30_40','branch_cut_40_50','branch_cut_over_50','root_cut_under_10','root_cut_10_20','root_cut_20_30','root_cut_30_40','root_cut_40_50','root_cut_over_50','brush_area_m2','bamboo_count','vine_locations'];
 export const unit=c=>c==='SB'?'㎡':c==='TR'?'箇所':'本';

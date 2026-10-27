@@ -1,7 +1,7 @@
-import {sectionActive,normalizedSelection} from './special-summary.mjs?v=20261026-carry1';
-import {totalText,publicQuantityText} from './quantity-format.mjs?v=20261026-carry1';
+import {sectionActive,normalizedSelection} from './special-summary.mjs?v=20261027-species1';
+import {totalText,publicQuantityText} from './quantity-format.mjs?v=20261027-species1';
 export {totalText};
-const names={広葉樹:'広',広:'広',杉:'杉',桧:'桧'},rank={広:0,杉:1,桧:2},kinds=[['E','枝切り'],['N','根切り'],['TK','竹'],['TR','つる'],['SB','柴']],bands={10:'10cm未満',20:'10～20cm',30:'20～30cm',40:'30～40cm',50:'40～50cm',60:'50cm以上'};
+const names={広葉樹:'広',広:'広',杉:'杉',桧:'桧',松:'松',槙:'槙',梅:'梅',柿:'柿'},rank={広:0,杉:1,桧:2,松:3,槙:4,梅:5,柿:6},kinds=[['E','枝切り'],['N','根切り'],['TK','竹'],['TR','つる'],['SB','柴']],bands={10:'10cm未満',20:'10～20cm',30:'20～30cm',40:'30～40cm',50:'40～50cm',60:'50cm以上'};
 const size=n=>n==='70+'?Infinity:Number(n),unit=c=>c==='SB'?'㎡':c==='TR'?'箇所':'本',show=n=>n===null||n===undefined?'—':String(n);
 function order(rs){return [...rs].sort((a,b)=>{const prefix=c=>c[0]==='E'?'E':c[0]==='N'?'N':c;return kinds.findIndex(([c])=>c===prefix(a.code))-kinds.findIndex(([c])=>c===prefix(b.code))||Number(a.code.slice(1))-Number(b.code.slice(1));});}
 function additionalDetails(p,r){const group=new Map();for(const x of ledgerUI(p.document)?.details?.[r.code]||[]){const species=names[x.species];if(x.kind!=='added'||!species||!(x.diameter==='70+'||Number.isFinite(x.diameter)&&x.diameter>0)||!Number.isSafeInteger(x.count)||x.count<=0)continue;const key=species+'|'+x.diameter,old=group.get(key);group.set(key,{kind:'tree',shape:r.code[0]==='E'?'square':'circle',species,diameter:x.diameter,count:(old?.count||0)+x.count});}return [...group.values()].sort((a,b)=>rank[a.species]-rank[b.species]||size(a.diameter)-size(b.diameter));}

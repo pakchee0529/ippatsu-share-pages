@@ -1,8 +1,8 @@
-import {equipmentSpec,validMeasurement} from './special-summary.mjs?v=20261026-carry1';
+import {equipmentSpec,validMeasurement} from './special-summary.mjs?v=20261027-species1';
 // Pure ledger-v2 input model; the normal runtime owns persistence.
-import fixture from './runtime-context.mjs?v=20261026-carry1';
-import {CUTS,PAIRS,partition,parsePhotoNumbers,validDate,validRef,applyPhotoAdjustments} from './ledger-model.mjs?v=20261026-carry1';
-import {KEY as LEGACY_KEY,load as loadLegacy,seed as legacySeed,historyText,cutSummary,otherSummary,projections} from './legacy-projection.mjs?v=20261026-carry1';
+import fixture from './runtime-context.mjs?v=20261027-species1';
+import {CUTS,PAIRS,partition,parsePhotoNumbers,validDate,validRef,applyPhotoAdjustments} from './ledger-model.mjs?v=20261027-species1';
+import {KEY as LEGACY_KEY,load as loadLegacy,seed as legacySeed,historyText,cutSummary,otherSummary,projections} from './legacy-projection.mjs?v=20261027-species1';
 export {fixture,CUTS,PAIRS,parsePhotoNumbers,validDate,validRef};
 export const KEY='ippatsu-native-ledger-ui-v3:'+fixture.caseId;
 export const DRAFT_KEY=KEY+':draft',BACKUP_KEY=KEY+':previous';
@@ -10,7 +10,7 @@ export const copy=x=>JSON.parse(JSON.stringify(x));
 export const SPECIAL=[['US','運搬'],['DF','倒木実費'],['SL','傾斜木実費'],['HL','吊り切り実費'],['BV','高所作業車'],['RT','ラフター'],['FR','自由記述']];
 export const CODES=['BA',...CUTS,'TK','TR','SB',...SPECIAL.map(x=>x[0])];
 export const label=c=>({BA:'伐採前後',TK:'竹伐採前後',TR:'つる伐採前後',SB:'柴伐採前後',...Object.fromEntries(SPECIAL)})[c]||`${c[0]==='E'?'枝切り':'根切り'} ${c.slice(1)==='60'?'50cm以上':c.slice(1)+'cm未満'}`;
-export const SPECIES=['広葉樹','杉','桧'];
+export const SPECIES=['広葉樹','杉','桧','松','槙','梅','柿'];
 export const diameterOptions=c=>{const n=Number(c.slice(1));return n===60?[...Array.from({length:11},(_,i)=>50+i*2),'70+']:Array.from({length:n===10?4:5},(_,i)=>(n===10?2:n-10)+i*2);};
 export const allDiameters=()=>[...Array.from({length:35},(_,i)=>2+i*2),'70+'];
 export function uid(prefix='row'){return prefix+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9);}
