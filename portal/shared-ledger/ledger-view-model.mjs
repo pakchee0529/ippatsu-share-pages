@@ -1,5 +1,5 @@
-import {sectionActive,normalizedSelection} from './special-summary.mjs?v=20261027-species1';
-import {totalText,publicQuantityText} from './quantity-format.mjs?v=20261027-species1';
+import {sectionActive,normalizedSelection} from './special-summary.mjs?v=20261027-design1';
+import {totalText,publicQuantityText} from './quantity-format.mjs?v=20261027-design1';
 export {totalText};
 const names={広葉樹:'広',広:'広',杉:'杉',桧:'桧',松:'松',槙:'槙',梅:'梅',柿:'柿'},rank={広:0,杉:1,桧:2,松:3,槙:4,梅:5,柿:6},kinds=[['E','枝切り'],['N','根切り'],['TK','竹'],['TR','つる'],['SB','柴']],bands={10:'10cm未満',20:'10～20cm',30:'20～30cm',40:'30～40cm',50:'40～50cm',60:'50cm以上'};
 const size=n=>n==='70+'?Infinity:Number(n),unit=c=>c==='SB'?'㎡':c==='TR'?'箇所':'本',show=n=>n===null||n===undefined?'—':String(n);
@@ -14,3 +14,14 @@ export function ledgerUI(d){if(d?.ledger_ui_v3){const ui=d.ledger_ui_v3;return A
 export function normalizeProjection(p){if(!p.document)return p;const rs=p.records.map(r=>({...r}));for(const [code,rows] of Object.entries(ledgerUI(p.document).details||{}))for(const row of rows)if(row.kind==='changed'&&(row.oldCount===null||row.count===null)){for(const key of [code,row.oldCode]){const r=rs.find(x=>x.code===key);if(r){r.mode='replace';r.revised=null;}}}return {...p,records:rs};}
 export function workItems(p){if(!p.document)return '';const ui=ledgerUI(p.document),out=[];for(const [c,name,field,unit] of [['DF','倒木実費'],['SL','傾斜木実費'],['HL','吊り切り実費'],['BV','高所作業車','heightM','m'],['RT','ラフター','capacityT','t']])if(ui.selected.includes(c)){const rows=ui.special[c]||[];if(rows.length)out.push(name+(field?' '+rows.map(r=>show(r[field])+unit).join('、'):''));}return out.join(' ／ ');}
 export {order,label,groups,show,unit};
+
+// A saved per-span measurement in metres, independent of photo-section visibility.
+export function clearanceText(document){
+ const ui=document?.ledger_ui_v3;
+ const n=ui&&Object.hasOwn(ui,'clearanceM')?ui.clearanceM:document?.clearanceM;
+ if(n===undefined||n===null)return '未入力';
+ if(typeof n!=='number'||!Number.isFinite(n)||n<0||n>1000||Math.abs(n*10-Math.round(n*10))>1e-8)return '要確認';
+ return String(n)+' m';
+}
+
+export function designText(document){const ui=document?.ledger_ui_v3;const n=ui&&Object.hasOwn(ui,'designNo')?ui.designNo:document?.case?.design_no;return typeof n==='string'&&n!==''?n:'未入力';}

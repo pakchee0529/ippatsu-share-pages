@@ -1,8 +1,8 @@
 const assetVersion=new URL(import.meta.url).searchParams.get('v')||'';
-import {config} from './config.mjs?v=20261027-species1';
-import {loadDay,applyCard,CODES} from './read-model.mjs?v=20261027-species1';
-import {normalizeProjection} from './ledger-view-model.mjs?v=20261027-species1';
-import {renderProjection} from './ledger-view-render.mjs?v=20261027-species1';
+import {config} from './config.mjs?v=20261027-design1';
+import {loadDay,applyCard,CODES} from './read-model.mjs?v=20261027-design1';
+import {normalizeProjection} from './ledger-view-model.mjs?v=20261027-design1';
+import {renderProjection} from './ledger-view-render.mjs?v=20261027-design1';
 let refreshNumber=0,published;
 async function snapshot(){try{return (await loadDay()).map(normalizeProjection);}catch(error){return config.cases.map(entry=>({entry,error:error.message,records:CODES.map(code=>({code,initial:entry.base[code],mode:'unchanged',revised:null,additional:0})),message:error.message+'。付託基準を表示',revision:null,document:null,photos:{states:{},branchCount:0}}));}}
 async function publishedSource(){if(!published){const response=await fetch('../index.html',{cache:'no-store'});if(!response.ok)throw Error('共有ページの現場条件を読み取れません');published=new DOMParser().parseFromString(await response.text(),'text/html');}return published;}
