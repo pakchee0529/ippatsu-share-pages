@@ -1,10 +1,10 @@
-import {publicQuantityText,publicQuantityTotal} from './quantity-format.mjs?v=20261027-design1';
+import {publicQuantityText,publicQuantityTotal} from './quantity-format.mjs?v=20261028-design-normalize1';
 const assetVersion=new URL(import.meta.url).searchParams.get('v')||'';
-import {order,label,groups,show,unit,totalText,ledgerUI,workItems,clearanceText,designText} from './ledger-view-model.mjs?v=20261027-design1';
-import {historyText,total} from './read-model.mjs?v=20261027-design1';
-import {appendSummary} from './daily-render.mjs?v=20261027-design1';
-import {photoGridHTML,photoGridCSS} from './photo-grid.mjs?v=20261027-design1';
-import {printedPhotoGrid} from './print-order.mjs?v=20261027-design1';
+import {order,label,groups,show,unit,totalText,ledgerUI,workItems,clearanceText,designText} from './ledger-view-model.mjs?v=20261028-design-normalize1';
+import {historyText,total} from './read-model.mjs?v=20261028-design-normalize1';
+import {appendSummary} from './daily-render.mjs?v=20261028-design-normalize1';
+import {photoGridHTML,photoGridCSS} from './photo-grid.mjs?v=20261028-design-normalize1';
+import {printedPhotoGrid} from './print-order.mjs?v=20261028-design-normalize1';
 const el=(tag,text,cls)=>{const x=document.createElement(tag);if(text!==undefined)x.textContent=text;if(cls)x.className=cls;return x;};
 const kinds=[['E','枝切り'],['N','根切り'],['TK','竹'],['TR','つる'],['SB','柴']];
 function quantityTables(parent,p){parent.append(el('h3','伐採本数'));const table=el('table',undefined,'counts'),head=el('tr');for(const x of ['区分','10未満','10～20','20～30','30～40','40～50','50以上','計'])head.append(el('th',x));table.append(head);for(const [prefix,name] of kinds.slice(0,2)){const tr=el('tr'),rows=p.records.filter(r=>r.code[0]===prefix);tr.append(el('th',name));for(const r of rows){const cell=el('td'),parts=historyText(r).split('＋');for(const [i,text] of parts.entries())cell.append(el('span',(i?'＋':'')+text,'number-part'));tr.append(cell);}tr.append(el('td',totalText(rows),'total'));table.append(tr);}parent.append(table);const other=el('table',undefined,'other-counts'),h=el('tr');for(const x of ['区分','元','反映後','計'])h.append(el('th',x));other.append(h);for(const [code,name] of kinds.slice(2)){const r=p.records.find(x=>x.code===code),tr=el('tr'),u=unit(code);tr.append(el('th',name),el('td',publicQuantityText(r.initial)+u),el('td',publicQuantityText(publicQuantityTotal(r))+u),el('td',totalText([r])+u));other.append(tr);}parent.append(other);}

@@ -1,5 +1,6 @@
-import {sectionActive,normalizedSelection} from './special-summary.mjs?v=20261027-design1';
-import {totalText,publicQuantityText} from './quantity-format.mjs?v=20261027-design1';
+import {documentDesignNumber} from './design-number.mjs?v=20261028-design-normalize1';
+import {sectionActive,normalizedSelection} from './special-summary.mjs?v=20261028-design-normalize1';
+import {totalText,publicQuantityText} from './quantity-format.mjs?v=20261028-design-normalize1';
 export {totalText};
 const names={広葉樹:'広',広:'広',杉:'杉',桧:'桧',松:'松',槙:'槙',梅:'梅',柿:'柿'},rank={広:0,杉:1,桧:2,松:3,槙:4,梅:5,柿:6},kinds=[['E','枝切り'],['N','根切り'],['TK','竹'],['TR','つる'],['SB','柴']],bands={10:'10cm未満',20:'10～20cm',30:'20～30cm',40:'30～40cm',50:'40～50cm',60:'50cm以上'};
 const size=n=>n==='70+'?Infinity:Number(n),unit=c=>c==='SB'?'㎡':c==='TR'?'箇所':'本',show=n=>n===null||n===undefined?'—':String(n);
@@ -24,4 +25,4 @@ export function clearanceText(document){
  return String(n)+' m';
 }
 
-export function designText(document){const ui=document?.ledger_ui_v3;const n=ui&&Object.hasOwn(ui,'designNo')?ui.designNo:document?.case?.design_no;return typeof n==='string'&&n!==''?n:'未入力';}
+export function designText(document){return documentDesignNumber(document)??'未入力';}

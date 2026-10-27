@@ -1,4 +1,5 @@
-import {normalizedSelection} from './special-summary.mjs?v=20261027-design1';
+import {normalizeDesignNumber,normalizeDocumentDesign,setDocumentDesign} from './design-number.mjs?v=20261028-design-normalize1';
+import {normalizedSelection} from './special-summary.mjs?v=20261028-design-normalize1';
 // Pure translation: the normal v2 envelope, unknown fields and original quantities survive.
 export const UI_SCHEMA='ippatsu-photo-ledger-ui/3';
 export const codes=['E10','E20','E30','E40','E50','E60','N10','N20','N30','N40','N50','N60','SB','TK','TR'];
@@ -13,9 +14,10 @@ export function projectUI(ui,base,caseId){
  if(area!==null&&area>1000000)throw Error('柴面積が保存範囲外です');if(ui.clearanceM!==null&&(!Number.isFinite(ui.clearanceM)||ui.clearanceM<0||ui.clearanceM>1000||Math.abs(ui.clearanceM*10-Math.round(ui.clearanceM*10))>1e-8))throw Error('保存済み離隔を確認してください');return {records:rs,clearanceM:ui.clearanceM,dimensions:confirmed,missingDimensions:missing};
 }
 export function fromNative(native,source,revision,seed){
+ if(native)native=normalizeDocumentDesign(native);
  const base=source.planned;if(native&&(native.schema!=='ippatsu-photo-ledger/v2'||native.id!==source.case_id||native.case?.case_id!==source.case_id||Object.entries(base).some(([c,n])=>native.case.original_planned?.[c]!==n)))throw Error('保存済み台帳の案件・付託基準が一致しません。元データは保持しています');
- if(native?.ledger_ui_v3){const ui=clone(native.ledger_ui_v3);if(!Object.hasOwn(ui,'designNo'))ui.designNo=native.case?.design_no??'';if(!Object.hasOwn(ui,'clearanceM'))ui.clearanceM=native.clearanceM??null;if(!Array.isArray(ui.selected)){ui.selectionCompatibility={original:clone(ui.selected??null)};ui.selected=normalizedSelection(native,['BA',...codes,'US','DF','SL','HL','BV','RT','FR']);if(ui.selectionCompatibility.original!==false)ui.migrationWarnings=[...(ui.migrationWarnings||[]),'旧形式の選択状態を保存済み入力から復元しました。内容を確認してください'];}projectUI(ui,base,source.case_id);ui.revision=revision;return ui;}
- const ui=seed();ui.schema=UI_SCHEMA;ui.trialId=source.case_id;ui.revision=revision;ui.designNo=source.design_no??'';
+ if(native?.ledger_ui_v3){const ui=clone(native.ledger_ui_v3);if(Object.hasOwn(ui,'designNo')&&ui.designNo!==(native.case?.design_no??''))throw Error('設計番号の保存値と入力欄が一致しません。会社の径間名・設計番号の修正で確認してください。');if(!Object.hasOwn(ui,'designNo'))ui.designNo=native.case?.design_no??'';if(!Object.hasOwn(ui,'clearanceM'))ui.clearanceM=native.clearanceM??null;if(!Array.isArray(ui.selected)){ui.selectionCompatibility={original:clone(ui.selected??null)};ui.selected=normalizedSelection(native,['BA',...codes,'US','DF','SL','HL','BV','RT','FR']);if(ui.selectionCompatibility.original!==false)ui.migrationWarnings=[...(ui.migrationWarnings||[]),'旧形式の選択状態を保存済み入力から復元しました。内容を確認してください'];}projectUI(ui,base,source.case_id);ui.revision=revision;return ui;}
+ const ui=seed();ui.schema=UI_SCHEMA;ui.trialId=source.case_id;ui.revision=revision;ui.designNo=normalizeDesignNumber(source.design_no)??'';
  if(!native)return ui;
  ui.selected=normalizedSelection(native,['BA',...codes,'US','DF','SL','HL','BV','RT','FR']);if(!Array.isArray(native.selected)){ui.selectionCompatibility={original:clone(native.selected??null)};if(native.selected!==false)ui.migrationWarnings.push('旧形式の選択状態を保存済み入力から復元しました。内容を確認してください');}
  for(const r of ui.records){const n=native.case.planned?.[r.code];r.mode=n===base[r.code]?'unchanged':'replace';r.revised=r.mode==='replace'?n:null;const explicit=native.share_quantity_adjustments?.additional;if(Object.hasOwn(explicit||{},r.code))r.additional=explicit[r.code];else if(/^[EN]/.test(r.code))r.additional=Math.max(0,(native.cuts?.[r.code]||[]).reduce((n,p)=>n+p.count,0)-(n??0));}
@@ -27,9 +29,10 @@ export function fromNative(native,source,revision,seed){
  ui.selected=[...new Set(ui.selected)];return ui;
 }
 export function toNative(ui,previous,source){
- const projected=projectUI(ui,source.planned,source.case_id),d=previous?clone(previous):{schema:'ippatsu-photo-ledger/v2',id:source.case_id,case:{...clone(source),original_planned:clone(source.planned)},selected:[],pairs:{},cuts:{},transport:[],special:[],adjustments:[]};
+ const rawDesignNo=ui.designNo;ui=clone(ui);if(ui.designNo!==undefined)ui.designNo=normalizeDesignNumber(ui.designNo)??'';
+ const projected=projectUI(ui,source.planned,source.case_id);let d=previous?clone(previous):{schema:'ippatsu-photo-ledger/v2',id:source.case_id,case:{...clone(source),original_planned:clone(source.planned)},selected:[],pairs:{},cuts:{},transport:[],special:[],adjustments:[]};
  d.case={...d.case,case_id:source.case_id,management_no:source.management_no,span_label:source.span_label,work_date:source.work_date,original_planned:{...d.case.original_planned,...clone(source.planned)},planned:clone(d.case.planned||source.planned)};
- if(ui.designNo!==undefined)d.case.design_no=ui.designNo;
+ d=setDocumentDesign(d,rawDesignNo===undefined?d.case.design_no:rawDesignNo);
  d.id=source.case_id;d.ledger_ui_v3=clone(ui);d.selected=clone(ui.selected);d.pairs={...d.pairs,...clone(ui.pairs)};d.cuts={...d.cuts,...clone(ui.cuts)};d.transport=clone(ui.special.US);d.special=Object.entries(ui.special).filter(([c])=>c!=='US').flatMap(([code,rows])=>rows.map(r=>({...clone(r),code}))).concat((previous?.special||[]).filter(r=>!Object.hasOwn(ui.special,r.code)));d.adjustments=clone(ui.adjustments);d.clearanceM=ui.clearanceM;
  for(const r of projected.records){const n=r.mode==='replace'?r.revised:r.initial;if(n!==null)d.case.planned[r.code]=n;}
  // Preserve the v2 envelope values for unknown UI quantities; the UI projection remains explicit null.
