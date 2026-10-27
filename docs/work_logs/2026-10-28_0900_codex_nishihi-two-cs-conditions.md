@@ -1,0 +1,7 @@
+# 2026-10-28 two CS conditions supplement
+
+Image-read existing official CS PDFs for 51406421 and 51406563 (issue 2026-07-10, matching episode1). 99–100: 持出, 傾, road3m, B車可 from circled 要. 90G1–90G2: 集積, 崖, road4m, B車可 from circled 要. Existing adopted GPS supplied exact endpoint names and coordinates. No landowner information is published.
+
+Existing atomic import RPC initialized only the two absent details rows with nonquantity fields, case/version/absence checks and an immutable operation receipt. It supplied no quantity keys or extra lifecycle event. The DB guard requires physical unconfirmed zero defaults for a new details row; these are not confirmed quantities. The normal raw exporter does not preserve that distinction alone. The isolated export adapter is bound to this operation and exact post-save details snapshot, rejects subsequent edits, and sends all15 quantities per case as null/unknown. Existing unknown unit formatting is retained. No production source or public script is changed.
+
+The existing six details, eight-case order, lifecycle, reception episode, completion and saved ledger documents remain unchanged. Static checks and17 local PC/mobile read-only browser checks passed, including two conditions and null baselines. Only today's shared HTML changes; portal-top output differed only by line endings and is excluded. Daily/instruction files are byte-identical. HTTP and live read-only verification follow publication. Private PDFs, payloads, credentials and UUIDs are not distributed.
