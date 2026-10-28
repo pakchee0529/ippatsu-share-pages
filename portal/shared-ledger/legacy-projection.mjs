@@ -1,6 +1,6 @@
-import fixture from './runtime-context.mjs?v=20261028-origin17';
-import {CUTS,partition,validRef} from './ledger-model.mjs?v=20261028-origin17';
-import {base,quantity,dimensionView,parseDimensionRaw,blankDimensions} from './clearance-math.mjs?v=20261028-origin17';
+import fixture from './runtime-context.mjs?v=20261028-allocation19';
+import {CUTS,partition,validRef} from './ledger-model.mjs?v=20261028-allocation19';
+import {base,quantity,dimensionView,parseDimensionRaw,blankDimensions} from './clearance-math.mjs?v=20261028-allocation19';
 export {fixture,partition,base,quantity,dimensionView,parseDimensionRaw};
 export const KEY='ippatsu-native-ui-legacy:'+fixture.caseId;
 export const codes=[...CUTS,'SB','TK','TR'];
