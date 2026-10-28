@@ -1,6 +1,6 @@
-import * as ops from './ledger-operations.mjs?v=20261028-allocation19';
-import {normalizeDesignNumber,normalizeDocumentDesign,setDocumentDesign} from './design-number.mjs?v=20261028-allocation19';
-import {normalizedSelection} from './special-summary.mjs?v=20261028-allocation19';
+import * as ops from './ledger-operations.mjs?v=20261028-origin-target21';
+import {normalizeDesignNumber,normalizeDocumentDesign,setDocumentDesign} from './design-number.mjs?v=20261028-origin-target21';
+import {normalizedSelection} from './special-summary.mjs?v=20261028-origin-target21';
 // Pure translation: the normal v2 envelope, unknown fields and original quantities survive.
 export const UI_SCHEMA='ippatsu-photo-ledger-ui/3';
 export const codes=['E10','E20','E30','E40','E50','E60','N10','N20','N30','N40','N50','N60','SB','TK','TR'];
