@@ -1,15 +1,15 @@
-import * as ops from './ledger-operations.mjs?v=20261029-r10';
-import {normalizeDesignNumber,normalizeDocumentDesign,setDocumentDesign} from './design-number.mjs?v=20261029-r10';
-import {normalizedSelection} from './special-summary.mjs?v=20261029-r10';
+import * as ops from './ledger-operations.mjs?v=20261029-060-r5';
+import {normalizeDesignNumber,normalizeDocumentDesign,setDocumentDesign} from './design-number.mjs?v=20261029-060-r5';
+import {normalizedSelection} from './special-summary.mjs?v=20261029-060-r5';
 // Pure translation: the normal v2 envelope, unknown fields and original quantities survive.
 export const UI_SCHEMA='ippatsu-photo-ledger-ui/3';
 export const codes=['E10','E20','E30','E40','E50','E60','N10','N20','N30','N40','N50','N60','SB','TK','TR'];
 const clone=x=>JSON.parse(JSON.stringify(x)),number=n=>n===null||Number.isSafeInteger(n)&&n>=0&&n<=1000000;
-// mode:'read' = 表示/復元（legacy警告・保存値保持）。mode:'write'|省略 = 保存・確定（assertReady厳格）。
+// mode:'read' = 表示/復元（未解消 reconciliationDraft は保持）。mode:'reconcile' = 通常ポータル保存（明示予定訂正起因の元枠/予定本数のみ）。mode:'write'|省略 = 確定/出力（assertReady）。save+navigateは正式確定ではない。
 export function projectUI(ui,base,caseId,opts={}){
  if(ui?.schema!==UI_SCHEMA||ui.trialId!==caseId||ui.records?.length!==15)throw Error('新版入力の案件ID・保存形式が一致しません');
- const mode=opts.mode==='read'?'read':'write';let legacyWarnings=[],readErrors=[],readWarnings=[];
- if(ui.quantityOperations){if(mode==='read'){const soft=ops.assertReadable(ui);legacyWarnings=soft.legacy||[];readErrors=soft.errors||[];readWarnings=soft.warnings||[];const notes=[...readWarnings,...readErrors];if(notes.length)ui.migrationWarnings=[...(ui.migrationWarnings||[]),...notes.filter(w=>!(ui.migrationWarnings||[]).includes(w))];}else ops.assertReady(ui);}
+ const mode=opts.mode==='read'?'read':opts.mode==='reconcile'?'reconcile':'write';let legacyWarnings=[],readErrors=[],readWarnings=[];
+ /*060-RECONCILE-DRAFT*/ if(ui.quantityOperations){if(mode==='write')ops.assertReady(ui);else{const soft=ops.assertReadable(ui);legacyWarnings=soft.legacy||[];readErrors=soft.errors||[];readWarnings=soft.warnings||[];const notes=[...readWarnings,...readErrors];if(notes.length)ui.migrationWarnings=[...(ui.migrationWarnings||[]),...notes.filter(w=>!(ui.migrationWarnings||[]).includes(w))];const cerr=soft.compute?.errors||[];if(mode==='reconcile'){if(!cerr.length)ops.clearReconciliationDraft(ui);else if(ops.isCorrectionStaleReconciliation(ui,cerr))ui.reconciliationDraft={schema:'ippatsu-reconcile-draft/v1',computeErrors:[...cerr],corrections:clone(ui.quantityOperations.corrections||{})};else ops.assertReady(ui);}else if(!cerr.length)ops.clearReconciliationDraft(ui);}}
  const rs=clone(ui.records);for(const [i,r] of rs.entries())if(r.code!==codes[i]||r.initial!==base[r.code]||!['unchanged','replace'].includes(r.mode)||![r.initial,r.revised,r.additional].every(number)||r.mode==='unchanged'&&r.revised!==null)throw Error(r.code+' の数量基準・変更追加を確認してください');
  if(ui.designNo!==undefined&&(typeof ui.designNo!=='string'||ui.designNo.length>100||/[\u0000-\u001f\u007f]/.test(ui.designNo)))throw Error('設計番号は100文字以内の文字列で入力してください');
  const seen=new Set(),confirmed=[],missing=[];for(const [i,p] of (ui.pairs?.SB||[]).entries()){const key=p.before?.no&&p.after?.no?p.before.date+':'+Number(p.before.no)+'|'+p.after.date+':'+Number(p.after.no):null;if(key&&seen.has(key))continue;if(key)seen.add(key);if(![p.width,p.height].every(number))throw Error('柴寸法は整数で保存してください');const active=p.before?.no||p.after?.no||p.width!==null||p.height!==null;if(!active)continue;if(p.width===null||p.height===null){missing.push(i+1);continue;}confirmed.push({width:p.width,height:p.height,area:p.width*p.height});}
@@ -33,13 +33,14 @@ export function fromNative(native,source,revision,seed){
  // Explicit OFF remains OFF even when saved photo/dimension rows exist.
  ui.selected=[...new Set(ui.selected)];return ops.ensureVineSlots(ui);
 }
-export function toNative(ui,previous,source){
+export function toNative(ui,previous,source,opts={}){
  const rawDesignNo=ui.designNo;ui=clone(ui);if(ui.designNo!==undefined)ui.designNo=normalizeDesignNumber(ui.designNo)??'';
- const projected=projectUI(ui,source.planned,source.case_id,{mode:'write'});let d=previous?clone(previous):{schema:'ippatsu-photo-ledger/v2',id:source.case_id,case:{...clone(source),original_planned:clone(source.planned)},selected:[],pairs:{},cuts:{},transport:[],special:[],adjustments:[]};
+ const writeMode=opts.mode==='reconcile'?'reconcile':'write';
+ const projected=projectUI(ui,source.planned,source.case_id,{mode:writeMode});let d=previous?clone(previous):{schema:'ippatsu-photo-ledger/v2',id:source.case_id,case:{...clone(source),original_planned:clone(source.planned)},selected:[],pairs:{},cuts:{},transport:[],special:[],adjustments:[]};
  d.case={...d.case,case_id:source.case_id,management_no:source.management_no,span_label:source.span_label,work_date:source.work_date,original_planned:{...d.case.original_planned,...clone(source.planned)},planned:clone(d.case.planned||source.planned)};
  d=setDocumentDesign(d,rawDesignNo===undefined?d.case.design_no:rawDesignNo);
  d.id=source.case_id;d.ledger_ui_v3=clone(ui);d.selected=clone(ui.selected);d.pairs={...d.pairs,...clone(ui.pairs)};d.cuts={...d.cuts,...clone(ui.cuts)};d.transport=clone(ui.special.US);d.special=Object.entries(ui.special).filter(([c])=>c!=='US').flatMap(([code,rows])=>rows.map(r=>({...clone(r),code}))).concat((previous?.special||[]).filter(r=>!Object.hasOwn(ui.special,r.code)));d.adjustments=clone(ui.adjustments);d.clearanceM=ui.clearanceM;
- for(const r of projected.records){const n=r.mode==='replace'?r.revised:r.initial;if(n!==null)d.case.planned[r.code]=n;}
+ if(writeMode==='reconcile'&&ui.reconciliationDraft?.computeErrors?.length){const basePlan=clone(d.case.planned||source.planned);const corr=ui.quantityOperations?.corrections||{};for(const [c,v] of Object.entries(corr))if(v===null||Number.isSafeInteger(v))basePlan[c]=v;d.case.planned=basePlan;}else for(const r of projected.records){const n=r.mode==='replace'?r.revised:r.initial;if(n!==null)d.case.planned[r.code]=n;}
  // Preserve the v2 envelope values for unknown UI quantities; the UI projection remains explicit null.
  d.share_quantity_adjustments={schema:'ippatsu-share-quantities/v1',case_id:source.case_id,base:clone(source.planned),additional:Object.fromEntries(projected.records.filter(r=>r.additional!==null).map(r=>[r.code,r.additional]))};
  return d;
