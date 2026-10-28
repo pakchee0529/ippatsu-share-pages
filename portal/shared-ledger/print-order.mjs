@@ -1,6 +1,6 @@
-import {photoTargets} from './ledger-operations.mjs?v=20261028-origin-target21';
-import {photoGridHTML} from './photo-grid.mjs?v=20261028-origin-target21';
-import {partition} from './ledger-model.mjs?v=20261028-origin-target21';
+import {photoTargets} from './ledger-operations.mjs?v=20261028-e10-hotfix058';
+import {photoGridHTML} from './photo-grid.mjs?v=20261028-e10-hotfix058';
+import {partition} from './ledger-model.mjs?v=20261028-e10-hotfix058';
 // Same subset selection, stable order and target used by adopted print model.partition.
 export function printedPhotos(rows,target){if(target===null||!Number.isSafeInteger(target)||target<0)return {ordered:rows.map(x=>({...x})),exact:false};return partition(rows,target);}
 
