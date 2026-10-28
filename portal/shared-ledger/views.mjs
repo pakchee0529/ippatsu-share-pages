@@ -1,8 +1,8 @@
 const assetVersion=new URL(import.meta.url).searchParams.get('v')||'';
-import {config} from './config.mjs?v=20261028-e10-hotfix058';
-import {loadDay,applyCard,CODES} from './read-model.mjs?v=20261028-e10-hotfix058';
-import {normalizeProjection} from './ledger-view-model.mjs?v=20261028-e10-hotfix058';
-import {renderProjection} from './ledger-view-render.mjs?v=20261028-e10-hotfix058';
+import {config} from './config.mjs?v=20261029-r7d';
+import {loadDay,applyCard,CODES} from './read-model.mjs?v=20261029-r7d';
+import {normalizeProjection} from './ledger-view-model.mjs?v=20261029-r7d';
+import {renderProjection} from './ledger-view-render.mjs?v=20261029-r7d';
 let refreshNumber=0,published;
 async function snapshot(){try{return (await loadDay()).map(normalizeProjection);}catch(error){return config.cases.map(entry=>({entry,error:error.message,records:CODES.map(code=>({code,initial:entry.base[code],mode:'unchanged',revised:null,additional:0})),message:error.message+'。付託基準を表示',revision:null,document:null,photos:{states:{},branchCount:0}}));}}
 async function publishedSource(){if(!published){const response=await fetch('../index.html',{cache:'no-store'});if(!response.ok)throw Error('共有ページの現場条件を読み取れません');published=new DOMParser().parseFromString(await response.text(),'text/html');}return published;}

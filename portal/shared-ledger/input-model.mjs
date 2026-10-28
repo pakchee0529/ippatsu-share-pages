@@ -1,10 +1,10 @@
-import * as ops from './ledger-operations.mjs?v=20261028-e10-hotfix058';
-import {normalizeDesignNumber} from './design-number.mjs?v=20261028-e10-hotfix058';
-import {equipmentSpec,validMeasurement} from './special-summary.mjs?v=20261028-e10-hotfix058';
+import * as ops from './ledger-operations.mjs?v=20261029-r7d';
+import {normalizeDesignNumber} from './design-number.mjs?v=20261029-r7d';
+import {equipmentSpec,validMeasurement} from './special-summary.mjs?v=20261029-r7d';
 // Pure ledger-v2 input model; the normal runtime owns persistence.
-import fixture from './runtime-context.mjs?v=20261028-e10-hotfix058';
-import {CUTS,PAIRS,partition,parsePhotoNumbers,validDate,validRef,applyPhotoAdjustments} from './ledger-model.mjs?v=20261028-e10-hotfix058';
-import {KEY as LEGACY_KEY,load as loadLegacy,seed as legacySeed,historyText,cutSummary,otherSummary,projections} from './legacy-projection.mjs?v=20261028-e10-hotfix058';
+import fixture from './runtime-context.mjs?v=20261029-r7d';
+import {CUTS,PAIRS,partition,parsePhotoNumbers,validDate,validRef,applyPhotoAdjustments} from './ledger-model.mjs?v=20261029-r7d';
+import {KEY as LEGACY_KEY,load as loadLegacy,seed as legacySeed,historyText,cutSummary,otherSummary,projections} from './legacy-projection.mjs?v=20261029-r7d';
 export {fixture,CUTS,PAIRS,parsePhotoNumbers,validDate,validRef};
 export const KEY='ippatsu-native-ledger-ui-v3:'+fixture.caseId;
 export const DRAFT_KEY=KEY+':draft',BACKUP_KEY=KEY+':previous';
@@ -36,8 +36,12 @@ for(const [c] of SPECIAL){if(!d.selected.includes(c))continue;for(const r of d.s
 export function migrate(old){const d=seed();d.records=copy(old.records);for(const r of d.records){if(![r.initial,r.revised,r.additional].every(v=>v===null||Number.isSafeInteger(v))){r.mode="unchanged";r.revised=null;r.additional=0;d.migrationWarnings.push("以前の小数数量は旧保存内に保全。整数の入力を確認してください");}}d.legacyReplay=copy(old);if(Number.isSafeInteger(old.clearanceM))d.clearanceM=old.clearanceM;else if(old.clearanceM!==null)d.migrationWarnings.push('以前の離隔小数値は旧保存内に保全。整数の離隔欄へ確認後入力してください');d.migrationWarnings.push('以前の試験保存を読込みました。旧保存は削除しません。柴寸法は写真ペアとの対応を確認して入力してください');return validate(d);}
 export function load(storage){const raw=storage.getItem(KEY);if(raw!==null)return validate(JSON.parse(raw));const old=storage.getItem(LEGACY_KEY);return old===null?seed():migrate(loadLegacy(storage));}
 export function save(storage,draft,expected){validate(draft);const current=load(storage);if(current.revision!==expected)fail('別画面で更新されています。未保存入力を残して保存版を確認してください');const same=JSON.stringify({...draft,revision:0})===JSON.stringify({...current,revision:0});if(same&&storage.getItem(KEY)!==null)return current;const next=copy(draft);next.revision=expected+1;const raw=JSON.stringify(next),old=storage.getItem(KEY);if(old!==null)storage.setItem(BACKUP_KEY,old);storage.setItem(KEY,raw);if(storage.getItem(KEY)!==raw)fail('端末保存の読戻し不一致。画面を閉じず入力を保全してください');return validate(JSON.parse(raw));}
-export function saveDraft(storage,d){validate(d);storage.setItem(DRAFT_KEY,JSON.stringify(d));}
-export function loadDraft(storage,saved){const raw=storage.getItem(DRAFT_KEY);if(raw===null)return null;const d=validate(JSON.parse(raw));return {document:d,conflict:d.revision!==saved.revision};}
+export function saveDraft(storage,d,key=DRAFT_KEY){validate(d);storage.setItem(key,JSON.stringify(d));}
+export function loadDraft(storage,saved,key=DRAFT_KEY){const raw=storage.getItem(key);if(raw===null)return null;const d=validate(JSON.parse(raw));return {document:d,conflict:d.revision!==saved.revision};}
+// concurrency-003: per-tab drafts and drafts set aside on reload/conflict. Each set-aside draft gets its own key, so no tab overwrites another's.
+export const TAB_DRAFT_PREFIX=DRAFT_KEY+':tab:',PRESERVED_PREFIX=DRAFT_KEY+':preserved:';
+export function preserveDraft(storage,d,meta){validate(d);const key=PRESERVED_PREFIX+meta.tabId+':'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),value=JSON.stringify({version:1,...meta,baseRevision:d.revision,at:new Date().toISOString(),document:d});storage.setItem(key,value);if(storage.getItem(key)!==value)fail('下書きを保全できません（読戻し不一致）');return key;}
+export function listDrafts(storage,exceptKey){const out=[];for(let i=0;i<storage.length;i++){const key=storage.key(i);if(!key||key===exceptKey||!(key===DRAFT_KEY||key.startsWith(TAB_DRAFT_PREFIX)||key.startsWith(PRESERVED_PREFIX)))continue;const kind=key===DRAFT_KEY?'legacy':key.startsWith(PRESERVED_PREFIX)?'preserved':'tab';try{const raw=JSON.parse(storage.getItem(key)),d=validate(kind==='preserved'?raw.document:raw);out.push({key,kind,reason:kind==='preserved'?raw.reason||'':'',at:kind==='preserved'?raw.at||'':'',baseRevision:d.revision,latestRevision:kind==='preserved'?raw.latestRevision??null:null,document:d});}catch(e){out.push({key,kind:'broken',error:e.message});}}return out;}
 export function reset(storage){const previous=storage.getItem(KEY);if(previous!==null)storage.setItem(BACKUP_KEY,previous);let revision=0;try{revision=load(storage).revision;}catch{}const d=seed();d.revision=revision+1;storage.setItem(KEY,JSON.stringify(d));storage.removeItem(DRAFT_KEY);return d;}
 export function applyBanner(d,{date,numbers,banner}){const next=copy(d);const n=applyPhotoAdjustments(next,{date,numbers,banner,rotation:''});validate(next);return {document:next,count:n};}
 export function restorePrevious(storage){const raw=storage.getItem(BACKUP_KEY);if(raw===null)fail('直前の保存はまだありません');const prior=validate(JSON.parse(raw)),current=load(storage);prior.revision=current.revision;return save(storage,prior,current.revision);}

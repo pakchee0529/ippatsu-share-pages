@@ -1,9 +1,9 @@
-import {publishedSource} from './published-basis.mjs?v=20261028-e10-hotfix058';
-import {resolveContext,validateContext,writeContext} from './offline-context.mjs?v=20261028-e10-hotfix058';
+import {publishedSource} from './published-basis.mjs?v=20261029-r7d';
+import {resolveContext,validateContext,writeContext} from './offline-context.mjs?v=20261029-r7d';
 // Existing normal ledger API only. Never imports a trial fixture or demo storage.
 export const API='https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/photo-ledger-v2';
 export const params=new URLSearchParams(location.search),date=params.get('date'),cs=params.get('management_no');
-export async function request(query,body){const response=await fetch(API+'?'+new URLSearchParams(query),{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:undefined,body:body?JSON.stringify(body):undefined,cache:'no-store',signal:AbortSignal.timeout(20000)});const data=await response.json();if(!response.ok)throw Object.assign(Error(data.message||'台帳を読取り・保存できません'),{status:response.status});return data;}
+export async function request(query,body){const response=await fetch(API+'?'+new URLSearchParams(query),{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:undefined,body:body?JSON.stringify(body):undefined,cache:'no-store',signal:AbortSignal.timeout(20000)});const data=await response.json();if(!response.ok)throw Object.assign(Error(data.message||'台帳を読取り・保存できません'),{status:response.status,data});return data;}
 if(!/^\d{6}$/.test(date||'')||!/^\d{8}$/.test(cs||''))throw Error('日付・管理番号を共有ページから指定してください');
 export const context=await resolveContext({storage:localStorage,date,cs,online:navigator.onLine!==false,load:async()=>{
 const page=await fetch('../../share/'+date+'/',{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!page.ok)throw Error('共有ページの数量根拠を読めません');
