@@ -1,6 +1,6 @@
-import {documentDesignNumber} from './design-number.mjs?v=20261029-060-r5';
-import {sectionActive,normalizedSelection} from './special-summary.mjs?v=20261029-060-r5';
-import {totalText,publicQuantityText} from './quantity-format.mjs?v=20261029-060-r5';
+import {documentDesignNumber} from './design-number.mjs?v=20261029-062-r2';
+import {sectionActive,normalizedSelection} from './special-summary.mjs?v=20261029-062-r2';
+import {totalText,publicQuantityText} from './quantity-format.mjs?v=20261029-062-r2';
 export {totalText};
 const names={広葉樹:'広',広:'広',杉:'杉',桧:'桧',松:'松',槙:'槙',梅:'梅',柿:'柿'},rank={広:0,杉:1,桧:2,松:3,槙:4,梅:5,柿:6},kinds=[['E','枝切り'],['N','根切り'],['TK','竹'],['TR','つる'],['SB','柴']],bands={10:'10cm未満',20:'10～20cm',30:'20～30cm',40:'30～40cm',50:'40～50cm',60:'50cm以上'};
 const size=n=>n==='70+'?Infinity:Number(n),unit=c=>c==='SB'?'㎡':c==='TR'?'箇所':'本',show=n=>n===null||n===undefined?'—':String(n);
