@@ -1,6 +1,16 @@
 {
   "entries": [
     {
+      "date": "261030",
+      "title": "2026年10月30日 0件",
+      "item_count": 0,
+      "completed_count": 0,
+      "incomplete_count": 0,
+      "planned_incomplete_count": 3,
+      "reported_at": "2026-10-30T01:32:36.210851+00:00",
+      "href": "./261030/"
+    },
+    {
       "date": "261028",
       "title": "2026年10月28日 8件",
       "item_count": 8,
