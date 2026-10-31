@@ -1,5 +1,5 @@
-import {publishedSource} from './published-basis.mjs?v=20261031-009-position-r1';
-import {resolveContext,validateContext,writeContext} from './offline-context.mjs?v=20261031-009-position-r1';
+import {publishedSource} from './published-basis.mjs?v=20261031-034-photo-list-r1';
+import {resolveContext,validateContext,writeContext} from './offline-context.mjs?v=20261031-034-photo-list-r1';
 // Existing normal ledger API only. Never imports a trial fixture or demo storage.
 export const API='https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/photo-ledger-v2';
 export const params=new URLSearchParams(location.search),date=params.get('date'),cs=params.get('management_no');

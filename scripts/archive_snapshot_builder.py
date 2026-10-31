@@ -25,7 +25,7 @@ for entry in manifest['entries']:
  day=entry['date'];assert isinstance(day,str) and re.fullmatch(r'[0-9]{6}',day),'Invalid manifest date';index=REPO/'portal/archive'/day/'index.html'
  count=entry.get('completed_count')
  if type(count) is not int or count<0:unverified_dates.append(day);continue
- days.append({'date':day,'completed':count,'legacy_href':SOURCE_WEB+day+'/','available':False})
+ days.append({'date':day,'completed':count,'legacy_href':(SOURCE_WEB+'reconstructed/'+day+'/' if (REPO/'portal/archive/reconstructed'/day/'index.html').is_file() else SOURCE_WEB+day+'/'),'available':False})
  if not count or not index.exists():continue
  body=index.read_text('utf-8');section=re.search(r'<section id="final-ledger-forms">.*?</section>',body,re.S)
  if section:
@@ -91,7 +91,7 @@ for name in ['app.js','style.css']:
  (ASSETS/name).write_text(value,'utf-8')
 (ASSETS/'ledger.css').write_text('\n'.join(ledger_styles),'utf-8')
 def shell(initial=''):
- css='<link rel="stylesheet" href="'+WEB+'archive-v2-r1/ledger.css"><link rel="stylesheet" href="'+WEB+'archive-v2-r1/style.css">'
+ css='<link rel="stylesheet" href="'+WEB+'archive-v2-r1/ledger.css"><link rel="stylesheet" href="'+WEB+'archive-v2-r1/style.css?v='+hashlib.sha256((SOURCE_ASSETS/'style.css').read_bytes()).hexdigest()[:16]+'">'
  script='<script src="'+WEB+'archive-v2-r1/app.js" defer></script>'
  if initial:
   css='<style>'+ '\n'.join(ledger_styles)+(SOURCE_ASSETS/'style.css').read_text('utf-8')+'</style>'

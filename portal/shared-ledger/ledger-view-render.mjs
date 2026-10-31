@@ -1,10 +1,10 @@
-import {publicQuantityText} from './quantity-format.mjs?v=20261031-009-position-r1';
+import {publicQuantityText} from './quantity-format.mjs?v=20261031-034-photo-list-r1';
 const assetVersion=new URL(import.meta.url).searchParams.get('v')||'';
-import {order,label,groups,show,unit,totalText,ledgerUI,workItems,clearanceText,designText} from './ledger-view-model.mjs?v=20261031-009-position-r1';
-import {historyText,total} from './read-model.mjs?v=20261031-009-position-r1';
-import {appendSummary} from './daily-render.mjs?v=20261031-009-position-r1';
-import {photoGridHTML,photoGridCSS} from './photo-grid.mjs?v=20261031-009-position-r1';
-import {printedPhotoGrid} from './print-order.mjs?v=20261031-009-position-r1';
+import {order,label,groups,show,unit,totalText,ledgerUI,workItems,clearanceText,designText} from './ledger-view-model.mjs?v=20261031-034-photo-list-r1';
+import {historyText,total} from './read-model.mjs?v=20261031-034-photo-list-r1';
+import {appendSummary} from './daily-render.mjs?v=20261031-034-photo-list-r1';
+import {photoGridHTML,photoGridCSS} from './photo-grid.mjs?v=20261031-034-photo-list-r1';
+import {printedPhotoGrid} from './print-order.mjs?v=20261031-034-photo-list-r1';
 const el=(tag,text,cls)=>{const x=document.createElement(tag);if(text!==undefined)x.textContent=text;if(cls)x.className=cls;return x;};
 const kinds=[['E','枝切り'],['N','根切り'],['TK','竹'],['TR','つる'],['SB','柴']];
 function quantityTables(parent,p){const heading=el('h3',undefined,'quantity-heading');heading.append(el('span','伐採本数'),el('span','枝切り写真 '+(p.document?p.photos.branchCount+'枚':'—'),'branch-photo-count'));parent.append(heading);const table=el('table',undefined,'counts'),head=el('tr');for(const x of ['区分','10未満','10～20','20～30','30～40','40～50','50以上','計'])head.append(el('th',x));table.append(head);for(const [prefix,name] of kinds.slice(0,2)){const tr=el('tr'),rows=p.records.filter(r=>r.code[0]===prefix);tr.append(el('th',name));for(const r of rows){const cell=el('td'),parts=historyText(r).split('＋');for(const [i,text] of parts.entries())cell.append(el('span',(i?'＋':'')+text,'number-part'));tr.append(cell);}tr.append(el('td',totalText(rows),'total'));table.append(tr);}parent.append(table);const other=el('table',undefined,'other-counts'),h=el('tr');for(const x of ['区分','元','結果'])h.append(el('th',x));other.append(h);for(const [code,name] of kinds.slice(2)){const r=p.records.find(x=>x.code===code),tr=el('tr'),u=unit(code);tr.append(el('th',name),el('td',publicQuantityText(r.initial)+u),el('td',totalText([r])+u));other.append(tr);}parent.append(other);}
@@ -28,4 +28,84 @@ export function renderProjection(parent,p,{mode,date,conditions,notes=[],mapLink
  if(diag.length){const status=el('p',diag.join(' '),(p.readErrors||[]).length||p.error?'read-error saved-ledger-status':'meta saved-ledger-status');status.setAttribute('role','status');status.dataset.readDiagnostic='1';section.append(status);}
  const design=el('p',undefined,'design-number');design.dataset.designNumber='saved';design.append(el('strong','設計番号：'),el('span',designText(p.document)));section.append(design);const clearance=el('p',undefined,'clearance');clearance.dataset.clearance='metres';clearance.append(el('strong','離隔：'),el('span',clearanceText(p.document)));section.append(clearance);quantityTables(section,p);activity(section,p);const items=workItems(p);if(items)section.append(el('p',items,'work-items'));if(mode==='instructions'&&p.document)photoAllocation(section,p);parent.append(section);return section;}
 
-function photoAllocation(parent,p){parent.append(el('h3','写真番号と本数'),el('p','写真番号（上）／丸内は本数。未記録は—。','photo-help'));let n=0;for(const r of order(p.records)){if(!/^[EN]/.test(r.code)||!ledgerUI(p.document)?.selected?.includes(r.code))continue;const rows=ledgerUI(p.document).cuts[r.code]||[];if(!rows.length)continue;const box=el('section');box.dataset.photoCategory=r.code;box.append(el('h4',label(r.code),'photo-topic'));const grid=el('div');const target=r.mode==='replace'?r.revised:r.initial,printed=printedPhotoGrid(rows,target,r.code,ledgerUI(p.document));grid.innerHTML=printed.html;if(!printed.exact)box.append(el('p','元本数に一致する写真の組合せを確認してください','missing'));box.append(grid);parent.append(box);n++;}for(const [code,name] of [['DF','倒木実費'],['SL','傾斜木実費'],['HL','吊り切り実費'],['BV','高所作業車'],['RT','ラフター'],['US','運搬']]){if(!ledgerUI(p.document)?.selected?.includes(code))continue;const sourceRows=ledgerUI(p.document).special?.[code]||[],rows=sourceRows.flatMap(x=>x.photos||[]);if(!sourceRows.length)continue;const box=el('section');box.dataset.photoCategory=code;const field=code==='RT'?'capacityT':code==='BV'?'heightM':null,measure=field?' '+sourceRows.map(x=>show(x[field])+(code==='RT'?'t':'m')).join('、'):'';box.append(el('h4',name+measure,'photo-topic'));const grid=el('div');if(rows.length)grid.innerHTML=photoGridHTML(rows);else grid.textContent='—';box.append(grid);parent.append(box);n++;}if(!n)parent.append(el('p','写真番号未入力','photo-help'));}
+// Instruction-only photo references. Never changes saved rows or quantity logic.
+const photoEscape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rawPhotoNo = ref => {
+  const raw = ref?.no === null || ref?.no === undefined ? '' : String(ref.no);
+  return /^\d{1,3}$/.test(raw) && Number(raw) > 0 ? raw : '?';
+};
+export function instructionPhotoPlan(document, records) {
+  const ui = ledgerUI(document), result = [];
+  if (!ui) return result;
+  const selected = code => ui.selected?.includes(code);
+  const pair = (code, name) => {
+    if (!selected(code)) return;
+    const rows = ui.pairs?.[code] || [];
+    if (rows.length) result.push({code, name, kind:'pairs', rows});
+  };
+  pair('BA', '伐採前後');
+  for (const record of order(records)) {
+    if (!/^[EN](10|20|30|40|50|60)$/.test(record.code) || !selected(record.code)) continue;
+    const rows = ui.cuts?.[record.code] || [];
+    if (rows.length) result.push({code:record.code, name:label(record.code), kind:'cuts', rows, record});
+  }
+  pair('TK', '竹伐採前後'); pair('TR', 'つる伐採前後'); pair('SB', '柴伐採前後');
+  const names = {US:'運搬',DF:'伐採実費',SL:'斜面木実費',HL:'吊り切り実費',BV:'高所作業車',RT:'ラフター',FR:'その他（自由記述）'};
+  const codes = ['US','DF','SL','HL','BV','RT','FR'];
+  for (const code of Object.keys(ui.special || {})) if (!codes.includes(code)) codes.push(code);
+  for (const code of codes) {
+    if (!selected(code)) continue;
+    const sourceRows = ui.special?.[code] || [];
+    const rows = sourceRows.flatMap(row => row.photos || []);
+    if (sourceRows.length) result.push({code, name:names[code] || 'その他（'+code+'）', kind:'special', rows, sourceRows});
+  }
+  return result;
+}
+function preservedPhotoGrid(rows, {counts=false, claims=false}={}) {
+  let html = '<section class="photo-sheet">';
+  for (let i=0; i<rows.length; i+=8) {
+    html += '<div class="photo-row">';
+    for (const row of rows.slice(i,i+8)) {
+      const no = rawPhotoNo(row), count = Number.isInteger(row.count) && row.count >= 0 ? row.count : null;
+      const claim = row.quantityGroup==='changed' ? '変更' : row.claim==='PLANNED' ? '元' : row.claim==='ADDED' ? '追加' : '未確認';
+      html += '<div class="photo-item" data-photo-no="'+photoEscape(no)+'" data-claim="'+photoEscape(row.claim||'')+'"><span class="photo-number">'+photoEscape(no)+'</span>';
+      if (counts) html += '<span class="photo-count" aria-label="本数 '+(count===null?'未記録':count)+'">'+(count===null?'?':count)+'</span>';
+      html += '<small class="photo-capture">'+photoEscape(row.date || '撮影日未設定')+'</small>';
+      if (claims || row.claim==='ADDED' || row.quantityGroup==='changed') html += '<small class="photo-claim">'+claim+'</small>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  return html+'</section>';
+}
+function photoAllocation(parent,p) {
+  parent.append(el('h3','写真番号と本数'),el('p','使用写真を分類順に表示。前後はペアごとに前-後。? は番号未記録。兼用写真は用途ごとに表示します。','photo-help'));
+  parent.append(el('style','.ledger-view .photo-pair{display:inline-block;border:1px solid #cbd5e1;border-radius:4px;padding:6px;margin:4px;min-width:110px}'));
+  const ui = ledgerUI(p.document), plan = instructionPhotoPlan(p.document,p.records);
+  for (const group of plan) {
+    const box=el('section'); box.dataset.photoCategory=group.code;
+    const field=group.code==='RT'?'capacityT':group.code==='BV'?'heightM':null;
+    const measure=field?' '+group.sourceRows.map(row=>show(row[field])+(group.code==='RT'?'t':'m')).join('、'):'';
+    box.append(el('h4',group.name+measure,'photo-topic'));
+    const grid=el('div');
+    if (group.kind==='pairs') {
+      group.rows.forEach((pair,index)=>{
+        const before=rawPhotoNo(pair.before), after=rawPhotoNo(pair.after);
+        const row=el('p',undefined,'photo-pair');row.dataset.photoPair=group.code+':'+index;
+        row.append(el('span',before+'-'+after,'photo-number'));
+        row.append(el('small',(pair.before?.date||'前撮影日未設定')+' / '+(pair.after?.date||'後撮影日未設定'),'photo-capture'));
+        if(before==='?'||after==='?')row.append(el('span','（'+(before==='?'?'前':'')+(before==='?'&&after==='?'?'・':'')+(after==='?'?'後':'')+'番号未設定）','missing'));
+        grid.append(row);
+      });
+    } else if (group.kind==='cuts') {
+      const r=group.record, target=r.mode==='replace'?r.revised:r.initial;
+      const printed=printedPhotoGrid(group.rows,target,group.code,ui);
+      grid.innerHTML=preservedPhotoGrid(printed.ordered,{counts:['E10','N10'].includes(group.code),claims:['E10','N10'].includes(group.code)});
+      if(!printed.exact)box.append(el('p','元本数に一致する写真の組合せを確認してください','missing'));
+    } else {
+      grid.innerHTML=group.rows.length?preservedPhotoGrid(group.rows):'<p class="photo-help">写真番号未記録</p>';
+    }
+    box.append(grid);parent.append(box);
+  }
+  if(!plan.length)parent.append(el('p','写真番号未入力','photo-help'));
+}
