@@ -1,8 +1,0 @@
-{
-  "schema": "archive-snapshot-source/v1",
-  "sha256_lf": {
-    "scripts/archive_snapshot_builder.py": "f5d8ad6c118760154b92117699d5a489223e60f5c3b32c3a27a0a5fcadf61366",
-    "scripts/archive_snapshot_assets/app.js": "eb31f10501224631feb61b5b87138cce19c889b5ed1d25cf5850cbc8fdf33da5",
-    "scripts/archive_snapshot_assets/style.css": "22d6bc6cf12a66eebc95df6d9c83f370b0911898a57b279d5bb80c66eccac1e9"
-  }
-}

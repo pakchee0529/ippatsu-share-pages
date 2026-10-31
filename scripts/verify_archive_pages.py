@@ -232,29 +232,6 @@ def expected_point_count(export: dict[str, Any]) -> int:
     return count
 
 
-def verify_snapshot_ui(repo_root,dates):
-    # Rebuild expected bytes from the same explicit public immutable sources.
-    # Does not replace legacy per-day count/map checks below.
-    import subprocess,tempfile
-    errors=[]
-    selected=sorted(dates) if dates else [None]
-    with tempfile.TemporaryDirectory(prefix='archive-ui-verifier-') as name:
-        stage=Path(name)
-        for i,day in enumerate(selected):
-            out=stage/str(i)/'public';evidence=stage/str(i)/'evidence'
-            command=[sys.executable,str(repo_root/'scripts/archive_snapshot_builder.py'),'--repo-root',str(repo_root),'--output-root',str(out),'--evidence-root',str(evidence)]
-            if day:command+=['--date',day]
-            result=subprocess.run(command,capture_output=True,timeout=120)
-            if result.returncode or b'Archive snapshot generation: OK' not in result.stdout:
-                errors.append('archive UI source rebuild failed');continue
-            for file in out.rglob('*'):
-                if not file.is_file():continue
-                rel=file.relative_to(out);live=repo_root/rel
-                if not live.is_file() or file.read_bytes().replace(b'\r\n',b'\n')!=live.read_bytes().replace(b'\r\n',b'\n'):
-                    errors.append('archive UI differs: '+rel.as_posix())
-    return errors
-
-
 def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None) -> list[str]:
     failures: list[str] = []
     archive_root = repo_root / "portal" / "archive"
@@ -270,8 +247,6 @@ def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None) ->
     if not isinstance(entries, list):
         return ["portal/archive_manifest.json entries must be a list"]
 
-    snapshot_ui='data-archive-snapshots="v1"' in top_path.read_text(encoding="utf-8")
-    if snapshot_ui:failures.extend(verify_snapshot_ui(repo_root,dates))
     rows = parse_archive_top(top_path)
     rows_by_date = {row.date_key: row for row in rows if row.date_key}
     if len(rows_by_date) != len(rows):
@@ -297,7 +272,7 @@ def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None) ->
                 f"archive manifest {date_key} href must be {expected_href}: {href or '(blank)'}"
             )
         row = rows_by_date.get(date_key)
-        if not row and not snapshot_ui:
+        if not row:
             failures.append(f"archive TOP missing manifest date {date_key}")
             continue
 
@@ -316,9 +291,9 @@ def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None) ->
         if export:
             item_count, planned_count = expected_counts(export)
             labels = expected_labels(export)
-            if not snapshot_ui and labels and row.main == UNKNOWN_LABEL:
+            if labels and row.main == UNKNOWN_LABEL:
                 failures.append(f"archive TOP {date_key} used unknown label despite export labels")
-            for label in ([] if snapshot_ui else labels[:4]):
+            for label in labels[:4]:
                 if label and label not in row.search:
                     failures.append(f"archive TOP {date_key} search missing label: {label}")
             if item_count + planned_count > 0 and len(detail.card_titles) < item_count + planned_count:
