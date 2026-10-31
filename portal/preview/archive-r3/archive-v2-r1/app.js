@@ -20,11 +20,11 @@
   };
   const dateLabel = day => `20${day.slice(0, 2)}年${Number(day.slice(2, 4))}月${Number(day.slice(4, 6))}日`;
   const route = (kind, value) => {
-    if (kind === 'design' && location.protocol !== 'file:' && document.body.dataset.initialDate) { location.assign('/portal/preview/archive-r3/?design=' + encodeURIComponent(value)); return; }
+    if (kind === 'design' && location.protocol !== 'file:' && document.body.dataset.initialDate) { location.assign('/ippatsu-share-pages/portal/preview/archive-r3/?design=' + encodeURIComponent(value)); return; }
     if (kind === 'date' && location.protocol !== 'file:' && catalog.days.some(day => day.date === value && day.available)) {
-      location.assign(`/portal/preview/archive-r3/${value}/view.html`); return;
+      location.assign(`/ippatsu-share-pages/portal/preview/archive-r3/${value}/view.html`); return;
     }
-    const url = location.protocol === 'file:' ? new URL(location.href) : new URL('/portal/preview/archive-r3/', location.origin);
+    const url = location.protocol === 'file:' ? new URL(location.href) : new URL('/ippatsu-share-pages/portal/preview/archive-r3/', location.origin);
     url.search = ''; url.hash = '';
     if (kind) url.searchParams.set(kind, value);
     history.pushState(null, '', url);
@@ -40,7 +40,7 @@
       card.append(el('h2', dateLabel(day.date)), el('p', `完了 ${day.completed}径間`, 'case-count'));
       if (!day.available) card.append(el('p', '保存帳票の索引は未登録', 'muted'));
       const a = el('a', day.available ? '離隔表を開く' : '既存資料を確認', 'button');
-      a.href = day.available ? `/portal/preview/archive-r3/${day.date}/view.html` : `/portal/preview/archive-r3/?date=${day.date}`;
+      a.href = day.available ? `/ippatsu-share-pages/portal/preview/archive-r3/${day.date}/view.html` : `/ippatsu-share-pages/portal/preview/archive-r3/?date=${day.date}`;
       a.addEventListener('click', event => {
         if (day.available && location.protocol !== 'file:') return;
         event.preventDefault(); route('date', day.date);
@@ -63,11 +63,11 @@
       const raw = item.design_original.trim();
       meta.append(el('span', raw ? `設計番号 ${item.design_original}` : '設計番号未登録'));
       const instruction = el('a', 'このサンプルの指示書', 'button secondary');
-      instruction.href = location.protocol === 'file:' ? 'https://pakchee0529.github.io/ippatsu-share-pages' + item.instructions_href : item.instructions_href;
+      instruction.href = location.protocol === 'file:' ? 'https://pakchee0529.github.io' + item.instructions_href : item.instructions_href;
       meta.append(instruction);
       if (item.reference_href) {
         const reference = el('a', '地図・現場条件（従来表示）', 'button secondary');
-        reference.href = location.protocol === 'file:' ? 'https://pakchee0529.github.io/ippatsu-share-pages' + item.reference_href : item.reference_href;
+        reference.href = location.protocol === 'file:' ? 'https://pakchee0529.github.io' + item.reference_href : item.reference_href;
         meta.append(reference);
       }
       section.append(meta);
@@ -76,7 +76,7 @@
       // immutable HTML. No search text or external response is interpolated.
       fragment.innerHTML = item.clearance_html;
       if (location.protocol === 'file:') {
-        for (const a of fragment.content.querySelectorAll('a[href^="/portal/"]')) a.href = 'https://pakchee0529.github.io/ippatsu-share-pages' + a.getAttribute('href');
+        for (const a of fragment.content.querySelectorAll('a[href^="/portal/"]')) a.href = 'https://pakchee0529.github.io' + a.getAttribute('href');
       }
       for (const table of fragment.content.querySelectorAll('table')) {
         const wrap = el('div', undefined, 'table-wrap');
@@ -131,21 +131,21 @@
     route('date', dayInput.value.replaceAll('-', '').slice(2));
   });
   document.getElementById('reset').addEventListener('click', () => {
-    if (location.protocol !== 'file:') { location.assign('/portal/preview/archive-r3/'); return; }
+    if (location.protocol !== 'file:') { location.assign('/ippatsu-share-pages/portal/preview/archive-r3/'); return; }
     document.body.dataset.initialDate = ''; shown = 10; designInput.value = ''; route('', '');
   });
   document.getElementById('unregistered').addEventListener('click', () => route('design', 'unregistered'));
   older.addEventListener('click', () => { shown += 10; render(); });
   window.addEventListener('popstate', render);
   const embedded = document.getElementById('archive-snapshot-data');
-  if (location.protocol === 'file:') document.querySelector('header a').href = 'https://pakchee0529.github.io/ippatsu-share-pages/portal/';
+  if (location.protocol === 'file:') document.querySelector('header a').href = 'https://pakchee0529.github.io/portal/';
   const localSnapshot = () => {
     if (!embedded) throw new Error('snapshot unavailable');
     document.getElementById('scope-notice').textContent = 'この日付の単独保存版です。検索範囲は保存した日付内です。指示書リンクは同じ公開保存版を開きます。';
     return JSON.parse(embedded.textContent);
   };
   const load = location.protocol === 'file:' ? Promise.resolve().then(localSnapshot) :
-    fetch('/portal/preview/archive-r3/archive-v2-r1/catalog.json?v=' + encodeURIComponent(document.body.dataset.catalogVersion || ''), {cache: 'no-cache'})
+    fetch('/ippatsu-share-pages/portal/preview/archive-r3/archive-v2-r1/catalog.json?v=' + encodeURIComponent(document.body.dataset.catalogVersion || ''), {cache: 'no-cache'})
       .then(response => { if (!response.ok) throw new Error('catalog'); return response.json(); });
   load
     .then(data => {
