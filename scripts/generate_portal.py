@@ -8426,8 +8426,8 @@ def write_archive_detail_pages(
         if export_path.is_file():
             from archive_presentation_contract import apply_archive_contract, verify_archive_contract
             archive_doc = json.loads(export_path.read_text(encoding="utf-8"))
-            archive_html = apply_archive_contract(archive_html, archive_doc)
-            verify_archive_contract(archive_doc, archive_html)
+            archive_html = apply_archive_contract(archive_html, archive_doc, snapshot_renderer=build_archive_instructions_html_from_source)
+            verify_archive_contract(archive_doc, archive_html, snapshot_renderer=build_archive_instructions_html_from_source)
         out_path.write_text(
             archive_html,
             encoding="utf-8",
