@@ -92,7 +92,7 @@ for name in ['app.js','style.css']:
 (ASSETS/'ledger.css').write_text('\n'.join(ledger_styles),'utf-8')
 def shell(initial=''):
  css='<link rel="stylesheet" href="'+WEB+'archive-v2-r1/ledger.css"><link rel="stylesheet" href="'+WEB+'archive-v2-r1/style.css?v='+hashlib.sha256((SOURCE_ASSETS/'style.css').read_bytes()).hexdigest()[:16]+'">'
- script='<script src="'+WEB+'archive-v2-r1/app.js" defer></script>'
+ script='<script src="'+WEB+'archive-v2-r1/app.js?v='+hashlib.sha256((ASSETS/'app.js').read_bytes()).hexdigest()[:16]+'" defer></script>'
  if initial:
   css='<style>'+ '\n'.join(ledger_styles)+(SOURCE_ASSETS/'style.css').read_text('utf-8')+'</style>'
   subset={**catalog,'days':[x for x in days if x['date']==initial],'cases':[x for x in cases if x['date']==initial],'scope':'saved-day'}
@@ -117,3 +117,4 @@ if args.test_fixtures:
 (EVIDENCE/'scope.json').write_text(json.dumps({'adopted':False,'files':{rel:hashlib.sha256((OUT/rel).read_bytes()).hexdigest() for rel in allow},'unchanged_fixture_files':'Saved forms copied for browser tests only; exclude from publication diff','source':'Existing public HTML only; no DB fields','completed_cards':len([d for d in days if d['completed']>0]),'indexed_cases':len(cases)},ensure_ascii=False,indent=2),'utf-8')
 print('Archive snapshot generation: OK')
 print(json.dumps({'candidate_only':True,'proposed_files':len(allow),'indexed_cases':len(cases),'designs':sorted({c['design_key'] for c in cases if c['design_key']}),'legacy_without_saved_forms':len([d for d in days if d['completed'] and not d['available']])},ensure_ascii=False))
+

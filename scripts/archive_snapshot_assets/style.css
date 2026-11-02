@@ -3,3 +3,7 @@
 .preview-banner{padding:12px 16px;background:#fff1c2;color:#593d00;border-bottom:2px solid #b77900;font-weight:bold;overflow-wrap:anywhere}body>main{max-width:1100px;margin:0 auto;padding:12px}
 
 
+
+/* Display-only alignment with the adopted normal ledger layout. */
+.ledger-view .quantity-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}.ledger-view .branch-photo-count{font-size:.82rem;font-weight:normal;color:#475569;white-space:nowrap}
+

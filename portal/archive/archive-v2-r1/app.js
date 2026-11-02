@@ -13,6 +13,22 @@
     if (cls) node.className = cls;
     return node;
   };
+  // Presentation only: move the recorded label; do not infer or recalculate it.
+  const alignBranchPhotoCount = root => {
+    for (const article of root.querySelectorAll('article.ledger-view')) {
+      const children = [...article.children];
+      if (article.querySelector('.branch-photo-count, .quantity-heading')) continue;
+      const metas = children.filter(node => node.matches('p.meta'));
+      const headings = children.filter(node => node.matches('h3') && node.textContent.trim() === '伐採本数');
+      if (metas.length !== 1 || headings.length !== 1 || metas[0].children.length) continue;
+      const match = /^(作業日|予定日) ([0-9]{4}\/[0-9]{2}\/[0-9]{2})[\s\u3000]+(枝切り写真 (?:[0-9]+枚|—))$/.exec(metas[0].textContent);
+      if (!match) continue; // Unknown formats remain visible and unchanged.
+      const heading = headings[0], meta = metas[0];
+      meta.textContent = match[1] + ' ' + match[2];
+      heading.classList.add('quantity-heading');
+      heading.replaceChildren(el('span', '伐採本数'), el('span', match[3], 'branch-photo-count'));
+    }
+  };
   const normalizeDesign = raw => {
     const normalized = String(raw || '').normalize('NFKC').replace(/\s+/gu, '').toUpperCase();
     const match = /^(?:B)?([0-9]{4})$/.exec(normalized);
@@ -77,6 +93,7 @@
       // This markup is generated solely from allowlisted, script-free public
       // immutable HTML. No search text or external response is interpolated.
       fragment.innerHTML = instructionMode && item.instructions_html ? item.instructions_html : item.clearance_html;
+      alignBranchPhotoCount(fragment.content);
       // Display-only projection: preserve all original source cells in catalog.
       // Never calculate a quantity or turn a missing/unknown value into zero.
       for (const table of fragment.content.querySelectorAll('table.other-counts')) {
@@ -177,3 +194,4 @@
     })
     .catch(() => { message.textContent = '保存帳票の索引を読み込めません。時間をおいて再読込みしてください。'; });
 })();
+
