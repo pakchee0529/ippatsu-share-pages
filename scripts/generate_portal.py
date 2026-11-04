@@ -8705,7 +8705,6 @@ a.portal-menu-item:focus-visible {{
           <a class="portal-menu-item" role="menuitem" href="./cases/">案件管理</a>
           <a class="portal-menu-item" role="menuitem" href="./archive/">アーカイブ</a>
           <a class="portal-menu-item" role="menuitem" href="./ojt/">OJTガイドライン</a>
-          <a class="portal-menu-item" role="menuitem" href="./tests/print-260721/shared/">一括印刷テスト（3現場）</a>
         </nav>
       </div>
     </div>
@@ -8721,18 +8720,6 @@ a.portal-menu-item:focus-visible {{
     <p class="lead">このページは現場共有ページへの入口です。</p>
     <p style="margin:0">今日・今週の作業内容は、次のリンクから日付ごとの共有ページを開いて確認してください。スマホのブックマークに登録して使えます。</p>
   </div>
-
-  <section class="card weekly-plan" aria-labelledby="weekly-plan-heading">
-    <h2 id="weekly-plan-heading" class="card-title">週間予定表　11月2日（月）～11月6日（金）</h2>
-    <p>2026年11月2日～6日の予定表（原本PDF）です。当日の変更・中止は最新の連絡・日別記録を優先してください。</p>
-    <a class="btn" href="./weekly/2026-11-02.pdf">週間予定表を開く（PDF）</a>
-  </section>
-
-  <section class="card print-test-entry" aria-labelledby="print-test-heading">
-    <h2 id="print-test-heading" class="card-title">一括印刷テスト用・仮現場3件</h2>
-    <p>別PCでの印刷操作確認用です。通常の予定・実案件ではありません。</p>
-    <a class="btn" href="./tests/print-260721/shared/">印刷テストを開く</a>
-  </section>
 
   <section class="today-schedule" aria-labelledby="today-schedule-heading">
     <h2 class="today-schedule-heading" id="today-schedule-heading">本日の予定</h2>
