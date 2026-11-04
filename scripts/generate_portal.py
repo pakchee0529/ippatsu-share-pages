@@ -8442,8 +8442,15 @@ def render_ojt_guide_entry() -> str:
     return ""  # Owner paused only the TOP guide entry; guide files remain.
 
 
+# Owner temporarily paused the OJT questionnaire entrypoint on the portal TOP.
+# Keep the forms and their existing responses unchanged.
+PORTAL_OJT_INTAKE_VISIBLE = False
+
+
 def render_ojt_intake_entry() -> str:
     """Optional response link only. No private store, embedded form or runtime."""
+    if not PORTAL_OJT_INTAKE_VISIBLE:
+        return ""
     return """  <section class="card ojt-intake" aria-labelledby="ojt-intake-heading">
     <div class="ojt-intake-copy">
       <h2 class="card-title" id="ojt-intake-heading">OJTアンケート（任意）</h2>
