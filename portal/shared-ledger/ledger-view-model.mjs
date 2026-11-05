@@ -1,6 +1,6 @@
-import {documentDesignNumber} from './design-number.mjs?v=20261104-sb-card-r2';
-import {sectionActive,normalizedSelection} from './special-summary.mjs?v=20261104-sb-card-r2';
-import {totalText,publicQuantityText} from './quantity-format.mjs?v=20261104-sb-card-r2';
+import {documentDesignNumber} from './design-number.mjs?v=20261105-quantity-kinds-r1';
+import {sectionActive,normalizedSelection} from './special-summary.mjs?v=20261105-quantity-kinds-r1';
+import {totalText,publicQuantityText} from './quantity-format.mjs?v=20261105-quantity-kinds-r1';
 export {totalText};
 const names={広葉樹:'広',広:'広',杉:'杉',桧:'桧',松:'松',槙:'槙',梅:'梅',柿:'柿'},rank={広:0,杉:1,桧:2,松:3,槙:4,梅:5,柿:6},kinds=[['E','枝切り'],['N','根切り'],['TK','竹'],['TR','つる'],['SB','柴']],bands={10:'10cm未満',20:'10～20cm',30:'20～30cm',40:'30～40cm',50:'40～50cm',60:'50cm以上'};
 const size=n=>n==='70+'?Infinity:Number(n),unit=c=>c==='SB'?'㎡':c==='TR'?'箇所':'本',show=n=>n===null||n===undefined?'—':String(n);
@@ -75,6 +75,7 @@ export function designText(document){return documentDesignNumber(document)??'未
 function sourceDiameter(value){if(typeof value==='number')return Number.isInteger(value)&&value>0&&value<=999?value:null;if(typeof value==='string'&&/^\d{1,3}$/.test(value)){const n=Number(value);return n>0&&n<=999?n:null;}return null;}
 const cutShape=cut=>cut==='根'?'circle':['枝','芯'].includes(cut)?'square':undefined;
 function operationGroups(p){const ui=ledgerUI(p.document),op=ui.quantityOperations,out=[];
+for(const r of order(p.records)){const c=r.code;if(Object.hasOwn(op.baseCorrections||{},c))out.push({type:'修正',category:label(c),text:show(r.initial)+unit(c)+' を '+show(op.baseCorrections[c])+unit(c)+' に置換（以後の元数）'});if(Object.hasOwn(op.directChanges||{},c)){const before=r.effectiveInitial??r.initial,n=op.directChanges[c];if(n!==before)out.push({type:'変更',category:label(c),text:show(before)+unit(c)+'→'+show(n)+unit(c)});}}
 for(const r of order(p.records)){const n=op.corrections[r.code];if(Object.hasOwn(op.corrections,r.code)&&n!==r.initial)out.push({type:'元の予定訂正',category:label(r.code),text:show(r.initial)+unit(r.code)+'→'+show(n)+unit(r.code)});}
 for(const code of Object.keys(ui.details))for(const row of ui.details[code]){if(row.changeFrom)out.push({type:'変更',category:label(code),treeChange:{before:{cut:row.changeFrom.cut,shape:cutShape(row.changeFrom.cut),species:names[row.changeFrom.species],diameter:sourceDiameter(row.changeFrom.size),count:row.count},after:row.targetNone===true?{none:true}:{cut:row.targetCut||(code[0]==='N'?'根':'枝'),shape:cutShape(row.targetCut||(code[0]==='N'?'根':'枝')),species:names[row.species],diameter:row.diameter,count:row.count}}});else if(row.kind==='changed')out.push({type:'変更（旧記録）',category:label(row.oldCode||code),text:'旧内訳を保持：'+show(row.oldDiameter)+'→'+show(row.diameter)+' / '+show(row.count)+'本'});}
 for(const r of order(p.records)){if(!(r.additional>0))continue;const tree=/^[EN]/.test(r.code),items=tree?additionalDetails(p,r):[];out.push({type:'追加',category:label(r.code),count:r.additional,unit:unit(r.code),items,missing:tree?Math.max(0,r.additional-items.reduce((a,b)=>a+b.count,0)):0,auto:tree&&(ui.details?.[r.code]||[]).some(x=>x.kind==='added'&&!x.changeFrom&&x.allocationGenerated),...(r.code==='SB'?additionalBushDimensions(p,r):{dimensions:''})});}
