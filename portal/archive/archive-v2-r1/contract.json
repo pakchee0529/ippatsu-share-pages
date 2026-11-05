@@ -1,8 +1,8 @@
 {
   "schema": "archive-snapshot-source/v1",
   "sha256_lf": {
-    "scripts/archive_snapshot_builder.py": "134fbd2d9bb5ce8a6f236ed8e79cca70c13791364b1145bc39e325fbb1cc26e5",
-    "scripts/archive_snapshot_assets/app.js": "eb31f10501224631feb61b5b87138cce19c889b5ed1d25cf5850cbc8fdf33da5",
-    "scripts/archive_snapshot_assets/style.css": "a25c1e6a07e458bbef43af25325e32bc72fb636198b942aff4565161c92ee51f"
+    "scripts/archive_snapshot_builder.py": "1aca7bdbda981ecead4f12fecdcdee2cb75331711b26fd2434b7abde4f9f142e",
+    "scripts/archive_snapshot_assets/app.js": "02d4e322e34ad59ff5d0622591cb4a4065885185273ec0217c12174940007d98",
+    "scripts/archive_snapshot_assets/style.css": "edf7256918bed10ae7e5f53846b377f278347d608f71c7e1b29216c2926bad45"
   }
 }
