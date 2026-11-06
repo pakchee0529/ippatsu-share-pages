@@ -1,6 +1,6 @@
-import * as ops from './ledger-operations.mjs?v=20261105-quantity-kinds-r1';
-import {normalizeDesignNumber,normalizeDocumentDesign,setDocumentDesign} from './design-number.mjs?v=20261105-quantity-kinds-r1';
-import {normalizedSelection} from './special-summary.mjs?v=20261105-quantity-kinds-r1';
+import * as ops from './ledger-operations.mjs?v=20261106-e20-independent-r1';
+import {normalizeDesignNumber,normalizeDocumentDesign,setDocumentDesign} from './design-number.mjs?v=20261106-e20-independent-r1';
+import {normalizedSelection} from './special-summary.mjs?v=20261106-e20-independent-r1';
 // Pure translation: the normal v2 envelope, unknown fields and original quantities survive.
 export const UI_SCHEMA='ippatsu-photo-ledger-ui/3';
 export const codes=['E10','E20','E30','E40','E50','E60','N10','N20','N30','N40','N50','N60','SB','TK','TR'];
@@ -9,6 +9,9 @@ const clone=x=>JSON.parse(JSON.stringify(x)),number=n=>n===null||Number.isSafeIn
 export function projectUI(ui,base,caseId,opts={}){
  if(ui?.schema!==UI_SCHEMA||ui.trialId!==caseId||ui.records?.length!==15)throw Error('新版入力の案件ID・保存形式が一致しません');
  const mode=opts.mode==='read'?'read':opts.mode==='reconcile'?'reconcile':'write';let legacyWarnings=[],readErrors=[],readWarnings=[];
+ // Validate legacy linked rows on every write, including pre-operations UI.
+ // Read/restore must preserve incomplete input without requiring completion.
+ if(mode!=='read')ops.assertCompleteLinkedChanges(ui);
  /*060-RECONCILE-DRAFT*/ if(ui.quantityOperations){if(mode==='write')ops.assertReady(ui);else{const soft=ops.assertReadable(ui);legacyWarnings=soft.legacy||[];readErrors=soft.errors||[];readWarnings=soft.warnings||[];const notes=[...readWarnings,...readErrors];if(notes.length)ui.migrationWarnings=[...(ui.migrationWarnings||[]),...notes.filter(w=>!(ui.migrationWarnings||[]).includes(w))];const cerr=soft.compute?.errors||[];if(mode==='reconcile'){if(!cerr.length)ops.clearReconciliationDraft(ui);else if(ops.isCorrectionStaleReconciliation(ui,cerr))ui.reconciliationDraft={schema:'ippatsu-reconcile-draft/v1',computeErrors:[...cerr],corrections:clone(ui.quantityOperations.corrections||{})};else ops.assertReady(ui);}else if(!cerr.length)ops.clearReconciliationDraft(ui);}}
  const rs=clone(ui.records);for(const [i,r] of rs.entries())if(r.code!==codes[i]||r.initial!==base[r.code]||!['unchanged','replace'].includes(r.mode)||![r.initial,r.revised,r.additional].every(number)||r.mode==='unchanged'&&r.revised!==null)throw Error(r.code+' の数量基準・変更追加を確認してください');
  if(ui.designNo!==undefined&&(typeof ui.designNo!=='string'||ui.designNo.length>100||/[\u0000-\u001f\u007f]/.test(ui.designNo)))throw Error('設計番号は100文字以内の文字列で入力してください');

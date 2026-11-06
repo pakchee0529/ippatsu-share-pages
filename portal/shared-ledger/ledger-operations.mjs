@@ -1,4 +1,4 @@
-import {canonicalQuantity,computeKinds,checkBaseEdit,assertRawBasis,activeKinds} from './quantity-kinds.mjs?v=20261105-quantity-kinds-r1';
+import {canonicalQuantity,computeKinds,checkBaseEdit,assertRawBasis,activeKinds} from './quantity-kinds.mjs?v=20261106-e20-independent-r1';
 // Versioned explicit operations. Never infer/replay historical changes on read.
 export const CUTS=['E','N'].flatMap(k=>[10,20,30,40,50,60].map(n=>k+n));
 const clone=x=>JSON.parse(JSON.stringify(x)),base=r=>r.mode==='replace'?r.revised:r.initial;
@@ -63,18 +63,25 @@ function pureTotal(anchor,_prior,_current){return anchor===null?null:anchor;}
 // 旧式（互換判定専用）。保存値が旧計算と一致し新計算と違うときだけ legacy とみなす。
 function legacyPureTotal(anchor,prior,current){if(anchor===null)return null;let removed=0;for(const old of prior||[]){if(old.kind!=='added'||old.changeFrom)continue;const now=(current||[]).find(x=>x.id===old.id);if(integer(old.count)){const kept=now&&!now.changeFrom&&integer(now.count)?Math.min(old.count,now.count):0;removed+=old.count-kept;}else if(now?.changeFrom&&integer(now.count))removed+=now.count;}return anchor-removed<0?anchor-removed:Math.max(anchor-removed,pureSum(current));}
 
-function computeLegacy(d){const o=d.quantityOperations;if(!o)return {records:clone(d.records),errors:[],warnings:[]};if(o.version!==1)throw Error('数量操作版が違います');const rs=clone(o.anchorRecords),errors=[],warnings=[],out={},incoming={};const row=c=>rs.find(r=>r.code===c);for(const [c,raw] of Object.entries(o.rawNet||{}))if(raw.trim()!==''&&raw.split(',').some(x=>!/^[-+]?\d+$/.test(x.trim())))errors.push(c+'：増減の入力途中です。符号付き整数を完成してください');
+function computeLegacy(d){const o=d.quantityOperations;if(!o)return {records:clone(d.records),errors:[],warnings:[]};if(o.version!==1)throw Error('数量操作版が違います');const rs=clone(o.anchorRecords),errors=[],warnings=[],out={},incoming={};const row=c=>rs.find(r=>r.code===c);let independentRawErrors=0;for(const [c,raw] of Object.entries(o.rawNet||{}))if(raw.trim()!==''&&raw.split(',').some(x=>!/^[-+]?\d+$/.test(x.trim()))){errors.push(c+'：増減の入力途中です。符号付き整数を完成してください');if(c==='TK'||c==='TR')independentRawErrors++;}
  for(const c of CUTS){out[c]=0;incoming[c]=0;}
  for(const [c,n] of Object.entries(o.corrections)){if(!row(c)){errors.push('訂正区分が不正');continue;}if(n===null)errors.push(c+'：予定訂正は未入力です。下書きを保持しています');if(n!==null&&!integer(n))errors.push(c+'：予定訂正は0以上整数');const r=row(c);r.mode=n===r.initial?'unchanged':'replace';r.revised=r.mode==='replace'?n:null;}
  for(const c of CUTS)for(const x of d.details[c]||[])if(x.changeFrom){let from;try{from=sourceCode(x.changeFrom.cut,x.changeFrom.size);}catch(e){errors.push(c+'：'+e.message);continue;}if(x.targetNone===true){if(!integer(x.count)||x.count<1){errors.push(c+'：変更先なしの本数を入力してください');continue;}if(from!==c||x.diameter!==''&&x.diameter!==undefined||x.targetCut){errors.push(c+'：変更先なしは元区分に記録し、変更先サイズを持てません');continue;}out[from]+=x.count;continue;}if(!integer(x.count)||x.count<1||!(x.diameter==='70+'||integer(x.diameter)&&x.diameter>0)){errors.push(c+'：変更先サイズと本数を入力してください');continue;}try{if(sourceCode(x.targetCut||(c[0]==='N'?'根':'枝'),x.diameter==='70+'?70:x.diameter)!==c)throw Error('区分違い');}catch{errors.push(c+'：変更先の切り方・径級を確認してください');continue;}out[from]+=x.count;incoming[c]+=x.count;}
  for(const c of CUTS){const r=row(c),n=base(r);if(out[c]&&(n===null||out[c]>n))errors.push(c+'：元枠が'+(n===null?'未確認':out[c]-n+'本不足'));const final=n===null?null:n-out[c]+incoming[c];if(final!==null&&(!integer(final)))errors.push(c+'：予定本数は0未満にできません');r.mode=final===r.initial?'unchanged':'replace';r.revised=r.mode==='replace'?final:null;const extra=(o.anchorRecords.find(x=>x.code===c).additional);r.additional=pureTotal(extra,o.anchorDetails[c],d.details[c]);if(Object.hasOwn(o.photoTotals||{},c)){const captured=o.photoTotals[c],photos=d.cuts[c]||[],actual=photos.reduce((n,x)=>n+(integer(x.count)?x.count:0),0);if(!integer(captured)||photos.some(x=>!integer(x.count)||x.count<1)||captured!==actual||final===null)errors.push(c+'：写真本数の根拠または基準が未確認です');else {r.additional=Math.max(0,captured-final);if(pureSum(d.details[c])>r.additional)errors.push(c+'：純追加内訳が追加必要数より'+(pureSum(d.details[c])-r.additional)+'本過剰です。手入力は保持しています');}}else if(r.additional!==null){const sum=pureSum(d.details[c]);if(sum>r.additional)errors.push(c+'：純追加内訳が追加必要数より'+(sum-r.additional)+'本過剰です。手入力は保持しています');else if(sum<r.additional)warnings.push(c+'：純追加内訳が追加必要数より'+(r.additional-sum)+'本不足です');}if(r.additional!==null&&!integer(r.additional))errors.push(c+'：純追加内訳が不整合');}
+ // Capture validity before independent TK/TR/SB computations. Never infer dependencies from error text.
+ // linked oldCode/oldCount changes are managed by input.mjs, not this legacy calculator.
+ // Without that dependency proof, preserve the entire current cuts group.
+ const hasLinkedChanges=Object.values(d.details||{}).some(rows=>rows.some(r=>r.kind==='changed'&&r.quantityLinked));
+ const cutQuantitiesValid=errors.length===independentRawErrors&&!hasLinkedChanges;
  for(const c of ['TK','TR']){if(!Object.hasOwn(o.net,c))continue;const r=row(c),b=base(r),anchor=o.anchorRecords.find(x=>x.code===c);if(!integer(b)||!integer(anchor.additional)){errors.push(c+'：元数量が未確認');continue;}const net=o.net[c];if(!Array.isArray(net)||net.some(x=>!Number.isSafeInteger(x))) {errors.push(c+'：増減は整数');continue;}const total=b+anchor.additional+net.reduce((a,b)=>a+b,0);if(!integer(total)){errors.push(c+'：元枠不足（'+total+'）');continue;}const revised=Math.min(b,total);r.mode=revised===r.initial?'unchanged':'replace';r.revised=r.mode==='replace'?revised:null;r.additional=Math.max(0,total-b);}
  if(Object.hasOwn(o.extra||{},'TR')){if(!integer(o.extra.TR))errors.push('TR：追加箇所は未確認または整数以外です');else row('TR').additional=o.extra.TR;}
  for(const c of ['TK','TR','SB'])if(o.none[c]){if((d.pairs[c]||[]).some(p=>hasPhoto(p.before)||hasPhoto(p.after)||p.width!==null||p.height!==null)||d.selected.includes(c))errors.push(c+'：無しの数量と写真参照が一致しません');const r=row(c);r.mode='replace';r.revised=0;r.additional=0;}
  if(!o.none.SB){const active=(d.pairs.SB||[]).filter(p=>hasPhoto(p.before)||hasPhoto(p.after)||p.width!==null||p.height!==null);const dims=active.filter(p=>integer(p.width)&&integer(p.height));if(active.some(p=>!integer(p.width)||!integer(p.height)))errors.push('SB：寸法未入力を0にできません');if(dims.length){const total=dims.reduce((n,p)=>n+p.width*p.height,0),r=row('SB'),b=base(r),old=(o.anchorPairs.SB||[]).filter(p=>integer(p.width)&&integer(p.height));if(!integer(total))errors.push('SB：面積は整数の範囲内です');else {const revised=b===null?total:Math.min(b,total);r.mode=revised===r.initial?'unchanged':'replace';r.revised=r.mode==='replace'?revised:null;r.additional=b===null?0:Math.max(0,total-b);}}}
  const tr=d.pairs.TR||[];for(let i=0;i<tr.length-1;i++)if(!hasPhoto(tr[i].before)&&!hasPhoto(tr[i].after)&&tr.slice(i+1).some(p=>hasPhoto(p.before)||hasPhoto(p.after)))warnings.push('TR：'+(i+1)+'組目は撮忘です。自動で箇所を減らしません');
- return {records:rs,errors:[...new Set(errors)],warnings};}
-export function refresh(d){const p=compute(d);if(!p.errors.length){d.records=p.records;ensureVineSlots(d);}return p;}
+ // All cuts form one dependency group: transfers can affect both source and target.
+ // Only errors emitted by the independent special-quantity computations leave it valid.
+ return {records:rs,errors:[...new Set(errors)],warnings,cutQuantitiesValid};}
+export function refresh(d){const p=compute(d);if(!p.errors.length){d.records=p.records;ensureVineSlots(d);}else if(p.cutQuantitiesValid===true){const cutRows=new Map(p.records.filter(r=>CUTS.includes(r.code)).map(r=>[r.code,r]));d.records=d.records.map(r=>cutRows.has(r.code)?cutRows.get(r.code):r);}return p;}
 export function assertReady(d){const p=compute(d);if(p.errors.length)throw Error(p.errors.join(' ／ '));if(d.quantityOperations&&canonicalQuantity(p.records)!==canonicalQuantity(d.records))throw Error('数量操作と上部数量が一致しません。下書きを保持して再確認してください');return p;}
 /** 旧L02互換: 保存additionalが旧pureTotalと一致し新計算と違う区分だけをlegacyと識別。明示0の新規入力は含めない。 */
 export function detectLegacyQuantityMismatch(d){const o=d?.quantityOperations;if(!o)return [];const p=compute(d),out=[];for(const c of CUTS){if(Object.hasOwn(o.photoTotals||{},c))continue;const saved=d.records.find(r=>r.code===c)?.additional;const neu=p.records.find(r=>r.code===c)?.additional;const anchor=o.anchorRecords.find(x=>x.code===c)?.additional;const old=legacyPureTotal(anchor,o.anchorDetails?.[c],d.details?.[c]);if(saved===old&&saved!==neu)out.push({code:c,saved,computedNew:neu,computedOld:old,message:c+'：保存追加数'+saved+'は旧計算と一致し新計算（'+neu+'）と違います。表示は保存値を保持。保存・確定前に電卓/内訳を本人が直してください'});}return out;}
@@ -128,7 +135,29 @@ export function isCorrectionStaleReconciliation(d,errors){
 }
 export function clearReconciliationDraft(d){if(d&&d.reconciliationDraft)delete d.reconciliationDraft;return d;}
 
-export function compute(d){return computeKinds(d,computeLegacy);}
+function linkedSignature(details){return JSON.stringify(Object.entries(details||{}).flatMap(([code,rows])=>rows.filter(r=>r.kind==='changed'&&r.quantityLinked).map(r=>[code,r.id??null,r.oldCode??null,r.oldCount??null,r.count??null])).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));}
+function validLinkedRow(code,r){
+ const sizes=c=>{const n=Number(c.slice(1));return n===60?[...Array.from({length:11},(_,i)=>50+i*2),'70+']:Array.from({length:n===10?4:5},(_,i)=>(n===10?2:n-10)+i*2);};
+ return CUTS.includes(code)&&CUTS.includes(r.oldCode)&&r.oldCode[0]===code[0]&&integer(r.oldCount)&&integer(r.count)&&SPECIES_OK(r.oldSpecies)&&SPECIES_OK(r.species)&&sizes(r.oldCode).includes(r.oldDiameter)&&sizes(code).includes(r.diameter);
+}
+export function assertCompleteLinkedChanges(d){
+ if(Object.entries(d.details||{}).some(([code,rows])=>rows.some(r=>r.kind==='changed'&&r.quantityLinked&&!validLinkedRow(code,r))))throw Error('数量連動変更：旧変更内訳の区分・樹種・太さ・前後本数を完成してください。現在値は保持しています');
+}
+export function compute(d){
+ // Apply the legacy editor's completeness requirements even when its saved
+ // signature matches the anchor. Matching unfinished input is not completion.
+ try{assertCompleteLinkedChanges(d);}catch(e){
+  return {records:clone(d.records),errors:[e.message],warnings:[],cutQuantitiesValid:false};
+ }
+ // v5 linked changes predate operations. enable() snapshots their already-applied
+ // records AND details together. Unchanged historical rows must not be replayed.
+ // A different linked quantity after that snapshot is not a supported current UI operation.
+ if(d.quantityOperations&&linkedSignature(d.details)!==linkedSignature(d.quantityOperations.anchorDetails)){
+  return {records:clone(d.records),errors:['数量連動変更：取得時と旧変更内訳の数量が異なります。現在値を保持して整合確認を待っています'],warnings:[],cutQuantitiesValid:false};
+ }
+ return computeKinds(d,computeLegacy);
+}
+
 export function correctBase(d,c,n){enable(d);if(!checkBaseEdit(d,c,n))return refresh(d);const o=d.quantityOperations;const previous=Object.hasOwn(o.baseCorrections||{},c)?o.baseCorrections[c]:o.anchorRecords.find(x=>x.code===c).initial;o.baseCorrections??={};o.baseCorrections[c]=n;if(Number.isSafeInteger(n)){o.baseCorrectionHistory??=[];o.baseCorrectionHistory.push({kind:'instruction-base-correction',code:c,before:previous,after:n});}return refresh(d);}
 export function directChange(d,c,n){enable(d);const next=clone(d);next.quantityOperations.directChanges??={};next.quantityOperations.directChanges[c]=n;const p=compute(next);if(p.errors.length&&n!==null)throw Error(p.errors.join(' ／ '));d.quantityOperations=next.quantityOperations;return refresh(d);}
 export function assertDocumentQuantities(document){assertRawBasis(document);const ui=document.ledger_ui_v3;if(!activeKinds(ui))return;assertReady(ui);for(const r of ui.records){const n=r.mode==='replace'?r.revised:r.initial;if(document.case.planned[r.code]!==n||document.share_quantity_adjustments?.additional?.[r.code]!==r.additional||document.share_quantity_adjustments?.base?.[r.code]!==document.case.original_planned[r.code])throw Error(r.code+'：修正/変更の保存投影が一致しません');}}

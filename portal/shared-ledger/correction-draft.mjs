@@ -1,4 +1,4 @@
-import {canonicalQuantity} from './quantity-kinds.mjs?v=20261105-quantity-kinds-r1';
+import {canonicalQuantity} from './quantity-kinds.mjs?v=20261106-e20-independent-r1';
 export const prefix=id=>'instruction-base-correction:'+id+':';
 export const keyFor=(id,revision,tab)=>prefix(id)+revision+':tab:'+tab;
 export function persistProposal(storage,key,value){const data={kind:'instruction-base-correction-proposal',...value},text=JSON.stringify(data);storage.setItem(key,text);const got=JSON.parse(storage.getItem(key));if(canonicalQuantity(got)!==canonicalQuantity(data))throw Error('修正案の読戻し不一致');return data;}
