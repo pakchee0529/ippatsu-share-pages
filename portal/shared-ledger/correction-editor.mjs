@@ -1,8 +1,8 @@
-import {orderedQuantities,quantityUnit,quantityLabel} from './quantity-kinds.mjs?v=20261105-quantity-kinds-r1';
-import {keyFor,persistProposal,proposals} from './correction-draft.mjs?v=20261105-quantity-kinds-r1';
+import {orderedQuantities,quantityUnit,quantityLabel} from './quantity-kinds.mjs?v=20261106-e20-independent-r1';
+import {keyFor,persistProposal,proposals} from './correction-draft.mjs?v=20261106-e20-independent-r1';
 let correctionTabId;
-import * as ops from './ledger-operations.mjs?v=20261105-quantity-kinds-r1';
-import {fromNative,toNative} from './native-adapter.mjs?v=20261105-quantity-kinds-r1';
+import * as ops from './ledger-operations.mjs?v=20261106-e20-independent-r1';
+import {fromNative,toNative} from './native-adapter.mjs?v=20261106-e20-independent-r1';
 export const canonical=v=>JSON.stringify(v&&typeof v==='object'?(Array.isArray(v)?v.map(x=>JSON.parse(canonical(x))):Object.fromEntries(Object.keys(v).sort().map(k=>[k,JSON.parse(canonical(v[k]))]))):v);
 const fault=(message,phase,sent=false)=>Object.assign(Error(message),{phase,sent});
 export async function saveBaseCorrections(p,edits,wire){
