@@ -1,10 +1,10 @@
-import {publicQuantityText} from './quantity-format.mjs?v=20261106-e20-independent-r1';
+import {publicQuantityText} from './quantity-format.mjs?v=20261107-futaku-design-r1';
 const assetVersion=new URL(import.meta.url).searchParams.get('v')||'';
-import {order,label,groups,show,unit,totalText,ledgerUI,workItems,clearanceText,designText} from './ledger-view-model.mjs?v=20261106-e20-independent-r1';
-import {historyText,total} from './read-model.mjs?v=20261106-e20-independent-r1';
-import {appendSummary} from './daily-render.mjs?v=20261106-e20-independent-r1';
-import {photoGridHTML,photoGridCSS} from './photo-grid.mjs?v=20261106-e20-independent-r1';
-import {printedPhotoGrid} from './print-order.mjs?v=20261106-e20-independent-r1';
+import {order,label,groups,show,unit,totalText,ledgerUI,workItems,clearanceText,designText} from './ledger-view-model.mjs?v=20261107-futaku-design-r1';
+import {historyText,total} from './read-model.mjs?v=20261107-futaku-design-r1';
+import {appendSummary} from './daily-render.mjs?v=20261107-futaku-design-r1';
+import {photoGridHTML,photoGridCSS} from './photo-grid.mjs?v=20261107-futaku-design-r1';
+import {printedPhotoGrid} from './print-order.mjs?v=20261107-futaku-design-r1';
 const el=(tag,text,cls)=>{const x=document.createElement(tag);if(text!==undefined)x.textContent=text;if(cls)x.className=cls;return x;};
 const kinds=[['E','枝切り'],['N','根切り'],['TK','竹'],['TR','つる'],['SB','柴']];
 function quantityTables(parent,p){const heading=el('h3',undefined,'quantity-heading');heading.append(el('span','伐採本数'),el('span','枝切り写真 '+(p.document?p.photos.branchCount+'枚':'—'),'branch-photo-count'));parent.append(heading);const table=el('table',undefined,'counts'),head=el('tr');for(const x of ['区分','10未満','10～20','20～30','30～40','40～50','50以上','計'])head.append(el('th',x));table.append(head);for(const [prefix,name] of kinds.slice(0,2)){const tr=el('tr'),rows=p.records.filter(r=>r.code[0]===prefix);tr.append(el('th',name));for(const r of rows){const cell=el('td'),parts=historyText(r).split('＋');for(const [i,text] of parts.entries())cell.append(el('span',(i?'＋':'')+text,'number-part'));tr.append(cell);}tr.append(el('td',totalText(rows),'total'));table.append(tr);}parent.append(table);const other=el('table',undefined,'other-counts'),h=el('tr');for(const x of ['区分','元','結果'])h.append(el('th',x));other.append(h);for(const [code,name] of kinds.slice(2)){const r=p.records.find(x=>x.code===code),tr=el('tr'),u=unit(code);tr.append(el('th',name),el('td',publicQuantityText(r.effectiveInitial??r.initial)+u),el('td',totalText([r])+u));other.append(tr);}parent.append(other);}
@@ -26,7 +26,7 @@ export function renderProjection(parent,p,{mode,date,conditions,notes=[],mapLink
  const diagParts=[p.message,...(p.readErrors||[]),...(p.readWarnings||[])].filter(x=>typeof x==='string'&&x.trim());
  const diag=[...new Set(diagParts)];
  if(diag.length){const status=el('p',diag.join(' '),(p.readErrors||[]).length||p.error?'read-error saved-ledger-status':'meta saved-ledger-status');status.setAttribute('role','status');status.dataset.readDiagnostic='1';section.append(status);}
- const design=el('p',undefined,'design-number');design.dataset.designNumber='saved';design.append(el('strong','設計番号：'),el('span',designText(p.document)));section.append(design);const clearance=el('p',undefined,'clearance');clearance.dataset.clearance='metres';clearance.append(el('strong','離隔：'),el('span',clearanceText(p.document)));section.append(clearance);if(mode==='instructions')correctionFrame(section,p);quantityTables(section,p);activity(section,p);const items=workItems(p);if(items)section.append(el('p',items,'work-items'));if(mode==='instructions'&&p.document)photoAllocation(section,p);parent.append(section);return section;}
+ const design=el('p',undefined,'design-number');design.dataset.designNumber='saved';design.append(el('strong','設計番号：'),el('span',designText(p.document,p.sourceDesign)));section.append(design);const clearance=el('p',undefined,'clearance');clearance.dataset.clearance='metres';clearance.append(el('strong','離隔：'),el('span',clearanceText(p.document)));section.append(clearance);if(mode==='instructions')correctionFrame(section,p);quantityTables(section,p);activity(section,p);const items=workItems(p);if(items)section.append(el('p',items,'work-items'));if(mode==='instructions'&&p.document)photoAllocation(section,p);parent.append(section);return section;}
 
 // Instruction-only photo references. Never changes saved rows or quantity logic.
 const photoEscape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

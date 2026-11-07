@@ -1,4 +1,4 @@
-import {canonicalQuantity,computeKinds,checkBaseEdit,assertRawBasis,activeKinds} from './quantity-kinds.mjs?v=20261106-e20-independent-r1';
+import {canonicalQuantity,computeKinds,checkBaseEdit,assertRawBasis,activeKinds} from './quantity-kinds.mjs?v=20261107-futaku-design-r1';
 // Versioned explicit operations. Never infer/replay historical changes on read.
 export const CUTS=['E','N'].flatMap(k=>[10,20,30,40,50,60].map(n=>k+n));
 const clone=x=>JSON.parse(JSON.stringify(x)),base=r=>r.mode==='replace'?r.revised:r.initial;
