@@ -1,6 +1,6 @@
-import {photoTargets} from './ledger-operations.mjs?v=20261106-e20-independent-r1';
-import {photoGridHTML} from './photo-grid.mjs?v=20261106-e20-independent-r1';
-import {partition} from './ledger-model.mjs?v=20261106-e20-independent-r1';
+import {photoTargets} from './ledger-operations.mjs?v=20261107-futaku-design-r1';
+import {photoGridHTML} from './photo-grid.mjs?v=20261107-futaku-design-r1';
+import {partition} from './ledger-model.mjs?v=20261107-futaku-design-r1';
 // Same subset selection, stable order and target used by adopted print model.partition.
 export function printedPhotos(rows,target){if(target===null||!Number.isSafeInteger(target)||target<0)return {ordered:rows.map(x=>({...x})),exact:false};return partition(rows,target);}
 

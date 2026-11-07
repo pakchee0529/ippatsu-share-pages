@@ -1,4 +1,4 @@
-import {effectiveInitial} from './quantity-kinds.mjs?v=20261106-e20-independent-r1';
+import {effectiveInitial} from './quantity-kinds.mjs?v=20261107-futaku-design-r1';
 export const quantityTotal=r=>(r.mode==='replace'?r.revised:r.initial)===null||r.additional===null?null:(r.mode==='replace'?r.revised:r.initial)+r.additional;
 // Lossy public presentation only. Never use these strings as quantity input.
 const publicNumber=value=>{if(value===null||value===undefined)return 0;if(!Number.isFinite(value))throw Error('数量表示の形式を確認してください');return value;};

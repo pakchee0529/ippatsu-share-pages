@@ -1,4 +1,4 @@
-import {compatiblePublishedBase} from './published-basis.mjs?v=20261106-e20-independent-r1';
+import {compatiblePublishedBase} from './published-basis.mjs?v=20261107-futaku-design-r1';
 // Validated, per-case browser snapshot. No credentials or automatic submission.
 export const cacheKey=(date,cs)=>'ippatsu-shared-ledger-context/v1:'+date+':'+cs;
 export const pendingKey=(date,cs)=>cacheKey(date,cs)+':pending';
