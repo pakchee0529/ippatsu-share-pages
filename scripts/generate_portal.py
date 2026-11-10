@@ -4629,6 +4629,8 @@ def _refresh_manifest_title_item_suffix(title: str | None, item_n: int) -> str |
 
 def sync_archive_manifest_counts_from_completion_export(
     repo_root: Path,
+    *,
+    only_date: str | None = None,
 ) -> list[str]:
     """explicit completion-reports-root 時、読取副本の件数で archive_manifest.json を更新。"""
     if not _prefer_export_derived_manifest_counts():
@@ -4654,6 +4656,8 @@ def sync_archive_manifest_counts_from_completion_export(
         if not isinstance(date_key, str) or not re.fullmatch(r"\d{6}", date_key.strip()):
             continue
         date_key = date_key.strip()
+        if only_date is not None and date_key != only_date:
+            continue
         pub_items, _ = load_archive_public_items(repo_root, date_key)
         if pub_items is None:
             continue
@@ -10666,7 +10670,9 @@ def main() -> int:
         inject_share_detail_edit_into_share_pages(repo_root)
 
     manifest_entries = load_archive_manifest_entries(repo_root)
-    synced_dates = sync_archive_manifest_counts_from_completion_export(repo_root)
+    synced_dates = sync_archive_manifest_counts_from_completion_export(
+        repo_root, only_date=completion_date
+    )
     if synced_dates:
         print(
             "synced archive_manifest.json counts from completion export: "
