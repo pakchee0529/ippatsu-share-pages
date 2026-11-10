@@ -4386,7 +4386,7 @@ def _archive_m2_expr(src: dict, key: str) -> str:
             before = 0
             added = 0
         if added > 0:
-            return f"{before} + {added}緕｡"
+            return f"{before} + {added}㎡"
     return _fmt_m2_archive(float(_as_num(src.get(key))))
 
 
