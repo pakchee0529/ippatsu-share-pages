@@ -255,7 +255,7 @@ def verify_snapshot_ui(repo_root,dates):
     return errors
 
 
-def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None) -> list[str]:
+def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None, baseline_root: Path | None = None) -> list[str]:
     failures: list[str] = []
     archive_root = repo_root / "portal" / "archive"
     top_path = archive_root / "index.html"
@@ -306,6 +306,21 @@ def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None) ->
             failures.append(f"archive detail missing for {date_key}")
             continue
         detail = parse_archive_detail(detail_path)
+        from archive_map_contract import baseline_pages, verify_preserved, is_fixed_form_alias
+        baselines = []
+        try:
+            map_html = detail_path.read_text(encoding="utf-8")
+            if is_fixed_form_alias(map_html):
+                if baseline_root is not None:
+                    raise ValueError("explicit map verification targets a fixed-form alias")
+            else:
+                if baseline_root is None and not (repo_root / "share" / date_key / "index.html").is_file():
+                    print(f"Warning: {date_key}: no pre-retirement map baseline; historical preservation unverified", file=sys.stderr)
+                baselines = baseline_pages(repo_root, date_key, baseline_root)
+                verify_preserved(map_html, date_key, baselines)
+        except (ValueError, OSError, TypeError, KeyError) as exc:
+            failures.append(f"archive map preservation {date_key}: {exc}")
+
 
         export: dict[str, Any] | None = None
         if export_root:
@@ -314,6 +329,14 @@ def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None) ->
                 export = _load_json(export_path)
 
         if export:
+            if not is_fixed_form_alias(detail_path.read_text(encoding="utf-8")):
+                try:
+                    import generate_portal as portal
+                    from archive_map_contract import export_map_items, resolve, verify_rendered
+                    expected_maps = resolve(export_map_items(export, date_key), {}, baselines, portal)
+                    verify_rendered(detail_path.read_text(encoding="utf-8"), date_key, expected_maps)
+                except (ValueError, OSError, TypeError, KeyError) as exc:
+                    failures.append(f"archive source map contract {date_key}: {exc}")
             item_count, planned_count = expected_counts(export)
             labels = expected_labels(export)
             if not snapshot_ui and labels and row.main == UNKNOWN_LABEL:
@@ -340,7 +363,7 @@ def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None) ->
                         f"archive detail {date_key} map points {detail.points_count} "
                         f"< expected {points_expected}"
                     )
-        elif row.main == "—":
+        elif row is not None and row.main == "—":
             failures.append(f"archive TOP {date_key} still uses dash fallback")
 
     return failures
@@ -366,6 +389,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=[],
         help="Limit verification to one YYMMDD date. Repeatable.",
     )
+    parser.add_argument("--archive-map-baseline-root", type=Path, default=None,
+                        help="Prior public map pages as DIR/YYMMDD/index.html, required after retirement to verify historical preservation.")
     return parser.parse_args(argv)
 
 
@@ -374,7 +399,7 @@ def main(argv: list[str] | None = None) -> int:
     repo_root = ns.repo_root.resolve()
     export_root = ns.completion_reports_root.resolve() if ns.completion_reports_root else None
     dates = set(ns.date) if ns.date else None
-    failures = verify(repo_root, export_root, dates)
+    failures = verify(repo_root, export_root, dates, ns.archive_map_baseline_root)
     if failures:
         print("archive verification: FAIL", file=sys.stderr)
         for failure in failures:

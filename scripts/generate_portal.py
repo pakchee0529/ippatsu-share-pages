@@ -1056,7 +1056,9 @@ def escape_html(s: str) -> str:
 
 
 # 2点地図: 周辺電柱（GPS.json）— 生成時に1回だけ読み込む
-_GPS_POLES_CACHE: list[tuple[str, float, float]] | None = None
+_GPS_POLES_CACHE: dict[tuple[str, str], list[tuple[str, float, float]]] = {}
+_ARCHIVE_GPS_JSON: Path | None = None
+_ARCHIVE_MAP_BASELINE_ROOT: Path | None = None
 _NEARBY_POLE_RADIUS_M = 200.0
 _NEARBY_POLE_ENDPOINT_EXCLUDE_M = 3.0
 _NEARBY_POLE_BBOX_PAD_DEG = 0.003
@@ -1073,15 +1075,17 @@ def gps_json_path(repo_root: Path) -> Path:
     return candidates[-1]
 
 
-def load_gps_poles(repo_root: Path) -> list[tuple[str, float, float]]:
+def load_gps_poles(repo_root: Path, *, gps_path: Path | None = None) -> list[tuple[str, float, float]]:
     """GPS.json を name, lat, lng のリストに展開（キャッシュ付き）。"""
     global _GPS_POLES_CACHE
-    if _GPS_POLES_CACHE is not None:
-        return _GPS_POLES_CACHE
-    path = gps_json_path(repo_root)
+    path = (gps_path or gps_json_path(repo_root)).resolve()
     if not path.is_file():
         raise FileNotFoundError(f"GPS.json not found: {path}")
-    raw = json.loads(path.read_text(encoding="utf-8"))
+    data = path.read_bytes()
+    cache_key = (str(path), hashlib.sha256(data).hexdigest())
+    if cache_key in _GPS_POLES_CACHE:
+        return list(_GPS_POLES_CACHE[cache_key])
+    raw = json.loads(data.decode("utf-8"))
     if not isinstance(raw, dict):
         raise ValueError(f"GPS.json must be a JSON object, got {type(raw).__name__}")
     poles: list[tuple[str, float, float]] = []
@@ -1096,8 +1100,8 @@ def load_gps_poles(repo_root: Path) -> list[tuple[str, float, float]]:
         if lat is None or lng is None:
             continue
         poles.append((name.strip(), lat, lng))
-    _GPS_POLES_CACHE = poles
-    return poles
+    _GPS_POLES_CACHE = {cache_key: poles}
+    return list(poles)
 
 
 def haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
@@ -2121,6 +2125,8 @@ class PlannedIncompleteItem:
     method: str = "—"
     warning: str = "—"
     instructions_html: str = ""
+    lat: str = ""
+    lng: str = ""
 
 
 @dataclass(frozen=True)
@@ -2147,6 +2153,8 @@ class ArchivePublicItem:
     note: str
     instructions_html: str = ""
     detail_prefill: ShareDetailEditPrefill | None = None
+    lat: str = ""
+    lng: str = ""
 
 
 @dataclass(frozen=True)
@@ -4887,6 +4895,8 @@ def load_archive_public_items(
                 start_lng=_to_str(src.get("start_lng")),
                 end_lat=_to_str(src.get("end_lat")),
                 end_lng=_to_str(src.get("end_lng")),
+                lat=_to_str(src.get("lat")),
+                lng=_to_str(src.get("lng")),
                 method=_method_text(src),
                 branch_cut_total=b_total,
                 root_cut_total=r_total,
@@ -4959,6 +4969,8 @@ def load_archive_planned_incomplete(
                 start_lng=_to_str(src.get("start_lng")),
                 end_lat=_to_str(src.get("end_lat")),
                 end_lng=_to_str(src.get("end_lng")),
+                lat=_to_str(src.get("lat")),
+                lng=_to_str(src.get("lng")),
                 branch_cut_total=b_total,
                 root_cut_total=r_total,
                 road_width_m=_to_str(src.get("road_width_m")) or "—",
@@ -5002,11 +5014,13 @@ def _archive_resolved_item_points(
     if gps:
         parts = _share_split_span_label(item.label)
         if parts:
-            gps_points, _has_two = _share_resolve_span_available_points(item.label, gps)
-            if start is None and gps_points:
-                start = gps_points[0]
-            if end is None and len(gps_points) >= 2:
-                end = gps_points[1]
+            start_name = _share_resolve_gps_pole_label(parts[0], gps)
+            end_raw = _share_complete_span_end_label(parts[0], parts[1], gps)
+            end_name = _share_resolve_gps_pole_label(end_raw, gps)
+            if start is None and start_name and _valid_jp_latlng(*gps[start_name]):
+                start = (start_name, *gps[start_name])
+            if end is None and end_name and _valid_jp_latlng(*gps[end_name]):
+                end = (end_name, *gps[end_name])
         elif start is None and end is None:
             pole = _share_resolve_gps_pole_label(item.label, gps)
             if pole:
@@ -5025,25 +5039,56 @@ def _share_points_are_distinct(
     return abs(start[1] - end[1]) > 1e-9 or abs(start[2] - end[2]) > 1e-9
 
 
+def _archive_map_views(items, gps, baselines=()):
+    from archive_map_contract import resolve
+    return resolve(items, gps, baselines, sys.modules[__name__])
+
+
+def _archive_single_map_button(view) -> str:
+    if view.single_url:
+        return (f'<a class="btn btn-map btn-map-single" href="{escape_html(view.single_url)}" '
+                'target="_blank" rel="noopener noreferrer">地図を開く</a>')
+    return _share_disabled_map_button()
+
+
+def prepare_archive_maps(repo_root: Path, date: str, public_items, planned_items):
+    from archive_map_contract import baseline_pages, export_map_items
+    export_path = _completion_reports_root(repo_root) / f"{date}.json"
+    if export_path.is_file():
+        export_map_items(json.loads(export_path.read_text(encoding="utf-8")), date)
+    if _ARCHIVE_MAP_BASELINE_ROOT is None and not (repo_root / "share" / date / "index.html").is_file():
+        print(f"Warning: {date}: no pre-retirement map baseline; existing archive/source only", file=sys.stderr)
+    if _ARCHIVE_GPS_JSON is not None:
+        poles = load_gps_poles(repo_root, gps_path=_ARCHIVE_GPS_JSON)
+        gps = {_share_gps_lookup_key(name): (lat, lng) for name, lat, lng in poles}
+    elif _DATA_ROOT_OVERRIDE is not None:
+        # Existing company callers already supply --data-root. Bind GPS to that
+        # exact company tree, not to the staged public-candidate/script location.
+        path = _DATA_ROOT_OVERRIDE.parent / "app" / "resources" / "data" / "GPS.json"
+        if path.is_file():
+            poles = load_gps_poles(repo_root, gps_path=path)
+            gps = {_share_gps_lookup_key(name): (lat, lng) for name, lat, lng in poles}
+        else:
+            gps = {}  # Baseline/source may suffice; never switch to another company tree.
+    else:
+        gps = _share_gps_pole_map(repo_root)
+    return _archive_map_views(list(public_items or []) + list(planned_items or []), gps,
+                              baseline_pages(repo_root, date, _ARCHIVE_MAP_BASELINE_ROOT))
+
+
 def build_planned_incomplete_section_html(
     items: list[PlannedIncompleteItem],
     gps: dict[str, tuple[float, float]] | None = None,
+    *, map_views=None,
 ) -> str:
     if not items:
         return ""
+    map_views = map_views if map_views is not None else _archive_map_views(items, gps or {})
     cards: list[str] = []
     for idx, it in enumerate(items):
-        start, end = _archive_resolved_item_points(it, gps)
-        representative = end or start
-        if representative:
-            map_btn = _share_map_button(representative[1], representative[2])
-        elif it.map_url.startswith(("http://", "https://")):
-            map_btn = (
-                f'<a class="btn btn-map btn-map-single" href="{escape_html(it.map_url)}" '
-                'target="_blank" rel="noopener noreferrer">地図を開く</a>'
-            )
-        else:
-            map_btn = _share_disabled_map_button()
+        view = map_views[management_no_key(it.management_no)]
+        start, end = view.start, view.end
+        map_btn = _archive_single_map_button(view)
         two_btn = _share_disabled_two_map_button()
         two_json = ""
         two_wrap = ""
@@ -7862,6 +7907,7 @@ def build_archive_detail_html(
     public_items: list[ArchivePublicItem] | None,
     detail_note: str,
     planned_incomplete: list[PlannedIncompleteItem] | None = None,
+    *, map_views=None, gps=None,
 ) -> str:
     """アーカイブ詳細（公開可能項目のみ）。通常共有ページの構成へ合わせる。"""
     folder = entry.date
@@ -7870,7 +7916,8 @@ def build_archive_detail_html(
     items_html = ""
     points: list[dict] = []
     planned_items = planned_incomplete or []
-    archive_gps = _share_gps_pole_map(Path(__file__).resolve().parent.parent)
+    map_views = map_views if map_views is not None else _archive_map_views(
+        list(public_items or []) + list(planned_items), gps or {})
     completed_heading = ""
     if public_items and len(public_items) > 0:
         completed_heading = (
@@ -7883,17 +7930,10 @@ def build_archive_detail_html(
     else:
         cards: list[str] = []
         for idx, it in enumerate(public_items):
-            start, end = _archive_resolved_item_points(it, archive_gps)
-            representative = end or start
-            if representative:
-                map_btn = _share_map_button(representative[1], representative[2])
-            elif it.map_url and it.map_url.startswith(("http://", "https://")):
-                map_btn = (
-                    f'<a class="btn btn-map btn-map-single" href="{escape_html(it.map_url)}" '
-                    'target="_blank" rel="noopener noreferrer">地図を開く</a>'
-                )
-            else:
-                map_btn = _share_disabled_map_button()
+            view = map_views[management_no_key(it.management_no)]
+            start, end = view.start, view.end
+            representative = view.representative
+            map_btn = _archive_single_map_button(view)
             two_btn = ""
             two_json = ""
             two_wrap = ""
@@ -7998,10 +8038,9 @@ def build_archive_detail_html(
                     }
                 )
         items_html = "\n".join(cards)
-    planned_html = build_planned_incomplete_section_html(planned_items, archive_gps)
+    planned_html = build_planned_incomplete_section_html(planned_items, map_views=map_views)
     for it in planned_items:
-        start, end = _archive_resolved_item_points(it, archive_gps)
-        representative = end or start
+        representative = map_views[management_no_key(it.management_no)].representative
         if representative:
             points.append(
                 {
@@ -8396,9 +8435,9 @@ def write_archive_detail_pages(
         return []
     arch_root = repo_root / "portal" / "archive"
     written: list[Path] = []
+    staged: list[tuple[Path, str]] = []
     for ent in entries:
         day_dir = arch_root / ent.date
-        day_dir.mkdir(parents=True, exist_ok=True)
         out_path = day_dir / "index.html"
         pub_items, note = load_archive_public_items(repo_root, ent.date)
         planned_items = load_archive_planned_incomplete(repo_root, ent.date)
@@ -8425,18 +8464,20 @@ def write_archive_detail_pages(
             n_items,
             strict_mismatch=_STRICT_COMPLETION_REPORTS_SUMMARY_MISMATCH,
         )
-        archive_html = build_archive_detail_html(ent, pub_items, note, planned_items)
+        map_views = prepare_archive_maps(repo_root, ent.date, pub_items, planned_items)
+        archive_html = build_archive_detail_html(ent, pub_items, note, planned_items, map_views=map_views)
         export_path = _completion_reports_root(repo_root) / f"{ent.date}.json"
         if export_path.is_file():
             from archive_presentation_contract import apply_archive_contract, verify_archive_contract
             archive_doc = json.loads(export_path.read_text(encoding="utf-8"))
             archive_html = apply_archive_contract(archive_html, archive_doc, snapshot_renderer=build_archive_instructions_html_from_source)
             verify_archive_contract(archive_doc, archive_html, snapshot_renderer=build_archive_instructions_html_from_source)
-        out_path.write_text(
-            archive_html,
-            encoding="utf-8",
-            newline="\n",
-        )
+        from archive_map_contract import verify_rendered
+        verify_rendered(archive_html, ent.date, map_views)
+        staged.append((out_path, archive_html))
+    for out_path, archive_html in staged:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(archive_html, encoding="utf-8", newline="\n")
         written.append(out_path)
     return written
 
@@ -10594,8 +10635,14 @@ def main() -> int:
             "Does not use today's date automatically."
         ),
     )
+    parser.add_argument("--archive-gps-json", type=Path, default=None,
+                        help="Explicit archive GPS.json; supplied invalid/missing input is fatal.")
+    parser.add_argument("--archive-map-baseline-root", type=Path, default=None,
+                        help="Prior public map pages as DIR/YYMMDD/index.html; exact date and case set required.")
     ns = parser.parse_args()
-    global _DATA_ROOT_OVERRIDE, _PORTAL_MIN_DATE
+    global _DATA_ROOT_OVERRIDE, _PORTAL_MIN_DATE, _ARCHIVE_GPS_JSON, _ARCHIVE_MAP_BASELINE_ROOT
+    _ARCHIVE_GPS_JSON = ns.archive_gps_json.resolve() if ns.archive_gps_json else None
+    _ARCHIVE_MAP_BASELINE_ROOT = ns.archive_map_baseline_root.resolve() if ns.archive_map_baseline_root else None
     _DATA_ROOT_OVERRIDE = None
     _PORTAL_MIN_DATE = None
     _COMPLETION_REPORTS_ROOT_OVERRIDE = None
@@ -10664,6 +10711,18 @@ def main() -> int:
     if not share_dir.is_dir():
         print(f"Missing directory: {share_dir}", file=sys.stderr)
         return 1
+
+    # Validate map input before manifest sync or any page mutation. Legacy archives
+    # with unavailable exports remain on their existing missing-export contract.
+    if mode in (PORTAL_MODE_FULL, PORTAL_MODE_COMPLETION_ARCHIVE):
+        map_dates = ([completion_date] if completion_date is not None else
+                     [entry.date for entry in load_archive_manifest_entries(repo_root)])
+        # Count sync only edits existing manifest entries; it never adds dates.
+        for map_date in map_dates:
+            public, _ = load_archive_public_items(repo_root, map_date)
+            if public is not None:
+                prepare_archive_maps(repo_root, map_date, public,
+                                     load_archive_planned_incomplete(repo_root, map_date))
 
     if mode == PORTAL_MODE_FULL:
         # ippatsu-pc からの HTML コピー直後でも、ポータル生成前に必ず注入する。
