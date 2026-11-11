@@ -1,0 +1,145 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>261106 · アーカイブ詳細</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>body{font-family:system-ui,sans-serif;margin:auto;padding:16px;max-width:960px;background:#f8fafc;color:#172033}h1{font-size:1.5rem}.card{background:white;border:1px solid #cbd5e1;border-radius:12px;padding:16px;margin:16px 0}.card-title{font-size:1.1rem}.card-actions{display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border:0;border-radius:8px;background:#1d4ed8;color:white;text-decoration:none;font-size:1rem;cursor:pointer}.share-two-map-canvas,#share-map{height:380px;width:100%}.two-map-wrap{margin-top:12px}[hidden]{display:none!important}a{color:#1d4ed8}.notice{padding:12px;background:#eff6ff;border-radius:8px}
+.leaflet-tooltip.two-tip-endpoint {
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 3px 8px;
+  border: 1px solid #2563eb;
+  background: #eff6ff;
+  color: #1e3a8a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+}
+.leaflet-tooltip.two-tip-nearby {
+  font-weight: 500;
+  font-size: 0.76rem;
+  padding: 2px 6px;
+  border: 1px solid #94a3b8;
+  background: #f8fafc;
+  color: #334155;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+}
+.leaflet-tooltip.two-tip {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+</style></head><body><nav><a href="/ippatsu-share-pages/portal/archive/261106/view.html">保存済み離隔表・指示書へ戻る</a> · <a href="/ippatsu-share-pages/portal/archive/">アーカイブ一覧</a></nav><h1>2026年11月6日 地図</h1><p class="notice">当時の公開共有ページから確認できた地図だけを表示しています。数量・実績・現場条件は復元していません。保存済み離隔表・指示書は上のリンクからご確認ください。</p><h2>全体地図</h2><div id="share-map" role="application" aria-label="全体地図"></div><article class="card" id="map-51401538" data-date="261106" data-management-no="51401538"><h2 class="card-title">奥吉野　102～103</h2><p class="item-mgmt">51401538</p><div class="card-actions"><a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=34.1162,135.795" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="alias-two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button></div><div class="two-map-wrap" id="two-wrap-0" hidden>
+    <div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
+  </div><script type="application/json" id="alias-two-geo-0">{"a":{"name":"奥吉野102","lat":34.11652,"lng":135.79519},"b":{"name":"103","lat":34.11616,"lng":135.79525}}</script></article><article class="card" id="map-51401536" data-date="261106" data-management-no="51401536"><h2 class="card-title">奥吉野　100～101</h2><p class="item-mgmt">51401536</p><div class="card-actions"><a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=34.1167,135.795" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="alias-two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button></div><div class="two-map-wrap" id="two-wrap-1" hidden>
+    <div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
+  </div><script type="application/json" id="alias-two-geo-1">{"a":{"name":"奥吉野100","lat":34.11693,"lng":135.79462},"b":{"name":"101","lat":34.1167,"lng":135.79489}}</script></article><article class="card" id="map-51401530" data-date="261106" data-management-no="51401530"><h2 class="card-title">奥吉野　89～90</h2><p class="item-mgmt">51401530</p><div class="card-actions"><a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=34.1163,135.792" target="_blank" rel="noopener noreferrer">地図を開く</a><button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="alias-two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button></div><div class="two-map-wrap" id="two-wrap-2" hidden>
+    <div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
+  </div><script type="application/json" id="alias-two-geo-2">{"a":{"name":"奥吉野89","lat":34.11605,"lng":135.79205},"b":{"name":"90","lat":34.11633,"lng":135.79208}}</script></article><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>function gmaps(lat,lng){return "https://www.google.com/maps?q="+encodeURIComponent(lat+","+lng);}
+var POINTS = [{"management_no":"51401538","name":"奥吉野　102～103","lat":34.11616,"lng":135.79525},{"management_no":"51401536","name":"奥吉野　100～101","lat":34.1167,"lng":135.79489},{"management_no":"51401530","name":"奥吉野　89～90","lat":34.11633,"lng":135.79208}];
+var map=L.map('share-map',{scrollWheelZoom:false});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+var bounds=[];POINTS.forEach(function(p){var content=document.createElement('div');var a=document.createElement('a');a.href='#map-'+p.management_no;a.textContent=p.name+' / '+p.management_no;content.appendChild(a);L.marker([p.lat,p.lng]).addTo(map).bindPopup(content);bounds.push([p.lat,p.lng]);});
+if(bounds.length)map.fitBounds(bounds,{padding:[30,30],maxZoom:17});
+
+  var twoMaps = Object.create(null);
+  document.querySelectorAll("[data-two-open]").forEach(function(btn) {
+    var wrapId = btn.getAttribute("data-two-wrap");
+    var mapId = btn.getAttribute("data-two-map");
+    var jsonId = btn.getAttribute("data-two-json");
+    var wrap = wrapId ? document.getElementById(wrapId) : null;
+    var jsonEl = jsonId ? document.getElementById(jsonId) : null;
+    if (!wrap || !jsonEl) return;
+    btn.addEventListener("click", function() {
+      var nowOpen = btn.getAttribute("aria-expanded") === "true";
+      wrap.hidden = nowOpen;
+      btn.setAttribute("aria-expanded", nowOpen ? "false" : "true");
+      btn.textContent = nowOpen ? "2点地図を表示" : "2点地図を閉じる";
+      if (nowOpen) return;
+      var geo = null;
+      try {
+        geo = JSON.parse(jsonEl.textContent || "{}");
+      } catch (e) {
+        return;
+      }
+      if (!geo || !geo.a || !geo.b) return;
+      var key = mapId;
+      if (!twoMaps[key]) {
+        var mmap = L.map(mapId, { scrollWheelZoom: false });
+        twoMaps[key] = mmap;
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(mmap);
+      }
+      var mmap = twoMaps[key];
+      mmap.eachLayer(function(layer) {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
+          mmap.removeLayer(layer);
+        }
+      });
+      function addEndpoint(p, cls) {
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.marker([lat, lng]).addTo(mmap);
+        if (p.name) {
+          m.bindTooltip(String(p.name), {
+            permanent: true,
+            direction: "top",
+            className: cls,
+            offset: [0, -6],
+          });
+        }
+        m.on("click", function() {
+          window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer");
+        });
+        return [lat, lng];
+      }
+      function addNearbyPole(p) {
+        var lat = Number(p.lat), lng = Number(p.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        var m = L.circleMarker([lat, lng], {
+          radius: 5,
+          weight: 2,
+          opacity: 0.9,
+          fillOpacity: 0.75,
+          color: "#64748b",
+          fillColor: "#94a3b8",
+        }).addTo(mmap);
+        if (p.name) {
+          m.bindTooltip(String(p.name), {
+            permanent: true,
+            direction: "top",
+            className: "two-tip-nearby",
+            offset: [0, -4],
+          });
+        }
+        m.on("click", function() {
+          window.open(gmaps(lat, lng), "_blank", "noopener,noreferrer");
+        });
+        return [lat, lng];
+      }
+      var aPt = addEndpoint(geo.a, "two-tip-endpoint");
+      var bPt = addEndpoint(geo.b, "two-tip-endpoint");
+      var boundsPts = [];
+      if (aPt) boundsPts.push(aPt);
+      if (bPt) boundsPts.push(bPt);
+      if (aPt && bPt) {
+        L.polyline([aPt, bPt], { weight: 3, opacity: 0.85, color: "#2563eb" }).addTo(mmap);
+      }
+      if (Array.isArray(geo.nearby)) {
+        geo.nearby.forEach(function(p) {
+          var pt = addNearbyPole(p);
+          if (pt) boundsPts.push(pt);
+        });
+      }
+      if (boundsPts.length === 1) {
+        mmap.setView(boundsPts[0], 17);
+      } else if (boundsPts.length > 1) {
+        mmap.fitBounds(boundsPts, {
+          paddingTopLeft: [40, 70],
+          paddingBottomRight: [40, 70],
+          maxZoom: 18,
+        });
+      }
+      setTimeout(function() { mmap.invalidateSize(); }, 60);
+    });
+  });
+</script></body></html>

@@ -2,11 +2,31 @@
 from pathlib import Path
 from html import unescape
 from urllib.parse import urljoin,urlsplit
-import json,re,unicodedata,hashlib,shutil,datetime,argparse
+import json,re,unicodedata,hashlib,shutil,datetime,argparse,sys,types,stat
 P=Path(__file__).parent.resolve()
+# The company source contract pins this builder; validate new dependencies before import.
+DEPENDENCY_SHA256_LF = {'archive_alias_map_pages.py': '9881c6826fb31823fabd8eb9fdab125e9b7510f87c18fdeb7b5ecee6963c9ea4', 'archive_alias_maps.json': '2204fb2bdbe74c8e05a7f5e4b45ec4104381c37647851d7c144c09ab7e3b963f', 'archive_map_contract.py': 'da3efe9497cf232f3da7cda8cf99173ac01935137e72523877636461d3abf163'}
+verified_dependencies={}
+for relative, expected in DEPENDENCY_SHA256_LF.items():
+ dependency=P/relative
+ if dependency.is_symlink() or not dependency.is_file() or not dependency.resolve().is_relative_to(P) or getattr(dependency.lstat(),'st_file_attributes',0)&getattr(stat,'FILE_ATTRIBUTE_REPARSE_POINT',0x400):
+  raise ValueError('Archive map dependency missing or unsafe: '+relative)
+ raw_dependency=dependency.read_bytes()
+ if hashlib.sha256(raw_dependency.replace(b'\r\n',b'\n')).hexdigest()!=expected:
+  raise ValueError('Archive map dependency changed: '+relative)
+ verified_dependencies[relative]=raw_dependency
+# Execute the verified source bytes, never an existing pyc or cached module.
+for module_name in ('archive_map_contract','archive_alias_map_pages'):
+ filename=module_name+'.py';module=types.ModuleType(module_name)
+ module.__file__=str(P/filename);module.__package__=None;module.__spec__=None
+ sys.modules[module_name]=module
+ exec(compile(verified_dependencies[filename],str(P/filename),'exec'),module.__dict__)
+from archive_alias_map_pages import load_maps, bind_maps, reference_href, validate_repo_maps, _reject_reparse
+ALIAS_MAPS=load_maps()
 args=argparse.ArgumentParser();args.add_argument('--repo-root',type=Path,required=True);args.add_argument('--output-root',type=Path,required=True);args.add_argument('--evidence-root',type=Path,required=True);args.add_argument('--assets-root',type=Path,default=P/'archive_snapshot_assets');args.add_argument('--view-path',default='portal/archive');args.add_argument('--date');args.add_argument('--test-fixtures',action='store_true');args=args.parse_args()
 if args.date and not re.fullmatch(r'[0-9]{6}',args.date):raise ValueError('Invalid target date')
 EVIDENCE=args.evidence_root.resolve();EVIDENCE.mkdir(parents=True,exist_ok=True);SOURCE_ASSETS=args.assets_root.resolve()
+_reject_reparse(args.output_root.absolute())
 REPO=args.repo_root.resolve();OUT=args.output_root.resolve()
 assert OUT!=REPO and not OUT.is_relative_to(REPO),'Build in a separate staging root'
 OUT.mkdir(parents=True,exist_ok=True)
@@ -19,6 +39,7 @@ def text(s):return unescape(re.sub('<[^>]+>','',s)).strip()
 def articles(s):return re.findall(r'<article\b[^>]*class="[^"]*\bledger-view\b[^"]*"[^>]*>.*?</article>',s,re.S)
 def tables(s):return re.findall(r'<table\b.*?</table>',s,re.S)
 manifest=json.loads((REPO/'portal/archive_manifest.json').read_text('utf-8'));days=[];cases=[];proof=[];ledger_styles=[];unverified_dates=[]
+ALIAS_MAPS={day:views for day,views in ALIAS_MAPS.items() if day in {entry['date'] for entry in manifest['entries']}}
 prior_catalog=REPO/'portal/archive/archive-v2-r1/catalog.json'
 prior=json.loads(prior_catalog.read_text('utf-8')) if prior_catalog.exists() else {'cases':[]}
 for entry in manifest['entries']:
@@ -76,13 +97,17 @@ for entry in manifest['entries']:
   instruction_content=re.sub(r'\bid="case-'+number+r'"','id="'+anchor+'"',instruction,count=1)
   assert tables(instruction_content)==tables(instruction)
   assert not re.search(r'<(?:script|img|iframe|link)\b|\bon\w+\s*=',instruction_content,re.I)
-  cases.append({'date':day,'management_no':number,'label':label,'episode':episode,'revision':revision,'anchor':anchor,'completion_status':'completed','design_original':raw,'design_key':design_key(raw),'clearance_html':content,'instructions_html':instruction_content,'instructions_href':'/ippatsu-share-pages'+instruction_url,'daily_source_href':'/ippatsu-share-pages'+base,'reference_href':SOURCE_WEB+day+'/'})
+  cases.append({'date':day,'management_no':number,'label':label,'episode':episode,'revision':revision,'anchor':anchor,'completion_status':'completed','design_original':raw,'design_key':design_key(raw),'clearance_html':content,'instructions_html':instruction_content,'instructions_href':'/ippatsu-share-pages'+instruction_url,'daily_source_href':'/ippatsu-share-pages'+base,'reference_href':reference_href(day) if day in ALIAS_MAPS else SOURCE_WEB+day+'/'})
   proof.append({'date':day,'management_no':number,'daily_source':str(files['daily.html'].relative_to(REPO)),'instructions_source':str(files['instructions.html'].relative_to(REPO)),'daily_sha256':hashlib.sha256(files['daily.html'].read_bytes()).hexdigest(),'instructions_sha256':hashlib.sha256(files['instructions.html'].read_bytes()).hexdigest(),'table_sha256':hashlib.sha256(''.join(tables(content)).encode()).hexdigest()})
  days[-1]['available']=True
  # Unchanged fixtures for local browser link verification, not publication targets.
  if args.test_fixtures:
   for f in files.values():
    dest=OUT/f.relative_to(REPO);dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(f,dest)
+bind_maps(ALIAS_MAPS,cases)
+# Normal company publication emits only the established snapshot output set.
+# Sidecars must be explicitly generated and installed before this read-only check.
+validate_repo_maps(REPO,ALIAS_MAPS)
 catalog={'schema':'public-archive-snapshots/v1','days':sorted(days,key=lambda x:x['date'],reverse=True),'cases':cases,'unverified_dates':unverified_dates}
 (ASSETS/'catalog.json').write_text(json.dumps(catalog,ensure_ascii=False,separators=(',',':')),'utf-8')
 for name in ['app.js','style.css']:
