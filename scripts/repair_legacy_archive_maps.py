@@ -2,6 +2,8 @@
 from __future__ import annotations
 import sys
 sys.dont_write_bytecode=True
+from decimal import Decimal
+from urllib.parse import urlsplit, parse_qs
 import ast, argparse, hashlib, json, os, re, stat, tempfile, types
 from pathlib import Path
 from dataclasses import replace, asdict
@@ -222,8 +224,106 @@ def semantic_classes(text,date,m,c):
  result=m.edits_apply(text,edits);require(parse(result,date,m,c)['views']==page['views'],'Semantic class changed MapView')
  return result,receipt
 
+EXCEPTION_LOCKS={'260709': {'current': 'b7d4c17604350152e2a3d3bd26435a18263f492f92bd048fd7a4c4ae4674eebf', 'source': '3e77f4e35dde10253d4acab3a7ab385bef8475f6d92675f5269cd3ccc90e80fd'}, '260722': {'current': 'da32dfa3e7c5b4afc6c957c479f2f26111cdd44272e29fa8b1cb7f8d901523c6', 'source': '133e0827fe778e5227a7af0ab66bb87dec93ce78a96c7d3bee7d02fee2248232'}}
+def known_source_projection(current,source,date,gps,m,p,c):
+ receipt=[]
+ if date not in EXCEPTION_LOCKS:return source,receipt
+ require(sha(current)==EXCEPTION_LOCKS[date]['current'] and sha(source)==EXCEPTION_LOCKS[date]['source'],'Exceptional evidence byte lock mismatch')
+ old=parse(current.decode(),date,m,c)
+ if date=='260722':
+  key='51407415';view=old['views'][key];slot=old['slots'][key]
+  require(view.label=='二津野4～果無8N20' and not any(getattr(view,r) for r in ROLES) and all('disabled' in n.attrs for n in (slot[1],slot[2])) and not slot[4] and not slot[5],'Unknown source-less case state')
+  original=parse(source.decode(),date,m,c,True);original_view=original['views'][key];original_slot=original['slots'][key]
+  require(set(original['views'])==set(old['views']) and len(original['views'])==6 and original_view.label==view.label and not any(getattr(original_view,r) for r in ROLES) and key not in original['points'] and len(original['points'])==5 and all('disabled' in n.attrs for n in (original_slot[1],original_slot[2])) and not original_slot[4] and not original_slot[5],'Original source-less case changed')
+  q=old['points'].get(key);require(q==dict(name=view.label,lat=0.0,lng=0.0,management_no=key),'Unknown zero representative sentinel')
+  receipt.append(dict(type='remove-only-invalid-overall-zero-sentinel',key=key,label=view.label,single='disabled',two='disabled',coords_created=False,point=q))
+  return source,receipt
+ key='51513023';label='吉野平6S5W6～6S5W6N1';broken='???6S5W6?6S5W6N1';lat,lng=34.39576,135.78926;url='https://www.google.com/maps?q=34.39576,135.78926'
+ require(set(old['views'])=={'51509108','51511204',key} and old['views'][key].label==label and old['views'][key].single_url==url and old['views'][key].start is None and old['views'][key].end is None,'Exceptional current identity/roles changed')
+ t=source.decode();blocks=c.CARD.findall(t);require(len(blocks)==3,'Exceptional source card count changed');block=m.one([b for b in blocks if c.identity(c.text_class(b,'item-mgmt'))==key],'exception source card');require(c.text_class(block,'card-title')==label,'Exceptional source span changed')
+ dom=m.DOM(block);anchors=[n for n in dom.nodes if n.tag=='a' and n.cls('btn-map')];require(len(anchors)==1 and anchors[0].attrs.get('href')==url,'Exceptional source single changed');require(not [n for n in dom.nodes if n.tag=='script'],'Unexpected source endpoints');twos=[n for n in dom.nodes if n.tag=='button' and n.cls('btn-map')];require(len(twos)==1 and 'disabled' in twos[0].attrs,'Exceptional source two control changed');exact_control(anchors[0],'single',dom);exact_control(twos[0],'two',dom)
+ require(gps.get('吉野平6S5W6')==(lat,lng) and c.url_point(url,label)==(label,lat,lng),'Exceptional source/GPS/single mismatch')
+ pm=m.one(list(re.finditer(r'\bvar\s+POINTS\s*=\s*',t)),'exception POINTS');points,used=json.JSONDecoder().raw_decode(t[pm.end():]);require(len(points)==3,'Exceptional source point count changed')
+ q=m.one([q for q in points if c.identity(q.get('management_no',''))==key],'exception point identity')
+ require(q==dict(name=broken,lat=lat,lng=lng,management_no='515 13023'),'Exceptional damaged point changed')
+ raw=t[pm.end():pm.end()+used];token=json.dumps(broken);require(raw.count(token)==1,'Damaged label token not unique');projected=raw.replace(token,p.json_for_script_tag(label),1)
+ receipt.append(dict(type='fixed-corrupt-point-name-identity-join',key=key,source_name=broken,current_label=label,point_coords=[lat,lng],single_url=url,gps_exact_pole='吉野平6S5W6',endpoints_created=False))
+ return (t[:pm.end()]+projected+t[pm.end()+used:]).encode(),receipt
+
+def remove_zero_sentinel(text,date,m,c):
+ if date!='260722':return text
+ page=parse(text,date,m,c);a,b=page['pr'];raw=text[a:b];pos=1
+ while raw[pos].isspace():pos+=1
+ q,used=json.JSONDecoder().raw_decode(raw[pos:]);require(q==dict(name='二津野4～果無8N20',lat=0.0,lng=0.0,management_no='51407415'),'Only the locked first zero sentinel may be removed')
+ end=pos+used
+ while raw[end].isspace():end+=1
+ require(raw[end]==',' and len(page['points'])==6,'Sentinel array shape changed')
+ return text[:a]+raw[:pos]+raw[end+1:]+text[b:]
+
+PARTIAL_LOCK={'current': '265dd95deba23ec968d31af439c7ce03eda0a31e625b5c166d2ff40d3b39288d', 'source': '8288e603f8bdca556331e09e0db9b2329b3d1b143c0336e15b261842ee3d79a5'}
+def partial_plan(current,source,date,gps,m,p,c):
+ if date!='260630':return None
+ require(sha(current)==PARTIAL_LOCK['current'] and sha(source)==PARTIAL_LOCK['source'],'Partial-date evidence lock mismatch')
+ old=parse(current.decode(),date,m,c);src=parse(source.decode(),date,m,c,True);key='51410138';label='田殿71E3N1～引込';url='https://www.google.com/maps?q=34.31689,135.67107'
+ require(set(old['views'])==set(src['views'])=={'51401633','51401634','51409716',key},'Partial-date identity set changed')
+ v=old['views'][key];require(v.label==label and v.single_url==url and v.start is None and v.end is None and v.representative is None,'Unresolved current role changed')
+ require(src['views'][key].label=='田殿　71E3N1～引き込み','Unknown unresolved source label')
+ require(gps.get('田殿71E3N1')==(34.31689,135.67107) and c.url_point(url,label)==(label,34.31689,135.67107),'Retained single/GPS mismatch')
+ slot=old['slots'][key];require('data-two-open' in slot[2].attrs and len(slot[4])==len(slot[5])==1,'Unknown invalid-two layout')
+ script=slot[4][0];raw=json_unique(old['text'][script.head_end:old['text'].rfind('</script',script.start,script.end)]);zero=dict(name=label,lat=0.0,lng=0.0)
+ require(raw==dict(a=zero,b=zero),'Nonzero/unknown endpoints must not be removed')
+ q=old['points'].get(key);require(q==dict(name=label,lat=0.0,lng=0.0,management_no='514 10138'),'Nonzero/unknown representative must not be removed')
+ return dict(key=key,current_label=label,source_label=src['views'][key].label,source_case_used=False,restored_roles=[],retained_single_url=url,removed_invalid_endpoints=raw,removed_invalid_representative=q,status='Unresolved end label; no map values copied from this source case')
+
+def clean_partial_invalid_maps(text,date,m,p,c):
+ if date!='260630':return text
+ page=parse(text,date,m,c);slot=page['slots']['51410138'];edits=[(slot[2].start,slot[2].end,p._share_disabled_two_map_button())]
+ for n in slot[4]+slot[5]:edits.append((n.start,n.end,''))
+ text=m.edits_apply(text,edits);page=parse(text,date,m,c);a,b=page['pr'];raw=text[a:b];pos=1;spans=[]
+ while True:
+  while raw[pos] in ' \r\n\t,':pos+=1
+  if raw[pos]==']':break
+  q,used=json.JSONDecoder().raw_decode(raw[pos:]);spans.append((pos,pos+used,q));pos+=used
+ require(len(spans)==4 and c.identity(spans[-1][2]['management_no'])=='51410138','Unresolved point position changed')
+ q=spans[-1][2];require(q==dict(name='田殿71E3N1～引込',lat=0.0,lng=0.0,management_no='514 10138'),'Only exact invalid sentinel may be removed')
+ comma=spans[-2][1]
+ while raw[comma].isspace():comma+=1
+ require(raw[comma]==',','Unknown point separator')
+ return text[:a]+raw[:comma]+raw[spans[-1][1]:]+text[b:]
+
+DUPLICATE_LOCK={'current': '80a2ffac69a343ee16808844d201da7b1a45c107ca60df1ffde4213216f5a127', 'source': '5d465731909217a327504ac6aae59d1ae9d6b3ed1b4b062331d1b0a9fc666028'}
+DUPLICATE_GPS_SHA='8be7d23903c17b5d13a467a34b05ebe86563476fe5411702153ccdff9ecb1dce'
+DUPLICATE_CASES={'51408052': {'label': '湯塩14N12～14N13', 'urls': ['https://www.google.com/maps?q=34.303805,135.727255', 'https://www.google.com/maps?q=34.303805,135.727255'], 'current_url': 'https://www.google.com/maps?q=34.303805,135.727255', 'gps_names': ['湯塩14N12', '湯塩14N13'], 'gps_decimal_pairs': [('34.30355', '135.72712'), ('34.30406', '135.72739')]}, '51408020': {'label': '湯塩29～30', 'urls': ['https://www.google.com/maps?q=34.30331,135.73045', 'https://www.google.com/maps?q=34.303309999999996,135.73045000000002'], 'current_url': 'https://www.google.com/maps?q=34.303309999999996,135.73045000000002', 'gps_names': ['湯塩29', '湯塩30'], 'gps_decimal_pairs': [('34.30321', '135.73068'), ('34.30341', '135.73022')]}, '51408022': {'label': '湯塩31～32', 'urls': ['https://www.google.com/maps?q=34.30391,135.729965', 'https://www.google.com/maps?q=34.30391,135.729965'], 'current_url': 'https://www.google.com/maps?q=34.30391,135.729965', 'gps_names': ['湯塩31', '湯塩32'], 'gps_decimal_pairs': [('34.30371', '135.73006'), ('34.30411', '135.72987')]}, '51408067': {'label': '湯塩35G2～35G3', 'urls': ['https://www.google.com/maps?q=34.305175,135.729095', 'https://www.google.com/maps?q=34.305175000000006,135.729095'], 'current_url': 'https://www.google.com/maps?q=34.305175000000006,135.729095', 'gps_names': ['湯塩35G2', '湯塩35G3'], 'gps_decimal_pairs': [('34.30525', '135.72907'), ('34.3051', '135.72912')]}, '51409807': {'label': '湯塩35N1～35N2', 'urls': ['https://www.google.com/maps?q=34.305655,135.72879', 'https://www.google.com/maps?q=34.305655,135.72879'], 'current_url': 'https://www.google.com/maps?q=34.305655,135.72879', 'gps_names': ['湯塩35N1', '湯塩35N2'], 'gps_decimal_pairs': [('34.30565', '135.72866'), ('34.30566', '135.72892')]}}
+def source_projection(current,source,date,gps,m,p,c):
+ if date!='260716':return known_source_projection(current,source,date,gps,m,p,c)
+ require(sha(current)==DUPLICATE_LOCK['current'] and sha(source)==DUPLICATE_LOCK['source'],'Duplicate evidence byte lock mismatch')
+ old=parse(current.decode(),date,m,c);require(set(old['views'])==set(DUPLICATE_CASES),'Duplicate current case set changed')
+ text=source.decode();cards=list(c.CARD.finditer(text));require([c.identity(c.text_class(x[0],'item-mgmt')) for x in cards]==list(DUPLICATE_CASES),'Duplicate source card order/count changed')
+ pm=m.one(list(re.finditer(r'\bvar\s+POINTS\s*=\s*',text)),'duplicate POINTS');_,used=json.JSONDecoder().raw_decode(text[pm.end():]);raw=text[pm.end():pm.end()+used];json_unique(raw);points=json.loads(raw,parse_float=Decimal,parse_int=Decimal)
+ require(len(points)==5 and len({c.identity(q.get('management_no','')) for q in points})==5,'Duplicate POINTS identity/count changed')
+ edits=[];receipt=[]
+ for match in cards:
+  block=match[0];key=c.identity(c.text_class(block,'item-mgmt'));expected=DUPLICATE_CASES[key];dom=m.DOM(block);require(c.text_class(block,'card-title')==expected['label']==old['views'][key].label,'Duplicate full span changed')
+  singles=[n for n in dom.nodes if n.tag=='a' and n.cls('btn-map')];twos=[n for n in dom.nodes if n.tag=='button' and 'data-two-open' in n.attrs]
+  require(len(singles)==2 and len(twos)==1 and singles[0].parent is singles[1].parent is twos[0].parent and singles[0].parent.cls('card-actions'),'Duplicate control structure changed')
+  require(singles[0].start<singles[1].start<twos[0].start and not block[singles[0].end:singles[1].start].strip() and not block[singles[1].end:twos[0].start].strip(),'Duplicate control order/gaps changed')
+  for i,node in enumerate(singles):
+   exact_control(node,'single',dom);require(node.attrs=={'class':'btn btn-map','href':expected['urls'][i],'target':'_blank','rel':'noopener noreferrer'},'Duplicate attributes/URL changed');m.checked_url(node.attrs['href'],c)
+  require([re.sub('<[^>]*>','',dom.content(n)) for n in singles]==['現場地図を開く','地図を開く'],'Duplicate caption order changed')
+  q=m.one([q for q in points if c.identity(q.get('management_no',''))==key],'duplicate representative join');require(q['name']==expected['label'] and set(q)=={'name','lat','lng','management_no'},'Duplicate representative span/schema changed')
+  decimal_pairs=[tuple(Decimal(x) for x in pair) for pair in expected['gps_decimal_pairs']]
+  for name,pair in zip(expected['gps_names'],decimal_pairs):require(name in gps and tuple(Decimal(str(x)) for x in gps[name])==pair,'Duplicate exact GPS changed')
+  midpoint=tuple((decimal_pairs[0][i]+decimal_pairs[1][i])/2 for i in range(2));point=(q['lat'],q['lng']);url_point=tuple(Decimal(x) for x in parse_qs(urlsplit(singles[0].attrs['href']).query)['q'][0].split(','))
+  require(all(isinstance(x,Decimal) and x.is_finite() for x in point) and point==midpoint==url_point,'First URL/POINTS/GPS exact-decimal join failed')
+  require(old['views'][key].single_url==expected['current_url'],'Retained current single literal changed')
+  edits.append((match.start()+singles[1].start,match.start()+singles[1].end,''));receipt.append(dict(type='fixed-duplicate-source-read-only',key=key,label=expected['label'],selected_source_url=singles[0].attrs['href'],excluded_source_url=singles[1].attrs['href'],captions=['現場地図を開く','地図を開く'],source_control_count=2,output_control_count=1,point_decimal=[str(x) for x in point],gps_midpoint_decimal=[str(x) for x in midpoint],retained_current_url=old['views'][key].single_url,current_url_replaced=False))
+ return m.edits_apply(text,edits).encode(),receipt
+
 def repair(current,source,date,gps,m,p,c,row):
- require(date!='260722','Paused: source-less overall zero sentinel needs separate reviewed specification')
+ unresolved=partial_plan(current,source,date,gps,m,p,c)
+ require(row.get('unresolved_case')==unresolved,'Partial-date unresolved scope mismatch')
+ source,exception_receipt=source_projection(current,source,date,gps,m,p,c)
+ require(row.get('exception_receipt',[])==exception_receipt,'Exceptional source plan mismatch')
  old=parse(current.decode(),date,m,c);src=parse(source.decode(),date,m,c,True);actual=old['views'];sv=src['views']
  extras={k:dict(label=v.label,reason='Not present in the pinned current archive; excluded from map-only repair') for k,v in sv.items() if k not in actual}
  require(row['source_exclusions']==extras,'Source exclusions mismatch')
@@ -235,6 +335,8 @@ def repair(current,source,date,gps,m,p,c,row):
  require(row['full_span_join']=={k:dict(date=date,label=v.label,source_label=sv[k].label) for k,v in actual.items()},'Full span join mismatch')
  expected={};computed={};unavailable={}
  for key,v in actual.items():
+  if unresolved and key==unresolved['key']:
+   expected[key]=v;computed[key]=[];unavailable[key]=[r for r in ROLES if not getattr(v,r)];continue
   w=sv[key];require(span_key(v.label)==span_key(w.label),'Non-whitespace source span mismatch: '+key)
   roles=[role for role in ROLES if not getattr(v,role) and getattr(w,role)];computed[key]=roles
   unavailable[key]=[role for role in ROLES if not getattr(v,role) and not getattr(w,role)]
@@ -243,7 +345,10 @@ def repair(current,source,date,gps,m,p,c,row):
   parts=p._share_split_span_label(w.label);require(parts,'Unsupported span '+key)
   names=(parts[0],p._share_complete_span_end_label(parts[0],parts[1],gps));ends=[]
   for role,name in zip(('start','end'),names):
-   pole=p._share_resolve_gps_pole_label(name,gps);require(pole,'Missing GPS '+key+' '+name);g=(pole,*gps[pole]);ends.append(g)
+   pole=p._share_resolve_gps_pole_label(name,gps)
+   if not pole and date=='260709' and key=='51513023' and role=='end':
+    require(v.start is None and v.end is None and w.start is None and w.end is None,'No endpoints may be invented');ends.append(None);continue
+   require(pole,'Missing GPS '+key+' '+name);g=(pole,*gps[pole]);ends.append(g)
    for which,view in [('source',w),('current',v)]:
     pt=getattr(view,role)
     if pt:
@@ -251,10 +356,10 @@ def repair(current,source,date,gps,m,p,c,row):
      allowed={c.norm(name),c.norm(parts[0] if role=='start' else parts[1])}
      if which=='current':allowed.add(c.norm(v.label))
      require(c.norm(pt[0]) in allowed,'Endpoint name conflict '+key+' '+role)
-  midpoint=(w.label,(ends[0][1]+ends[1][1])/2,(ends[0][2]+ends[1][2])/2)
+  midpoint=(w.label,(ends[0][1]+ends[1][1])/2,(ends[0][2]+ends[1][2])/2) if all(ends) else None
   for which,view in [('source',w),('current',v)]:
    for role,pt in [('single_url',c.url_point(view.single_url,v.label) if view.single_url else None),('representative',view.representative)]:
-    if pt:require(any(c.same(pt,x) for x in [*ends,midpoint]),'GPS/'+which+' '+role+' conflict '+key)
+    if pt:require(any(c.same(pt,x) for x in [*ends,midpoint] if x is not None),'GPS/'+which+' '+role+' conflict '+key)
   # Retain a GPS-validated current endpoint URL even when original evidence used its midpoint.
   # Both URLs were validated independently above; no existing URL is replaced.
  require(row['repair_roles']==computed,'Missing-role scope mismatch')
@@ -292,19 +397,19 @@ def repair(current,source,date,gps,m,p,c,row):
  extra=[dict(name=v.label,lat=v.representative[1],lng=v.representative[2],management_no=k) for k,v in expected.items() if k not in existing and 'representative' in computed[k]]
  if extra:point_edits.append((len(raw)-1,len(raw)-1,(',' if existing else '')+','.join(p.json_for_script_tag(v) for v in extra)))
  if point_edits:edits.append((a,b,m.edits_apply(raw,point_edits)))
- result=m.edits_apply(old['text'],edits);result,class_receipt=semantic_classes(result,date,m,c);after=parse(result,date,m,c)
+ result=m.edits_apply(old['text'],edits);result=clean_partial_invalid_maps(result,date,m,p,c);result=remove_zero_sentinel(result,date,m,c);result,class_receipt=semantic_classes(result,date,m,c);after=parse(result,date,m,c)
  require(after['views']==expected,'Repaired projection mismatch');require(c.parse_page(result,date)==expected,'Ordinary parse_page MapView mismatch');strict=strict_projection(after,date,m,p,c);c.verify_preserved(strict,date,[actual])
  require(business(old,m)==business(after,m),'NON-MAP BYTE CHANGE')
  for key,slot in old['slots'].items():
   for role in ROLES:
    if getattr(actual[key],role):require(getattr(after['views'][key],role)==getattr(actual[key],role),'Retained role changed')
- return result.encode(),dict(date=date,before_sha256=sha(current),after_sha256=sha(result.encode()),business_sha256=sha(business(old,m)),business_bytes_equal=True,map_roles=computed,unavailable_roles=unavailable,semantic_class_exceptions=class_receipt,ordinary_parse_page_equal=True,ordinary_prepare_archive_maps='Not claimed compatible: unchanged representative/GPS-end conflict fails closed',source_exclusions=extras,source_ui_anomalies=src['source_ui_anomalies'],retained_url_differences=differences,whitespace_equivalence={k:dict(current_label=v.label,source_label=sv[k].label) for k,v in actual.items() if v.label!=sv[k].label},expected={k:asdict(v) for k,v in expected.items()},retained={k:asdict(v) for k,v in actual.items()})
+ return result.encode(),dict(date=date,before_sha256=sha(current),after_sha256=sha(result.encode()),business_sha256=sha(business(old,m)),business_bytes_equal=True,map_roles=computed,unavailable_roles=unavailable,exception_receipt=exception_receipt,unresolved_case=unresolved,partial_date=bool(unresolved),semantic_class_exceptions=class_receipt,ordinary_parse_page_equal=True,ordinary_prepare_archive_maps='Not claimed compatible: unchanged representative/GPS-end conflict fails closed',source_exclusions=extras,source_ui_anomalies=src['source_ui_anomalies'],retained_url_differences=differences,whitespace_equivalence={k:dict(current_label=v.label,source_label=sv[k].label) for k,v in actual.items() if v.label!=sv[k].label},expected={k:asdict(v) for k,v in expected.items()},retained={k:asdict(v) for k,v in actual.items()})
 
 def run(manifest,repo,scripts,gps_path,modern,out):
  for path in (repo,scripts,gps_path,modern,out):no_reparse(path)
- require(manifest['schema']=='legacy-map-only-v4','Unknown manifest');require(not out.exists(),'Output must be new')
+ require(manifest['schema']=='legacy-map-only-v7','Unknown manifest');require(not out.exists(),'Output must be new')
  require(all(not out.resolve().is_relative_to(x.resolve()) for x in (repo,scripts,gps_path.parent)),'Output inside source')
- m,p,c=dependencies(modern,scripts,manifest['helpers']);gps=m.load_gps(gps_path,manifest['gps_sha256'],p);prepared=[];seen=set()
+ require(not any(r['date']=='260716' for r in manifest['pages']) or manifest['gps_sha256']==DUPLICATE_GPS_SHA,'Duplicate case requires exact GPS byte lock');m,p,c=dependencies(modern,scripts,manifest['helpers']);gps=m.load_gps(gps_path,manifest['gps_sha256'],p);prepared=[];seen=set()
  for row in manifest['pages']:
   date=row['date'];require(date in DATES and date not in seen,'Duplicate/unsupported date');seen.add(date)
   current=m.proof_bytes(repo,row['current'],date,'current');source=m.proof_bytes(repo,row['source'],date,'source');work=(repo/row['current']['path']).read_bytes()
