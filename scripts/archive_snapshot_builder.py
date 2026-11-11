@@ -5,7 +5,7 @@ from urllib.parse import urljoin,urlsplit
 import json,re,unicodedata,hashlib,shutil,datetime,argparse,sys,types,stat
 P=Path(__file__).parent.resolve()
 # The company source contract pins this builder; validate new dependencies before import.
-DEPENDENCY_SHA256_LF = {'archive_alias_map_pages.py': '9881c6826fb31823fabd8eb9fdab125e9b7510f87c18fdeb7b5ecee6963c9ea4', 'archive_alias_maps.json': '2204fb2bdbe74c8e05a7f5e4b45ec4104381c37647851d7c144c09ab7e3b963f', 'archive_map_contract.py': 'da3efe9497cf232f3da7cda8cf99173ac01935137e72523877636461d3abf163'}
+DEPENDENCY_SHA256_LF = {'archive_alias_map_pages.py': '9881c6826fb31823fabd8eb9fdab125e9b7510f87c18fdeb7b5ecee6963c9ea4', 'archive_alias_maps.json': '2204fb2bdbe74c8e05a7f5e4b45ec4104381c37647851d7c144c09ab7e3b963f', 'archive_map_contract.py': 'b30d73b99f2080b4cfd494ea392263d2f4512789271ac7aad041119e57270c9b'}
 verified_dependencies={}
 for relative, expected in DEPENDENCY_SHA256_LF.items():
  dependency=P/relative

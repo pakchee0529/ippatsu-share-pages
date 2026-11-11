@@ -221,6 +221,15 @@ def baseline_pages(repo_root, date, explicit_root=None):
     return result
 
 
+def _published_map_roles(view):
+    """Match the existing renderer: a single internal endpoint is not published."""
+    two = bool(view.start and view.end and not same(view.start, view.end))
+    return {'single_url': view.single_url,
+            'start': view.start if two else None,
+            'end': view.end if two else None,
+            'representative': view.representative}
+
+
 def resolve(items, gps, baselines, portal):
     identities={}
     for it in items:
@@ -247,7 +256,9 @@ def resolve(items, gps, baselines, portal):
         start=merge_point(old.start,merge_point(source_start,gs,key,'source/GPS start'),key,'start')
         end=merge_point(old.end,merge_point(source_end,ge,key,'source/GPS end'),key,'end')
         plain=point(label,getattr(it,'lat',''),getattr(it,'lng',''))
-        rep=merge_point(old.representative,end or start,key,'overall')
+        # A verified overall-map point may be a midpoint, not a span endpoint.
+        # Keep same-role plain/baseline conflicts; do not compare unlike roles.
+        rep=old.representative if old.representative is not None else end or start
         rep=merge_point(rep,plain,key,'plain lat/lng')
         source_url=it.map_url.strip()
         if source_url:safe_url(source_url)
@@ -257,7 +268,16 @@ def resolve(items, gps, baselines, portal):
         # A q= URL can be rounded independently; do not use it to replace known endpoints.
         rep=rep or url_point(single,label)
         if not single and rep:single=f'https://www.google.com/maps?q={rep[1]},{rep[2]}'
-        result[key]=MapView(label,start,end,single,rep)
+        view=MapView(label,start,end,single,rep)
+        if key in prior:
+            # An existing page cannot distinguish lost evidence from deliberately
+            # unverified coordinates. Do not silently enable an absent map role.
+            # Verified restoration uses the separate evidence-bound repair route.
+            before=_published_map_roles(old); after=_published_map_roles(view)
+            added=[role for role in before if after[role] and not before[role]]
+            if added:
+                raise ValueError('Unverified archive map role addition: '+key+': '+','.join(added))
+        result[key]=view
     return result
 
 

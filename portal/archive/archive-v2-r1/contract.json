@@ -1,7 +1,7 @@
 {
   "schema": "archive-snapshot-source/v1",
   "sha256_lf": {
-    "scripts/archive_snapshot_builder.py": "4a5eb74729b835e35036f39c7f010724292f33e8092a8545b26069b0bfea8ad5",
+    "scripts/archive_snapshot_builder.py": "5d318b176ea246af02dac6bc2c831faec742c2e11ecd1b9668700bbac142951e",
     "scripts/archive_snapshot_assets/app.js": "02d4e322e34ad59ff5d0622591cb4a4065885185273ec0217c12174940007d98",
     "scripts/archive_snapshot_assets/style.css": "edf7256918bed10ae7e5f53846b377f278347d608f71c7e1b29216c2926bad45"
   }
