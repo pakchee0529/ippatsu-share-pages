@@ -60,7 +60,7 @@ class ArchiveManifestScopeTests(unittest.TestCase):
                 observed.append((root,kwargs));raise Synced()
             argv=['generate_portal.py','--mode',mode,'--date','261110']
             if company:argv+=['--company-repo-root',str(self.root)]
-            with patch.object(g,'__file__',str(fake)),patch.object(sys,'argv',argv),patch.object(g,'_configure_stdio_encoding',lambda:None),patch.object(g,'load_portal_dotenv',lambda root:None),patch.object(g,'_print_completion_reports_root_info',lambda *a,**kw:0),patch.object(g,'inject_share_detail_edit_into_share_pages',lambda root:None),patch.object(g,'load_archive_manifest_entries',lambda root:[]),patch.object(g,'sync_archive_manifest_counts_from_completion_export',stop):
+            with patch.object(g,'__file__',str(fake)),patch.object(sys,'argv',argv),patch.object(g,'_configure_stdio_encoding',lambda:None),patch.object(g,'load_portal_dotenv',lambda root:None),patch.object(g,'_print_completion_reports_root_info',lambda *a,**kw:0),patch.object(g,'inject_share_detail_edit_into_share_pages',lambda root:None),patch.object(g,'load_archive_manifest_entries',lambda root:[]),patch.object(g,'prepare_archive_maps',return_value={}),patch.object(g,'sync_archive_manifest_counts_from_completion_export',stop):
                 with self.assertRaises(Synced):g.main()
             self.assertEqual(observed,[(self.root,{'only_date':expected})])
     def test_main_passes_completion_only_date(self):
