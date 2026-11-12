@@ -1,0 +1,56 @@
+{
+  "schema": "archive-map-availability/v1",
+  "entries": [
+    {
+      "date": "260630",
+      "management_no": "51410138",
+      "label": "田殿71E3N1～引込",
+      "unavailable_roles": [
+        "start",
+        "end",
+        "representative"
+      ],
+      "evidence": {
+        "commit": "89de62198fb8dd7c62ae0289fcd839d064a15c51",
+        "path": "portal/archive/260630/index.html",
+        "blob_sha1": "20877d8756f77ad77341e46954fb0cdd1c45efb7",
+        "html_sha256": "55abd0ce3bd58bb82171fcd918beb795d8ee2caf49b689381f88303247881f5b",
+        "map_projection_sha256": "1a52de9f0abeda9b511728483ebe913e85aab4c917e2615df59d805a19d84dc1"
+      }
+    },
+    {
+      "date": "260709",
+      "management_no": "51513023",
+      "label": "吉野平6S5W6～6S5W6N1",
+      "unavailable_roles": [
+        "start",
+        "end"
+      ],
+      "evidence": {
+        "commit": "89de62198fb8dd7c62ae0289fcd839d064a15c51",
+        "path": "portal/archive/260709/index.html",
+        "blob_sha1": "a89806959c9e8899784c93533dc6ee61ce1e43f6",
+        "html_sha256": "0775b290ebed0d3c732faa0edb8269c1d5127902fe589439e3bc7c673f44df5c",
+        "map_projection_sha256": "d14f9701d283d34e6be11a48091b05ac8b531ac35296f675aa99f2a16cc71ac2"
+      }
+    },
+    {
+      "date": "260722",
+      "management_no": "51407415",
+      "label": "二津野4～果無8N20",
+      "unavailable_roles": [
+        "single_url",
+        "start",
+        "end",
+        "representative"
+      ],
+      "evidence": {
+        "commit": "89de62198fb8dd7c62ae0289fcd839d064a15c51",
+        "path": "portal/archive/260722/index.html",
+        "blob_sha1": "e38719146d5235a9e504cb9536d285f57465ad60",
+        "html_sha256": "7271bfe85e528920912e1e990fa9a05f36c8170be9b7e46e92cc9a0cfcaa0489",
+        "map_projection_sha256": "45f8d0d55fbf51c3b3c54020c708bd5878ffd8fe879701f5d5afd74695415f86"
+      }
+    }
+  ]
+}

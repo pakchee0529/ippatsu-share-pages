@@ -306,8 +306,9 @@ def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None, ba
             failures.append(f"archive detail missing for {date_key}")
             continue
         detail = parse_archive_detail(detail_path)
-        from archive_map_contract import baseline_pages, verify_preserved, is_fixed_form_alias
+        from archive_map_contract import baseline_pages, verify_preserved, is_fixed_form_alias, load_map_availability, verify_map_availability
         baselines = []
+        availability = None
         try:
             map_html = detail_path.read_text(encoding="utf-8")
             if is_fixed_form_alias(map_html):
@@ -318,6 +319,8 @@ def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None, ba
                     print(f"Warning: {date_key}: no pre-retirement map baseline; historical preservation unverified", file=sys.stderr)
                 baselines = baseline_pages(repo_root, date_key, baseline_root)
                 verify_preserved(map_html, date_key, baselines)
+                availability = load_map_availability(date_key, baselines)
+                verify_map_availability(map_html, date_key, availability)
         except (ValueError, OSError, TypeError, KeyError) as exc:
             failures.append(f"archive map preservation {date_key}: {exc}")
 
@@ -333,7 +336,7 @@ def verify(repo_root: Path, export_root: Path | None, dates: set[str] | None, ba
                 try:
                     import generate_portal as portal
                     from archive_map_contract import export_map_items, resolve, verify_rendered
-                    expected_maps = resolve(export_map_items(export, date_key), {}, baselines, portal)
+                    expected_maps = resolve(export_map_items(export, date_key), {}, baselines, portal, availability=availability, date=date_key)
                     verify_rendered(detail_path.read_text(encoding="utf-8"), date_key, expected_maps)
                 except (ValueError, OSError, TypeError, KeyError) as exc:
                     failures.append(f"archive source map contract {date_key}: {exc}")
