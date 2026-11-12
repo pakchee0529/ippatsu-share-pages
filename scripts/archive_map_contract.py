@@ -221,16 +221,120 @@ def baseline_pages(repo_root, date, explicit_root=None):
     return result
 
 
-def resolve(items, gps, baselines, portal):
+def _published_map_roles(view):
+    """Match the existing renderer: a single internal endpoint is not published."""
+    two = bool(view.start and view.end and not same(view.start, view.end))
+    return {'single_url': view.single_url,
+            'start': view.start if two else None,
+            'end': view.end if two else None,
+            'representative': view.representative}
+
+
+_AVAILABILITY_SHA256_LF = '18165217a47a8c70599a7c56505fc0d0e2b9a7a02def32d6e94efa7ba4381096'
+_MAP_ROLES = ('single_url', 'start', 'end', 'representative')
+
+
+@dataclass(frozen=True)
+class MapAvailability:
+    date: str
+    data: bytes
+
+
+def map_projection_sha256(date, key, view):
+    import hashlib
+    value = {'date': date, 'management_no': key, 'label': view.label, 'roles': _published_map_roles(view)}
+    raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False).encode('utf-8')
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _availability_entries(data):
+    import hashlib
+    if not isinstance(data, bytes) or hashlib.sha256(data.replace(b'\r\n', b'\n')).hexdigest() != _AVAILABILITY_SHA256_LF:
+        raise ValueError('Archive map availability contract hash changed')
+    def pairs(values):
+        result = {}
+        for key, value in values:
+            if key in result: raise ValueError('Duplicate archive map availability key')
+            result[key] = value
+        return result
+    document = json.loads(data.decode('utf-8'), object_pairs_hook=pairs)
+    if not isinstance(document, dict) or set(document) != {'schema', 'entries'} or document['schema'] != 'archive-map-availability/v1':
+        raise ValueError('Invalid archive map availability schema')
+    entries = document['entries']
+    if not isinstance(entries, list) or not entries: raise ValueError('Invalid archive map availability entries')
+    seen = set()
+    for row in entries:
+        if not isinstance(row, dict) or set(row) != {'date', 'management_no', 'label', 'unavailable_roles', 'evidence'}:
+            raise ValueError('Invalid archive map availability row')
+        day, key, label = row['date'], row['management_no'], row['label']
+        if not isinstance(day, str) or not re.fullmatch(r'[0-9]{6}', day): raise ValueError('Invalid archive map availability date')
+        from datetime import date as calendar_date
+        calendar_date(2000 + int(day[:2]), int(day[2:4]), int(day[4:]))
+        if not isinstance(key, str) or identity(key) != key or (day, key) in seen:
+            raise ValueError('Duplicate or invalid archive map availability identity')
+        seen.add((day, key))
+        if not isinstance(label, str) or not label or any(ord(ch) < 32 for ch in label): raise ValueError('Invalid archive map availability label')
+        roles = row['unavailable_roles']
+        if not isinstance(roles, list) or not roles or any(not isinstance(role, str) or role not in _MAP_ROLES for role in roles) or roles != [role for role in _MAP_ROLES if role in roles]:
+            raise ValueError('Invalid archive map availability roles')
+        proof = row['evidence']
+        if not isinstance(proof, dict) or set(proof) != {'commit', 'path', 'blob_sha1', 'html_sha256', 'map_projection_sha256'}:
+            raise ValueError('Invalid archive map availability evidence')
+        if proof['path'] != f'portal/archive/{day}/index.html': raise ValueError('Archive map availability evidence path mismatch')
+        for name, size in (('commit', 40), ('blob_sha1', 40), ('html_sha256', 64), ('map_projection_sha256', 64)):
+            if not isinstance(proof[name], str) or not re.fullmatch('[0-9a-f]{'+str(size)+'}', proof[name]):
+                raise ValueError('Invalid archive map availability evidence hash')
+    return entries
+
+
+def _verified_unavailable(availability, date, prior, identities):
+    if type(availability) is not MapAvailability or date != availability.date: raise ValueError('Archive map availability date binding mismatch')
+    if not isinstance(date, str) or not re.fullmatch(r'[0-9]{6}', date): raise ValueError('Invalid archive map availability target date')
+    result = {}
+    for row in _availability_entries(availability.data):
+        if row['date'] != date: continue
+        key, label = row['management_no'], row['label']; view = prior.get(key)
+        if view is None or view.label != label or identities.get(key) != label: raise ValueError('Archive map availability baseline identity/label mismatch: '+key)
+        if map_projection_sha256(date, key, view) != row['evidence']['map_projection_sha256']: raise ValueError('Archive map availability baseline projection changed: '+key)
+        roles = frozenset(row['unavailable_roles'])
+        if any(_published_map_roles(view)[role] for role in roles): raise ValueError('Archive map availability contradicts a known baseline role: '+key)
+        result[key] = roles
+    return result
+
+
+def load_map_availability(date, baselines):
+    # Resolve beside the verified helper, never via another checkout or fallback.
+    path = Path(__file__).with_name('archive_map_availability.json')
+    if not path.is_file() or path.is_symlink() or getattr(path.lstat(), 'st_file_attributes', 0) & 0x400: raise ValueError('Archive map availability contract missing or unsafe')
+    data = globals().get('__verified_availability_bytes__')
+    if data is None: data = path.read_bytes()
+    value = MapAvailability(date, data)
+    identities = {key: view.label for baseline in baselines for key, view in baseline.items()}
+    prior = merge_baselines(baselines, identities)
+    _verified_unavailable(value, date, prior, identities)
+    return value
+
+
+def verify_map_availability(text, date, availability):
+    """Check rendered unknown roles without using resolver or GPS output."""
+    actual = parse_page(text, date)
+    retained = _verified_unavailable(availability, date, actual, {key: view.label for key, view in actual.items()})
+    for key, roles in retained.items():
+        if any(_published_map_roles(actual[key])[role] for role in roles): raise ValueError('Rendered unavailable archive map role became enabled: '+key)
+
+
+def resolve(items, gps, baselines, portal, *, availability=None, date=None):
     identities={}
     for it in items:
         key=identity(it.management_no)
         if key in identities:raise ValueError('Duplicate/invalid archive source identity: '+key)
         identities[key]=it.label
     prior=merge_baselines(baselines,identities)
+    unavailable=_verified_unavailable(availability,date,prior,identities) if availability is not None else {}
     result={}
     for it in items:
         key=identity(it.management_no); label=it.label; old=prior.get(key,MapView(label))
+        retained=unavailable.get(key,frozenset())
         source_start=point(label,it.start_lat,it.start_lng);source_end=point(label,it.end_lat,it.end_lng)
         # Resolve endpoint roles separately; compact available-points lists lose end-only identity.
         gs=ge=None; parts=portal._share_split_span_label(label)
@@ -246,18 +350,39 @@ def resolve(items, gps, baselines, portal):
             if pole:gs=point(pole,*gps[pole])
         start=merge_point(old.start,merge_point(source_start,gs,key,'source/GPS start'),key,'start')
         end=merge_point(old.end,merge_point(source_end,ge,key,'source/GPS end'),key,'end')
+        for role, explicit in (('start',source_start),('end',source_end)):
+            if role in retained and explicit is not None:
+                raise ValueError('Explicit source contradicts unavailable map role: '+key+': '+role)
+        if 'start' in retained:start=None
+        if 'end' in retained:end=None
         plain=point(label,getattr(it,'lat',''),getattr(it,'lng',''))
-        rep=merge_point(old.representative,end or start,key,'overall')
+        if 'representative' in retained and plain is not None:
+            raise ValueError('Explicit source contradicts unavailable map role: '+key+': representative')
+        # A verified overall-map point may be a midpoint, not a span endpoint.
+        # Keep same-role plain/baseline conflicts; do not compare unlike roles.
+        rep=old.representative if old.representative is not None else end or start
+        if 'representative' in retained:rep=None
         rep=merge_point(rep,plain,key,'plain lat/lng')
         source_url=it.map_url.strip()
         if source_url:safe_url(source_url)
+        if 'single_url' in retained and source_url:
+            raise ValueError('Explicit source contradicts unavailable map role: '+key+': single_url')
         if old.single_url and source_url and not same_url(old.single_url,source_url):
             raise ValueError('Conflicting source/prior single map URL: '+key)
         single=old.single_url or source_url
         # A q= URL can be rounded independently; do not use it to replace known endpoints.
-        rep=rep or url_point(single,label)
-        if not single and rep:single=f'https://www.google.com/maps?q={rep[1]},{rep[2]}'
-        result[key]=MapView(label,start,end,single,rep)
+        if 'representative' not in retained:rep=rep or url_point(single,label)
+        if 'single_url' not in retained and not single and rep:single=f'https://www.google.com/maps?q={rep[1]},{rep[2]}'
+        view=MapView(label,start,end,single,rep)
+        if key in prior:
+            # An existing page cannot distinguish lost evidence from deliberately
+            # unverified coordinates. Do not silently enable an absent map role.
+            # Verified restoration uses the separate evidence-bound repair route.
+            before=_published_map_roles(old); after=_published_map_roles(view)
+            added=[role for role in before if after[role] and not before[role]]
+            if added:
+                raise ValueError('Unverified archive map role addition: '+key+': '+','.join(added))
+        result[key]=view
     return result
 
 

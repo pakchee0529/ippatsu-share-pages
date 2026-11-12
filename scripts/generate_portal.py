@@ -5039,9 +5039,9 @@ def _share_points_are_distinct(
     return abs(start[1] - end[1]) > 1e-9 or abs(start[2] - end[2]) > 1e-9
 
 
-def _archive_map_views(items, gps, baselines=()):
+def _archive_map_views(items, gps, baselines=(), *, availability=None, date=None):
     from archive_map_contract import resolve
-    return resolve(items, gps, baselines, sys.modules[__name__])
+    return resolve(items, gps, baselines, sys.modules[__name__], availability=availability, date=date)
 
 
 def _archive_single_map_button(view) -> str:
@@ -5052,7 +5052,7 @@ def _archive_single_map_button(view) -> str:
 
 
 def prepare_archive_maps(repo_root: Path, date: str, public_items, planned_items):
-    from archive_map_contract import baseline_pages, export_map_items
+    from archive_map_contract import baseline_pages, export_map_items, load_map_availability
     export_path = _completion_reports_root(repo_root) / f"{date}.json"
     if export_path.is_file():
         export_map_items(json.loads(export_path.read_text(encoding="utf-8")), date)
@@ -5072,8 +5072,10 @@ def prepare_archive_maps(repo_root: Path, date: str, public_items, planned_items
             gps = {}  # Baseline/source may suffice; never switch to another company tree.
     else:
         gps = _share_gps_pole_map(repo_root)
+    baselines = baseline_pages(repo_root, date, _ARCHIVE_MAP_BASELINE_ROOT)
+    availability = load_map_availability(date, baselines)
     return _archive_map_views(list(public_items or []) + list(planned_items or []), gps,
-                              baseline_pages(repo_root, date, _ARCHIVE_MAP_BASELINE_ROOT))
+                              baselines, availability=availability, date=date)
 
 
 def build_planned_incomplete_section_html(

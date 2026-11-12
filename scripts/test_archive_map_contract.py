@@ -200,7 +200,7 @@ class Maps(unittest.TestCase):
         original='https://www.google.com/maps?q=34.20%2C135.20&foo=bar'
         other='https://www.google.com/maps?foo=bar&q=34.2,135.2'
         self.assertTrue(c.same_url(original,other))
-        a=item(map_url=other);prior={'51403131':c.MapView(a.label,single_url=original)}
+        a=item(map_url=other);prior={'51403131':c.MapView(a.label,single_url=original,representative=(a.label,34.2,135.2))}
         v=c.resolve([a],{},[prior],g);self.assertEqual(v['51403131'].single_url,original)
         with self.assertRaises(ValueError):c.resolve([replace(a,map_url=other.replace('34.2','35.2'))],{},[prior],g)
         self.assertFalse(c.same_url('https://maps.app.goo.gl/a','https://maps.app.goo.gl/b'))
@@ -268,6 +268,95 @@ class Maps(unittest.TestCase):
                  html.replace('data-two-open ','aria-disabled="true" data-two-open ',1)]
         for html in mutants:
             with self.assertRaises(ValueError):c.verify_rendered(html,DAY,views)
+
+
+    def test_existing_midpoint_representative_is_not_an_endpoint(self):
+        a,b=sample();prior=c.resolve(a+b,{},[],g)
+        prior[a[0].management_no]=replace(prior[a[0].management_no],representative=(a[0].label,34.15,135.15))
+        recovered=c.resolve(a+b,{},[prior],g)
+        self.assertEqual(recovered,prior)
+        c.verify_rendered(render(a,b,recovered),DAY,recovered)
+        c.verify_preserved(render(a,b,recovered),DAY,[prior])
+    def test_existing_midpoint_and_matching_plain_preserve_endpoint(self):
+        a=item(start_lat='34.1',start_lng='135.1',end_lat='34.2',end_lng='135.2',lat='34.15',lng='135.15')
+        old=c.MapView(a.label,(a.label,34.1,135.1),(a.label,34.2,135.2),'https://www.google.com/maps?q=34.2,135.2',(a.label,34.15,135.15))
+        self.assertEqual(c.resolve([a],{},[{a.management_no:old}],g)[a.management_no],old)
+    def test_existing_midpoint_still_rejects_plain_and_endpoint_conflicts(self):
+        a=item(start_lat='34.1',start_lng='135.1',end_lat='34.2',end_lng='135.2')
+        old=c.MapView(a.label,(a.label,34.1,135.1),(a.label,34.2,135.2),'https://www.google.com/maps?q=34.2,135.2',(a.label,34.15,135.15))
+        for bad,gps in [(replace(a,lat='34.17',lng='135.17'),{}),(replace(a,end_lat='34.3'),{}),(a,{'試験2':(34.3,135.3)})]:
+            with self.subTest(bad=bad,gps=gps),self.assertRaises(ValueError):c.resolve([bad],gps,[{a.management_no:old}],g)
+    def test_conflicting_prior_midpoint_is_still_rejected(self):
+        a=item();old=c.MapView(a.label,single_url='https://www.google.com/maps?q=34.15,135.15',representative=(a.label,34.15,135.15))
+        changed=replace(old,representative=(a.label,34.16,135.16))
+        with self.assertRaises(ValueError):c.resolve([a],{},[{a.management_no:old},{a.management_no:changed}],g)
+    def test_midpoint_prepare_and_repeat_writer_preserve_prior_maps(self):
+        a,b=sample();prior=c.resolve(a+b,{},[],g)
+        prior[a[0].management_no]=replace(prior[a[0].management_no],representative=(a[0].label,34.15,135.15))
+        before=render(a,b,prior);self.baseline(before)
+        blank=[item()];pending=[planned()]
+        with patch.object(g,'load_archive_public_items',return_value=(blank,'')),patch.object(g,'load_archive_planned_incomplete',return_value=pending),patch.object(g,'_check_archive_items_vs_export_summary'):
+            g.write_archive_detail_pages(self.root,[g.ManifestEntry(DAY)])
+            out=self.root/'portal/archive'/DAY/'index.html';first=out.read_bytes()
+            g.write_archive_detail_pages(self.root,[g.ManifestEntry(DAY)])
+            self.assertEqual(first,out.read_bytes())
+        c.verify_preserved(out.read_text(),DAY,[c.parse_page(before,DAY)])
+
+
+    def test_prior_single_only_cannot_invent_overall_point(self):
+        a=item(map_url='https://www.google.com/maps?q=34.2,135.2')
+        prior={a.management_no:c.MapView(a.label,single_url=a.map_url)}
+        with self.assertRaisesRegex(ValueError,'Unverified archive map role addition.*representative'):
+            c.resolve([a],{},[prior],g)
+    def test_prior_overall_only_cannot_invent_single_link(self):
+        a=item();prior={a.management_no:c.MapView(a.label,representative=(a.label,34.2,135.2))}
+        with self.assertRaisesRegex(ValueError,'Unverified archive map role addition.*single_url'):
+            c.resolve([a],{},[prior],g)
+    def test_unknown_prior_blocks_gps_source_plain_and_url_additions(self):
+        a=item();prior={a.management_no:c.MapView(a.label)}
+        examples=[(a,{'試験1':(34.1,135.1),'試験2':(34.2,135.2)}),
+                  (replace(a,start_lat='34.1',start_lng='135.1',end_lat='34.2',end_lng='135.2'),{}),
+                  (replace(a,lat='34.15',lng='135.15'),{}),
+                  (replace(a,map_url='https://www.google.com/maps?q=34.2,135.2'),{})]
+        for inputs,gps in examples:
+            saved=copy.deepcopy((inputs,gps,prior))
+            with self.subTest(inputs=inputs,gps=gps),self.assertRaisesRegex(ValueError,'Unverified archive map role addition'):
+                c.resolve([inputs],gps,[prior],g)
+            self.assertEqual((inputs,gps,prior),saved)
+    def test_initial_gps_projection_without_baseline_is_unchanged(self):
+        a=item();gps={'試験1':(34.1,135.1),'試験2':(34.2,135.2)}
+        got=c.resolve([a],gps,[],g)[a.management_no]
+        self.assertTrue(all(c._published_map_roles(got).values()))
+    def test_one_endpoint_repeat_matches_exact_html_and_keeps_two_disabled(self):
+        a=item()
+        for gps in ({'試験1':(34.1,135.1)},{'試験2':(34.2,135.2)}):
+            first=c.resolve([a],gps,[],g);html=render([a],views=first)
+            prior=c.parse_page(html,DAY);again=c.resolve([a],gps,[prior],g)
+            self.assertEqual(render([a],views=again),html)
+            self.assertNotIn('data-two-open ',html)
+            self.assertEqual(c._published_map_roles(again[a.management_no]),c._published_map_roles(prior[a.management_no]))
+            with self.assertRaisesRegex(ValueError,'Unverified archive map role addition.*start,end'):
+                c.resolve([a],{'試験1':(34.1,135.1),'試験2':(34.2,135.2)},[prior],g)
+    def test_existing_baselines_can_supply_complementary_verified_roles(self):
+        a=item();url='https://www.google.com/maps?q=34.2,135.2';rep=(a.label,34.2,135.2)
+        first={a.management_no:c.MapView(a.label,single_url=url)}
+        second={a.management_no:c.MapView(a.label,representative=rep)}
+        got=c.resolve([a],{},[first,second],g)[a.management_no]
+        self.assertEqual(got.single_url,url);self.assertEqual(got.representative,rep)
+    def test_unknown_prior_stops_writer_before_any_archive_output(self):
+        a=item();self.baseline(render([a]));gps=self.root/'gps.json'
+        gps.write_text(json.dumps({'試験1':'34.1,135.1','試験2':'34.2,135.2'}),encoding='utf8');g._ARCHIVE_GPS_JSON=gps
+        with patch.object(g,'load_archive_public_items',return_value=([a],'')),patch.object(g,'load_archive_planned_incomplete',return_value=[]),patch.object(g,'_check_archive_items_vs_export_summary'):
+            with self.assertRaisesRegex(ValueError,'Unverified archive map role addition'):
+                g.write_archive_detail_pages(self.root,[g.ManifestEntry(DAY)])
+        self.assertFalse((self.root/'portal/archive').exists())
+    def test_unknown_prior_stops_main_before_count_sync(self):
+        a=item();self.baseline(render([a]));gps=self.root/'gps.json'
+        gps.write_text(json.dumps({'試験1':'34.1,135.1','試験2':'34.2,135.2'}),encoding='utf8');g._ARCHIVE_GPS_JSON=gps
+        fake=self.root/'scripts/generate_portal.py';fake.parent.mkdir()
+        with patch.object(g,'__file__',str(fake)),patch.object(sys,'argv',['generate_portal.py','--mode','completion-archive','--date',DAY,'--archive-gps-json',str(gps)]),patch.object(g,'load_portal_dotenv'),patch.object(g,'_print_completion_reports_root_info',return_value=0),patch.object(g,'load_archive_manifest_entries',return_value=[g.ManifestEntry(DAY)]),patch.object(g,'load_archive_public_items',return_value=([a],'')),patch.object(g,'load_archive_planned_incomplete',return_value=[]),patch.object(g,'sync_archive_manifest_counts_from_completion_export') as sync:
+            with self.assertRaisesRegex(ValueError,'Unverified archive map role addition'):g.main()
+            sync.assert_not_called()
 
 
 if __name__=='__main__':unittest.main()
