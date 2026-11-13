@@ -44,3 +44,58 @@ def portal(before,after,top,date,legacy):
   except ValueError as e:return [str(e)]
  if readonly(before):return ['Explicit provisional retirement/adoption plan required']
  return legacy(before,after,top,date)
+
+
+def top_dates():
+ """Dates pinned by the reviewed read-only manifest, not by wall-clock time."""
+ return sorted({r.split('/')[1] for r in manifest()
+                if r.startswith('share/') and r.endswith('/index.html')})
+
+
+def validate_top_sources(root, dates):
+ """Validate all three public views and shared assets before adding TOP links."""
+ root = Path(root)
+ accepted = manifest()
+ for date in dates:
+  for suffix in ('index.html', 'daily/index.html', 'instructions/index.html'):
+   rel = f'share/{date}/{suffix}'
+   path = root / rel
+   if rel not in accepted or not path.is_file():
+    raise ValueError(f'Readonly TOP source missing: {rel}')
+   if text_path(path.read_text('utf8'), date) != rel:
+    raise ValueError(f'Readonly TOP source mismatch: {rel}')
+ for rel, expected in accepted.items():
+  if dates and rel.endswith('.mjs'):
+   path = root / rel
+   if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+    raise ValueError(f'Readonly TOP asset mismatch: {rel}')
+
+
+def top_link_failures(html, dates):
+ """Require one visible date card containing each of its three public links."""
+ from html.parser import HTMLParser
+ class Links(HTMLParser):
+  def __init__(self):
+   super().__init__(); self.cards = []; self.card = None
+  def handle_starttag(self, tag, attrs):
+   attrs = dict(attrs)
+   if tag == 'article' and 'card' in attrs.get('class', '').split():
+    self.card = []
+    if 'hidden' not in attrs and attrs.get('aria-hidden') != 'true':
+     self.cards.append(self.card)
+   elif tag == 'a' and self.card is not None:
+    if 'hidden' not in attrs and attrs.get('aria-hidden') != 'true':
+     self.card.append(attrs.get('href', ''))
+  def handle_endtag(self, tag):
+   if tag == 'article': self.card = None
+ parser = Links(); parser.feed(html)
+ failures = []
+ for date in dates:
+  expected = [f'../share/{date}/', f'../share/{date}/daily/',
+              f'../share/{date}/instructions/']
+  matching = [card for card in parser.cards if expected[0] in card]
+  if len(matching) != 1 or any(matching[0].count(link) != 1 for link in expected):
+   failures.append(f'Readonly TOP requires one card with all three links: {date}')
+  elif any(sum(card.count(link) for card in parser.cards) != 1 for link in expected):
+   failures.append(f'Readonly TOP duplicate links: {date}')
+ return failures

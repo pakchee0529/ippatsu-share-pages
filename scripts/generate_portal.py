@@ -8524,13 +8524,22 @@ def build_html(
     calendar_api_key: str = "",
 ) -> str:
     """entries: list of (date_folder, portal_card_heading)."""
+    from weekly_readonly_guard import top_dates
+
+    protected_dates = set(top_dates())
     cards = []
     for folder, heading in entries:
         href = f"../share/{folder}/"
+        readonly_links = ""
+        if folder in protected_dates:
+            readonly_links = (
+                f'\n      <a class="btn" href="{escape_html(href)}daily/">離隔表を開く</a>'
+                f'\n      <a class="btn" href="{escape_html(href)}instructions/">指示書を開く</a>'
+            )
         cards.append(
             f"""    <article class="card" role="listitem">
       <h2 class="card-title">{escape_html(heading)}</h2>
-      <a class="btn" href="{escape_html(href)}">共有ページを開く</a>
+      <a class="btn" href="{escape_html(href)}">共有ページを開く</a>{readonly_links}
     </article>"""
         )
     cards_str = "\n".join(cards)
@@ -9731,6 +9740,16 @@ def _build_portal_top_entries(
     manifest_entries = load_archive_manifest_entries(repo_root)
     archived = {e.date for e in manifest_entries}
     min_date = portal_min_date if portal_min_date is not None else _PORTAL_MIN_DATE
+    from weekly_readonly_guard import top_dates, validate_top_sources
+
+    active_readonly_dates = [
+        folder for folder in top_dates()
+        if (repo_root / "share" / folder).is_dir()
+        and folder not in RETIRED_SHARE_DATE_KEYS and folder not in archived
+        and not _share_date_before_portal_min(folder, min_date)
+        and folder != exclude_folder
+    ]
+    validate_top_sources(repo_root, active_readonly_dates)
     entries: list[tuple[str, str]] = []
     for folder, path in _iter_share_index_rows(repo_root):
         if folder in RETIRED_SHARE_DATE_KEYS:
@@ -10339,7 +10358,12 @@ def validate_portal_top_only_output(repo_root: Path) -> list[str]:
     if not path.is_file():
         return ["portal/index.html missing"]
     html = path.read_text(encoding="utf-8", errors="replace")
-    return _require_html_substrings(
+    from weekly_readonly_guard import top_dates, top_link_failures
+
+    protected_dates = set(top_dates())
+    expected_dates = [folder for folder, _ in _build_portal_top_entries(repo_root)
+                      if folder in protected_dates]
+    return top_link_failures(html, expected_dates) + _require_html_substrings(
         html,
         [
             ("today-schedule", "today-schedule"),
