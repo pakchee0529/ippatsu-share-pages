@@ -70,6 +70,7 @@ def generate(repo,pc_root,out):
             return card
         text=re.sub(r'<article\b[^>]*>.*?</article>',project,text,flags=re.S)
         text=text.replace('<body>', '<body data-source-only="true">')
+        text=text.replace('</head>', '<link rel="stylesheet" media="print" href="../../portal/shared-ledger/weekly-source-print.css?v=20261113-print-r1"></head>')
         text=text.replace('<main>','<main><p>原典参照・閲覧専用。正式保存情報は未確認です。入力・保存・完了処理はありません。</p><p><a class="btn" href="daily/">日次離隔表</a></p>',1)
         for e in entries:
             for code,q in zip(CODES,e['quantities']):q['code']=code
@@ -85,7 +86,7 @@ def generate(repo,pc_root,out):
         semantic[day]=entries
         inventory[day]=hashlib.sha256(old.encode()).hexdigest()
     # Source-only assets and common renderer are explicit dependencies of this revision.
-    assets=['views-provisional.mjs','views-readonly.mjs','ledger-view-render.mjs']
+    assets=['views-provisional.mjs','views-readonly.mjs','ledger-view-render.mjs','weekly-source-print.css']
     for name in assets:
         target=out/'portal/shared-ledger'/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes((repo/'portal/shared-ledger'/name).read_bytes())
     paths=[f'share/{day}/{suffix}' for day in DAYS for suffix in ['index.html','daily/index.html','instructions/index.html']]+['portal/shared-ledger/'+x for x in assets]

@@ -51,7 +51,7 @@ class WeeklyFormat(unittest.TestCase):
         print('Source quantity states:',dict(states))
     def test_integrity(self):
         accepted=guard.manifest()
-        self.assertEqual(len(accepted),18)
+        self.assertEqual(len(accepted),19)
         for rel,digest in accepted.items():
             self.assertEqual(hashlib.sha256((self.root/rel).read_bytes()).hexdigest(),digest)
             if rel.endswith('.html'):
@@ -74,6 +74,28 @@ class WeeklyFormat(unittest.TestCase):
                 target.unlink()
                 with self.assertRaises(ValueError):guard.validate_top_sources(root,list(DAYS))
                 target.write_bytes(data)
+
+    def test_print_asset_scope_and_static_maps(self):
+        css='portal/shared-ledger/weekly-source-print.css'
+        self.assertIn(css,guard.manifest())
+        for day,n in DAYS.items():
+            for suffix in ['index.html','daily/index.html','instructions/index.html']:
+                text=(self.root/f'share/{day}/{suffix}').read_text()
+                self.assertEqual(text.count('weekly-source-print.css?v=20261113-print-r1'),1)
+            text=(self.root/f'share/{day}/index.html').read_text()
+            ids=re.findall(r'\bid="([^"]+)"',text)
+            self.assertEqual(len(ids),len(set(ids)))
+            for i in range(n):
+                for key in [f'two-geo-{i}',f'two-wrap-{i}',f'share-two-map-{i}']:
+                    self.assertIn(key,ids)
+            old=source(self.repo,f'share/{day}/index.html')
+            for ext in ['css','js']:
+                url='https://unpkg.com/leaflet@1.9.4/dist/leaflet.'+ext
+                pattern=re.escape(url)+r'"\s+integrity="([^"]+)"'
+                self.assertEqual(re.search(pattern,text)[1],re.search(pattern,old)[1])
+        for file in (self.repo/'share').rglob('*.html'):
+            if file.relative_to(self.repo).as_posix() not in guard.manifest():
+                self.assertNotIn('weekly-source-print.css',file.read_text())
 
     def test_top(self):
         text=(self.root/'portal/index.html').read_text()

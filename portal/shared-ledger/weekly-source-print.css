@@ -1,0 +1,78 @@
+/* Print pagination for the five source-only page sets. Screen and ordinary
+   saved-ledger pages retain their existing styles and behavior. */
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+@media print {
+  html { font-size: 14px; }
+  body[data-source-only="true"] {
+    margin: 0;
+    padding: 0;
+    background: white;
+    color: #172534;
+    font-size: 10pt;
+    line-height: 1.35;
+  }
+  body[data-source-only="true"] header,
+  body[data-source-only="true"] main {
+    max-width: none;
+    padding: 0;
+    margin: 0;
+  }
+  body[data-source-only="true"] header { margin-bottom: 4mm; }
+  body[data-source-only="true"] h1 { margin: 0 0 3mm; font-size: 14pt; }
+  body[data-source-only="true"] h2 { font-size: 12pt; }
+  body[data-source-only="true"] h3 {
+    font-size: 10pt;
+    margin: 3mm 0 2mm;
+    break-after: avoid;
+  }
+  body[data-source-only="true"] p { margin: 2mm 0; }
+  body[data-source-only="true"] .ledger-view,
+  body[data-source-only="true"] .card {
+    padding: 3mm;
+    margin: 0 0 4mm;
+    border-radius: 0;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  body[data-source-only="true"][data-share-view="daily"] .ledger-view + .ledger-view {
+    break-before: page;
+  }
+  body[data-source-only="true"]:not([data-share-view]) main > article.card:last-of-type {
+    break-after: avoid;
+  }
+  body[data-source-only="true"] .ledger-view .meta,
+  body[data-source-only="true"] .ledger-view .saved-ledger-status { font-size: 8pt; }
+  body[data-source-only="true"] .ledger-view table { font-size: 9pt; }
+  body[data-source-only="true"] .ledger-view .counts { font-size: 8pt; }
+  body[data-source-only="true"] .ledger-view th,
+  body[data-source-only="true"] .ledger-view td { padding: 1.5mm; }
+  body[data-source-only="true"] table,
+  body[data-source-only="true"] tr,
+  body[data-source-only="true"] .print-activity { break-inside: avoid; }
+  body[data-source-only="true"] thead { display: table-header-group; }
+  body[data-source-only="true"] .ledger-view .nav { margin: 2mm 0 3mm; }
+  body[data-source-only="true"] .note-panel { padding: 1.5mm; }
+  body[data-source-only="true"] .instr-table { font-size: 9pt; margin-bottom: 2mm; }
+  body[data-source-only="true"] .instr-table.instr-cut { font-size: 8pt; }
+  body[data-source-only="true"] .instr-table th,
+  body[data-source-only="true"] .instr-table td { padding: 0.6mm 1mm; }
+  body[data-source-only="true"] .instr-note {
+    margin-top: 2mm;
+    padding-top: 2mm;
+    font-size: 9pt;
+  }
+  body[data-source-only="true"] .map-section {
+    margin-top: 4mm;
+    padding: 3mm;
+    break-inside: avoid;
+    break-before: avoid;
+  }
+  body[data-source-only="true"] #share-map {
+    height: 55mm;
+    min-height: 0;
+  }
+}

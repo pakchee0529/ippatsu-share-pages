@@ -24,8 +24,8 @@ def validate_asset_generation(root):
     for path in assets.glob('*.mjs'):
         if re.search(r'[?&]ui=\d',path.read_text(encoding='utf-8')):raise ValueError('Hardcoded input-link generation: '+path.name)
         for target in re.findall(r"['\"](\./[^'\"]+\.mjs(?:\?[^'\"]*)?)['\"]",path.read_text(encoding='utf-8')):
-            if path.name == 'views-readonly.mjs' and target == './ledger-view-render.mjs?v=20261113-weekly-source-r1':continue
-            if path.name == 'views-provisional.mjs' and target == './views-readonly.mjs?v=20261113-weekly-source-r1':continue
+            if path.name == 'views-readonly.mjs' and target == './ledger-view-render.mjs?v=20261113-weekly-source-r2':continue
+            if path.name == 'views-provisional.mjs' and target == './views-readonly.mjs?v=20261113-weekly-source-r2':continue
             if not target.endswith('?v='+ASSET_VERSION):raise ValueError('Mixed ledger module generation: '+target)
 
 def transform(root:Path,date:str,text:str)->str:
@@ -74,8 +74,9 @@ def templates(root,date,encoded, *, source_only=False):
             nav='<a href="../">当日の共有ページへ戻る</a>'
         html=f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{date} {title}</title><style>{style}</style></head><body data-share-view="{mode}"><header>{nav}<h1>{title}</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div>{content}</main><script id="shared-ledger-config" type="application/json">{encoded}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v={ASSET_VERSION}"></script></body></html>'
         if source_only:
+            html=html.replace('</head>', '<link rel="stylesheet" media="print" href="../../../portal/shared-ledger/weekly-source-print.css?v=20261113-print-r1"></head>')
             html=html.replace('閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。', '原典参照・閲覧専用。正式保存情報は未確認です。')
             html=html.replace('id="shared-ledger-config"', 'id="weekly-source-config"')
-            html=html.replace('views.mjs?v='+ASSET_VERSION, 'views-readonly.mjs?v=20261113-weekly-source-r1')
+            html=html.replace('views.mjs?v='+ASSET_VERSION, 'views-readonly.mjs?v=20261113-weekly-source-r2')
         target=out/'index.html'
         if not target.exists() or target.read_text(encoding='utf-8')!=html:target.write_text(html,encoding='utf-8',newline='\n')

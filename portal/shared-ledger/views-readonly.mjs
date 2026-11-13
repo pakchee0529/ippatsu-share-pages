@@ -1,4 +1,4 @@
-import {renderProjection} from './ledger-view-render.mjs?v=20261113-weekly-source-r1';
+import {renderProjection} from './ledger-view-render.mjs?v=20261113-weekly-source-r2';
 const node=document.querySelector('#weekly-source-config');
 if(!node)throw Error('Public source configuration missing');
 const config=JSON.parse(node.textContent);
