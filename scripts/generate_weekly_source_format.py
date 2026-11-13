@@ -76,6 +76,7 @@ def generate(repo,pc_root,out):
         config={'schema':'ippatsu-weekly-source-format/v1','date':day,'cases':entries}
         encoded=json.dumps(config,ensure_ascii=False,separators=(',',':')).replace('<','\\u003c')
         root=out/'share'/day;root.mkdir(parents=True,exist_ok=True)
+        text='\n'.join(line.rstrip() for line in text.splitlines())+'\n'
         (root/'index.html').write_text(text,encoding='utf8',newline='\n')
         templates(out,day,encoded,source_only=True)
         # The ordinary render module imports the configuration parser but never loadDay.
