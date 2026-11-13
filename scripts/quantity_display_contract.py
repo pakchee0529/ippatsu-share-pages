@@ -159,3 +159,18 @@ def preserve_ledger_quantities_and_valid_maps(before,after):
    current=anchor.sub(restore_map,current)
   after=after[:nm.start()]+current+after[nm.end():]
  return after
+
+_weekly_normal_validate_paths=validate_publish_paths
+_weekly_normal_copy=copy_share_html
+_weekly_normal_validate_display=validate_display_html
+def _weekly_guard_module():
+    import importlib.util
+    from pathlib import Path
+    p=Path(__file__).parent/'weekly_readonly_guard.py'
+    spec=importlib.util.spec_from_file_location('_weekly_local_output_guard',p);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
+def validate_publish_paths(repo,paths):return _weekly_guard_module().paths(repo,paths,_weekly_normal_validate_paths)
+def copy_share_html(source,destination):return _weekly_guard_module().copy(source,destination,_weekly_normal_copy)
+def validate_display_html(text):
+    g=_weekly_guard_module()
+    if g.readonly(text):g.text_path(text);return None
+    return _weekly_normal_validate_display(text)

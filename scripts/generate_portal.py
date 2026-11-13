@@ -10931,5 +10931,16 @@ def main() -> int:
     return 0
 
 
+_weekly_normal_ensure=ensure_share_detail_edit_on_share_html
+def ensure_share_detail_edit_on_share_html(html,date_key,repo_root=None):
+    from weekly_readonly_guard import readonly,text_path,paths,manifest
+    if not readonly(html):
+        if 'share/'+date_key+'/index.html' in manifest():raise ValueError('Protected date cannot downgrade to legacy normal format')
+        return _weekly_normal_ensure(html,date_key,repo_root)
+    if text_path(html,date_key)!='share/'+date_key+'/index.html':raise ValueError('Readonly date/view mismatch')
+    if repo_root is None:raise ValueError('Readonly preservation requires explicit repo root')
+    paths(repo_root,['share/'+date_key+'/index.html'],lambda *a:None)
+    return html
+
 if __name__ == "__main__":
     sys.exit(main())
