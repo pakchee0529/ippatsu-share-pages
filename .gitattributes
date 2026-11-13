@@ -1,3 +1,21 @@
 portal/archive/261104/map.html text eol=lf
 portal/archive/261105/map.html text eol=lf
 portal/archive/261106/map.html text eol=lf
+# Reviewed five-day readonly output byte preservation only
+share/261118/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261118/daily/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261118/instructions/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+portal/shared-ledger/views-provisional.mjs -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+portal/shared-ledger/views-readonly.mjs -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261116/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261116/daily/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261116/instructions/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261117/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261117/daily/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261117/instructions/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261119/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261119/daily/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261119/instructions/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261120/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261120/daily/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+share/261120/instructions/index.html -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
