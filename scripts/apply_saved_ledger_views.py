@@ -24,6 +24,8 @@ def validate_asset_generation(root):
     for path in assets.glob('*.mjs'):
         if re.search(r'[?&]ui=\d',path.read_text(encoding='utf-8')):raise ValueError('Hardcoded input-link generation: '+path.name)
         for target in re.findall(r"['\"](\./[^'\"]+\.mjs(?:\?[^'\"]*)?)['\"]",path.read_text(encoding='utf-8')):
+            if path.name == 'views-readonly.mjs' and target == './ledger-view-render.mjs?v=20261113-weekly-source-r1':continue
+            if path.name == 'views-provisional.mjs' and target == './views-readonly.mjs?v=20261113-weekly-source-r1':continue
             if not target.endswith('?v='+ASSET_VERSION):raise ValueError('Mixed ledger module generation: '+target)
 
 def transform(root:Path,date:str,text:str)->str:
@@ -63,11 +65,17 @@ def transform(root:Path,date:str,text:str)->str:
     templates(root,date,encoded)
     return text
 
-def templates(root,date,encoded):
+def templates(root,date,encoded, *, source_only=False):
     style='body{font-family:system-ui,sans-serif;margin:0;background:#f1f5f9;color:#172534}main,header{max-width:1050px;margin:auto;padding:16px}a{color:#0755a1}table{border-collapse:collapse;width:100%;background:white}th,td{border:1px solid #cbd5e1;padding:9px;text-align:left;overflow-wrap:anywhere}.scroll{overflow-x:auto}.saved-ledger-status{font-size:.85rem;color:#475569}.card{width:auto!important}h1{font-size:1.3rem}.view-help{font-size:.9rem}.view-nav{display:flex;gap:8px;flex-wrap:wrap}.view-nav>a{display:inline-flex;padding:10px 14px;border:1px solid #93c5fd;border-radius:8px;background:white;color:#0755a1;text-decoration:none}'
     for folder,mode,title,content in [('instructions','instructions','指示書','<div id="content"></div>'),('daily','daily','日次離隔表','<div id="content"></div>')]:
         out=root/'share'/date/folder;out.mkdir(exist_ok=True)
         nav='<nav class="view-nav"><a href="../">共有ページに戻る</a><a id="ledger-input-top" href="#">台帳入力</a></nav>' if mode=='instructions' else '<a href="../">当日の共有ページへ戻る</a>'
+        if source_only:
+            nav='<a href="../">当日の共有ページへ戻る</a>'
         html=f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{date} {title}</title><style>{style}</style></head><body data-share-view="{mode}"><header>{nav}<h1>{title}</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div>{content}</main><script id="shared-ledger-config" type="application/json">{encoded}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v={ASSET_VERSION}"></script></body></html>'
+        if source_only:
+            html=html.replace('閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。', '原典参照・閲覧専用。正式保存情報は未確認です。')
+            html=html.replace('id="shared-ledger-config"', 'id="weekly-source-config"')
+            html=html.replace('views.mjs?v='+ASSET_VERSION, 'views-readonly.mjs?v=20261113-weekly-source-r1')
         target=out/'index.html'
         if not target.exists() or target.read_text(encoding='utf-8')!=html:target.write_text(html,encoding='utf-8',newline='\n')

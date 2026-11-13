@@ -2,7 +2,7 @@
 from pathlib import Path
 import json,hashlib,os,tempfile
 def manifest():return json.loads((Path(__file__).parent/'weekly_readonly_outputs.json').read_text('utf8'))
-def readonly(text):return 'data-provisional-mode="' in text
+def readonly(text):return 'data-provisional-mode="' in text or 'data-source-only="true"' in text
 def text_path(text,date=None):
  digest=hashlib.sha256(text.replace('\r\n','\n').replace('\r','\n').encode()).hexdigest();matches=[r for r,h in manifest().items() if r.endswith('.html') and h==digest]
  if len(matches)!=1:raise ValueError('Readonly output is not an accepted five-day revision')
@@ -17,7 +17,7 @@ def paths(root,items,legacy):
   if p.is_file() and p.suffix.lower()=='.html' and (readonly(p.read_text('utf8')) or p.relative_to(root).as_posix() in manifest()):
    wanted=text_path(p.read_text('utf8'))
    if p.relative_to(root).as_posix()!=wanted:raise ValueError('Readonly path/day mismatch')
-   if '/261118/' in wanted:
+   if wanted.startswith('share/'):
     for asset,h in manifest().items():
      if asset.endswith('.mjs') and hashlib.sha256((root/asset).read_bytes()).hexdigest()!=h:raise ValueError('Readonly asset revision differs')
   elif p.is_file() and p.relative_to(root).as_posix() in manifest():
@@ -72,7 +72,7 @@ def validate_top_sources(root, dates):
 
 
 def top_link_failures(html, dates):
- """Require one visible date card containing each of its three public links."""
+ """Require one normal share entrance per date; details belong inside that page."""
  from html.parser import HTMLParser
  class Links(HTMLParser):
   def __init__(self):
@@ -94,8 +94,8 @@ def top_link_failures(html, dates):
   expected = [f'../share/{date}/', f'../share/{date}/daily/',
               f'../share/{date}/instructions/']
   matching = [card for card in parser.cards if expected[0] in card]
-  if len(matching) != 1 or any(matching[0].count(link) != 1 for link in expected):
-   failures.append(f'Readonly TOP requires one card with all three links: {date}')
-  elif any(sum(card.count(link) for card in parser.cards) != 1 for link in expected):
+  if len(matching) != 1 or matching[0].count(expected[0]) != 1 or any(link in matching[0] for link in expected[1:]):
+   failures.append(f'Readonly TOP requires one normal share entrance: {date}')
+  elif sum(card.count(expected[0]) for card in parser.cards) != 1 or any(link in card for card in parser.cards for link in expected[1:]):
    failures.append(f'Readonly TOP duplicate links: {date}')
  return failures
