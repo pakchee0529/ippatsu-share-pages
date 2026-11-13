@@ -1,15 +1,20 @@
-// Explicit source-only rendering: no imports, fetch, Auth, storage or business events.
-const node=document.querySelector('#provisional-readonly-config');
-if(!node)throw Error('Readonly source contract missing');
-const c=JSON.parse(node.textContent),mode=document.body.dataset.provisionalMode;
-if(c.schema!=='ippatsu-provisional-readonly/v1'||c.mode!=='provisional_futaku_readonly'||c.date!=='261118')throw Error('Readonly source scope invalid');
-if(mode==='instructions'){
- const cs=new URLSearchParams(location.search).get('management_no');
- if(!c.cases.some(x=>x.management_no===cs)){
-  document.querySelector('main').replaceChildren(Object.assign(document.createElement('p'),{textContent:'対象径間がありません。共有入口から選択してください。'}));
-  document.documentElement.dataset.provisionalReady='invalid-target';
- }else{
-  for(const card of document.querySelectorAll('article[data-management-no-key]'))if(card.dataset.managementNoKey!==cs)card.remove();
-  document.documentElement.dataset.provisionalReady='true';
+import {renderProjection} from './ledger-view-render.mjs?v=20261113-weekly-source-r2';
+const node=document.querySelector('#weekly-source-config');
+if(!node)throw Error('Public source configuration missing');
+const config=JSON.parse(node.textContent);
+if(config.schema!=='ippatsu-weekly-source-format/v1'||!['261116','261117','261118','261119','261120'].includes(config.date))throw Error('Public source scope mismatch');
+const mode=document.body.dataset.shareView;
+if(mode){
+ document.querySelector('h1').textContent='20'+config.date.slice(0,2)+'/'+config.date.slice(2,4)+'/'+config.date.slice(4)+' '+(mode==='daily'?'日次離隔表':'指示書');
+ const wanted=new URLSearchParams(location.search).get('management_no');
+ const selected=mode==='instructions'?config.cases.filter(x=>x.cs===wanted):config.cases;
+ const content=document.querySelector('#content');
+ if(!selected.length)document.querySelector('#error').textContent='対象径間がありません。共有入口から選択してください。';
+ for(const entry of selected){
+  const holder=document.createElement('div');holder.innerHTML=entry.conditions;
+  const notes=document.createElement('div');notes.innerHTML=entry.notes;
+  const records=entry.quantities.map(q=>({code:q.code,initial:null,mode:'unchanged',revised:null,additional:0,sourceText:q.text,sourceState:q.state,sourceField:q.field}));
+  renderProjection(content,{entry,records,document:null,revision:null,sourceOnly:true,message:'原典参照・閲覧専用。正式保存情報は未確認です。',photos:{states:{},branchCount:0}},{mode,date:config.date,conditions:holder.firstElementChild,notes:[notes],mapLink:entry.mapLink});
  }
-}else document.documentElement.dataset.provisionalReady='true';
+}
+document.documentElement.dataset.sourceViewReady='true';

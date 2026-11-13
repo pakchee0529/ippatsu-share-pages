@@ -1,0 +1,9 @@
+# Generated November 16–20 ordinary-format candidate
+
+Recorded 2026-11-13 UTC, branch `cursor/weekly-normal-format-candidate-20261113`.
+
+This output commit follows source/configuration candidate `74ca822`. It contains only the 15 requested daily views, `portal/index.html`, and this new output log. The generator and PC dependency are recorded in `2026-11-13_2249_cursor_weekly-normal-format-source.md`; PC candidate is `f693fb9`. The approved public 23-case set/order and all public quantity evidence, source notes/conditions and maps are preserved. Unknown values remain unknown, and 108 nonapplicable candidates are not certified zero. TOP has one ordinary share entrance per date.
+
+Generated twice into independent roots with byte-identical output, verified independently against immutable public input, then copied from accepted generated output (no HTML manual edits). TOP was generated using the ordinary `portal-top-only` entry. All 18 output/asset hashes match the strict revised manifest. Six dedicated tests, targeted existing regressions, five unchanged ordinary share-update runs, local Chromium desktop/mobile traversal and all 23 instruction selections passed. Twenty-three instruction PDFs were produced; representative screenshots/print inspected. Real map CDN/tile interactions, complete print-layout acceptance, physical printing, company GUI/EXE/updater adoption and production HTTP are not verified.
+
+No non-target generated HTML, fixed archive, business DB, schedule, source quantity, saved ledger or photo changed. Source assets/configuration belong to the preceding source commit; this commit contains generated output and its own log. No private originals, secrets or input datasets were added. No push/PR/merge/publication occurred. Both commits and the PC dependency must be reviewed together before any separate authorized publication step.

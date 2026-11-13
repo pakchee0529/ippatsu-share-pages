@@ -1,0 +1,3 @@
+# Normalize inherited renderer whitespace in the candidate source route
+
+The generated-output whitespace check identified blank-line spaces inherited from the ordinary PC card renderer. The scoped weekly generator now trims line-end whitespace before writing its share output; ordinary PC output remains byte-compatible. Five share hashes were regenerated from this legitimate source change; semantic/evidence tests and independent repeated generation all pass (six dedicated tests). Daily/instruction output, assets and TOP are unchanged. No guard was relaxed and no HTML was hand-edited. Source/configuration and regenerated output remain separate local commits with new logs; no push or publication.

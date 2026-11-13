@@ -8524,22 +8524,13 @@ def build_html(
     calendar_api_key: str = "",
 ) -> str:
     """entries: list of (date_folder, portal_card_heading)."""
-    from weekly_readonly_guard import top_dates
-
-    protected_dates = set(top_dates())
     cards = []
     for folder, heading in entries:
         href = f"../share/{folder}/"
-        readonly_links = ""
-        if folder in protected_dates:
-            readonly_links = (
-                f'\n      <a class="btn" href="{escape_html(href)}daily/">離隔表を開く</a>'
-                f'\n      <a class="btn" href="{escape_html(href)}instructions/">指示書を開く</a>'
-            )
         cards.append(
             f"""    <article class="card" role="listitem">
       <h2 class="card-title">{escape_html(heading)}</h2>
-      <a class="btn" href="{escape_html(href)}">共有ページを開く</a>{readonly_links}
+      <a class="btn" href="{escape_html(href)}">共有ページを開く</a>
     </article>"""
         )
     cards_str = "\n".join(cards)

@@ -1,0 +1,3 @@
+# Regenerate whitespace-normalized weekly share cards
+
+Five share index pages were copied from the independently repeated generated output of source candidate `afc2369`. Only line-end spaces inherited from the ordinary renderer change relative to the preceding generated candidate. All 345 public quantity evidence states and every other visible/input value remain identical; six dedicated acceptance tests passed before copying. All other target pages, TOP, assets and non-target files remain unchanged. This log is committed with those five generated files. No manual HTML correction, push or publication.
