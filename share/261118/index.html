@@ -1,11 +1,271 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>2026/11/18 共有入口（暫定・閲覧専用）</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026/11/18 現場共有</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-  crossorigin=""><style>body{font-family:system-ui,sans-serif;color:#172534;background:#f4f5f7;margin:0;padding:12px}header,main{max-width:1080px;margin:auto}.provisional-banner{border:2px solid #b45309;background:#fff7ed;padding:12px;margin:12px 0;font-size:1rem}.provisional-source{font-size:.9rem;color:#5b4222}.provisional-nav{display:flex;gap:8px;flex-wrap:wrap}.provisional-nav a{padding:10px;border:1px solid #93c5fd;border-radius:6px;background:white}.card{break-inside:avoid;width:auto!important;background:white;border:1px solid #cbd5e1;border-radius:10px;padding:14px;margin:14px 0;min-width:0}.card-title{font-size:1.1rem}.card-actions{display:flex;gap:6px;flex-wrap:wrap}.card-actions a,.card-actions button{padding:9px;border-radius:6px;border:1px solid #93c5fd;background:white;color:#0755a1}table{border-collapse:collapse;width:100%;table-layout:fixed;background:white;font-size:.85rem;margin:12px 0}th,td{border:1px solid #cbd5e1;padding:7px;overflow-wrap:anywhere}td[data-quantity-state="unknown"]{color:#92400e;background:#fff7ed;font-weight:600}.instr-scroll{overflow-x:auto}.instr-cut-total td{font-size:.8rem}.provisional-map-source{font-size:.8rem;overflow-wrap:anywhere}.note-panel[hidden]{display:none}.share-two-map-canvas{height:300px}.two-map-wrap[hidden]{display:none}.btn{cursor:pointer}a{color:#0755a1}@media print{body{background:white;padding:0;font-size:10pt}.card{break-inside:auto;border:1px solid #888;box-shadow:none}.card-head,.provisional-source,tr{break-inside:avoid}table{font-size:9pt}thead{display:table-header-group}.card-actions,.provisional-nav,.two-map-wrap,.share-map-section,.share-multipin-section{display:none!important}.note-panel[hidden]{display:block!important}a{color:black;text-decoration:none}.provisional-banner{border:1px solid #555;background:white;padding:6px}.provisional-source{color:black}}</style></head><body data-provisional-mode="share"><header><nav class="provisional-nav"><a href="daily/">日次離隔表（閲覧専用）</a></nav><h1>2026/11/18 共有入口（暫定・閲覧専用）</h1><aside class="provisional-banner" role="note">2026/11/18 暫定共有・付託参照・閲覧専用／水曜全5件。DB登録・正式受付・保存台帳・施工結果を示す画面ではありません。</aside></header><main><article class="card" data-card-index="0" data-management-no-key="51511022" data-provisional-readonly="true">
+  crossorigin="">
+<style>
+:root {
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1a1a;
+  --muted: #5c6370;
+  --border: #e1e4e8;
+  --accent: #2563eb;
+  --accent2: #0d9488;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
+    "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding: 0.75rem 0.75rem 1.25rem;
+}
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border);
+}
+.card {
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.card-done {
+  opacity: 0.78;
+}
+.item-mgmt {
+  margin: -0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.instr-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.instr-table {
+  width: 100%;
+  min-width: min(100%, 320px);
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-bottom: 0.65rem;
+}
+.instr-table th,
+.instr-table td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+.instr-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.instr-cut-caption {
+  margin: 0.5rem 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.instr-cut-total th,
+.instr-cut-total td {
+  font-weight: 600;
+  background: #f1f5f9;
+}
+.instr-note {
+  margin-top: 0.65rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+  font-size: 0.92rem;
+}
+.card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+.card-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+.case-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.45rem;
+  padding: 0.12rem 0.42rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+.card-warning {
+  margin: 0.25rem 0 0;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+}
+.card-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}
+.card-actions .btn {
+  width: 100%;
+}
+.card-actions .btn-note {
+  grid-column: 1 / -1;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 40px;
+  touch-action: manipulation;
+}
+.btn-map {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-map:hover, .btn-map:focus { filter: brightness(1.05); }
+.btn-map-disabled,
+.btn-map:disabled {
+  background: #e5e7eb;
+  color: #64748b;
+  cursor: not-allowed;
+  filter: none;
+}
+.btn-note {
+  background: #fff;
+  color: var(--accent2);
+  border: 2px solid var(--accent2);
+}
+.btn-note[aria-expanded="true"] {
+  background: var(--accent2);
+  color: #fff;
+}
+@media (max-width: 380px) {
+  .card-actions { grid-template-columns: 1fr; }
+  .card-actions .btn-note { grid-column: 1; }
+}
+.note-panel {
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  font-size: 0.92rem;
+  color: var(--text);
+}
+.note-panel[hidden] { display: none !important; }
+.two-map-wrap {
+  margin-top: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.two-map-wrap[hidden] { display: none !important; }
+.share-two-map-canvas {
+  width: 100%;
+  height: min(45vh, 320px);
+  min-height: 200px;
+}
+.leaflet-tooltip.two-tip {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.map-section {
+  margin-top: 1.25rem;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem 1rem;
+}
+.map-section h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+#share-map {
+  width: 100%;
+  height: min(55vh, 420px);
+  min-height: 240px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+#share-map.map-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+}
+.map-empty-msg {
+  margin: 0;
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-align: center;
+}
+.leaflet-container { font-family: inherit; }
+@media (min-width: 480px) {
+  .card-head {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .page-title { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body data-source-only="true">
+<header>
+  <h1 class="page-title">2026/11/18 現場共有</h1>
+</header>
+<main><p>原典参照・閲覧専用。正式保存情報は未確認です。入力・保存・完了処理はありません。</p><p><a class="btn" href="daily/">日次離隔表</a></p>
+<article class="card" data-card-index="0" data-management-no-key="51511022">
   <div class="card-head">
     <div class="card-title-row"><h2 class="card-title">津風呂3G1S7～3G1S8</h2></div>
     <p class="item-mgmt">51511022</p>
     
-    <section class="provisional-source"><p>暫定・CS／付託参照／CS保全・同定済み／DB未登録・閲覧専用</p><p>設計番号候補：<strong data-design-candidate="6358">6358</strong>（根拠：付託指示票 B6358。DB保存値ではありません）</p><p>出典：26年11月11日 付託.pdf、付託日 2026-11-11、1頁・5行</p><p>処理方法・道幅の出典：保全済みCS 1頁。受付回・受領日時・業務状態・運搬回数・集積・B車・離隔は未確認。原票空欄は未確認として表示しています。</p></section><div class="card-actions">
+    <div class="card-actions">
       <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=34.39261,135.87438" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
@@ -17,13 +277,14 @@
   <div class="two-map-wrap" id="two-wrap-0" hidden>
     <div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-0" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51511022</td></tr><tr><th>処理方法</th><td>持帰</td></tr><tr><th>B車</th><td>未確認</td></tr><tr><th>道幅</th><td>2m</td></tr><tr><th>傾斜</th><td>傾斜地</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td data-quantity-field="branch_cut_under_10" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_under_10" data-quantity-state="confirmed">21</td></tr><tr><th>〜20未満</th><td data-quantity-field="branch_cut_10_20" data-quantity-state="confirmed">1</td><td data-quantity-field="root_cut_10_20" data-quantity-state="confirmed">2</td></tr><tr><th>〜30未満</th><td data-quantity-field="branch_cut_20_30" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_20_30" data-quantity-state="unknown">未確認</td></tr><tr><th>〜40未満</th><td data-quantity-field="branch_cut_30_40" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_30_40" data-quantity-state="unknown">未確認</td></tr><tr><th>〜50未満</th><td data-quantity-field="branch_cut_40_50" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_40_50" data-quantity-state="unknown">未確認</td></tr><tr><th>50以上</th><td data-quantity-field="branch_cut_over_50" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_over_50" data-quantity-state="unknown">未確認</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>未確認（記載分 1本）</td><td>未確認（記載分 23本）</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td data-quantity-field="brush_area_m2" data-quantity-state="confirmed">45㎡</td></tr><tr><th>竹伐採本数</th><td data-quantity-field="bamboo_count" data-quantity-state="unknown">未確認</td></tr><tr><th>つる伐採箇所数</th><td data-quantity-field="vine_locations" data-quantity-state="unknown">未確認</td></tr></tbody></table></div></div>
-<p class="provisional-map-source">地図始点：津風呂3G1S7 34.39261,135.87438 ／ 終点：津風呂3G1S8 34.39258,135.874</p><nav class="provisional-nav"><a href="instructions/?management_no=51511022">指示書（閲覧専用）</a></nav></article><article class="card" data-card-index="1" data-management-no-key="51510183" data-provisional-readonly="true">
+  <div class="note-panel" id="note-0" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51511022</td></tr><tr><th>処理方法</th><td>持帰</td></tr><tr><th>B車</th><td>未確認</td></tr><tr><th>道幅</th><td>2m</td></tr><tr><th>傾斜</th><td>傾斜地</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td data-quantity-field="branch_cut_under_10" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_under_10" data-evidence-state="source_positive">21</td></tr><tr><th>〜20未満</th><td data-quantity-field="branch_cut_10_20" data-evidence-state="source_positive">1</td><td data-quantity-field="root_cut_10_20" data-evidence-state="source_positive">2</td></tr><tr><th>〜30未満</th><td data-quantity-field="branch_cut_20_30" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_20_30" data-evidence-state="unknown">未確認</td></tr><tr><th>〜40未満</th><td data-quantity-field="branch_cut_30_40" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_30_40" data-evidence-state="unknown">未確認</td></tr><tr><th>〜50未満</th><td data-quantity-field="branch_cut_40_50" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_40_50" data-evidence-state="unknown">未確認</td></tr><tr><th>50以上</th><td data-quantity-field="branch_cut_over_50" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_over_50" data-evidence-state="unknown">未確認</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>正式合計未確定</td><td>正式合計未確定</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td data-quantity-field="brush_area_m2" data-evidence-state="source_positive">45㎡</td></tr><tr><th>竹伐採本数</th><td data-quantity-field="bamboo_count" data-evidence-state="unknown">未確認</td></tr><tr><th>つる伐採箇所数</th><td data-quantity-field="vine_locations" data-evidence-state="unknown">未確認</td></tr></tbody></table></div></div>
+<div class="instr-note"><p>暫定・CS／付託参照／CS保全・同定済み／DB未登録・閲覧専用</p><p>設計番号候補：<strong data-design-candidate="6358">6358</strong>（根拠：付託指示票 B6358。DB保存値ではありません）</p><p>出典：26年11月11日 付託.pdf、付託日 2026-11-11、1頁・5行</p><p>処理方法・道幅の出典：保全済みCS 1頁。受付回・受領日時・業務状態・運搬回数・集積・B車・離隔は未確認。原票空欄は未確認として表示しています。</p></div><nav><a class="btn" href="instructions/?management_no=51511022">指示書</a></nav></article>
+<article class="card" data-card-index="1" data-management-no-key="51510183">
   <div class="card-head">
     <div class="card-title-row"><h2 class="card-title">竜門19S10～19S11</h2></div>
     <p class="item-mgmt">51510183</p>
     
-    <section class="provisional-source"><p>暫定・付託参照／CS保全済み（本画面の数量は付託参照）／DB未登録・閲覧専用</p><p>設計番号候補：<strong data-design-candidate="6358">6358</strong>（根拠：付託指示票 B6358。DB保存値ではありません）</p><p>出典：26年11月11日 付託.pdf、付託日 2026-11-11、1頁・4行</p><p>処理方法・道幅の出典：保全済みCS 1頁。受付回・受領日時・業務状態・運搬回数・集積・B車・離隔は未確認。原票空欄は未確認として表示しています。</p></section><div class="card-actions">
+    <div class="card-actions">
       <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=34.39469,135.86944" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
@@ -35,13 +296,14 @@
   <div class="two-map-wrap" id="two-wrap-1" hidden>
     <div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-1" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51510183</td></tr><tr><th>処理方法</th><td>持出</td></tr><tr><th>B車</th><td>未確認</td></tr><tr><th>道幅</th><td>4m</td></tr><tr><th>傾斜</th><td>傾斜地</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td data-quantity-field="branch_cut_under_10" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_under_10" data-quantity-state="unknown">未確認</td></tr><tr><th>〜20未満</th><td data-quantity-field="branch_cut_10_20" data-quantity-state="confirmed">7</td><td data-quantity-field="root_cut_10_20" data-quantity-state="unknown">未確認</td></tr><tr><th>〜30未満</th><td data-quantity-field="branch_cut_20_30" data-quantity-state="confirmed">4</td><td data-quantity-field="root_cut_20_30" data-quantity-state="unknown">未確認</td></tr><tr><th>〜40未満</th><td data-quantity-field="branch_cut_30_40" data-quantity-state="confirmed">1</td><td data-quantity-field="root_cut_30_40" data-quantity-state="unknown">未確認</td></tr><tr><th>〜50未満</th><td data-quantity-field="branch_cut_40_50" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_40_50" data-quantity-state="unknown">未確認</td></tr><tr><th>50以上</th><td data-quantity-field="branch_cut_over_50" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_over_50" data-quantity-state="unknown">未確認</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>未確認（記載分 12本）</td><td>未確認（記載分 0本）</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td data-quantity-field="brush_area_m2" data-quantity-state="unknown">未確認</td></tr><tr><th>竹伐採本数</th><td data-quantity-field="bamboo_count" data-quantity-state="unknown">未確認</td></tr><tr><th>つる伐採箇所数</th><td data-quantity-field="vine_locations" data-quantity-state="unknown">未確認</td></tr></tbody></table></div></div>
-<p class="provisional-map-source">地図始点：竜門19S10 34.39469,135.86944 ／ 終点：竜門19S11 34.39462,135.86916</p><nav class="provisional-nav"><a href="instructions/?management_no=51510183">指示書（閲覧専用）</a></nav></article><article class="card" data-card-index="2" data-management-no-key="51507850" data-provisional-readonly="true">
+  <div class="note-panel" id="note-1" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51510183</td></tr><tr><th>処理方法</th><td>持出</td></tr><tr><th>B車</th><td>未確認</td></tr><tr><th>道幅</th><td>4m</td></tr><tr><th>傾斜</th><td>傾斜地</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td data-quantity-field="branch_cut_under_10" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_under_10" data-evidence-state="unknown">未確認</td></tr><tr><th>〜20未満</th><td data-quantity-field="branch_cut_10_20" data-evidence-state="source_positive">7</td><td data-quantity-field="root_cut_10_20" data-evidence-state="unknown">未確認</td></tr><tr><th>〜30未満</th><td data-quantity-field="branch_cut_20_30" data-evidence-state="source_positive">4</td><td data-quantity-field="root_cut_20_30" data-evidence-state="unknown">未確認</td></tr><tr><th>〜40未満</th><td data-quantity-field="branch_cut_30_40" data-evidence-state="source_positive">1</td><td data-quantity-field="root_cut_30_40" data-evidence-state="unknown">未確認</td></tr><tr><th>〜50未満</th><td data-quantity-field="branch_cut_40_50" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_40_50" data-evidence-state="unknown">未確認</td></tr><tr><th>50以上</th><td data-quantity-field="branch_cut_over_50" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_over_50" data-evidence-state="unknown">未確認</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>正式合計未確定</td><td>正式合計未確定</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td data-quantity-field="brush_area_m2" data-evidence-state="unknown">未確認</td></tr><tr><th>竹伐採本数</th><td data-quantity-field="bamboo_count" data-evidence-state="unknown">未確認</td></tr><tr><th>つる伐採箇所数</th><td data-quantity-field="vine_locations" data-evidence-state="unknown">未確認</td></tr></tbody></table></div></div>
+<div class="instr-note"><p>暫定・付託参照／CS保全済み（本画面の数量は付託参照）／DB未登録・閲覧専用</p><p>設計番号候補：<strong data-design-candidate="6358">6358</strong>（根拠：付託指示票 B6358。DB保存値ではありません）</p><p>出典：26年11月11日 付託.pdf、付託日 2026-11-11、1頁・4行</p><p>処理方法・道幅の出典：保全済みCS 1頁。受付回・受領日時・業務状態・運搬回数・集積・B車・離隔は未確認。原票空欄は未確認として表示しています。</p></div><nav><a class="btn" href="instructions/?management_no=51510183">指示書</a></nav></article>
+<article class="card" data-card-index="2" data-management-no-key="51507850">
   <div class="card-head">
     <div class="card-title-row"><h2 class="card-title">西千股47W9E5～47W9E6</h2></div>
     <p class="item-mgmt">51507850</p>
     
-    <section class="provisional-source"><p>暫定・CS／付託参照／CS保全・同定済み／DB未登録・閲覧専用</p><p>設計番号候補：<strong data-design-candidate="6358">6358</strong>（根拠：付託指示票 B6358。DB保存値ではありません）</p><p>出典：26年11月11日 付託.pdf、付託日 2026-11-11、1頁・3行</p><p>処理方法・道幅の出典：保全済みCS 1頁。受付回・受領日時・業務状態・運搬回数・集積・B車・離隔は未確認。原票空欄は未確認として表示しています。</p></section><div class="card-actions">
+    <div class="card-actions">
       <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=34.39866,135.85678" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
@@ -53,13 +315,14 @@
   <div class="two-map-wrap" id="two-wrap-2" hidden>
     <div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-2" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51507850</td></tr><tr><th>処理方法</th><td>持帰</td></tr><tr><th>B車</th><td>未確認</td></tr><tr><th>道幅</th><td>3m</td></tr><tr><th>傾斜</th><td>傾斜地</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td data-quantity-field="branch_cut_under_10" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_under_10" data-quantity-state="unknown">未確認</td></tr><tr><th>〜20未満</th><td data-quantity-field="branch_cut_10_20" data-quantity-state="confirmed">3</td><td data-quantity-field="root_cut_10_20" data-quantity-state="unknown">未確認</td></tr><tr><th>〜30未満</th><td data-quantity-field="branch_cut_20_30" data-quantity-state="confirmed">1</td><td data-quantity-field="root_cut_20_30" data-quantity-state="unknown">未確認</td></tr><tr><th>〜40未満</th><td data-quantity-field="branch_cut_30_40" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_30_40" data-quantity-state="unknown">未確認</td></tr><tr><th>〜50未満</th><td data-quantity-field="branch_cut_40_50" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_40_50" data-quantity-state="unknown">未確認</td></tr><tr><th>50以上</th><td data-quantity-field="branch_cut_over_50" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_over_50" data-quantity-state="unknown">未確認</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>未確認（記載分 4本）</td><td>未確認（記載分 0本）</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td data-quantity-field="brush_area_m2" data-quantity-state="confirmed">10㎡</td></tr><tr><th>竹伐採本数</th><td data-quantity-field="bamboo_count" data-quantity-state="confirmed">3本</td></tr><tr><th>つる伐採箇所数</th><td data-quantity-field="vine_locations" data-quantity-state="unknown">未確認</td></tr></tbody></table></div></div>
-<p class="provisional-map-source">地図始点：西千股47W9E5 34.39866,135.85678 ／ 終点：西千股47W9E6 34.39853,135.85745</p><nav class="provisional-nav"><a href="instructions/?management_no=51507850">指示書（閲覧専用）</a></nav></article><article class="card" data-card-index="3" data-management-no-key="51507846" data-provisional-readonly="true">
+  <div class="note-panel" id="note-2" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51507850</td></tr><tr><th>処理方法</th><td>持帰</td></tr><tr><th>B車</th><td>未確認</td></tr><tr><th>道幅</th><td>3m</td></tr><tr><th>傾斜</th><td>傾斜地</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td data-quantity-field="branch_cut_under_10" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_under_10" data-evidence-state="unknown">未確認</td></tr><tr><th>〜20未満</th><td data-quantity-field="branch_cut_10_20" data-evidence-state="source_positive">3</td><td data-quantity-field="root_cut_10_20" data-evidence-state="unknown">未確認</td></tr><tr><th>〜30未満</th><td data-quantity-field="branch_cut_20_30" data-evidence-state="source_positive">1</td><td data-quantity-field="root_cut_20_30" data-evidence-state="unknown">未確認</td></tr><tr><th>〜40未満</th><td data-quantity-field="branch_cut_30_40" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_30_40" data-evidence-state="unknown">未確認</td></tr><tr><th>〜50未満</th><td data-quantity-field="branch_cut_40_50" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_40_50" data-evidence-state="unknown">未確認</td></tr><tr><th>50以上</th><td data-quantity-field="branch_cut_over_50" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_over_50" data-evidence-state="unknown">未確認</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>正式合計未確定</td><td>正式合計未確定</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td data-quantity-field="brush_area_m2" data-evidence-state="source_positive">10㎡</td></tr><tr><th>竹伐採本数</th><td data-quantity-field="bamboo_count" data-evidence-state="source_positive">3本</td></tr><tr><th>つる伐採箇所数</th><td data-quantity-field="vine_locations" data-evidence-state="unknown">未確認</td></tr></tbody></table></div></div>
+<div class="instr-note"><p>暫定・CS／付託参照／CS保全・同定済み／DB未登録・閲覧専用</p><p>設計番号候補：<strong data-design-candidate="6358">6358</strong>（根拠：付託指示票 B6358。DB保存値ではありません）</p><p>出典：26年11月11日 付託.pdf、付託日 2026-11-11、1頁・3行</p><p>処理方法・道幅の出典：保全済みCS 1頁。受付回・受領日時・業務状態・運搬回数・集積・B車・離隔は未確認。原票空欄は未確認として表示しています。</p></div><nav><a class="btn" href="instructions/?management_no=51507850">指示書</a></nav></article>
+<article class="card" data-card-index="3" data-management-no-key="51507846">
   <div class="card-head">
     <div class="card-title-row"><h2 class="card-title">西千股47W9G1～47W9E1</h2></div>
     <p class="item-mgmt">51507846</p>
     
-    <section class="provisional-source"><p>暫定・付託参照／CS保全済み（本画面の数量は付託参照）／DB未登録・閲覧専用</p><p>設計番号候補：<strong data-design-candidate="6358">6358</strong>（根拠：付託指示票 B6358。DB保存値ではありません）</p><p>出典：26年11月11日 付託.pdf、付託日 2026-11-11、1頁・2行</p><p>処理方法・道幅の出典：保全済みCS 1頁。受付回・受領日時・業務状態・運搬回数・集積・B車・離隔は未確認。原票空欄は未確認として表示しています。</p></section><div class="card-actions">
+    <div class="card-actions">
       <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=34.40008,135.85499" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-3" data-two-map="share-two-map-3" data-two-json="two-geo-3" aria-expanded="false" aria-controls="two-wrap-3">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
@@ -71,13 +334,14 @@
   <div class="two-map-wrap" id="two-wrap-3" hidden>
     <div id="share-two-map-3" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-3" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51507846</td></tr><tr><th>処理方法</th><td>持出</td></tr><tr><th>B車</th><td>未確認</td></tr><tr><th>道幅</th><td>3m</td></tr><tr><th>傾斜</th><td>傾斜地</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td data-quantity-field="branch_cut_under_10" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_under_10" data-quantity-state="unknown">未確認</td></tr><tr><th>〜20未満</th><td data-quantity-field="branch_cut_10_20" data-quantity-state="confirmed">1</td><td data-quantity-field="root_cut_10_20" data-quantity-state="unknown">未確認</td></tr><tr><th>〜30未満</th><td data-quantity-field="branch_cut_20_30" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_20_30" data-quantity-state="unknown">未確認</td></tr><tr><th>〜40未満</th><td data-quantity-field="branch_cut_30_40" data-quantity-state="confirmed">1</td><td data-quantity-field="root_cut_30_40" data-quantity-state="unknown">未確認</td></tr><tr><th>〜50未満</th><td data-quantity-field="branch_cut_40_50" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_40_50" data-quantity-state="unknown">未確認</td></tr><tr><th>50以上</th><td data-quantity-field="branch_cut_over_50" data-quantity-state="confirmed">1</td><td data-quantity-field="root_cut_over_50" data-quantity-state="unknown">未確認</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>未確認（記載分 3本）</td><td>未確認（記載分 0本）</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td data-quantity-field="brush_area_m2" data-quantity-state="unknown">未確認</td></tr><tr><th>竹伐採本数</th><td data-quantity-field="bamboo_count" data-quantity-state="unknown">未確認</td></tr><tr><th>つる伐採箇所数</th><td data-quantity-field="vine_locations" data-quantity-state="unknown">未確認</td></tr></tbody></table></div></div>
-<p class="provisional-map-source">地図始点：西千股47W9G1 34.40008,135.85499 ／ 終点：西千股47W9E1 34.39981,135.85532</p><nav class="provisional-nav"><a href="instructions/?management_no=51507846">指示書（閲覧専用）</a></nav></article><article class="card" data-card-index="4" data-management-no-key="51507845" data-provisional-readonly="true">
+  <div class="note-panel" id="note-3" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51507846</td></tr><tr><th>処理方法</th><td>持出</td></tr><tr><th>B車</th><td>未確認</td></tr><tr><th>道幅</th><td>3m</td></tr><tr><th>傾斜</th><td>傾斜地</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td data-quantity-field="branch_cut_under_10" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_under_10" data-evidence-state="unknown">未確認</td></tr><tr><th>〜20未満</th><td data-quantity-field="branch_cut_10_20" data-evidence-state="source_positive">1</td><td data-quantity-field="root_cut_10_20" data-evidence-state="unknown">未確認</td></tr><tr><th>〜30未満</th><td data-quantity-field="branch_cut_20_30" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_20_30" data-evidence-state="unknown">未確認</td></tr><tr><th>〜40未満</th><td data-quantity-field="branch_cut_30_40" data-evidence-state="source_positive">1</td><td data-quantity-field="root_cut_30_40" data-evidence-state="unknown">未確認</td></tr><tr><th>〜50未満</th><td data-quantity-field="branch_cut_40_50" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_40_50" data-evidence-state="unknown">未確認</td></tr><tr><th>50以上</th><td data-quantity-field="branch_cut_over_50" data-evidence-state="source_positive">1</td><td data-quantity-field="root_cut_over_50" data-evidence-state="unknown">未確認</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>正式合計未確定</td><td>正式合計未確定</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td data-quantity-field="brush_area_m2" data-evidence-state="unknown">未確認</td></tr><tr><th>竹伐採本数</th><td data-quantity-field="bamboo_count" data-evidence-state="unknown">未確認</td></tr><tr><th>つる伐採箇所数</th><td data-quantity-field="vine_locations" data-evidence-state="unknown">未確認</td></tr></tbody></table></div></div>
+<div class="instr-note"><p>暫定・付託参照／CS保全済み（本画面の数量は付託参照）／DB未登録・閲覧専用</p><p>設計番号候補：<strong data-design-candidate="6358">6358</strong>（根拠：付託指示票 B6358。DB保存値ではありません）</p><p>出典：26年11月11日 付託.pdf、付託日 2026-11-11、1頁・2行</p><p>処理方法・道幅の出典：保全済みCS 1頁。受付回・受領日時・業務状態・運搬回数・集積・B車・離隔は未確認。原票空欄は未確認として表示しています。</p></div><nav><a class="btn" href="instructions/?management_no=51507846">指示書</a></nav></article>
+<article class="card" data-card-index="4" data-management-no-key="51507845">
   <div class="card-head">
     <div class="card-title-row"><h2 class="card-title">西千股47W3～47W4</h2></div>
     <p class="item-mgmt">51507845</p>
     
-    <section class="provisional-source"><p>暫定・付託参照／CS保全済み（本画面の数量は付託参照）／DB未登録・閲覧専用</p><p>設計番号候補：<strong data-design-candidate="6358">6358</strong>（根拠：付託指示票 B6358。DB保存値ではありません）</p><p>出典：26年11月11日 付託.pdf、付託日 2026-11-11、1頁・1行</p><p>処理方法・道幅の出典：保全済みCS 1頁。受付回・受領日時・業務状態・運搬回数・集積・B車・離隔は未確認。原票空欄は未確認として表示しています。</p></section><div class="card-actions">
+    <div class="card-actions">
       <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=34.40118,135.8566" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-4" data-two-map="share-two-map-4" data-two-json="two-geo-4" aria-expanded="false" aria-controls="two-wrap-4">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
@@ -89,10 +353,18 @@
   <div class="two-map-wrap" id="two-wrap-4" hidden>
     <div id="share-two-map-4" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
   </div>
-  <div class="note-panel" id="note-4" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51507845</td></tr><tr><th>処理方法</th><td>持出</td></tr><tr><th>B車</th><td>未確認</td></tr><tr><th>道幅</th><td>4m</td></tr><tr><th>傾斜</th><td>傾斜地</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td data-quantity-field="branch_cut_under_10" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_under_10" data-quantity-state="unknown">未確認</td></tr><tr><th>〜20未満</th><td data-quantity-field="branch_cut_10_20" data-quantity-state="confirmed">5</td><td data-quantity-field="root_cut_10_20" data-quantity-state="unknown">未確認</td></tr><tr><th>〜30未満</th><td data-quantity-field="branch_cut_20_30" data-quantity-state="confirmed">7</td><td data-quantity-field="root_cut_20_30" data-quantity-state="unknown">未確認</td></tr><tr><th>〜40未満</th><td data-quantity-field="branch_cut_30_40" data-quantity-state="confirmed">1</td><td data-quantity-field="root_cut_30_40" data-quantity-state="unknown">未確認</td></tr><tr><th>〜50未満</th><td data-quantity-field="branch_cut_40_50" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_40_50" data-quantity-state="unknown">未確認</td></tr><tr><th>50以上</th><td data-quantity-field="branch_cut_over_50" data-quantity-state="unknown">未確認</td><td data-quantity-field="root_cut_over_50" data-quantity-state="unknown">未確認</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>未確認（記載分 13本）</td><td>未確認（記載分 0本）</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td data-quantity-field="brush_area_m2" data-quantity-state="unknown">未確認</td></tr><tr><th>竹伐採本数</th><td data-quantity-field="bamboo_count" data-quantity-state="unknown">未確認</td></tr><tr><th>つる伐採箇所数</th><td data-quantity-field="vine_locations" data-quantity-state="unknown">未確認</td></tr></tbody></table></div></div>
-<p class="provisional-map-source">地図始点：西千股47W3 34.40118,135.8566 ／ 終点：西千股47W4 34.40105,135.85616</p><nav class="provisional-nav"><a href="instructions/?management_no=51507845">指示書（閲覧専用）</a></nav></article></main><script id="provisional-readonly-config" type="application/json">{"schema":"ippatsu-provisional-readonly/v1","mode":"provisional_futaku_readonly","date":"261118","complete_day":true,"cases":[{"management_no":"51511022","label":"津風呂3G1S7～3G1S8","quantities":{"branch_cut_under_10":null,"branch_cut_10_20":1,"branch_cut_20_30":null,"branch_cut_30_40":null,"branch_cut_40_50":null,"branch_cut_over_50":null,"root_cut_under_10":21,"root_cut_10_20":2,"root_cut_20_30":null,"root_cut_30_40":null,"root_cut_40_50":null,"root_cut_over_50":null,"brush_area_m2":45,"bamboo_count":null,"vine_locations":null},"source":{"name":"26年11月11日 付託.pdf","date":"2026-11-11","page":1,"row":5},"cs_available":true,"design_candidate":"6358","design_origin":"付託指示票 B6358","terrain":"傾斜地","conditions":{"road_width_m":2,"disposal_method":"持帰","source":"保全済みCS 1頁"},"endpoints":[{"label":"津風呂3G1S7","lat":34.39261,"lng":135.87438},{"label":"津風呂3G1S8","lat":34.39258,"lng":135.874}]},{"management_no":"51510183","label":"竜門19S10～19S11","quantities":{"branch_cut_under_10":null,"branch_cut_10_20":7,"branch_cut_20_30":4,"branch_cut_30_40":1,"branch_cut_40_50":null,"branch_cut_over_50":null,"root_cut_under_10":null,"root_cut_10_20":null,"root_cut_20_30":null,"root_cut_30_40":null,"root_cut_40_50":null,"root_cut_over_50":null,"brush_area_m2":null,"bamboo_count":null,"vine_locations":null},"source":{"name":"26年11月11日 付託.pdf","date":"2026-11-11","page":1,"row":4},"cs_available":true,"design_candidate":"6358","design_origin":"付託指示票 B6358","terrain":"傾斜地","conditions":{"road_width_m":4,"disposal_method":"持出","source":"保全済みCS 1頁"},"endpoints":[{"label":"竜門19S10","lat":34.39469,"lng":135.86944},{"label":"竜門19S11","lat":34.39462,"lng":135.86916}]},{"management_no":"51507850","label":"西千股47W9E5～47W9E6","quantities":{"branch_cut_under_10":null,"branch_cut_10_20":3,"branch_cut_20_30":1,"branch_cut_30_40":null,"branch_cut_40_50":null,"branch_cut_over_50":null,"root_cut_under_10":null,"root_cut_10_20":null,"root_cut_20_30":null,"root_cut_30_40":null,"root_cut_40_50":null,"root_cut_over_50":null,"brush_area_m2":10,"bamboo_count":3,"vine_locations":null},"source":{"name":"26年11月11日 付託.pdf","date":"2026-11-11","page":1,"row":3},"cs_available":true,"design_candidate":"6358","design_origin":"付託指示票 B6358","terrain":"傾斜地","conditions":{"road_width_m":3,"disposal_method":"持帰","source":"保全済みCS 1頁"},"endpoints":[{"label":"西千股47W9E5","lat":34.39866,"lng":135.85678},{"label":"西千股47W9E6","lat":34.39853,"lng":135.85745}]},{"management_no":"51507846","label":"西千股47W9G1～47W9E1","quantities":{"branch_cut_under_10":null,"branch_cut_10_20":1,"branch_cut_20_30":null,"branch_cut_30_40":1,"branch_cut_40_50":null,"branch_cut_over_50":1,"root_cut_under_10":null,"root_cut_10_20":null,"root_cut_20_30":null,"root_cut_30_40":null,"root_cut_40_50":null,"root_cut_over_50":null,"brush_area_m2":null,"bamboo_count":null,"vine_locations":null},"source":{"name":"26年11月11日 付託.pdf","date":"2026-11-11","page":1,"row":2},"cs_available":true,"design_candidate":"6358","design_origin":"付託指示票 B6358","terrain":"傾斜地","conditions":{"road_width_m":3,"disposal_method":"持出","source":"保全済みCS 1頁"},"endpoints":[{"label":"西千股47W9G1","lat":34.40008,"lng":135.85499},{"label":"西千股47W9E1","lat":34.39981,"lng":135.85532}]},{"management_no":"51507845","label":"西千股47W3～47W4","quantities":{"branch_cut_under_10":null,"branch_cut_10_20":5,"branch_cut_20_30":7,"branch_cut_30_40":1,"branch_cut_40_50":null,"branch_cut_over_50":null,"root_cut_under_10":null,"root_cut_10_20":null,"root_cut_20_30":null,"root_cut_30_40":null,"root_cut_40_50":null,"root_cut_over_50":null,"brush_area_m2":null,"bamboo_count":null,"vine_locations":null},"source":{"name":"26年11月11日 付託.pdf","date":"2026-11-11","page":1,"row":1},"cs_available":true,"design_candidate":"6358","design_origin":"付託指示票 B6358","terrain":"傾斜地","conditions":{"road_width_m":4,"disposal_method":"持出","source":"保全済みCS 1頁"},"endpoints":[{"label":"西千股47W3","lat":34.40118,"lng":135.8566},{"label":"西千股47W4","lat":34.40105,"lng":135.85616}]}]}</script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  <div class="note-panel" id="note-4" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51507845</td></tr><tr><th>処理方法</th><td>持出</td></tr><tr><th>B車</th><td>未確認</td></tr><tr><th>道幅</th><td>4m</td></tr><tr><th>傾斜</th><td>傾斜地</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td data-quantity-field="branch_cut_under_10" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_under_10" data-evidence-state="unknown">未確認</td></tr><tr><th>〜20未満</th><td data-quantity-field="branch_cut_10_20" data-evidence-state="source_positive">5</td><td data-quantity-field="root_cut_10_20" data-evidence-state="unknown">未確認</td></tr><tr><th>〜30未満</th><td data-quantity-field="branch_cut_20_30" data-evidence-state="source_positive">7</td><td data-quantity-field="root_cut_20_30" data-evidence-state="unknown">未確認</td></tr><tr><th>〜40未満</th><td data-quantity-field="branch_cut_30_40" data-evidence-state="source_positive">1</td><td data-quantity-field="root_cut_30_40" data-evidence-state="unknown">未確認</td></tr><tr><th>〜50未満</th><td data-quantity-field="branch_cut_40_50" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_40_50" data-evidence-state="unknown">未確認</td></tr><tr><th>50以上</th><td data-quantity-field="branch_cut_over_50" data-evidence-state="unknown">未確認</td><td data-quantity-field="root_cut_over_50" data-evidence-state="unknown">未確認</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>正式合計未確定</td><td>正式合計未確定</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td data-quantity-field="brush_area_m2" data-evidence-state="unknown">未確認</td></tr><tr><th>竹伐採本数</th><td data-quantity-field="bamboo_count" data-evidence-state="unknown">未確認</td></tr><tr><th>つる伐採箇所数</th><td data-quantity-field="vine_locations" data-evidence-state="unknown">未確認</td></tr></tbody></table></div></div>
+<div class="instr-note"><p>暫定・付託参照／CS保全済み（本画面の数量は付託参照）／DB未登録・閲覧専用</p><p>設計番号候補：<strong data-design-candidate="6358">6358</strong>（根拠：付託指示票 B6358。DB保存値ではありません）</p><p>出典：26年11月11日 付託.pdf、付託日 2026-11-11、1頁・1行</p><p>処理方法・道幅の出典：保全済みCS 1頁。受付回・受領日時・業務状態・運搬回数・集積・B車・離隔は未確認。原票空欄は未確認として表示しています。</p></div><nav><a class="btn" href="instructions/?management_no=51507845">指示書</a></nav></article>
+  <section class="map-section" aria-labelledby="map-heading">
+    <h2 id="map-heading">全体地図</h2>
+    <!-- share-multipin-debug: points=5 markers=5 duplicate_coordinate_groups=0 stacked_point_count=0 -->
+    <div id="share-map" role="application" aria-label="全径間の位置" data-point-count="5"></div>
+  </section>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-  crossorigin=""></script><script>
+  crossorigin=""></script>
+<script>
 (function() {
   function initShareMultipinMap() {
     var POINTS = [{"name":"津風呂3G1S7～3G1S8","lat":34.39261,"lng":135.87438,"management_no":"51511022"},{"name":"竜門19S10～19S11","lat":34.39469,"lng":135.86944,"management_no":"51510183"},{"name":"西千股47W9E5～47W9E6","lat":34.39866,"lng":135.85678,"management_no":"51507850"},{"name":"西千股47W9G1～47W9E1","lat":34.40008,"lng":135.85499,"management_no":"51507846"},{"name":"西千股47W3～47W4","lat":34.40118,"lng":135.8566,"management_no":"51507845"}];
@@ -262,4 +534,6 @@
     });
   });
 })();
-</script><script type="module" src="../../portal/shared-ledger/views-provisional.mjs?v=20261110-transport-r1"></script></body></html>
+</script>
+</body>
+</html>
