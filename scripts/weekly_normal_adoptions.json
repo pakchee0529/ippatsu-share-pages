@@ -6,7 +6,7 @@
       "share/261116/instructions/index.html": "81ecb8625ec2c25fa0d7fddef02b31619d1130d6b5b89985c160723374e67b61"
     },
     "adopted": {
-      "share/261116/index.html": "8537b1098420dc3ee6c74fac950f0564f53d357a395aef427a325c044e64e008",
+      "share/261116/index.html": "258e64b1a94fbed8aaa29a6e5326e03cff714553a005fe9bfd9936080ee19bec",
       "share/261116/daily/index.html": "7e8888b6a5d3d0d30fdc14218c66395d41f1d697f7fb37aa9e9563e9d732b04a",
       "share/261116/instructions/index.html": "8c018538dede70c797e3803f3c1ef36f19a10497eb9f13b5b54cbc76b9b43a2e"
     },
@@ -24,6 +24,19 @@
           "share/261116/instructions/index.html": "8c018538dede70c797e3803f3c1ef36f19a10497eb9f13b5b54cbc76b9b43a2e"
         },
         "reason": "Owner-approved CS source condition recovery; B vehicle rule, source-labelled brush dimensions, GM exclusion. Quantities/maps/ledger routes unchanged. Design numbers remain unavailable."
+      },
+      {
+        "previous": {
+          "share/261116/index.html": "8537b1098420dc3ee6c74fac950f0564f53d357a395aef427a325c044e64e008",
+          "share/261116/daily/index.html": "7e8888b6a5d3d0d30fdc14218c66395d41f1d697f7fb37aa9e9563e9d732b04a",
+          "share/261116/instructions/index.html": "8c018538dede70c797e3803f3c1ef36f19a10497eb9f13b5b54cbc76b9b43a2e"
+        },
+        "adopted": {
+          "share/261116/index.html": "258e64b1a94fbed8aaa29a6e5326e03cff714553a005fe9bfd9936080ee19bec",
+          "share/261116/daily/index.html": "7e8888b6a5d3d0d30fdc14218c66395d41f1d697f7fb37aa9e9563e9d732b04a",
+          "share/261116/instructions/index.html": "8c018538dede70c797e3803f3c1ef36f19a10497eb9f13b5b54cbc76b9b43a2e"
+        },
+        "reason": "Owner explicitly excludes CS information from remarks. Preserve original remarks; standard fields and all quantities unchanged. Source brush dimensions retained privately, not fabricated as saved ledger dimensions."
       }
     ]
   }
