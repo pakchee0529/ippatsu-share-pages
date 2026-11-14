@@ -10,4 +10,23 @@ async function publishedSource(){if(!published){const response=await fetch('../i
 function metadata(source,entry){const card=source.querySelector('article[data-management-no-key="'+entry.cs+'"]');if(!card)throw Error('共有カードの対象を確認できません');const summary=card.querySelector('.instr-summary');if(!summary)throw Error('現場条件を確認できません');return {conditions:document.importNode(summary,true),notes:[...card.querySelectorAll('.instr-note')].map(x=>document.importNode(x,true)),mapLink:card.querySelector('a.btn-map')?.href};}
 function content(){let root=document.querySelector('#content');if(!root){root=document.createElement('div');root.id='content';const main=document.querySelector('main');main.querySelectorAll('.view-help,.scroll,#warnings').forEach(x=>x.remove());main.append(root);}return root;}
 async function refresh(){if(document.querySelector('[data-base-correction-pending="true"]'))return;const sequence=++refreshNumber,mode=document.body.dataset.shareView;try{const ps=await snapshot();if(sequence!==refreshNumber)return;if(!mode){for(const p of ps){const card=document.querySelector('article[data-management-no-key="'+p.entry.cs+'"]');if(card)applyCard(card,p);}}else{const source=await publishedSource();if(sequence!==refreshNumber)return;const root=content();root.replaceChildren();document.querySelector('#error')?.replaceChildren();document.querySelector('h1').textContent='20'+config.date.slice(0,2)+'/'+config.date.slice(2,4)+'/'+config.date.slice(4)+' '+(mode==='daily'?'日次離隔表':'指示書');if(mode==='instructions'){const cs=new URLSearchParams(location.search).get('management_no'),p=ps.find(x=>x.entry.cs===cs);if(!p)throw Error('対象径間がありません');renderProjection(root,p,{mode,date:config.date,...metadata(source,p.entry)});attachCorrectionEditor(root,p,{api:config.api,refresh});const link=document.querySelector('#ledger-input-top');if(link)link.href='../../../portal/shared-ledger/input.html?date='+config.date+'&management_no='+cs+'&ui='+encodeURIComponent(assetVersion);}else for(const p of ps)renderProjection(root,p,{mode:'daily',date:config.date,...metadata(source,p.entry)});}document.documentElement.dataset.savedLedgerReady='true';}catch(error){if(sequence!==refreshNumber)return;document.querySelector('#error')?.replaceChildren(document.createTextNode(error.message));document.documentElement.dataset.savedLedgerReady='error';}}
-await refresh();addEventListener('pageshow',event=>{if(event.persisted)refresh();});addEventListener('focus',()=>refresh());
+async function refreshPublishedSource(){
+ const {renderProjection:renderSourceProjection}=await import('./ledger-view-render.mjs?v=20261114-source-r3');
+ if(config.schema!=='ippatsu-weekly-source-format/v1'||!/^\d{6}$/.test(config.date)||!Array.isArray(config.cases))throw Error('Source projection configuration invalid');
+ const mode=document.body.dataset.shareView;
+ if(mode){
+  document.querySelector('h1').textContent='20'+config.date.slice(0,2)+'/'+config.date.slice(2,4)+'/'+config.date.slice(4)+' '+(mode==='daily'?'日次離隔表':'指示書');
+  const wanted=new URLSearchParams(location.search).get('management_no');
+  const selected=mode==='instructions'?config.cases.filter(entry=>entry.cs===wanted):config.cases;
+  const root=content();root.replaceChildren();
+  if(!selected.length)document.querySelector('#error').textContent='対象径間がありません';
+  for(const entry of selected){
+   const holder=document.createElement('div');holder.innerHTML=entry.conditions;
+   const records=entry.quantities.map(q=>({code:q.code,initial:['unknown','source_blank','nonapplicable_candidate'].includes(q.state)?null:Number(q.text.match(/^\d+(?:\.\d+)?/)?.[0]),mode:'unchanged',revised:null,additional:0,sourceText:q.text,sourceState:q.state,sourceField:q.field}));
+   renderSourceProjection(root,{entry,records,document:null,revision:null,sourceOnly:true,photos:{states:{},branchCount:0}},{mode,date:config.date,conditions:holder.firstElementChild,mapLink:entry.mapLink});
+  }
+ }
+ document.documentElement.dataset.sourceViewReady='true';
+}
+if(config.sourceOnly===true){await refreshPublishedSource();}
+else{await refresh();addEventListener('pageshow',event=>{if(event.persisted)refresh();});addEventListener('focus',()=>refresh());}
