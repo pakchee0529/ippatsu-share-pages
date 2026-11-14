@@ -39,5 +39,31 @@
         "reason": "Owner explicitly excludes CS information from remarks. Preserve original remarks; standard fields and all quantities unchanged. Source brush dimensions retained privately, not fabricated as saved ledger dimensions."
       }
     ]
+  },
+  "261117": {
+    "retired": {
+      "share/261117/index.html": "76b7f68a277e1baf07f627815a2f94a48d34d3389d78b55f344cb315acd1661f",
+      "share/261117/daily/index.html": "6892511625076dc13b3a1b79f4145335606d9472e55ab2b46ef01de319f13106",
+      "share/261117/instructions/index.html": "3c12183caf9d2df816dda8c516af42dcc18948a0e7642b2c6e9fee53ecc82be7"
+    },
+    "adopted": {
+      "share/261117/index.html": "be84af916e4e2fb9ba7f614d9f3b30b3245787b8e79dd67a56bf0d59162dfed7",
+      "share/261117/daily/index.html": "c0ad6fb6f90e0b4720a5a76845ab20758dc8bcb4966a1db819ecd2dcc0bc5b9c",
+      "share/261117/instructions/index.html": "e2c23e893c7ec9d2952ddecc815961ac0b3370178b8597905de9e0663fbc8ea5"
+    },
+    "scope": "Ordinary daily entrance, daily view and instructions; original notes preserved, no CS remarks, no GM. API cases/order/135 combined quantities verified. No ledger saves."
+  },
+  "261119": {
+    "retired": {
+      "share/261119/index.html": "dea012dea7b687048f5070a3129d8d2d9685ebeb61ccf9bf876093cbd25e25bc",
+      "share/261119/daily/index.html": "73ed41c673d9959b46aaef3608bcefc184a433dee33441cd0fb1d61e19e5e856",
+      "share/261119/instructions/index.html": "7ca79c1fcd25b5867d0b72dd75b7b62a249ca2a5a86fde6a17647827308b2f54"
+    },
+    "adopted": {
+      "share/261119/index.html": "4884f7830c0db792ce8a9ad7a3f7653667e52502f75eb30bb0a322a74ba00975",
+      "share/261119/daily/index.html": "cc6e00dc44accc5eb2830f3f4f9903d65f977b99bcfb0c7618980c7828a134a7",
+      "share/261119/instructions/index.html": "ae099d37c903eb02f6f79331da5c71bda8187e82d530eb7aa03a39671724b9c2"
+    },
+    "scope": "Ordinary daily entrance, daily view and instructions; original notes preserved, no CS remarks, no GM. API cases/order/135 combined quantities verified. No ledger saves."
   }
 }
