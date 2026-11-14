@@ -42,7 +42,17 @@ def portal(before,after,top,date,legacy):
    if text_path(after,date)!='share/'+date+'/index.html':raise ValueError('Expected share view')
    return []
   except ValueError as e:return [str(e)]
- if readonly(before):return ['Explicit provisional retirement/adoption plan required']
+ if readonly(before):
+  plan_path=Path(__file__).parent/'weekly_normal_adoptions.json'
+  plans=json.loads(plan_path.read_text('utf8')) if plan_path.is_file() else {}
+  plan=plans.get(date,{})
+  rel='share/'+date+'/index.html'
+  digest=lambda text:hashlib.sha256(text.replace('\r\n','\n').replace('\r','\n').encode()).hexdigest()
+  if (readonly(after) or digest(before)!=plan.get('retired',{}).get(rel)
+      or digest(after)!=plan.get('adopted',{}).get(rel)):
+   return ['Explicit provisional retirement/adoption plan required']
+  # An exact reviewed retirement does not skip normal output validation.
+  return legacy(before,after,top,date)
  return legacy(before,after,top,date)
 
 
