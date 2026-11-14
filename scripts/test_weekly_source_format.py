@@ -1,5 +1,6 @@
 """Semantic and fail-closed acceptance for the isolated weekly format revision."""
 import argparse,hashlib,json,re,sys,unittest,tempfile,shutil
+from html import unescape
 from pathlib import Path
 from collections import Counter
 from generate_weekly_source_format import DAYS,source,extract
@@ -32,18 +33,18 @@ class WeeklyFormat(unittest.TestCase):
             self.assertEqual(re.findall(r'data-management-no-key="(\d+)"',share),[e['cs'] for e in original])
             for field in FIELDS:
                 old=[q for e in original for q in e['quantities'] if q['field']==field]
-                matches=re.findall(r'<td data-quantity-field="'+field+r'" data-evidence-state="([^"]+)">(.*?)</td>',share)
+                matches=[(state,unescape(original)) for state,original in re.findall(r'<td data-quantity-field="'+field+r'" data-evidence-state="([^"]+)" data-source-text="([^"]+)">.*?</td>',share)]
                 self.assertEqual(matches,[(q['state'],q['text']) for q in old])
             for folder in ['daily','instructions']:
                 t=(self.root/f'share/{day}/{folder}/index.html').read_text()
-                c=json.loads(re.search(r'<script id="weekly-source-config" type="application/json">(.*?)</script>',t,re.S)[1])
+                c=json.loads(re.search(r'<script id="shared-ledger-config" type="application/json">(.*?)</script>',t,re.S)[1])
                 self.assertEqual([x['cs'] for x in c['cases']],[x['cs'] for x in original])
                 for before,after in zip(original,c['cases']):
                     self.assertEqual(before['geo'],after['geo']);self.assertEqual(before['mapLink'],after['mapLink']);self.assertEqual(before['notes'],after['notes'])
                     self.assertEqual(before['quantities'],[{k:v for k,v in q.items() if k!='code'} for q in after['quantities']])
                     if before['conditions']:self.assertEqual(before['conditions'],after['conditions'])
             for e in original:states.update(q['state'] for q in e['quantities'])
-            self.assertEqual(share.count('class="card-head"'),n);self.assertEqual(share.count('class="card-actions"'),n)
+            self.assertIn('data-daily-clearance',share);self.assertIn('share-page-readability:begin',share);self.assertEqual(share.count('class="card-head"'),n);self.assertEqual(share.count('class="card-actions"'),n)
             self.assertEqual(share.count('class="instr-table instr-cut"'),n)
             # Whole-map representative points are preserved, separately from endpoints.
             self.assertEqual(json.loads(re.search(r'var POINTS = (\[.*?\]);',share,re.S)[1]),json.loads(re.search(r'var POINTS = (\[.*?\]);',source(self.repo,f'share/{day}/index.html'),re.S)[1]))
@@ -51,7 +52,7 @@ class WeeklyFormat(unittest.TestCase):
         print('Source quantity states:',dict(states))
     def test_integrity(self):
         accepted=guard.manifest()
-        self.assertEqual(len(accepted),19)
+        self.assertEqual(len(accepted),21)
         for rel,digest in accepted.items():
             self.assertEqual(hashlib.sha256((self.root/rel).read_bytes()).hexdigest(),digest)
             if rel.endswith('.html'):
@@ -97,6 +98,30 @@ class WeeklyFormat(unittest.TestCase):
             if file.relative_to(self.repo).as_posix() not in guard.manifest():
                 self.assertNotIn('weekly-source-print.css',file.read_text())
 
+    def test_common_route_navigation_and_no_extra_explanation(self):
+        from html.parser import HTMLParser
+        class Visible(HTMLParser):
+            def __init__(self):super().__init__();self.skip=0;self.text=[]
+            def handle_starttag(self,tag,attrs):
+                if tag in {'script','style'}:self.skip+=1
+            def handle_endtag(self,tag):
+                if tag in {'script','style'}:self.skip-=1
+            def handle_data(self,data):
+                if not self.skip:self.text.append(data)
+        for day,n in DAYS.items():
+            share=(self.root/f'share/{day}/index.html').read_text()
+            self.assertIn('share-page-readability:begin',share)
+            self.assertEqual(share.count('data-daily-clearance'),1)
+            self.assertEqual(share.count('class="photo-ledger-input-footer"'),n)
+            self.assertEqual(share.count('href="daily/"'),n+1)
+            for suffix in ['index.html','daily/index.html','instructions/index.html']:
+                text=(self.root/f'share/{day}/{suffix}').read_text()
+                self.assertIn('views.mjs?v=20261114-source-r3',text)
+                self.assertNotIn('views-readonly.mjs?v=',text)
+                p=Visible();p.feed(text);visible=''.join(p.text)
+                for forbidden in ['原典参照','正式保存','非該当候補','注記参照','正式合計未確定']:
+                    self.assertNotIn(forbidden,visible)
+
     def test_top(self):
         text=(self.root/'portal/index.html').read_text()
         self.assertEqual(guard.top_link_failures(text,list(DAYS)),[])
@@ -108,7 +133,7 @@ class WeeklyFormat(unittest.TestCase):
         allowed=set(guard.manifest())|{'portal/index.html','scripts/weekly_readonly_outputs.json'}
         for f in self.repo.rglob('*'):
             rel=f.relative_to(self.repo).as_posix()
-            if not f.is_file() or '.git/' in rel or '__pycache__/' in rel or rel in allowed:continue
+            if not f.is_file() or rel == '.git' or '.git/' in rel or '__pycache__/' in rel or rel in allowed:continue
             # Isolated source scripts were copied before this test was added.
             if rel=='scripts/test_weekly_source_format.py':continue
             self.assertEqual(f.read_bytes(),(self.root/rel).read_bytes(),rel)

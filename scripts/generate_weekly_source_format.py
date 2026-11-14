@@ -38,13 +38,16 @@ def extract(text, fields):
         entries.append(dict(cs=cs,label=label,quantities=quantities,geo=geo,mapLink=maplink,conditions=summary[0] if summary else None,notes=notes))
     return entries
 
-def generate(repo,pc_root,out):
+def generate(repo,pc_root,out,quantity_evidence=None):
     sys.path.insert(0,str(pc_root));sys.path.insert(0,str(repo/'scripts'))
     from app.share.html_generator import ShareItem,SharePoint,SharePagePayload,generate_share_html
-    from apply_saved_ledger_views import FIELDS,CODES,templates
+    from apply_saved_ledger_views import FIELDS,CODES,transform
+    from source_quantity_projection import retained_projections,apply_blank_projections,FILE
+    retained=retained_projections(repo,SOURCE_REF,DAYS,quantity_evidence)
     inventory={};semantic={}
     for day,count in DAYS.items():
         old=source(repo,f'share/{day}/index.html');entries=extract(old,FIELDS)
+        apply_blank_projections(entries,day,retained)
         if len(entries)!=count or len({x['cs'] for x in entries})!=count:raise ValueError('Day set mismatch')
         if any(x['cs']=='51407008' for x in entries) != (day=='261117'):raise ValueError('Tuesday-only case mismatch')
         items=[]
@@ -64,32 +67,27 @@ def generate(repo,pc_root,out):
             if not e['conditions']:
                 card=card.replace('<td>未設定</td>', '<td>未確認</td>').replace('<td>—</td>', '<td>未確認</td>')
             e['conditions']=re.search(r'<table class="instr-table instr-summary">.*?</table>',card,re.S)[0]
-            card=card.replace('</article>','<div class="instr-note">'+e['notes']+'</div><nav><a class="btn" href="instructions/?management_no='+e['cs']+'">指示書</a></nav></article>')
             # Preserve the public single-map target; the normal renderer otherwise uses the old pole.
             card=re.sub(r'(class="btn btn-map btn-map-single" href=")[^"]+',lambda m:m[1]+e['mapLink'].replace('&','&amp;'),card,count=1)
             return card
         text=re.sub(r'<article\b[^>]*>.*?</article>',project,text,flags=re.S)
         text=text.replace('<body>', '<body data-source-only="true">')
         text=text.replace('</head>', '<link rel="stylesheet" media="print" href="../../portal/shared-ledger/weekly-source-print.css?v=20261113-print-r1"></head>')
-        text=text.replace('<main>','<main><p>原典参照・閲覧専用。正式保存情報は未確認です。入力・保存・完了処理はありません。</p><p><a class="btn" href="daily/">日次離隔表</a></p>',1)
         for e in entries:
             for code,q in zip(CODES,e['quantities']):q['code']=code
-        config={'schema':'ippatsu-weekly-source-format/v1','date':day,'cases':entries}
-        encoded=json.dumps(config,ensure_ascii=False,separators=(',',':')).replace('<','\\u003c')
         root=out/'share'/day;root.mkdir(parents=True,exist_ok=True)
+        text=transform(out,day,text,source_entries=entries,asset_root=repo)
         text='\n'.join(line.rstrip() for line in text.splitlines())+'\n'
         (root/'index.html').write_text(text,encoding='utf8',newline='\n')
-        templates(out,day,encoded,source_only=True)
-        # The ordinary render module imports the configuration parser but never loadDay.
-        for folder in ['daily','instructions']:
-            file=root/folder/'index.html';t=file.read_text().replace('<body data-share-view=', '<body data-source-only="true" data-share-view=');t=t.replace('</body>','<script id="shared-ledger-config" type="application/json">'+encoded+'</script></body>');file.write_text(t,encoding='utf8',newline='\n')
         semantic[day]=entries
         inventory[day]=hashlib.sha256(old.encode()).hexdigest()
     # Source-only assets and common renderer are explicit dependencies of this revision.
-    assets=['views-provisional.mjs','views-readonly.mjs','ledger-view-render.mjs','weekly-source-print.css']
+    assets=['views.mjs','views-provisional.mjs','views-readonly.mjs','ledger-view-render.mjs','weekly-source-print.css']
     for name in assets:
         target=out/'portal/shared-ledger'/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes((repo/'portal/shared-ledger'/name).read_bytes())
-    paths=[f'share/{day}/{suffix}' for day in DAYS for suffix in ['index.html','daily/index.html','instructions/index.html']]+['portal/shared-ledger/'+x for x in assets]
+    (out/'scripts').mkdir(exist_ok=True)
+    (out/FILE).write_text(json.dumps(retained,ensure_ascii=False,indent=2)+'\n')
+    paths=[f'share/{day}/{suffix}' for day in DAYS for suffix in ['index.html','daily/index.html','instructions/index.html']]+['portal/shared-ledger/'+x for x in assets]+[FILE]
     manifest={rel:hashlib.sha256((out/rel).read_bytes()).hexdigest() for rel in paths}
     (out/'scripts').mkdir(exist_ok=True)
     (out/'scripts/weekly_readonly_outputs.json').write_text(json.dumps(manifest,indent=2)+'\n')
@@ -97,7 +95,7 @@ def generate(repo,pc_root,out):
     return manifest
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--pc-root',type=Path,required=True);parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--pc-root',type=Path,required=True);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--quantity-evidence',type=Path,help='Private inspected-cell observations; never copied into public output');args=parser.parse_args()
     repo=Path(__file__).resolve().parents[1]
     if args.output.resolve()==repo:raise SystemExit('Use a separate output root')
-    generate(repo,args.pc_root.resolve(),args.output.resolve())
+    generate(repo,args.pc_root.resolve(),args.output.resolve(),args.quantity_evidence)

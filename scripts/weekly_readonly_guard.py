@@ -19,7 +19,7 @@ def paths(root,items,legacy):
    if p.relative_to(root).as_posix()!=wanted:raise ValueError('Readonly path/day mismatch')
    if wanted.startswith('share/'):
     for asset,h in manifest().items():
-     if asset.endswith(('.mjs','.css')) and hashlib.sha256((root/asset).read_bytes()).hexdigest()!=h:raise ValueError('Readonly asset revision differs')
+     if not asset.endswith('.html') and hashlib.sha256((root/asset).read_bytes()).hexdigest()!=h:raise ValueError('Readonly asset revision differs')
   elif p.is_file() and p.relative_to(root).as_posix() in manifest():
    if hashlib.sha256(p.read_bytes()).hexdigest()!=manifest()[p.relative_to(root).as_posix()]:raise ValueError('Readonly asset revision differs')
   else:legacy(root,[rel])
@@ -65,7 +65,7 @@ def validate_top_sources(root, dates):
    if text_path(path.read_text('utf8'), date) != rel:
     raise ValueError(f'Readonly TOP source mismatch: {rel}')
  for rel, expected in accepted.items():
-  if dates and rel.endswith(('.mjs','.css')):
+  if dates and not rel.endswith('.html'):
    path = root / rel
    if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
     raise ValueError(f'Readonly TOP asset mismatch: {rel}')

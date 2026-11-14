@@ -24,29 +24,45 @@ def validate_asset_generation(root):
     for path in assets.glob('*.mjs'):
         if re.search(r'[?&]ui=\d',path.read_text(encoding='utf-8')):raise ValueError('Hardcoded input-link generation: '+path.name)
         for target in re.findall(r"['\"](\./[^'\"]+\.mjs(?:\?[^'\"]*)?)['\"]",path.read_text(encoding='utf-8')):
-            if path.name == 'views-readonly.mjs' and target == './ledger-view-render.mjs?v=20261113-weekly-source-r2':continue
-            if path.name == 'views-provisional.mjs' and target == './views-readonly.mjs?v=20261113-weekly-source-r2':continue
+            if path.name in {'views-readonly.mjs','views-provisional.mjs'} and target == './views.mjs?v=20261114-source-r3':continue
+            if path.name == 'views.mjs' and target == './ledger-view-render.mjs?v=20261114-source-r3':continue
             if not target.endswith('?v='+ASSET_VERSION):raise ValueError('Mixed ledger module generation: '+target)
 
-def transform(root:Path,date:str,text:str)->str:
-    validate_asset_generation(root)
+def transform(root:Path,date:str,text:str,*,source_entries=None,asset_root=None)->str:
+    validate_asset_generation(asset_root or root)
     if not re.fullmatch(r'\d{6}',date):raise ValueError('Invalid shared date')
+    source_only=source_entries is not None
+    source_cases={entry['cs']:entry for entry in source_entries or []}
+    if source_only:
+        from generate_portal import apply_share_page_readability_to_share_html, _PHOTO_LEDGER_INPUT_CARD_CSS
+        if len(source_cases)!=len(source_entries):raise ValueError('Duplicate source case')
+        text=apply_share_page_readability_to_share_html(text,date)
+        text=text.replace('</head>','<style>'+_PHOTO_LEDGER_INPUT_CARD_CSS+'</style></head>')
     entries=[]
     def card_replace(m):
         card=m.group();number=re.search(r'<p class="item-mgmt">([^<]+)</p>',card)
         if not number:return card
         cs=re.sub(r'\D','',unescape(number[1]));assert len(cs)==8,'ambiguous management number'
         title=re.search(r'<h2 class="card-title">(.*?)</h2>',card,re.S);assert title
-        base={}
-        for code,field in zip(CODES,FIELDS):
-            value=re.search(r'<td[^>]*data-quantity-field="'+field+r'"[^>]*data-quantity-state="([^"]+)"[^>]*>([^<]+)</td>',card)
-            assert value,cs+' '+field
-            if value[1] not in {'confirmed','unknown'}:raise ValueError(cs+' '+field+': invalid quantity state')
-            base[code]=float(re.sub(r'(㎡|本|箇所)$','',value[2])) if value[1]=='confirmed' else None
-            if base[code] is not None and base[code].is_integer():base[code]=int(base[code])
-        entries.append({'cs':cs,'label':unescape(re.sub('<[^>]+>','',title[1])),'base':base})
+        if source_only:
+            if cs not in source_cases:raise ValueError('Source card outside bound day')
+            entry=source_cases[cs]
+            if unescape(re.sub('<[^>]+>','',title[1]))!=entry['label']:raise ValueError('Source card label mismatch')
+            if [q['field'] for q in entry['quantities']]!=FIELDS:raise ValueError('Source quantity schema mismatch')
+            entries.append(entry)
+        else:
+            base={}
+            for code,field in zip(CODES,FIELDS):
+                value=re.search(r'<td[^>]*data-quantity-field="'+field+r'"[^>]*data-quantity-state="([^"]+)"[^>]*>([^<]+)</td>',card)
+                assert value,cs+' '+field
+                if value[1] not in {'confirmed','unknown'}:raise ValueError(cs+' '+field+': invalid quantity state')
+                base[code]=float(re.sub(r'(㎡|本|箇所)$','',value[2])) if value[1]=='confirmed' else None
+                if base[code] is not None and base[code].is_integer():base[code]=int(base[code])
+            entries.append({'cs':cs,'label':unescape(re.sub('<[^>]+>','',title[1])),'base':base})
         target='../../portal/shared-ledger/input.html?date='+date+'&amp;management_no='+cs+'&amp;ui='+ASSET_VERSION
         footer=f'<div class="photo-ledger-input-footer"><a class="btn btn-photo-ledger-input" href="instructions/?management_no={cs}">指示書</a><a class="btn btn-photo-ledger-input" href="{target}" style="margin-top:6px">台帳入力</a></div>'
+        if source_only:
+            footer=f'<div class="photo-ledger-input-footer"><a class="btn btn-photo-ledger-input" href="daily/">日次離隔表</a><a class="btn btn-photo-ledger-input" href="instructions/?management_no={cs}">指示書</a></div>'
         card,n=re.subn(r'<div class="photo-ledger-input-footer">.*?</div>(?:<div class="detail-edit-footer">.*?</div>)?',lambda _:footer,card,count=1,flags=re.S)
         if not n:card=card.replace('</article>',footer+'</article>')
         card=re.sub(r'^<article\b[^>]*>',lambda t:re.sub(r'\s+id="case-\d{8}"','',t[0]),card,count=1)
@@ -54,15 +70,19 @@ def transform(root:Path,date:str,text:str)->str:
         return card
     text=re.sub(r'<article\b[^>]*>.*?</article>',card_replace,text,flags=re.S)
     if len({e['cs'] for e in entries})!=len(entries):raise ValueError('Duplicate current CS; cannot bind ledger automatically')
+    if source_only and [e['cs'] for e in entries]!=[e['cs'] for e in source_entries]:raise ValueError('Source day case set/order mismatch')
     if not entries:return text
     config={'date':date,'api':'https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/photo-ledger-v2','cases':entries}
+    if source_only:config={'schema':'ippatsu-weekly-source-format/v1','date':date,'sourceOnly':True,'cases':entries}
     text=re.sub(r'<script id="shared-ledger-config" type="application/json">.*?</script>\s*','',text,flags=re.S)
     text=re.sub(r'<script type="module" src="(?:assets/views.mjs|../../portal/shared-ledger/views.mjs)(?:\?[^"]*)?"></script>\s*','',text)
     encoded=json.dumps(config,ensure_ascii=False,separators=(',',':')).replace('<','\\u003c')
-    text=text.replace('</body>','<script id="shared-ledger-config" type="application/json">'+encoded+'</script>\n<script type="module" src="../../portal/shared-ledger/views.mjs?v='+ASSET_VERSION+'"></script>\n</body>')
+    version='20261114-source-r3' if source_only else ASSET_VERSION
+    text=text.replace('</body>','<script id="shared-ledger-config" type="application/json">'+encoded+'</script>\n<script type="module" src="../../portal/shared-ledger/views.mjs?v='+version+'"></script>\n</body>')
     if 'data-daily-clearance' not in text:text=text.replace('<main>','<main>\n<p data-daily-clearance><a class="btn" href="daily/">日次離隔表</a></p>',1)
+    if source_only:text=text.replace('<p data-daily-clearance><a class="btn"','<p data-daily-clearance><a class="btn btn-photo-ledger-input"')
     text=re.sub(r'(<!-- share-page-readability:end -->)\s*(</head>)',r'\1\n\n\2',text)
-    templates(root,date,encoded)
+    templates(root,date,encoded,source_only=source_only)
     return text
 
 def templates(root,date,encoded, *, source_only=False):
@@ -75,8 +95,8 @@ def templates(root,date,encoded, *, source_only=False):
         html=f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{date} {title}</title><style>{style}</style></head><body data-share-view="{mode}"><header>{nav}<h1>{title}</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div>{content}</main><script id="shared-ledger-config" type="application/json">{encoded}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v={ASSET_VERSION}"></script></body></html>'
         if source_only:
             html=html.replace('</head>', '<link rel="stylesheet" media="print" href="../../../portal/shared-ledger/weekly-source-print.css?v=20261113-print-r1"></head>')
-            html=html.replace('閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。', '原典参照・閲覧専用。正式保存情報は未確認です。')
-            html=html.replace('id="shared-ledger-config"', 'id="weekly-source-config"')
-            html=html.replace('views.mjs?v='+ASSET_VERSION, 'views-readonly.mjs?v=20261113-weekly-source-r2')
+            html=html.replace('<p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p>', '')
+            html=html.replace('<body data-share-view=', '<body data-source-only="true" data-share-view=')
+            html=html.replace('views.mjs?v='+ASSET_VERSION, 'views.mjs?v=20261114-source-r3')
         target=out/'index.html'
         if not target.exists() or target.read_text(encoding='utf-8')!=html:target.write_text(html,encoding='utf-8',newline='\n')
