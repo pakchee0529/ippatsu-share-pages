@@ -1,0 +1,15 @@
+{
+  "261116": {
+    "retired": {
+      "share/261116/index.html": "9a8673b587383a2bb43a024bdb4d0d78e1257e82835ecd5144544a954e85a7a4",
+      "share/261116/daily/index.html": "3257f5671ed86500e3c0d34e13ed54b14fd084a646d349a6f5fe2d8aac2e6724",
+      "share/261116/instructions/index.html": "81ecb8625ec2c25fa0d7fddef02b31619d1130d6b5b89985c160723374e67b61"
+    },
+    "adopted": {
+      "share/261116/index.html": "1ebe02b260c9732d0a19e1d882c1add496aac407d493ebc6bdcf250a295e5c01",
+      "share/261116/daily/index.html": "7e8888b6a5d3d0d30fdc14218c66395d41f1d697f7fb37aa9e9563e9d732b04a",
+      "share/261116/instructions/index.html": "8c018538dede70c797e3803f3c1ef36f19a10497eb9f13b5b54cbc76b9b43a2e"
+    },
+    "scope": "Monday three views only; normal ledger; no business DB writes"
+  }
+}
