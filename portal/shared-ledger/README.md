@@ -14,6 +14,4 @@
 
 旧版API/保存データ/過去公開ページは削除しない。旧26日adapterは過去の互換用で、通常生成では使用しない。復旧は今回の共通表示ソースと26日生成物だけを前版へ戻す。既に保存された台帳JSONは削除しない。
 
-## 原典参照の限定表示
-
-本人が依頼した原典参照表示も `apply_saved_ledger_views.transform` から通常readability/導線/テンプレートを生成し、`views.mjs` と共通rendererへ接続する。sourceOnly は保存取得・入力/訂正・保存/完了処理を実行しない条件であり、別の簡易帳票を正本とするものではない。原典確認済み空欄だけ0とする恒久規則、保持投影、未知状態と再生成の契約は `docs/operations/source-quantity-blank-policy.md` を参照。指定外の原典説明や正式保存の説明は画面に追加しない。
+原典数量の確認済み空欄と未参照の区別は `docs/operations/source-quantity-blank-policy.md` を参照。
