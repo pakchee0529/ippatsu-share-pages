@@ -78,5 +78,18 @@
       "share/261118/instructions/index.html": "d575af7d309b65eaf29bd42b812f3f013667ba894cbf32b501560dd0d02da46c"
     },
     "scope": "Wednesday five ordinary cases. Official API identity/order/75 quantities and B6358 verified. No CS remarks, GM, business DB or ledger saves."
+  },
+  "261120": {
+    "retired": {
+      "share/261120/index.html": "421ee27d8ce7966f0f6f44711eac29970f5b4c45816ba93e9c63e2b4125f8664",
+      "share/261120/daily/index.html": "919c0e7eba17ae8e31747d0a40f33b7093d9363f75c7e1aecff06d91f4af0244",
+      "share/261120/instructions/index.html": "dcc8cc86b89d88ff50609aaf5a7c68fe54139ff76070fe645c5a33f72d42ff25"
+    },
+    "adopted": {
+      "share/261120/index.html": "9eddac27f6be84488b5747fcf3013d0769b48cd73cadd3f64fbfb4f948251694",
+      "share/261120/daily/index.html": "96088f6f4ba9cdc365617b264b0d3bf6b4eb43967fc19cf6f3e05e2446e72cdc",
+      "share/261120/instructions/index.html": "b9eacc5b221885f60860d79111498db4fef775494ac99625231f3ba33b431993"
+    },
+    "scope": "Friday six normal cases; official API 90 quantities, order, B6360 verified. No CS remarks/GM or DB/ledger saves."
   }
 }
