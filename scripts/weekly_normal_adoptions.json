@@ -65,5 +65,18 @@
       "share/261119/instructions/index.html": "ae099d37c903eb02f6f79331da5c71bda8187e82d530eb7aa03a39671724b9c2"
     },
     "scope": "Ordinary daily entrance, daily view and instructions; original notes preserved, no CS remarks, no GM. API cases/order/135 combined quantities verified. No ledger saves."
+  },
+  "261118": {
+    "retired": {
+      "share/261118/index.html": "5d9bec8aa47da406b9a2105531fe3a9c6c77a74445291b2243909a7f143234fd",
+      "share/261118/daily/index.html": "6509592f998ec54cf3c6ee6cb434347a1752b1e8de31712f7c0c3dfaf6f8e15a",
+      "share/261118/instructions/index.html": "e42560c1a08059da704c9d59213baaeb14de5c6cd80099de4018d46776e1c8b5"
+    },
+    "adopted": {
+      "share/261118/index.html": "9f5b7ccaab2448cda7aa31c7a07875153250e31ef16e82e2ac9b5ba086bfbf67",
+      "share/261118/daily/index.html": "5f10aeb35cea33be4bda2562d308b51fc8f6ad1041db8d0e2ca48d7d2d49671b",
+      "share/261118/instructions/index.html": "d575af7d309b65eaf29bd42b812f3f013667ba894cbf32b501560dd0d02da46c"
+    },
+    "scope": "Wednesday five ordinary cases. Official API identity/order/75 quantities and B6358 verified. No CS remarks, GM, business DB or ledger saves."
   }
 }
