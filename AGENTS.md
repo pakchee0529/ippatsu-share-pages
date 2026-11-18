@@ -32,7 +32,7 @@ git log --oneline --decorate -5
 | 本番 `data/survey/queue.json` | **なし** | `ippatsu-pc-prod/data` に存在 |
 | Supabase `.env` | **なし** | ippatsu-pc 側に配置 |
 | **本番 generate 確認** | ❌ しない | ✅ 会社PC・本番 data で行う |
-| **GitHub Pages publish** | ❌ 人間承認必要 | ✅ 人間が実施 |
+| **GitHub Pages publish** | 対象が明示された本人承認後に §4 の PR 経由で実行可 | 対象が明示された本人承認後に §4 の PR 経由で実行可 |
 | AGENTS.md / docs 編集 | ✅ 可 | ✅ 可 |
 
 ---
@@ -45,7 +45,8 @@ git log --oneline --decorate -5
 | **Cursor Agents Window** | 実装・調査・検証・branch / commit・diff 整理 | **push / publish / main merge は人間承認後のみ** |
 | **Cursor Editor / Chat** | 小規模確認・diff レビュー・手動微修正・質問応答 | 大きな実装や commit は原則 Agents Window へ |
 | **Claude Cowork** | AGENTS.md・docs・開発ハーネス整理 | コード実装・publish / push はしない |
-| **人間（りょーまさん）** | publish・push・本番 data 検証・secret 判断・最終承認 | 不可逆操作は必ず人間が実施 |
+| **Codex** | 実装・検証・PR 作成・承認済みの公開と配信確認 | GitHub Pages への公開は §4 に従う |
+| **人間（りょーまさん）** | 公開の承認・本番 data 検証・secret 判断 | 不可逆操作は必ず人間が実施 |
 
 ---
 
@@ -104,8 +105,10 @@ git log --oneline --decorate -5
 
 - **`git add .` 禁止** — 対象パスを明示して add
 - **`force push` 禁止**
-- **`main` への直接 push 禁止** — 人間承認後のみ（通常は `cursor/*` → PR / merge）
-- **GitHub Pages publish**（`main` への merge + push）は **人間承認必須**
+- **`main` への直接 push 禁止**。公開は `cursor/*` → PR → `main` の経路を使う。
+- **GitHub Pages の公開には、今回の対象と公開先を特定できる本人の承認が必要**。Codex がこの承認を受けたら、PR のマージと配信確認まで行える。対象と公開先が直前の会話で明確な「反映まで進めて」は公開承認として扱う。差分や公開先が承認範囲から広がった場合は、拡大した対象を確認する。
+- マージ直前に対象 PR・head・base・差分を照合し、競合と必須チェックを確認する。マージ後は配信結果と公開 URL の反映を確認する。拒否された操作は通常の権限・保護設定に従い、結果が不明なら状態を確認してから続行を判断する。
+- この実行者の取り決めは、このリポジトリの **GitHub Pages 公開だけ**に適用し、母艦の共通ルールにある公開担当の記載より優先する。DB・Supabase・業務データ・認証・権限や他リポジトリの運用には各対象の手順を適用する。
 - 作業は **`cursor/*` ブランチ**で行う
 - PC 間同期は ippatsu-pc `docs/git_sync_workflow.md` に従う
 
