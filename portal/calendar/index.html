@@ -217,7 +217,7 @@
   .legend-dot-company { background: var(--cat-company); }
   .legend-dot-absent { background: var(--cat-absent); }
   .legend-dot-business_trip { background: var(--cat-trip); }
-  .legend-dot-holiday { background: var(--cat-holiday); }
+  .legend-dot-day_off, .legend-dot-holiday { background: var(--cat-holiday); }
   .legend-dot-other { background: var(--cat-other); }
 
   /* ===== CALENDAR GRID ===== */
@@ -330,6 +330,7 @@
     border-color: rgba(124, 58, 237, 0.28);
     border-left: 3px solid var(--cat-trip);
   }
+  .event-tag.day_off,
   .event-tag.holiday,
   .event-tag.holiday-tag {
     background: var(--cat-holiday-bg);
@@ -429,6 +430,7 @@
     color: var(--cat-trip);
     border: 1px solid rgba(124, 58, 237, 0.2);
   }
+  .event-list-item.day_off,
   .event-list-item.holiday {
     background: var(--cat-holiday-bg);
     color: var(--cat-holiday);
@@ -446,7 +448,7 @@
   .event-list-item.company .dot { background: var(--cat-company); }
   .event-list-item.absent .dot { background: var(--cat-absent); }
   .event-list-item.business_trip .dot { background: var(--cat-trip); }
-  .event-list-item.holiday .dot { background: var(--cat-holiday); }
+  .event-list-item.day_off .dot, .event-list-item.holiday .dot { background: var(--cat-holiday); }
   .event-list-item.other .dot { background: var(--cat-other); }
 
   .modal-add-btn {
@@ -583,6 +585,7 @@
     border-color: rgba(124, 58, 237, 0.2);
     border-left-color: var(--cat-trip);
   }
+  .event-manage-item.day_off,
   .event-manage-item.holiday {
     background: var(--cat-holiday-bg);
     border-color: rgba(217, 119, 6, 0.22);
@@ -783,7 +786,7 @@
     color: var(--cat-absent);
   }
 </style>
-<link rel="stylesheet" href="./planner.css?v=b6803e36e25f">
+<link rel="stylesheet" href="./planner.css?v=b0c9bfd7b9b4">
 </head>
 <body>
 
@@ -827,7 +830,7 @@
     <div class="legend-item"><div class="legend-dot legend-dot-company"></div>行事</div>
     <div class="legend-item"><div class="legend-dot legend-dot-absent"></div>不在</div>
     <div class="legend-item"><div class="legend-dot legend-dot-business_trip"></div>出張</div>
-    <div class="legend-item"><div class="legend-dot legend-dot-holiday"></div>祝日</div>
+    <div class="legend-item"><div class="legend-dot legend-dot-holiday"></div>祝日・休み</div>
     <div class="legend-item"><div class="legend-dot legend-dot-other"></div>その他</div>
   </div>
   <div class="calendar-wrap">
@@ -866,6 +869,7 @@
       <select id="eventType">
         <option value="company">🔵 行事</option>
         <option value="absent">🔴 不在</option>
+        <option value="day_off">休み</option>
         <option value="business_trip">🟣 出張</option>
       </select>
     </div>
@@ -924,13 +928,14 @@ let supabaseLoadError = null;
 
 // ===== STORAGE =====
 const STORAGE_KEY = "companyCalendarEvents";
-const ALLOWED_EVENT_TYPES = ["company", "absent", "business_trip", "holiday", "other"];
+const ALLOWED_EVENT_TYPES = ["company", "absent", "business_trip", "holiday", "day_off", "other"];
 const IMPORT_REJECTED_TYPES = ["health"];
 
 const TYPE_META = {
   company: { emoji: "🔵", badge: "行事", badgeClass: "badge-company" },
   absent: { emoji: "🟢", badge: "不在", badgeClass: "badge-absent" },
   business_trip: { emoji: "🟣", badge: "出張", badgeClass: "badge-business_trip" },
+  day_off: { badge: "休み", badgeClass: "badge-holiday" },
   holiday: { emoji: "🔴", badge: "祝日", badgeClass: "badge-holiday" },
   other: { emoji: "🟦", badge: "その他", badgeClass: "badge-other" },
 };
@@ -977,7 +982,7 @@ function getEventsForDate(ymd) {
   return events
     .filter((e) => e.dateStart <= ymd && ymd <= e.dateEnd)
     .sort((a, b) => {
-      const typeOrder = { company: 0, business_trip: 1, absent: 2, holiday: 3, other: 4 };
+      const typeOrder = { company: 0, business_trip: 1, absent: 2, holiday: 3, day_off: 4, other: 5 };
       const ta = typeOrder[a.type] ?? 9;
       const tb = typeOrder[b.type] ?? 9;
       if (ta !== tb) return ta - tb;

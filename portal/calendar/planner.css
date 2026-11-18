@@ -42,7 +42,7 @@ header h1 { font-size: clamp(19px, 3vw, 26px); letter-spacing: 0; overflow-wrap:
 .weekday-header { padding-block: 8px; margin: 0; background: var(--bg); border-top: 2px solid var(--text); font-size: 13px; }
 .calendar-grid { gap: 1px; border: 1px solid var(--border); background: var(--border); }
 .day-cell, .day-cell.has-multi, .day-cell.has-many {
-  display: block; min-width: 0; min-height: 86px; border: 0; border-radius: 0;
+  min-width: 0; min-height: 86px; border: 0; border-radius: 0;
   padding: 4px 2px; font: inherit; color: var(--text); text-align: start;
   background: var(--surface); align-content: start;
 }
