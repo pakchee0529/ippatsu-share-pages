@@ -117,6 +117,7 @@ for name in ['app.js','style.css']:
 (ASSETS/'ledger.css').write_text('\n'.join(ledger_styles),'utf-8')
 def shell(initial=''):
  css='<link rel="stylesheet" href="'+WEB+'archive-v2-r1/ledger.css"><link rel="stylesheet" href="'+WEB+'archive-v2-r1/style.css?v='+hashlib.sha256((SOURCE_ASSETS/'style.css').read_bytes()).hexdigest()[:16]+'">'
+ css+='''<link rel="stylesheet" href="/ippatsu-share-pages/portal/assets/section-index.css?v=8ad88117a370">'''
  script='<script src="'+WEB+'archive-v2-r1/app.js?v='+hashlib.sha256((ASSETS/'app.js').read_bytes()).hexdigest()[:16]+'" defer></script>'
  if initial:
   css='<style>'+ '\n'.join(ledger_styles)+(SOURCE_ASSETS/'style.css').read_text('utf-8')+'</style>'

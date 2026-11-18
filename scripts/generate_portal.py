@@ -4185,6 +4185,7 @@ a.btn-archive:hover, a.btn-archive:active {{
   border: 0;
 }}
 </style>
+<link rel="stylesheet" href="/ippatsu-share-pages/portal/assets/section-index.css?v=8ad88117a370">
 </head>
 <body>
 {subpage_header}
@@ -6198,6 +6199,7 @@ body {{
   .detail-ident {{ grid-template-columns: 1fr; gap: 0.2rem; }}
 }}
 </style>
+<link rel="stylesheet" href="/ippatsu-share-pages/portal/assets/section-index.css?v=8ad88117a370">
 </head>
 <body>
 {header}
@@ -6383,6 +6385,7 @@ body {{
   .detail-ident {{ grid-template-columns: 1fr; gap: 0.2rem; }}
 }}
 </style>
+<link rel="stylesheet" href="/ippatsu-share-pages/portal/assets/section-index.css?v=8ad88117a370">
 </head>
 <body>
 {header}
@@ -7327,6 +7330,7 @@ body {{
   box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.18);
 }}
 </style>
+<link rel="stylesheet" href="/ippatsu-share-pages/portal/assets/section-index.css?v=8ad88117a370">
 </head>
 <body>
 {subpage_header}
@@ -7869,6 +7873,7 @@ body {{
   flex-basis: 100%;
 }}
 </style>
+<link rel="stylesheet" href="/ippatsu-share-pages/portal/assets/section-index.css?v=8ad88117a370">
 </head>
 <body>
 {subpage_header}
@@ -9122,6 +9127,7 @@ body {{
   .card-actions, .btn {{ width: 100%; }}
 }}
 </style>
+<link rel="stylesheet" href="/ippatsu-share-pages/portal/assets/section-index.css?v=8ad88117a370">
 </head>
 <body>
 {subpage_header}
@@ -9493,6 +9499,7 @@ body {{
   .case-row-meta {{ align-items: flex-start; }}
 }}
 </style>
+<link rel="stylesheet" href="/ippatsu-share-pages/portal/assets/section-index.css?v=8ad88117a370">
 </head>
 <body>
 {subpage_header}
