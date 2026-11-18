@@ -1,0 +1,128 @@
+/* Hallmark · theme: Furrow · scope: app · signature: ruled case and archive indexes */
+/* Critique: the search and case names lead, with a compact header and room for actions. */
+:root {
+  --index-paper: #f6f1e8;
+  --index-sheet: #fffdf8;
+  --index-ink: #292319;
+  --index-muted: #63584b;
+  --index-rule: #d4c7b5;
+  --index-accent: #8e320d;
+  --index-accent-wash: #fbebd9;
+  --index-focus: #165879;
+  --index-font: system-ui, "Yu Gothic", "Meiryo", sans-serif;
+  --index-icon: 44px;
+  --index-measure: 1080px;
+}
+html, body { overflow-x: clip; }
+:root { background: var(--index-paper); }
+body {
+  --bg: var(--index-paper);
+  --card: var(--index-sheet);
+  --text: var(--index-ink);
+  --muted: var(--index-muted);
+  --border: var(--index-rule);
+  --accent: var(--index-accent);
+  font-family: var(--index-font);
+}
+body > main, body > header {
+  max-width: var(--index-measure);
+  margin-inline: auto;
+}
+.portal-page-header, html[data-archive-snapshots] body > header {
+  background: var(--index-paper);
+  border: 0;
+  border-bottom: 2px solid var(--index-ink);
+  border-radius: 0;
+  box-shadow: none;
+}
+.portal-page-header-row .page-title, html[data-archive-snapshots] header h1 {
+  color: var(--index-ink);
+  font-size: clamp(1.5rem, 3.6vw, 2.25rem);
+  line-height: 1.2;
+  min-width: 0;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+.portal-menu-btn, .status-navigation a, .jurisdiction-navigation a { min-height: var(--index-icon); }
+.case-toolbar, .survey-search-panel {
+  box-shadow: none;
+  gap: 8px 16px;
+  background: var(--index-sheet);
+  border-radius: 0;
+  border: 1px solid var(--index-rule);
+  padding: 12px;
+}
+.case-search, .survey-search-input { min-width: 0; min-height: var(--index-icon); font-size: 1rem; }
+.case-search, .survey-search-input, html[data-archive-snapshots] #filters input {
+  background: var(--index-sheet);
+  color: var(--index-ink);
+  border-color: var(--index-rule);
+}
+main .case-row .case-status-pill {
+  background: var(--index-accent-wash);
+  color: var(--index-accent);
+}
+.status-grid { gap: 8px; }
+.status-tile {
+  min-height: var(--index-icon);
+  border-radius: 4px;
+  box-shadow: none;
+}
+.status-section > h2 { border-bottom: 2px solid var(--index-ink); padding-bottom: 8px; }
+.case-list, .card-list { gap: 0; }
+main :is(.card, .case-card, .case-row, .detail-card) {
+  background: var(--index-sheet);
+  border-radius: 0;
+  border-color: var(--index-rule);
+  box-shadow: none;
+}
+main :is(.card-title, .case-title, .detail-title, .case-row h3) {
+  font-size: clamp(1.125rem, 3.4vw, 1.375rem);
+  line-height: 1.3;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+main :is(.case-row-meta, .case-note, .item-mgmt, .case-meta) { color: var(--index-muted); }
+main :is(.card-actions a, .card-actions button, .survey-case-action-row button) { min-height: var(--index-icon); }
+html[data-archive-snapshots] body[data-initial-date=""] #filters {
+  background: var(--index-sheet);
+  border-color: var(--index-rule);
+  border-radius: 0;
+}
+html[data-archive-snapshots] body[data-initial-date=""] :is(#filters, .date-card, #older) :is(a, button),
+html[data-archive-snapshots] body[data-initial-date=""] button#older {
+  border-color: var(--index-accent);
+  background: var(--index-sheet);
+  color: var(--index-accent);
+}
+html[data-archive-snapshots] body[data-initial-date=""] .date-card {
+  background: var(--index-sheet);
+  border-color: var(--index-rule);
+  border-radius: 0;
+}
+html[data-archive-snapshots] body[data-initial-date=""] .cards {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 8px;
+}
+body :is(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--index-focus);
+  outline-offset: 2px;
+}
+body :is(button, a):active { filter: brightness(.94); }
+@media (max-width: 560px) {
+  .case-toolbar { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .case-total { white-space: nowrap; }
+  .survey-search-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .survey-search-row .btn-search-clear { width: auto; min-height: var(--index-icon); }
+  main .case-row { display: grid; gap: 4px; }
+  main .card-actions { gap: 8px; }
+  html[data-archive-snapshots] body[data-initial-date=""] .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  html[data-archive-snapshots] body[data-initial-date=""] .date-card {
+    padding: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
