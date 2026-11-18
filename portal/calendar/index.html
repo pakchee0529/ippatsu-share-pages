@@ -152,7 +152,7 @@
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background-color 0.15s;
   }
   .btn-white {
     background: white;
@@ -182,7 +182,7 @@
     font-size: 16px;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
+    transition: background-color 0.15s;
     color: var(--text);
   }
   .month-nav button:hover { background: var(--green); color: white; border-color: var(--green); }
@@ -252,7 +252,7 @@
     min-height: 74px;
     border: 1.5px solid var(--border);
     position: relative;
-    transition: all 0.12s;
+    transition: background-color 0.12s;
     cursor: pointer;
   }
   .day-cell:hover { border-color: var(--green-mid); box-shadow: 0 2px 8px rgba(45,106,79,0.12); }
@@ -632,7 +632,7 @@
     color: var(--text-muted);
     cursor: pointer;
     border-bottom: 2.5px solid transparent;
-    transition: all 0.15s;
+    transition: background-color 0.15s;
     margin-bottom: -1.5px;
   }
   .tab.active {
@@ -721,7 +721,7 @@
     box-shadow: 0 4px 16px rgba(45,106,79,0.35);
     display: flex; align-items: center; justify-content: center;
     z-index: 150;
-    transition: all 0.15s;
+    transition: background-color 0.15s;
   }
   .fab:hover { transform: scale(1.08); background: #245940; }
 
@@ -783,11 +783,12 @@
     color: var(--cat-absent);
   }
 </style>
+<link rel="stylesheet" href="./planner.css">
 </head>
 <body>
 
 <header>
-  <h1>📅 社内カレンダー</h1>
+  <h1>社内カレンダー</h1>
   <div class="portal-menu-wrap">
     <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel" aria-label="サイトメニューを開く">
       <span class="portal-menu-icon" aria-hidden="true">☰</span>
@@ -810,16 +811,17 @@
 <p class="storage-mode-banner" id="storageModeLabel">ローカル保存モード（この端末のブラウザに保存）</p>
 
 <div class="tab-bar">
-  <div class="tab active" onclick="switchTab('calendar', this)">カレンダー</div>
-  <div class="tab" onclick="switchTab('list', this)">予定一覧</div>
+  <button type="button" class="tab active" aria-pressed="true" onclick="switchTab('calendar', this)">カレンダー</button>
+  <button type="button" class="tab" aria-pressed="false" onclick="switchTab('list', this)">予定一覧</button>
 </div>
 
 <!-- CALENDAR VIEW -->
 <div id="calendarPanel" class="view-panel active">
   <div class="month-nav">
-    <button onclick="changeMonth(-1)">‹</button>
-    <h2 id="monthTitle"></h2>
-    <button onclick="changeMonth(1)">›</button>
+    <h2 id="monthTitle" aria-live="polite"></h2>
+    <button type="button" class="this-month" onclick="showThisMonth()">今月</button>
+    <button type="button" aria-label="前月" onclick="changeMonth(-1)">‹</button>
+    <button type="button" aria-label="次月" onclick="changeMonth(1)">›</button>
   </div>
   <div class="legend">
     <div class="legend-item"><div class="legend-dot legend-dot-company"></div>行事</div>
@@ -842,7 +844,7 @@
 </div>
 
 <!-- FAB -->
-<button class="fab" onclick="openAddModal(null)">＋</button>
+<button aria-label="予定を追加" class="fab" onclick="openAddModal(null)">＋</button>
 
 <!-- Day Detail Modal -->
 <div class="modal-overlay" id="dayModal" onclick="closeDayModal(event)">
@@ -1412,7 +1414,10 @@ function renderCalendar() {
     const ymd = toYMD(date);
     const dayEvents = getEventsForDate(ymd);
 
-    const cell = document.createElement('div');
+    const cell = document.createElement('button');
+    cell.type = 'button';
+    cell.setAttribute('aria-label', `${month + 1}月${d}日 ${WEEKDAYS[dow]} 予定${dayEvents.length}件`);
+    if (ymd === todayYMD) cell.setAttribute('aria-current', 'date');
     let cls = 'day-cell';
     if (dow === 0) cls += ' sunday';
     else if (dow === 6) cls += ' saturday';
@@ -1460,6 +1465,13 @@ function renderCalendar() {
 }
 
 // ===== MONTH NAV =====
+function showThisMonth() {
+  const now = new Date();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth();
+  return changeMonth(0);
+}
+
 async function changeMonth(dir) {
   currentMonth += dir;
   if (currentMonth > 11) { currentMonth = 0; currentYear++; }
@@ -1749,7 +1761,10 @@ function renderList() {
 
 // ===== TAB =====
 function switchTab(name, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-pressed', String(t === el));
+  });
   el.classList.add('active');
   document.getElementById('calendarPanel').classList.toggle('active', name === 'calendar');
   document.getElementById('listPanel').classList.toggle('active', name === 'list');
