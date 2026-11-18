@@ -1462,6 +1462,13 @@ function renderCalendar() {
     cell.addEventListener('click', () => openDayModal(ymd, date));
     grid.appendChild(cell);
   }
+  // Complete the final week with the same blank cells as the first week.
+  while (grid.childElementCount % 7) {
+    const empty = document.createElement('div');
+    empty.className = 'day-cell empty';
+    empty.setAttribute('aria-hidden', 'true');
+    grid.appendChild(empty);
+  }
 }
 
 // ===== MONTH NAV =====
