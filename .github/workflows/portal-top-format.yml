@@ -1,0 +1,28 @@
+name: Portal TOP format
+
+on:
+  pull_request:
+    paths:
+      - portal/index.html
+      - scripts/generate_portal.py
+      - scripts/test_portal_top_entries_removed.py
+      - .github/workflows/portal-top-format.yml
+  push:
+    branches: [main]
+    paths:
+      - portal/index.html
+      - scripts/generate_portal.py
+      - scripts/test_portal_top_entries_removed.py
+      - .github/workflows/portal-top-format.yml
+
+permissions:
+  contents: read
+
+jobs:
+  portal-top-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: python3 scripts/test_portal_top_entries_removed.py
