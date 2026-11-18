@@ -72,5 +72,19 @@ header h1 { font-size: clamp(19px, 3vw, 26px); letter-spacing: 0; overflow-wrap:
 header h1, .month-nav h2 { text-wrap: balance; }
 button:active { filter: brightness(.92); }
 button.day-cell { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; }
-.calendar-grid::after { content: ""; grid-column: auto / -1; background: var(--bg); }
-.calendar-grid:has(> :nth-child(7n):last-child)::after { display: none; }
+
+@media (max-width: 719px) and (orientation: portrait) {
+  body { display: flex; flex-direction: column; min-height: 100svh; }
+  #calendarPanel.active {
+    display: flex; flex-direction: column; flex: 1; width: 100%;
+  }
+  .calendar-wrap {
+    display: flex; flex-direction: column; flex: 1;
+    padding: 0 8px max(76px, calc(68px + env(safe-area-inset-bottom)));
+  }
+  .calendar-grid { flex: 1; grid-auto-rows: 1fr; }
+  .event-tag {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+    white-space: normal; overflow-wrap: anywhere;
+  }
+}
