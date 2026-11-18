@@ -8533,17 +8533,6 @@ def render_ojt_intake_entry() -> str:
   </section>"""
 
 
-def render_feedback_intake_entry() -> str:
-    """Optional feedback response link only; no embedded form or response data."""
-    return """  <section class="card ojt-intake" aria-labelledby="feedback-intake-heading">
-    <div class="ojt-intake-copy">
-      <h2 class="card-title" id="feedback-intake-heading">意見・改善案（任意）</h2>
-      <p class="ojt-intake-note">気づいたことを自由にお寄せください。</p>
-    </div>
-    <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSf0B1RUPgKSrqmozaS1vr8oXVZM-KI3oLnAr4fgILcFgYQXqw/viewform?usp=publish-editor" rel="noopener noreferrer" aria-label="意見・改善案を送る">意見を送る</a>
-  </section>"""
-
-
 def build_html(
     entries: list[tuple[str, str]],
     *,
@@ -8814,13 +8803,6 @@ body {{ max-width: 54rem; padding-block: 24px 48px; font-family: var(--top-font)
 {render_ojt_guide_entry()}
 
 {render_ojt_intake_entry()}
-
-{render_feedback_intake_entry()}
-
-  <div class="intro">
-    <p class="lead">このページは現場共有ページへの入口です。</p>
-    <p style="margin:0">今日・今週の作業内容は、次のリンクから日付ごとの共有ページを開いて確認してください。スマホのブックマークに登録して使えます。</p>
-  </div>
 
   <section class="today-schedule" aria-labelledby="today-schedule-heading">
     <h2 class="today-schedule-heading" id="today-schedule-heading">本日の予定</h2>
