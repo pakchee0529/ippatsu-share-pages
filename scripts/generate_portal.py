@@ -423,13 +423,39 @@ def render_live_cases_js(
 
 
 PORTAL_TOP_TODAY_SCHEDULE_CSS = """
+:root {
+  --today-color-1: rgba(20, 32, 51, 0.06);
+  --today-color-2: #dbeafe;
+  --today-color-3: rgba(37, 99, 235, 0.22);
+  --today-color-4: #2563eb;
+  --today-color-5: #1e3a8a;
+  --today-color-6: #ffe4e6;
+  --today-color-7: rgba(225, 29, 72, 0.22);
+  --today-color-8: #e11d48;
+  --today-color-9: #9f1239;
+  --today-color-10: #ede9fe;
+  --today-color-11: rgba(124, 58, 237, 0.22);
+  --today-color-12: #7c3aed;
+  --today-color-13: #5b21b6;
+  --today-color-14: #fef3c7;
+  --today-color-15: rgba(217, 119, 6, 0.25);
+  --today-color-16: #d97706;
+  --today-color-17: #92400e;
+  --today-color-18: #e2e8f0;
+  --today-color-19: rgba(71, 85, 105, 0.22);
+  --today-color-20: #475569;
+  --today-color-21: #334155;
+  --today-color-22: rgba(255, 255, 255, 0.55);
+  --today-color-23: #fff1f2;
+}
+
 .today-schedule {
   margin-bottom: 1.25rem;
   padding: 1rem 1rem 0.85rem;
   background: var(--card-b);
   border: 1px solid var(--border-b);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(20, 32, 51, 0.06);
+  box-shadow: 0 1px 3px var(--today-color-1);
 }
 .today-schedule-heading {
   font-size: 1.05rem;
@@ -462,34 +488,34 @@ PORTAL_TOP_TODAY_SCHEDULE_CSS = """
   line-height: 1.4;
 }
 .today-schedule-item.company {
-  background: #dbeafe;
-  border-color: rgba(37, 99, 235, 0.22);
-  border-left-color: #2563eb;
-  color: #1e3a8a;
+  background: var(--today-color-2);
+  border-color: var(--today-color-3);
+  border-left-color: var(--today-color-4);
+  color: var(--today-color-5);
 }
 .today-schedule-item.absent {
-  background: #ffe4e6;
-  border-color: rgba(225, 29, 72, 0.22);
-  border-left-color: #e11d48;
-  color: #9f1239;
+  background: var(--today-color-6);
+  border-color: var(--today-color-7);
+  border-left-color: var(--today-color-8);
+  color: var(--today-color-9);
 }
 .today-schedule-item.business_trip {
-  background: #ede9fe;
-  border-color: rgba(124, 58, 237, 0.22);
-  border-left-color: #7c3aed;
-  color: #5b21b6;
+  background: var(--today-color-10);
+  border-color: var(--today-color-11);
+  border-left-color: var(--today-color-12);
+  color: var(--today-color-13);
 }
 .today-schedule-item.holiday {
-  background: #fef3c7;
-  border-color: rgba(217, 119, 6, 0.25);
-  border-left-color: #d97706;
-  color: #92400e;
+  background: var(--today-color-14);
+  border-color: var(--today-color-15);
+  border-left-color: var(--today-color-16);
+  color: var(--today-color-17);
 }
 .today-schedule-item.other {
-  background: #e2e8f0;
-  border-color: rgba(71, 85, 105, 0.22);
-  border-left-color: #475569;
-  color: #334155;
+  background: var(--today-color-18);
+  border-color: var(--today-color-19);
+  border-left-color: var(--today-color-20);
+  color: var(--today-color-21);
 }
 .today-schedule-badge {
   flex-shrink: 0;
@@ -497,7 +523,7 @@ PORTAL_TOP_TODAY_SCHEDULE_CSS = """
   font-weight: 700;
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--today-color-22);
   line-height: 1.2;
 }
 .today-schedule-body {
@@ -524,8 +550,8 @@ PORTAL_TOP_TODAY_SCHEDULE_CSS = """
   border-radius: 8px;
 }
 .today-schedule-status.is-error {
-  color: #9f1239;
-  background: #fff1f2;
+  color: var(--today-color-9);
+  background: var(--today-color-23);
 }
 .today-schedule-more {
   margin: 0.65rem 0 0;
@@ -8542,20 +8568,27 @@ def build_html(
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>現場共有ポータル</title>
 <style>
+/* Hallmark · app: portal home · genre: modern-minimal · theme: Furrow · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: H, align entries on shared rules */
 :root {{
-  --bg-b: #f0f4f8;
-  --card-b: #fff;
-  --text-b: #142033;
-  --muted-b: #5a6578;
-  --border-b: #cfd8e3;
-  --accent-b: #1565c0;
-  --accent-b-hover: #0d47a1;
+  --bg-b: oklch(96% .011 85);
+  --card-b: oklch(99% .006 85);
+  --text-b: oklch(22% .012 60);
+  --muted-b: oklch(43% .022 64);
+  --border-b: oklch(82% .028 76);
+  --accent-b: oklch(42% .13 42);
+  --accent-b-hover: oklch(36% .12 42);
+
+  --top-legacy-color-1: rgba(20, 32, 51, 0.06);
+  --top-legacy-color-2: rgba(20, 32, 51, 0.12);
+  --top-legacy-color-3: #fff;
+  --top-font: "Yu Gothic UI", Meiryo, system-ui, sans-serif;
+  --top-on-accent: oklch(99% .006 85);
 }}
 * {{ box-sizing: border-box; }}
 body {{
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans",
-    "Noto Sans JP", sans-serif;
+  font-family: var(--top-font);
   background: var(--bg-b);
   color: var(--text-b);
   line-height: 1.55;
@@ -8565,6 +8598,7 @@ body {{
   margin-right: auto;
 }}
 h1, .portal-title {{
+  text-wrap: balance;
   font-size: 1.35rem;
   font-weight: 700;
   margin: 0;
@@ -8604,7 +8638,7 @@ h1, .portal-title {{
   border: 1px solid var(--border-b);
   border-radius: 10px;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.06);
+  box-shadow: 0 1px 2px var(--top-legacy-color-1);
 }}
 .portal-menu-btn:hover,
 .portal-menu-btn:focus-visible {{
@@ -8628,7 +8662,7 @@ h1, .portal-title {{
   background: var(--card-b);
   border: 1px solid var(--border-b);
   border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(20, 32, 51, 0.12);
+  box-shadow: 0 4px 14px var(--top-legacy-color-2);
 }}
 .portal-menu-panel[hidden] {{
   display: none !important;
@@ -8679,7 +8713,7 @@ a.portal-menu-item:focus-visible {{
   border: 1px solid var(--border-b);
   border-radius: 12px;
   padding: 1rem 1rem 1rem;
-  box-shadow: 0 1px 3px rgba(20, 32, 51, 0.06);
+  box-shadow: 0 1px 3px var(--top-legacy-color-1);
 }}
 .card-title {{
   font-size: 1.05rem;
@@ -8696,7 +8730,7 @@ a.portal-menu-item:focus-visible {{
   text-decoration: none;
   font-weight: 600;
   font-size: 1rem;
-  color: #fff;
+  color: var(--top-legacy-color-3);
   background: var(--accent-b);
   border-radius: 10px;
   padding: 0.75rem 1rem;
@@ -8739,6 +8773,19 @@ a.portal-menu-item:focus-visible {{
   color: var(--muted-b);
   text-align: center;
 }}
+html, body {{ overflow-x: clip; }}
+body {{ max-width: 54rem; padding-block: 24px 48px; font-family: var(--top-font); }}
+.portal-header {{ padding-block: 8px 16px; border-bottom: 1px solid var(--border-b); }}
+.portal-title {{ font-size: 1.75rem; line-height: 1.2; text-wrap: balance; overflow-wrap: break-word; }}
+.card-list {{ gap: 0; border-block: 1px solid var(--border-b); }}
+.card {{ border: 0; border-radius: 0; box-shadow: none; margin: 0; }}
+.card + .card {{ border-top: 1px solid var(--border-b); }}
+.portal-menu-btn, .today-schedule {{ box-shadow: none; }}
+.card a.btn {{ background: var(--accent-b); color: var(--top-on-accent); border-radius: 6px; }}
+.card a.btn:hover {{ background: var(--accent-b-hover); }}
+:is(a, button):focus-visible {{ outline: 2px solid var(--accent-b); outline-offset: 2px; }}
+:is(.portal-menu-btn, .card a.btn):active {{ opacity: .85; }}
+.portal-menu-btn:disabled {{ opacity: .55; cursor: default; }}
 </style>
 </head>
 <body>
