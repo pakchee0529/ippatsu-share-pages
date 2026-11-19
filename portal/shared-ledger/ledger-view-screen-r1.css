@@ -1,0 +1,42 @@
+/* Hallmark · Furrow · daily and instruction screen views */
+/* Critique: use a strong page header and clear table bands to make quantities easy to scan. */
+:root {
+  --ledger-screen-heading: #7a2d12;
+  --ledger-screen-on-heading: #fffaf1;
+  --ledger-screen-band: #eed8be;
+  --ledger-screen-row: #faf3e8;
+  --ledger-screen-rule: #cbb39b;
+}
+@media screen {
+  body[data-share-view] > header {
+    background: var(--ledger-screen-heading);
+    color: var(--ledger-screen-on-heading);
+    border-bottom-color: var(--ledger-screen-heading);
+  }
+  body[data-share-view] > header :is(h1, a) {
+    color: var(--ledger-screen-on-heading);
+  }
+  body[data-share-view] > header nav a {
+    background: transparent;
+    border-color: var(--ledger-screen-on-heading);
+  }
+  body[data-share-view] main .ledger-view h2 {
+    color: var(--ledger-screen-heading);
+  }
+  body[data-share-view] main .ledger-view :is(.counts, .other-counts, .activity, .condition-summary) :is(th, td) {
+    border-color: var(--ledger-screen-rule);
+  }
+  body[data-share-view] main .ledger-view :is(.counts, .other-counts) tr:first-child > th {
+    background: var(--ledger-screen-heading);
+    color: var(--ledger-screen-on-heading);
+  }
+  body[data-share-view] main .ledger-view :is(.counts, .other-counts) tr:nth-child(odd):not(:first-child) > td {
+    background: var(--ledger-screen-row);
+  }
+  body[data-share-view] main .ledger-view :is(.activity th, .condition-summary th, .total) {
+    background: var(--ledger-screen-band);
+  }
+  body[data-share-view] > header a:focus-visible {
+    outline-color: var(--ledger-screen-on-heading);
+  }
+}
