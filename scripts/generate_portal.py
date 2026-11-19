@@ -8819,6 +8819,12 @@ body {{ max-width: 54rem; padding-block: 24px 48px; font-family: var(--top-font)
     <p class="today-schedule-more"><a href="./calendar/">社内カレンダーで詳細を見る</a></p>
   </section>
 
+  <section id="assistant-schedule" class="today-schedule" aria-label="変更した施工予定" hidden>
+    <h2 class="today-schedule-heading">変更した施工予定</h2>
+    <div id="assistant-schedule-days"></div>
+  </section>
+  <script type="module" src="./assistant/schedule-display.mjs"></script>
+
   <div class="card-list" role="list">
 {cards_str}
   </div>
