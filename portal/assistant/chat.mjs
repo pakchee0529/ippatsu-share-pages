@@ -1,4 +1,14 @@
 const $=s=>document.querySelector(s);
+// Mobile keyboards and in-app browser controls can shrink only the visual viewport.
+const viewport = window.visualViewport;
+function fitChat() {
+  if (viewport && viewport.scale === 1 && viewport.height > 0) {
+    document.documentElement.style.setProperty("--chat-visible-height", Math.floor(viewport.height) + "px");
+  }
+}
+fitChat();
+viewport?.addEventListener("resize", fitChat);
+window.addEventListener("pageshow", fitChat);
 const endpoint="https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/ippatsu-assistant";
 let token=sessionStorage.getItem("ippatsu.chat.session")||"",history=[],busy=false;
 function show(){const active=!!token;$("#welcome").hidden=active;$("#thread").hidden=!active;$("#lock").hidden=!active;}
@@ -13,7 +23,8 @@ async function api(action,data={}){
 }
 function bubble(text,mine=false){const row=document.createElement("div");row.className=mine?"row mine":"row";
   if(!mine){const img=document.createElement("img");img.src="ippatsu.webp";img.alt="いっぱつちゃん";row.append(img);}
-  const box=document.createElement("div");box.className="bubble";box.textContent=text;row.append(box);$("#messages").append(row);row.scrollIntoView({block:"nearest"});return box;}
+  const box=document.createElement("div");box.className="bubble";box.textContent=text;row.append(box);
+  const messages=$("#messages");messages.append(row);messages.scrollTop=messages.scrollHeight;return box;}
 function pending(id,text){sessionStorage.setItem("ippatsu.chat.pending",JSON.stringify({id,text}));}
 function confirmation(id,text,check=false){
   const box=bubble(text),button=document.createElement("button");button.type="button";button.className="apply";box.append(button);
