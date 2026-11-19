@@ -1,0 +1,95 @@
+/* Hallmark · Furrow · shared work pages · screen-only · ruled field sheets */
+/* Critique: give each job a clear heading and leave tables space to scroll. */
+:root {
+  --work-paper: #f6f1e8;
+  --work-sheet: #fffdf8;
+  --work-ink: #292319;
+  --work-muted: #655749;
+  --work-rule: #cfbfaa;
+  --work-accent: #8d310c;
+  --work-wash: #fbebd8;
+  --work-focus: #165879;
+  --work-font: system-ui, "Yu Gothic", "Meiryo", sans-serif;
+  --work-width: 70rem;
+  --work-touch: 44px;
+}
+@media screen {
+  html, body { overflow-x: clip; }
+  body[data-share-page-date], body[data-share-view], body:has(#save-state) {
+    background: var(--work-paper);
+    color: var(--work-ink);
+    font-family: var(--work-font);
+  }
+  body > header, body > main { max-width: var(--work-width); margin-inline: auto; }
+  body > header {
+    background: var(--work-paper);
+    color: var(--work-ink);
+    border-bottom: 2px solid var(--work-ink);
+    box-shadow: none;
+  }
+  body > header :is(a, small), body[data-share-view] main a { color: var(--work-accent); }
+  body > header h1, .card-title, body[data-share-view] .ledger-view h2 {
+    color: var(--work-ink);
+    font-size: clamp(1.25rem, 3.5vw, 1.75rem);
+    min-width: 0;
+    overflow-wrap: break-word;
+    text-wrap: balance;
+  }
+  body[data-share-page-date] main > .card, body[data-share-view] main .ledger-view {
+    background: var(--work-sheet);
+    border: 1px solid var(--work-rule);
+    border-radius: 0;
+    box-shadow: none;
+    min-width: 0;
+  }
+  body[data-share-page-date] .card-head, body[data-share-view] .ledger-view h3 {
+    border-bottom: 1px solid var(--work-rule);
+    padding-bottom: 8px;
+  }
+  body[data-share-page-date] .item-mgmt, body[data-share-view] .ledger-view .meta {
+    color: var(--work-muted);
+  }
+  body[data-share-page-date] :is(.share-quick-nav, .card-actions) { gap: 8px; }
+  body[data-share-page-date] :is(.card-actions, .share-quick-nav, .photo-ledger-input-footer) :is(a, button),
+  body[data-share-view] :is(.view-nav, .ledger-view .nav) a,
+  body:has(#save-state) .save-controls button {
+    min-height: var(--work-touch);
+  }
+  body[data-share-page-date] .btn-photo-ledger-input,
+  body[data-share-view] .view-nav > a,
+  body[data-share-view] .ledger-view .nav > a {
+    background: var(--work-wash);
+    border-color: var(--work-accent);
+    color: var(--work-accent);
+  }
+  body[data-share-view] .ledger-view :is(.counts, .other-counts, .activity, .condition-summary) th {
+    background: var(--work-wash);
+    color: var(--work-ink);
+  }
+  body[data-share-view] .ledger-view .counts { font-size: .75rem; font-variant-numeric: tabular-nums; }
+  body[data-share-view] .ledger-view .number-part { white-space: normal; }
+  body:has(#save-state) main > section {
+    background: var(--work-sheet);
+    border-color: var(--work-rule);
+    border-radius: 0;
+  }
+  body:has(#save-state) :is(main h2, main summary) { color: var(--work-ink); }
+  body:has(#save-state) .save-controls :is(#save, #save-return):enabled {
+    background: var(--work-accent);
+    color: var(--work-sheet);
+  }
+  body :is(a, button, input, select, textarea, summary):focus-visible {
+    outline: 3px solid var(--work-focus);
+    outline-offset: -3px;
+  }
+  body :is(a, button):active { filter: brightness(.92); }
+}
+@media screen and (max-width: 520px) {
+  body[data-share-view] :is(main, header) { padding-inline: 8px; }
+  body[data-share-view] .ledger-view { padding: 8px; }
+  body[data-share-view] .ledger-view .counts :is(th, td) { padding-inline: 2px; }
+  body[data-share-view] .ledger-view .counts :is(th:first-child, th:last-child) { width: auto; }
+}
+@media screen and (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
