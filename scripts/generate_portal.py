@@ -8780,12 +8780,15 @@ body {{ max-width: 54rem; padding-block: 24px 48px; font-family: var(--top-font)
 :is(a, button):focus-visible {{ outline: 2px solid var(--accent-b); outline-offset: 2px; }}
 :is(.portal-menu-btn, .card a.btn):active {{ opacity: .85; }}
 .portal-menu-btn:disabled {{ opacity: .55; cursor: default; }}
+.assistant-entry {{ display:inline-flex; align-items:center; justify-content:center; margin-left:auto; width:48px; height:44px; border:1px solid var(--border-b); border-radius:12px; background:var(--top-on-accent); }}
+.assistant-entry img {{ width:40px; height:40px; object-fit:contain; }}
 </style>
 </head>
 <body>
   <header class="portal-header">
     <div class="portal-header-row">
       <h1 class="portal-title">現場共有ポータル</h1>
+      <a class="assistant-entry" href="./assistant/" aria-label="いっぱつちゃんに相談" title="いっぱつちゃんに相談"><img src="./assistant/ippatsu.webp" alt="" width="40" height="40"></a>
       <div class="portal-menu-wrap">
         <button type="button" class="portal-menu-btn" id="portal-menu-btn" aria-expanded="false" aria-haspopup="true" aria-controls="portal-menu-panel">
           <span class="portal-menu-icon" aria-hidden="true">☰</span>
