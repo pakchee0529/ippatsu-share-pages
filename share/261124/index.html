@@ -463,13 +463,13 @@ body {
     <p class="item-mgmt">51405969</p>
     
     <div class="card-actions">
-      <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=0,0" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=34.1951,135.729" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-0" data-note-toggle>現場指示</button>
     </div>
   </div>
-  <script type="application/json" id="two-geo-0">{"a":{"name":"(不明)","lat":0.0,"lng":0.0},"b":{"name":"(不明)","lat":0.0,"lng":0.0}}</script>
+  <script type="application/json" id="two-geo-0">{"a":{"name":"中原12S1","lat":34.19553,"lng":135.72853},"b":{"name":"中原12S2","lat":34.19514,"lng":135.72903}}</script>
   
   <div class="two-map-wrap" id="two-wrap-0" hidden>
     <div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
@@ -482,13 +482,13 @@ body {
     <p class="item-mgmt">51405970</p>
     
     <div class="card-actions">
-      <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=0,0" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=34.195,135.728" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-1" data-two-map="share-two-map-1" data-two-json="two-geo-1" aria-expanded="false" aria-controls="two-wrap-1">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-1" data-note-toggle>現場指示</button>
     </div>
   </div>
-  <script type="application/json" id="two-geo-1">{"a":{"name":"(不明)","lat":0.0,"lng":0.0},"b":{"name":"(不明)","lat":0.0,"lng":0.0}}</script>
+  <script type="application/json" id="two-geo-1">{"a":{"name":"中原12S2","lat":34.19514,"lng":135.72903},"b":{"name":"中原12S2W1","lat":34.19504,"lng":135.72829}}</script>
   
   <div class="two-map-wrap" id="two-wrap-1" hidden>
     <div id="share-two-map-1" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
@@ -501,13 +501,13 @@ body {
     <p class="item-mgmt">51405974</p>
     
     <div class="card-actions">
-      <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=0,0" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=34.1941,135.725" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-2" data-two-map="share-two-map-2" data-two-json="two-geo-2" aria-expanded="false" aria-controls="two-wrap-2">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-2" data-note-toggle>現場指示</button>
     </div>
   </div>
-  <script type="application/json" id="two-geo-2">{"a":{"name":"(不明)","lat":0.0,"lng":0.0},"b":{"name":"(不明)","lat":0.0,"lng":0.0}}</script>
+  <script type="application/json" id="two-geo-2">{"a":{"name":"中原20S2","lat":34.19368,"lng":135.72399},"b":{"name":"中原20S2G1","lat":34.19408,"lng":135.72472}}</script>
   
   <div class="two-map-wrap" id="two-wrap-2" hidden>
     <div id="share-two-map-2" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
@@ -516,8 +516,8 @@ body {
 </article>
   <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
-    <!-- share-multipin-debug: points=0 markers=0 duplicate_groups=0 -->
-    <div id="share-map" role="application" aria-label="全径間の位置" data-point-count="0"></div>
+    <!-- share-multipin-debug: points=3 markers=3 duplicate_coordinate_groups=0 stacked_point_count=0 -->
+    <div id="share-map" role="application" aria-label="全径間の位置" data-point-count="3"></div>
   </section>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -526,7 +526,7 @@ body {
 <script>
 (function() {
   function initShareMultipinMap() {
-    var POINTS = [];
+    var POINTS = [{"name":"中原12S1～12S2","lat":34.19553,"lng":135.72853,"management_no":"51405969"},{"name":"中原12S2～12S2W1","lat":34.19514,"lng":135.72903,"management_no":"51405970"},{"name":"中原　20S2～20S2G1","lat":34.19368,"lng":135.72399,"management_no":"51405974"}];
     document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
       var id = btn.getAttribute("aria-controls");
       var panel = id && document.getElementById(id);
