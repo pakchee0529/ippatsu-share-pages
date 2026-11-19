@@ -43,5 +43,6 @@ async function send(text){if(!text||busy)return;busy=true;$("#compose button").d
   }catch(e){bubble(e.message);}finally{busy=false;$("#compose button").disabled=false;$("#typing").hidden=true;}}
 $("#compose").onsubmit=e=>{e.preventDefault();send($("#message").value.trim());};
 $("#message").onkeydown=e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&!e.isComposing){e.preventDefault();send($("#message").value.trim());}};
-document.querySelectorAll(".suggestions button").forEach(b=>b.onclick=()=>send(b.textContent));start();
+$("#recent").onclick=async()=>{try{bubble((await api("recent")).message);}catch(e){bubble(e.message);}};
+document.querySelectorAll(".suggestions button:not(#recent)").forEach(b=>b.onclick=()=>send(b.textContent));start();
 
