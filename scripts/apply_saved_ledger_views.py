@@ -84,25 +84,34 @@ def transform(root:Path,date:str,text:str,*,asset_root=None)->str:
     return text
 
 INSTRUCTION_NOTE_ENTRY = """
-<section aria-labelledby="instruction-note-heading">
-  <h2 id="instruction-note-heading">社内メモ</h2>
-  <p>恒久メモと次回メモを確認・編集できます。</p>
-  <form id="instruction-note-link" data-editor="../../../portal/case-note-editor/">
-    <label for="instruction-note-link-value">社内の編集リンク</label>
-    <input id="instruction-note-link-value" type="url" required autocomplete="off" spellcheck="false">
-    <button type="submit">メモを開く</button>
-    <p id="instruction-note-link-status" role="status"></p>
-  </form>
+<section aria-labelledby="permanent-note-heading">
+  <h2 id="permanent-note-heading">恒久メモ <button type="button" id="permanent-note-edit" aria-label="恒久メモを編集" hidden>✎</button></h2>
+  <p id="permanent-note-text" style="white-space:pre-wrap"></p>
+  <div id="permanent-note-draft" hidden>
+    <label for="permanent-note-value">恒久メモ</label>
+    <textarea id="permanent-note-value" rows="4" maxlength="10000"></textarea>
+    <button id="permanent-note-save" type="button">保存</button>
+    <button id="permanent-note-cancel" type="button">キャンセル</button>
+  </div>
+  <p id="permanent-note-status" role="status"></p>
 </section>
-<script type="module" src="../../../portal/case-note-editor/open-link.js"></script>
+<script type="module" src="../../../portal/case-note-editor/permanent-preview.js"></script>
 """
 
 
-def templates(root,date,encoded):
+def templates(root,date,encoded,permanent_notes=None):
     style='body{font-family:system-ui,sans-serif;margin:0;background:#f1f5f9;color:#172534}main,header{max-width:1050px;margin:auto;padding:16px}a{color:#0755a1}table{border-collapse:collapse;width:100%;background:white}th,td{border:1px solid #cbd5e1;padding:9px;text-align:left;overflow-wrap:anywhere}.scroll{overflow-x:auto}.saved-ledger-status{font-size:.85rem;color:#475569}.card{width:auto!important}h1{font-size:1.3rem}.view-help{font-size:.9rem}.view-nav{display:flex;gap:8px;flex-wrap:wrap}.view-nav>a{display:inline-flex;padding:10px 14px;border:1px solid #93c5fd;border-radius:8px;background:white;color:#0755a1;text-decoration:none}'
     for folder,mode,title,content in [('instructions','instructions','指示書','<div id="content"></div>'),('daily','daily','日次離隔表','<div id="content"></div>')]:
         if mode == 'instructions':
             content += INSTRUCTION_NOTE_ENTRY
+            target = root/'share'/date/folder/'index.html'
+            if permanent_notes is None and target.is_file():
+                previous = re.search(r'<script id="permanent-note-data" type="application/json">(.*?)</script>',
+                                     target.read_text('utf8'), re.S)
+                if previous:
+                    permanent_notes = json.loads(previous[1])
+            note_data = json.dumps(permanent_notes or {}, ensure_ascii=False).replace('<', r'\u003c')
+            content += '<script id="permanent-note-data" type="application/json">' + note_data + '</script>'
         out=root/'share'/date/folder;out.mkdir(exist_ok=True)
         nav='<nav class="view-nav"><a href="../">共有ページに戻る</a><a id="ledger-input-top" href="#">台帳入力</a></nav>' if mode=='instructions' else '<a href="../">当日の共有ページへ戻る</a>'
         html=f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{date} {title}</title><style>{style}</style>{screen_style_link('../../../portal/shared-ledger/')}{field_layout_link('../../../portal/shared-ledger/',date)}</head><body data-share-view="{mode}"><header>{nav}<h1>{title}</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div>{content}</main><script id="shared-ledger-config" type="application/json">{encoded}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v={ASSET_VERSION}"></script></body></html>'
