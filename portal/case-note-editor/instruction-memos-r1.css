@@ -1,0 +1,99 @@
+/* Hallmark · Furrow · component: instruction memos */
+/* Critique: make reading and editing the notes distinct, with clear save and cancel actions. */
+:root {
+  --memo-sheet: #fffdf8;
+  --memo-inset: #f6f1e8;
+  --memo-ink: #292319;
+  --memo-rule: #cdbba7;
+  --memo-accent: #7a2d12;
+  --memo-muted: #63594c;
+  --memo-focus: #165879;
+  --memo-font: system-ui, "Yu Gothic", "Meiryo", sans-serif;
+}
+@media screen {
+  body[data-share-view="instructions"] section:is([aria-labelledby="permanent-note-heading"], [aria-labelledby="next-note-heading"]) {
+    margin: 16px 0;
+    border: 1px solid var(--memo-rule);
+    border-top: 2px solid var(--memo-accent);
+    background: var(--memo-sheet);
+    color: var(--memo-ink);
+    padding: 16px;
+    font-family: var(--memo-font);
+    min-width: 0;
+  }
+  :is(#permanent-note-heading, #next-note-heading) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    color: var(--memo-accent);
+    font-size: 1.125rem;
+    min-width: 0;
+    overflow-wrap: break-word;
+    text-wrap: balance;
+  }
+  :is(#permanent-note-text, #next-note-text) {
+    margin: 0;
+    background: var(--memo-inset);
+    padding: 12px;
+    font-size: 1rem;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+  :is(#permanent-note-draft, #next-note-draft):not([hidden]) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 16px;
+  }
+  :is(#permanent-note-draft, #next-note-draft) > :is(label, textarea) { grid-column: 1 / -1; }
+  :is(#permanent-note-value, #next-note-value) {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 8rem;
+    padding: 12px;
+    resize: vertical;
+    border: 1px solid var(--memo-rule);
+    background: var(--memo-sheet);
+    color: var(--memo-ink);
+    font: inherit;
+    line-height: 1.6;
+  }
+  :is(#permanent-note-heading, #next-note-heading) button:not([hidden]), :is(#permanent-note-draft, #next-note-draft) button {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--memo-accent);
+    border-radius: 4px;
+    background: var(--memo-sheet);
+    color: var(--memo-accent);
+    font: inherit;
+    font-size: .875rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  :is(#permanent-note-edit, #next-note-edit)::after { content: " 編集" / ""; }
+  :is(#permanent-note-draft, #next-note-draft) :is(#permanent-note-save, #next-note-save) {
+    background: var(--memo-accent);
+    color: var(--memo-sheet);
+  }
+  :is(#permanent-note-heading, #next-note-heading) button:disabled,
+  :is(#permanent-note-draft, #next-note-draft) button:disabled,
+  :is(#permanent-note-draft, #next-note-draft) :is(#permanent-note-save, #next-note-save):disabled {
+    background: var(--memo-inset);
+    color: var(--memo-muted);
+    border-color: var(--memo-rule);
+    cursor: not-allowed;
+  }
+  :is(#permanent-note-heading, #next-note-heading) button:focus-visible, :is(#permanent-note-draft, #next-note-draft) :is(button, textarea):focus-visible {
+    outline: 3px solid var(--memo-focus);
+    outline-offset: 2px;
+  }
+  :is(#permanent-note-heading, #next-note-heading) button:active, :is(#permanent-note-draft, #next-note-draft) button:active {
+    filter: brightness(.92);
+  }
+  :is(#permanent-note-status, #next-note-status) { margin: 12px 0 0; color: var(--memo-muted); line-height: 1.5; overflow-wrap: anywhere; }
+  :is(#permanent-note-status, #next-note-status):empty { display: none; }
+}
