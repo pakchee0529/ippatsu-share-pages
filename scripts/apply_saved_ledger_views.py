@@ -10,9 +10,17 @@ import re,json
 CODES=['E10','E20','E30','E40','E50','E60','N10','N20','N30','N40','N50','N60','SB','TK','TR']
 ASSET_VERSION='20261110-transport-r1'
 SCREEN_STYLESHEET='daily-hallmark-r2.css'
+FIELD_LAYOUT_START='261120'
+FIELD_LAYOUT_STYLESHEET='daily-field-layout-r1.css'
 
 def screen_style_link(prefix: str) -> str:
     return f'<link rel="stylesheet" href="{prefix}{SCREEN_STYLESHEET}?v={ASSET_VERSION}">'
+
+
+def field_layout_link(prefix: str, date: str) -> str:
+    if date < FIELD_LAYOUT_START:
+        return ''
+    return f'<link rel="stylesheet" href="{prefix}{FIELD_LAYOUT_STYLESHEET}?v={ASSET_VERSION}">'
 FIELDS=['branch_cut_under_10','branch_cut_10_20','branch_cut_20_30','branch_cut_30_40','branch_cut_40_50','branch_cut_over_50','root_cut_under_10','root_cut_10_20','root_cut_20_30','root_cut_30_40','root_cut_40_50','root_cut_over_50','brush_area_m2','bamboo_count','vine_locations']
 def validate_asset_generation(root):
     assets=root/'portal'/'shared-ledger'
@@ -67,7 +75,11 @@ def transform(root:Path,date:str,text:str,*,asset_root=None)->str:
     style_link=screen_style_link('../../portal/shared-ledger/')
     text=re.sub(r'<link rel="stylesheet" href="../../portal/shared-ledger/daily-hallmark-r[12]\.css\?v='+re.escape(ASSET_VERSION)+r'">\n?', '', text, count=1)
     text=re.sub(r'(<!-- share-page-readability:end -->)\s*(</head>)',r'\1\n\n\2',text)
-    text=text.replace('</head>',style_link+'\n</head>',1)
+    layout_link=field_layout_link('../../portal/shared-ledger/',date)
+    if layout_link:
+        text=text.replace(layout_link+'\n','',1)
+    styles=style_link+'\n'+(layout_link+'\n' if layout_link else '')
+    text=text.replace('</head>',styles+'</head>',1)
     templates(root,date,encoded)
     return text
 
@@ -76,7 +88,7 @@ def templates(root,date,encoded):
     for folder,mode,title,content in [('instructions','instructions','指示書','<div id="content"></div>'),('daily','daily','日次離隔表','<div id="content"></div>')]:
         out=root/'share'/date/folder;out.mkdir(exist_ok=True)
         nav='<nav class="view-nav"><a href="../">共有ページに戻る</a><a id="ledger-input-top" href="#">台帳入力</a></nav>' if mode=='instructions' else '<a href="../">当日の共有ページへ戻る</a>'
-        html=f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{date} {title}</title><style>{style}</style>{screen_style_link('../../../portal/shared-ledger/')}</head><body data-share-view="{mode}"><header>{nav}<h1>{title}</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div>{content}</main><script id="shared-ledger-config" type="application/json">{encoded}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v={ASSET_VERSION}"></script></body></html>'
+        html=f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{date} {title}</title><style>{style}</style>{screen_style_link('../../../portal/shared-ledger/')}{field_layout_link('../../../portal/shared-ledger/',date)}</head><body data-share-view="{mode}"><header>{nav}<h1>{title}</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div>{content}</main><script id="shared-ledger-config" type="application/json">{encoded}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v={ASSET_VERSION}"></script></body></html>'
         target=out/'index.html'
         if target.exists() and target.read_bytes().endswith(b'\n'):html+='\n'
         if not target.exists() or target.read_text(encoding='utf-8')!=html:target.write_text(html,encoding='utf-8',newline='\n')
