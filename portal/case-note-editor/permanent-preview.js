@@ -1,19 +1,20 @@
-export function bindPermanentNote(document, location, fetchNote) {
+export function bindPermanentNote(document, location, fetchNote, prefix = 'permanent-note') {
   const id = new URLSearchParams(location.search).get("management_no");
   const source = document.getElementById("permanent-note-data");
+  if (!source || !document.getElementById(prefix + "-text")) return;
   const data = JSON.parse(source.textContent);
-  const displayed = document.getElementById("permanent-note-text");
-  const pencil = document.getElementById("permanent-note-edit");
-  const draft = document.getElementById("permanent-note-draft");
-  const field = document.getElementById("permanent-note-value");
-  const status = document.getElementById("permanent-note-status");
-  const save = document.getElementById("permanent-note-save");
-  const cancel = document.getElementById("permanent-note-cancel");
+  const displayed = document.getElementById(prefix + "-text");
+  const pencil = document.getElementById(prefix + "-edit");
+  const draft = document.getElementById(prefix + "-draft");
+  const field = document.getElementById(prefix + "-value");
+  const status = document.getElementById(prefix + "-status");
+  const save = document.getElementById(prefix + "-save");
+  const cancel = document.getElementById(prefix + "-cancel");
   if (!/^[0-9]{8}$/.test(id ?? "") || !Object.hasOwn(data, id)) {
     displayed.textContent = "対象案件を開いてください。";
     return;
   }
-  displayed.textContent = (data[id].body ?? data[id]) || "記載なし";
+  displayed.textContent = (prefix === "permanent-note" ? data[id].body ?? data[id] : "") || "記載なし";
   if (!fetchNote) return;
   let current;
   let blocked = false;
@@ -59,14 +60,14 @@ export function bindPermanentNote(document, location, fetchNote) {
     show(record);
     pencil.hidden = false;
   }).catch(() => {
-    status.textContent = "保存済みの恒久メモを取得できませんでした。";
+    status.textContent = "保存済みのメモを取得できませんでした。";
   });
 }
 if (typeof document !== "undefined") {
   const config = JSON.parse(document.getElementById("shared-ledger-config").textContent);
-  bindPermanentNote(document, location, async (id, edit) => {
+  const fetchMemo = (kind) => async (id, edit) => {
     const endpoint = new URL("https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/portal-permanent-memos");
-    endpoint.search = new URLSearchParams({date:config.date, management_no:id});
+    endpoint.search = new URLSearchParams({date:config.date, management_no:id, kind});
     const response = await fetch(endpoint, {
       method: edit ? "POST" : "GET",
       headers: edit ? {"Content-Type":"application/json"} : undefined,
@@ -74,7 +75,9 @@ if (typeof document !== "undefined") {
       cache:"no-store",
       signal:AbortSignal.timeout(15000),
     });
-    if (!response.ok) throw Error("恒久メモの通信に失敗しました。");
+    if (!response.ok) throw Error("メモの通信に失敗しました。");
     return response.json();
-  });
+  };
+  bindPermanentNote(document, location, fetchMemo("permanent"));
+  bindPermanentNote(document, location, fetchMemo("next_action"), "next-note");
 }

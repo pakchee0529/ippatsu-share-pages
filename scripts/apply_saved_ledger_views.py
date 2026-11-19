@@ -95,15 +95,17 @@ INSTRUCTION_NOTE_ENTRY = """
   </div>
   <p id="permanent-note-status" role="status"></p>
 </section>
-<script type="module" src="../../../portal/case-note-editor/permanent-preview.js"></script>
 """
+NEXT_NOTE_ENTRY = INSTRUCTION_NOTE_ENTRY.replace("permanent-note", "next-note").replace("恒久メモ", "次回メモ")
+NOTE_EDITOR_SCRIPT = '<script type="module" src="../../../portal/case-note-editor/permanent-preview.js?v=2"></script>'
+
 
 
 def templates(root,date,encoded,permanent_notes=None):
     style='body{font-family:system-ui,sans-serif;margin:0;background:#f1f5f9;color:#172534}main,header{max-width:1050px;margin:auto;padding:16px}a{color:#0755a1}table{border-collapse:collapse;width:100%;background:white}th,td{border:1px solid #cbd5e1;padding:9px;text-align:left;overflow-wrap:anywhere}.scroll{overflow-x:auto}.saved-ledger-status{font-size:.85rem;color:#475569}.card{width:auto!important}h1{font-size:1.3rem}.view-help{font-size:.9rem}.view-nav{display:flex;gap:8px;flex-wrap:wrap}.view-nav>a{display:inline-flex;padding:10px 14px;border:1px solid #93c5fd;border-radius:8px;background:white;color:#0755a1;text-decoration:none}'
     for folder,mode,title,content in [('instructions','instructions','指示書','<div id="content"></div>'),('daily','daily','日次離隔表','<div id="content"></div>')]:
         if mode == 'instructions':
-            content += INSTRUCTION_NOTE_ENTRY
+            content += INSTRUCTION_NOTE_ENTRY + NEXT_NOTE_ENTRY + NOTE_EDITOR_SCRIPT
             target = root/'share'/date/folder/'index.html'
             if permanent_notes is None and target.is_file():
                 previous = re.search(r'<script id="permanent-note-data" type="application/json">(.*?)</script>',
