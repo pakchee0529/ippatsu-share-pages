@@ -6,3 +6,20 @@
 #thread{display:flex;flex:1;min-height:0;flex-direction:column}#messages{overflow-y:auto;flex:1;padding:20px 16px;scrollbar-gutter:stable}.row{display:flex;align-items:flex-start;gap:8px;margin:0 0 16px}.row img{width:35px;height:35px}.bubble{max-width:min(82%,540px);padding:12px 16px;background:var(--white);border:1px solid var(--line);border-radius:2px 15px 15px;white-space:pre-wrap;overflow-wrap:anywhere}.mine{justify-content:flex-end}.mine .bubble{background:var(--mine);border-radius:15px 2px 15px 15px}.bubble button{display:block;margin-top:12px}.suggestions{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px}.suggestions button{font-size:13px;min-height:36px}#typing{padding:4px 16px;color:var(--muted);font-size:14px}#compose{display:flex;gap:8px;border-top:1px solid var(--line);background:var(--white);padding:12px 12px max(12px,env(safe-area-inset-bottom))}textarea{flex:1;resize:none;max-height:120px}#compose button{align-self:end;min-height:45px}
 @media(max-height:550px){#welcome{overflow:auto}#welcome>img{width:56px;height:56px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
 .result-link{display:block;color:var(--green);padding-block:8px;text-underline-offset:3px}h1,h2{text-wrap:balance}
+
+/* Keep the composer inside the visible area of an embedded mobile browser. */
+main {
+  height: var(--chat-visible-height, 100vh);
+  height: min(100svh, var(--chat-visible-height, 100svh));
+}
+#messages { min-height: 0; overscroll-behavior-y: contain; }
+#welcome { min-height: 0; overflow-y: auto; }
+#compose, .suggestions { flex: none; }
+#compose { padding-bottom: 8px; }
+.suggestions {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  background: var(--white);
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+.suggestions button { flex: none; }
