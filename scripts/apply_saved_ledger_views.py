@@ -9,7 +9,7 @@ import re,json
 
 CODES=['E10','E20','E30','E40','E50','E60','N10','N20','N30','N40','N50','N60','SB','TK','TR']
 ASSET_VERSION='20261110-transport-r1'
-SCREEN_STYLESHEET='daily-hallmark-r1.css'
+SCREEN_STYLESHEET='daily-hallmark-r2.css'
 
 def screen_style_link(prefix: str) -> str:
     return f'<link rel="stylesheet" href="{prefix}{SCREEN_STYLESHEET}?v={ASSET_VERSION}">'
@@ -65,7 +65,7 @@ def transform(root:Path,date:str,text:str,*,asset_root=None)->str:
     text=text.replace('</body>','<script id="shared-ledger-config" type="application/json">'+encoded+'</script>\n<script type="module" src="../../portal/shared-ledger/views.mjs?v='+version+'"></script>\n</body>')
     if 'data-daily-clearance' not in text:text=text.replace('<main>','<main>\n<p data-daily-clearance><a class="btn" href="daily/">日次離隔表</a></p>',1)
     style_link=screen_style_link('../../portal/shared-ledger/')
-    text=text.replace(style_link+'\n','',1)
+    text=re.sub(r'<link rel="stylesheet" href="../../portal/shared-ledger/daily-hallmark-r[12]\.css\?v='+re.escape(ASSET_VERSION)+r'">\n?', '', text, count=1)
     text=re.sub(r'(<!-- share-page-readability:end -->)\s*(</head>)',r'\1\n\n\2',text)
     text=text.replace('</head>',style_link+'\n</head>',1)
     templates(root,date,encoded)
@@ -76,7 +76,7 @@ def templates(root,date,encoded):
     for folder,mode,title,content in [('instructions','instructions','指示書','<div id="content"></div>'),('daily','daily','日次離隔表','<div id="content"></div>')]:
         out=root/'share'/date/folder;out.mkdir(exist_ok=True)
         nav='<nav class="view-nav"><a href="../">共有ページに戻る</a><a id="ledger-input-top" href="#">台帳入力</a></nav>' if mode=='instructions' else '<a href="../">当日の共有ページへ戻る</a>'
-        html=f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{date} {title}</title><style>{style}</style>{screen_style_link('../../../portal/shared-ledger/')}<link rel="stylesheet" href="../../../portal/shared-ledger/ledger-view-screen-r1.css"></head><body data-share-view="{mode}"><header>{nav}<h1>{title}</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div>{content}</main><script id="shared-ledger-config" type="application/json">{encoded}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v={ASSET_VERSION}"></script></body></html>'
+        html=f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{date} {title}</title><style>{style}</style>{screen_style_link('../../../portal/shared-ledger/')}</head><body data-share-view="{mode}"><header>{nav}<h1>{title}</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div>{content}</main><script id="shared-ledger-config" type="application/json">{encoded}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v={ASSET_VERSION}"></script></body></html>'
         target=out/'index.html'
         if target.exists() and target.read_bytes().endswith(b'\n'):html+='\n'
         if not target.exists() or target.read_text(encoding='utf-8')!=html:target.write_text(html,encoding='utf-8',newline='\n')
