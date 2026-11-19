@@ -102,7 +102,9 @@ INSTRUCTION_NOTE_ENTRY = """
 def templates(root,date,encoded,permanent_notes=None):
     style='body{font-family:system-ui,sans-serif;margin:0;background:#f1f5f9;color:#172534}main,header{max-width:1050px;margin:auto;padding:16px}a{color:#0755a1}table{border-collapse:collapse;width:100%;background:white}th,td{border:1px solid #cbd5e1;padding:9px;text-align:left;overflow-wrap:anywhere}.scroll{overflow-x:auto}.saved-ledger-status{font-size:.85rem;color:#475569}.card{width:auto!important}h1{font-size:1.3rem}.view-help{font-size:.9rem}.view-nav{display:flex;gap:8px;flex-wrap:wrap}.view-nav>a{display:inline-flex;padding:10px 14px;border:1px solid #93c5fd;border-radius:8px;background:white;color:#0755a1;text-decoration:none}'
     for folder,mode,title,content in [('instructions','instructions','指示書','<div id="content"></div>'),('daily','daily','日次離隔表','<div id="content"></div>')]:
+        note_style = ''
         if mode == 'instructions':
+            note_style = '<link rel="stylesheet" href="../../../portal/case-note-editor/permanent-note-r1.css">'
             content += INSTRUCTION_NOTE_ENTRY
             target = root/'share'/date/folder/'index.html'
             if permanent_notes is None and target.is_file():
@@ -114,7 +116,7 @@ def templates(root,date,encoded,permanent_notes=None):
             content += '<script id="permanent-note-data" type="application/json">' + note_data + '</script>'
         out=root/'share'/date/folder;out.mkdir(exist_ok=True)
         nav='<nav class="view-nav"><a href="../">共有ページに戻る</a><a id="ledger-input-top" href="#">台帳入力</a></nav>' if mode=='instructions' else '<a href="../">当日の共有ページへ戻る</a>'
-        html=f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{date} {title}</title><style>{style}</style>{screen_style_link('../../../portal/shared-ledger/')}{field_layout_link('../../../portal/shared-ledger/',date)}</head><body data-share-view="{mode}"><header>{nav}<h1>{title}</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div>{content}</main><script id="shared-ledger-config" type="application/json">{encoded}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v={ASSET_VERSION}"></script></body></html>'
+        html=f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{date} {title}</title><style>{style}</style>{screen_style_link('../../../portal/shared-ledger/')}{field_layout_link('../../../portal/shared-ledger/',date)}{note_style}</head><body data-share-view="{mode}"><header>{nav}<h1>{title}</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div>{content}</main><script id="shared-ledger-config" type="application/json">{encoded}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v={ASSET_VERSION}"></script></body></html>'
         target=out/'index.html'
         if target.exists() and target.read_bytes().endswith(b'\n'):html+='\n'
         if not target.exists() or target.read_text(encoding='utf-8')!=html:target.write_text(html,encoding='utf-8',newline='\n')

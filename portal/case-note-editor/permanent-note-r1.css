@@ -1,0 +1,99 @@
+/* Hallmark · Furrow · component: permanent memo */
+/* Critique: make reading the note and editing it distinct, with clear save and cancel actions. */
+:root {
+  --memo-sheet: #fffdf8;
+  --memo-inset: #f6f1e8;
+  --memo-ink: #292319;
+  --memo-rule: #cdbba7;
+  --memo-accent: #7a2d12;
+  --memo-muted: #63594c;
+  --memo-focus: #165879;
+  --memo-font: system-ui, "Yu Gothic", "Meiryo", sans-serif;
+}
+@media screen {
+  body[data-share-view="instructions"] section[aria-labelledby="permanent-note-heading"] {
+    margin: 16px 0;
+    border: 1px solid var(--memo-rule);
+    border-top: 2px solid var(--memo-accent);
+    background: var(--memo-sheet);
+    color: var(--memo-ink);
+    padding: 16px;
+    font-family: var(--memo-font);
+    min-width: 0;
+  }
+  #permanent-note-heading {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    color: var(--memo-accent);
+    font-size: 1.125rem;
+    min-width: 0;
+    overflow-wrap: break-word;
+    text-wrap: balance;
+  }
+  #permanent-note-text {
+    margin: 0;
+    background: var(--memo-inset);
+    padding: 12px;
+    font-size: 1rem;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+  #permanent-note-draft:not([hidden]) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 16px;
+  }
+  #permanent-note-draft > :is(label, textarea) { grid-column: 1 / -1; }
+  #permanent-note-value {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 8rem;
+    padding: 12px;
+    resize: vertical;
+    border: 1px solid var(--memo-rule);
+    background: var(--memo-sheet);
+    color: var(--memo-ink);
+    font: inherit;
+    line-height: 1.6;
+  }
+  #permanent-note-heading button:not([hidden]), #permanent-note-draft button {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--memo-accent);
+    border-radius: 4px;
+    background: var(--memo-sheet);
+    color: var(--memo-accent);
+    font: inherit;
+    font-size: .875rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  #permanent-note-edit::after { content: " 編集" / ""; }
+  #permanent-note-draft #permanent-note-save {
+    background: var(--memo-accent);
+    color: var(--memo-sheet);
+  }
+  #permanent-note-heading button:disabled,
+  #permanent-note-draft button:disabled,
+  #permanent-note-draft #permanent-note-save:disabled {
+    background: var(--memo-inset);
+    color: var(--memo-muted);
+    border-color: var(--memo-rule);
+    cursor: not-allowed;
+  }
+  #permanent-note-heading button:focus-visible, #permanent-note-draft :is(button, textarea):focus-visible {
+    outline: 3px solid var(--memo-focus);
+    outline-offset: 2px;
+  }
+  #permanent-note-heading button:active, #permanent-note-draft button:active {
+    filter: brightness(.92);
+  }
+  #permanent-note-status { margin: 12px 0 0; color: var(--memo-muted); line-height: 1.5; overflow-wrap: anywhere; }
+  #permanent-note-status:empty { display: none; }
+}
