@@ -1,0 +1,97 @@
+/* Hallmark · Furrow · screen composition for field work */
+/* Critique: lead with the date and first job, and group the controls used together. */
+:root {
+  --work-layout-gap: 8px;
+  --work-layout-pad: 12px;
+  --work-layout-touch: 44px;
+}
+@media screen {
+  body[data-share-page-date] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--work-layout-gap);
+    max-width: var(--work-width);
+    margin-inline: auto;
+  }
+  body[data-share-page-date] > * { grid-column: 1 / -1; min-width: 0; }
+  body[data-share-page-date] > :is(header, main) { width: 100%; }
+  body[data-share-page-date] > .share-page-summary {
+    grid-column: 1;
+    display: block;
+    margin: 0;
+  }
+  body[data-share-page-date] .share-page-summary > div:first-child {
+    display: none;
+  }
+  body[data-share-page-date] .share-page-summary > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--work-layout-gap);
+    min-height: var(--work-layout-touch);
+    padding: 8px var(--work-layout-pad);
+  }
+  body[data-share-page-date] > .share-quick-nav {
+    grid-column: 2;
+    align-self: stretch;
+    margin: 0;
+  }
+  body[data-share-page-date] > .share-quick-nav a {
+    min-height: var(--work-layout-touch);
+    border-radius: 4px;
+  }
+  body[data-share-page-date] [data-daily-clearance] {
+    margin: 0 0 var(--work-layout-gap);
+  }
+  body[data-share-page-date] [data-daily-clearance] a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--work-layout-touch);
+  }
+  body[data-share-view] > header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--work-layout-gap);
+  }
+  body[data-share-view] > header h1 { order: -1; margin: 0; text-wrap: balance; }
+  body[data-share-view] > header p { margin: 0; }
+  body[data-share-view] .ledger-view .nav > a {
+    display: inline-flex;
+    align-items: center;
+  }
+  body[data-share-view] .ledger-view .condition-summary {
+    margin-top: var(--work-layout-gap);
+  }
+  html[data-ledger-layout="field"] .save-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: var(--work-layout-gap);
+  }
+  html[data-ledger-layout="field"] .save-controls > :is(p, a) { grid-column: 1 / -1; }
+  html[data-ledger-layout="field"] .save-controls #save-state { grid-row: 1; margin: 0; }
+  html[data-ledger-layout="field"] .save-controls #save-state:empty { display: none; }
+  html[data-ledger-layout="field"] .save-controls button { margin: 0; overflow-wrap: anywhere; }
+  html[data-ledger-layout="field"] .save-controls button:focus-visible {
+    outline: 3px solid var(--work-focus);
+    outline-offset: -3px;
+  }
+  html[data-ledger-layout="field"] .save-controls button:active { filter: brightness(.92); }
+}
+@media screen and (min-width: 720px) {
+  body[data-share-view] .ledger-view {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    column-gap: var(--work-layout-pad);
+  }
+  body[data-share-view] .ledger-view > * { grid-column: 1 / -1; min-width: 0; }
+  body[data-share-view] .ledger-view > h2 { grid-column: 1; }
+  body[data-share-view] .ledger-view > h2 + .meta { grid-column: 2; align-self: start; margin: 0; }
+  html[data-ledger-layout="field"] main {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 0 var(--work-layout-pad);
+  }
+  html[data-ledger-layout="field"] main > * { grid-column: 1 / -1; min-width: 0; }
+  html[data-ledger-layout="field"] #design-section { grid-column: 1; }
+  html[data-ledger-layout="field"] #clearance-section { grid-column: 2; }
+}
