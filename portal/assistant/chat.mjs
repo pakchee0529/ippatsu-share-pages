@@ -39,7 +39,12 @@ async function send(text){if(!text||busy)return;busy=true;$("#compose button").d
   bubble(text,true);history.push({role:"user",content:text});$("#message").value="";
   try{const r=await api("chat",{messages:history.slice(-11)});
     history.push({role:"assistant",content:r.message.slice(0,1800)});
-    if(r.proposal){pending(r.proposal,r.message);confirmation(r.proposal,r.message);}else bubble(r.message);
+    if(r.proposal){pending(r.proposal,r.message);confirmation(r.proposal,r.message);}else{
+      const box=bubble(r.message);
+      for(const item of r.links||[]){const url=new URL(item.url);
+        if(url.origin!==location.origin||!url.pathname.startsWith("/ippatsu-share-pages/"))continue;
+        const a=document.createElement("a");a.href=url.href;a.textContent=item.label;a.className="result-link";box.append(a);}
+    }
   }catch(e){bubble(e.message);}finally{busy=false;$("#compose button").disabled=false;$("#typing").hidden=true;}}
 $("#compose").onsubmit=e=>{e.preventDefault();send($("#message").value.trim());};
 $("#message").onkeydown=e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&!e.isComposing){e.preventDefault();send($("#message").value.trim());}};
