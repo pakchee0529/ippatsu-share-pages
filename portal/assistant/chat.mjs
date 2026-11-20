@@ -38,6 +38,18 @@ function bubble(text,mine=false,citations=[],sticker=null,links=[]){const row=do
     }
     box.append(text.slice(offset));
   }
+  if(!mine){
+    for(const node of [...box.childNodes]){
+      if(node.nodeType!==Node.TEXT_NODE || !node.data.includes("**"))continue;
+      const parts=document.createDocumentFragment();let start=0;
+      for(const match of node.data.matchAll(/\*\*([^*\n]+?)\*\*/g)){
+        parts.append(node.data.slice(start,match.index));
+        const strong=document.createElement("strong");strong.textContent=match[1];parts.append(strong);
+        start=match.index+match[0].length;
+      }
+      if(start){parts.append(node.data.slice(start));node.replaceWith(parts);}
+    }
+  }
   const file=!mine && ({salute:"salute.webp",thanks:"thanks.webp"})[sticker];
   if(typeof file==="string"){const art=document.createElement("img");art.src=file;art.alt="";art.className="sticker";box.append(art);}
   row.append(box);
@@ -109,9 +121,9 @@ async function send(text){if(!text||busy)return;busy=true;$("#compose button").d
   bubble(text,true);history.push({role:"user",content:text});$("#message").value="";
   const messages=history.slice(-25).map(({role,content})=>({role,content}));
   while(messages.length>1 && JSON.stringify(messages).length>24000)messages.shift();
-  try{const r=await api("chat",{messages,receiptId:sessionStorage.getItem("ippatsu.chat.lastReceipt")});
+  try{const r=await api("chat",{messages,searchRef:history.at(-2)?.searchRef,receiptId:sessionStorage.getItem("ippatsu.chat.lastReceipt")});
     mode(r.test);
-    history.push({role:"assistant",content:r.message.slice(0,1800),citations:r.citations,sticker:r.sticker,links:r.links});
+    history.push({role:"assistant",content:r.message.slice(0,1800),citations:r.citations,sticker:r.sticker,links:r.links,searchRef:r.searchRef});
     saveHistory();
     if(r.proposal){pending(r.proposal,r.message);confirmation(r.proposal,r.message);}else{
       const box=bubble(r.message,false,r.citations,r.sticker,r.links);
