@@ -34,17 +34,30 @@ function pending(id,text){sessionStorage.setItem("ippatsu.chat.pending",JSON.str
 function confirmation(id,text,check=false){
   const box=bubble(text),button=document.createElement("button");button.type="button";button.className="apply";box.append(button);
   button.textContent=check?"結果を読み直す":"この内容で反映";
+  let timer, receipt, lastMessage;
   button.onclick=async()=>{
+    clearTimeout(timer);
     button.disabled=true;
     try{const r=await api(check?"status":"apply",{id});
       if(r.state==="preview"){if(check){confirmation(id,r.summary);button.remove();return;}}
-      const receipt=bubble(r.message||r.summary);
-      if(r.state==="saved"){
+      const message=r.message||r.summary;
+      // Saving the completion event and publishing its archive are separate receipts.
+      const publicationPending=r.state==="saved" && text.includes("の完了報告") && !message.includes("予定を終了しました");
+      if(!receipt || message!==lastMessage){
+        if(receipt)receipt.textContent=message;
+        else receipt=bubble(message);
+        lastMessage=message;
+      }
+      if(r.state==="saved" && !publicationPending){
         const art=document.createElement("img");
         art.src="done.webp";art.alt="DB保存完了っす！";art.className="sticker";
         receipt.append(document.createElement("br"),document.createTextNode("DB保存完了っす！"),art);
       }
-      if(r.state==="queued"||r.state==="running"){check=!r.awaiting_dispatch;button.textContent=check?"結果を読み直す":"クラウド処理を開始";}
+      if(r.state==="queued"||r.state==="running"||publicationPending){
+        check=publicationPending||!r.awaiting_dispatch;
+        button.textContent=check?"進捗を確認":"クラウド処理を開始";
+        if(check)timer=setTimeout(()=>{if(button.isConnected&&!button.disabled)button.click();},15000);
+      }
       else{button.remove();sessionStorage.removeItem("ippatsu.chat.pending");}
     }catch(e){bubble(e.message);check=true;button.textContent="受付結果を確認";}finally{button.disabled=false;}
   };
