@@ -23,7 +23,7 @@ async function api(action,data={}){
   if(!response.ok){if(response.status===401&&token){clear();$("#notice").textContent="暗証番号をもう一度入力してください。";}throw Error(result.message||"処理できませんでした。");}
   return result;
 }
-function bubble(text,mine=false,citations=[]){const row=document.createElement("div");row.className=mine?"row mine":"row";
+function bubble(text,mine=false,citations=[],sticker=null){const row=document.createElement("div");row.className=mine?"row mine":"row";
   if(!mine){const img=document.createElement("img");img.src="ippatsu.webp";img.alt="いっぱつちゃん";row.append(img);}
   const box=document.createElement("div");box.className="bubble";box.textContent=text;
   if(!mine && citations.length){
@@ -38,8 +38,8 @@ function bubble(text,mine=false,citations=[]){const row=document.createElement("
     }
     box.append(text.slice(offset));
   }
-  const file=!mine && ({"了解っす！":"salute.webp","感謝っす！":"thanks.webp"})[text];
-  if(typeof file==="string"){const art=document.createElement("img");art.src=file;art.alt=text;art.className="sticker";box.replaceChildren(art);}
+  const file=!mine && ({salute:"salute.webp",thanks:"thanks.webp"})[sticker];
+  if(typeof file==="string"){const art=document.createElement("img");art.src=file;art.alt="";art.className="sticker";box.append(art);}
   row.append(box);
   const messages=$("#messages");messages.append(row);messages.scrollTop=messages.scrollHeight;return box;}
 function pending(id,text){sessionStorage.setItem("ippatsu.chat.pending",JSON.stringify({id,text}));}
@@ -79,7 +79,7 @@ function start(){show();if(!token)return;api("mode").then(r=>mode(r.test)).catch
     const saved=JSON.parse(sessionStorage.getItem("ippatsu.chat.history") || "null");
     if(saved?.date===new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}) && Array.isArray(saved.messages)){
       history=saved.messages.slice(-10);
-      for(const msg of history)bubble(msg.content,msg.role==="user",msg.citations);
+      for(const msg of history)bubble(msg.content,msg.role==="user",msg.citations,msg.sticker);
     }
   }catch{}
   if(!history.length)bubble("おつかれさまっす！ 今日の予定、確認しましょうか？");
@@ -92,11 +92,11 @@ async function send(text){if(!text||busy)return;busy=true;$("#compose button").d
   bubble(text,true);history.push({role:"user",content:text});$("#message").value="";
   try{const r=await api("chat",{messages:history.slice(-11).map(({role,content})=>({role,content}))});
     mode(r.test);
-    history.push({role:"assistant",content:r.message.slice(0,1800),citations:r.citations});
+    history.push({role:"assistant",content:r.message.slice(0,1800),citations:r.citations,sticker:r.sticker});
     history=history.slice(-10);
     try{sessionStorage.setItem("ippatsu.chat.history",JSON.stringify({date:new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}),messages:history}));}catch{}
     if(r.proposal){pending(r.proposal,r.message);confirmation(r.proposal,r.message);}else{
-      const box=bubble(r.message,false,r.citations);
+      const box=bubble(r.message,false,r.citations,r.sticker);
       if(r.cancelReport)cancelButton(box,r.cancelReport);
       for(const item of r.links||[]){const url=new URL(item.url);
         if(url.origin!==location.origin||!url.pathname.startsWith("/ippatsu-share-pages/"))continue;
