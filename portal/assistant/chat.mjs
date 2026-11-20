@@ -23,7 +23,7 @@ async function api(action,data={}){
   if(!response.ok){if(response.status===401&&token){clear();$("#notice").textContent="暗証番号をもう一度入力してください。";}throw Error(result.message||"処理できませんでした。");}
   return result;
 }
-function bubble(text,mine=false,citations=[],sticker=null,links=[]){const row=document.createElement("div");row.className=mine?"row mine":"row";
+function bubble(text,mine=false,citations=[],sticker=null,links=[],poleCards=[]){const row=document.createElement("div");row.className=mine?"row mine":"row";
   if(!mine){const img=document.createElement("img");img.src="ippatsu.webp";img.alt="いっぱつちゃん";row.append(img);}
   const box=document.createElement("div");box.className="bubble";box.textContent=text;
   if(!mine && citations.length){
@@ -63,7 +63,40 @@ function bubble(text,mine=false,citations=[],sticker=null,links=[]){const row=do
     if(map){a.target="_blank";a.rel="noopener noreferrer";}
     box.append(a);
   }
+  if(!mine && poleCards.length){
+    box.replaceChildren();
+    for(const card of poleCards)box.append(poleCard(card));
+  }
   const messages=$("#messages");messages.append(row);messages.scrollTop=messages.scrollHeight;return box;}
+function poleCard(card){
+  const section=document.createElement("section");section.className="pole-result";
+  const linksOnly=$("#pole-links-only").checked;
+  const title=document.createElement("strong");title.textContent=card.title;section.append(title);
+  const notes=[...(card.rows||[]).map(r=>r.label+"　"+r.value),...(card.notes||[]),...(card.warnings||[])];
+  if(card.status==="unresolved")notes.unshift("電柱を特定できませんでした。");
+  if(card.status==="partial")notes.unshift("片側のみ特定できました。");
+  if(!linksOnly || !card.primary_url || card.status==="partial" || card.status==="corrected")
+    for(const note of notes){const p=document.createElement("p");p.textContent=note;section.append(p);}
+  const bot="https://line-map-bot-ouvo.onrender.com";
+  for(const [value,label] of [[card.primary_url,card.primary_label],[card.secondary_url,card.secondary_label]]){
+    if(!value||!URL.canParse(value))continue;
+    const url=new URL(value);
+    if(!(url.origin===bot && ["/map","/multi-map"].includes(url.pathname)) &&
+       !(url.origin==="https://www.google.com" && url.pathname==="/maps"))continue;
+    const a=document.createElement("a");a.className="result-link";a.href=url.href;a.textContent=label||"地図を開く";
+    a.target="_blank";a.rel="noopener noreferrer";section.append(a);
+  }
+  if(!linksOnly && card.preview_url && URL.canParse(card.preview_url)){
+    const url=new URL(card.preview_url);
+    if(url.origin===bot && url.pathname==="/api/map-preview"){
+      const img=document.createElement("img");img.loading="lazy";img.alt="地図プレビュー";img.src=url.href;section.append(img);
+    }
+  }
+  for(const name of card.candidates||[]){
+    const b=document.createElement("button");b.type="button";b.textContent=name;b.onclick=()=>send(name,"poleSearch");section.append(b);
+  }
+  return section;
+}
 function saveHistory(){
   history=history.slice(-24);
   try{sessionStorage.setItem("ippatsu.chat.history",JSON.stringify({date:new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}),messages:history}));}catch{}
@@ -108,7 +141,7 @@ function start(){show();if(!token)return;api("mode").then(r=>mode(r.test)).catch
     const saved=JSON.parse(sessionStorage.getItem("ippatsu.chat.history") || "null");
     if(saved?.date===new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}) && Array.isArray(saved.messages)){
       history=saved.messages.slice(-24);
-      for(const msg of history)bubble(msg.content,msg.role==="user",msg.citations,msg.sticker,msg.links);
+      for(const msg of history)bubble(msg.content,msg.role==="user",msg.citations,msg.sticker,msg.links,msg.poleCards);
     }
   }catch{}
   if(!history.length)bubble("おつかれさまっす！ 今日の予定、確認しましょうか？");
@@ -117,16 +150,16 @@ $("#login").onsubmit=async e=>{e.preventDefault();const b=$("#login button");b.d
   try{const r=await api("login",{pin:$("#pin").value});token=r.token;sessionStorage.setItem("ippatsu.chat.session",token);$("#pin").value="";start();}
   catch(e){$("#notice").textContent=e.message;}finally{b.disabled=false;}};
 $("#lock").onclick=async()=>{try{await api("logout");}finally{clear();}};
-async function send(text){if(!text||busy)return;busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;
+async function send(text,action="chat",query=text){if(!text||busy)return;busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;
   bubble(text,true);history.push({role:"user",content:text});$("#message").value="";
   const messages=history.slice(-25).map(({role,content})=>({role,content}));
   while(messages.length>1 && JSON.stringify(messages).length>24000)messages.shift();
-  try{const r=await api("chat",{messages,searchRef:history.at(-2)?.searchRef,receiptId:sessionStorage.getItem("ippatsu.chat.lastReceipt")});
+  try{const r=action==="poleSearch"?await api(action,{query}):await api("chat",{messages,searchRef:history.at(-2)?.searchRef,receiptId:sessionStorage.getItem("ippatsu.chat.lastReceipt")});
     mode(r.test);
-    history.push({role:"assistant",content:r.message.slice(0,1800),citations:r.citations,sticker:r.sticker,links:r.links,searchRef:r.searchRef});
+    history.push({role:"assistant",content:r.message.slice(0,1800),citations:r.citations,sticker:r.sticker,links:r.links,searchRef:r.searchRef,poleCards:r.poleCards});
     saveHistory();
     if(r.proposal){pending(r.proposal,r.message);confirmation(r.proposal,r.message);}else{
-      const box=bubble(r.message,false,r.citations,r.sticker,r.links);
+      const box=bubble(r.message,false,r.citations,r.sticker,r.links,r.poleCards);
       if(r.cancelReport)cancelButton(box,r.cancelReport);
 
     }
@@ -160,5 +193,22 @@ $("#recent").onclick=async()=>{try{
     cancelButton(bubble(report.summary),report);
   }
 }catch(e){bubble(e.message);}};
-document.querySelectorAll(".suggestions button:not(#recent):not(#reset):not(#test-mode)").forEach(b=>b.onclick=()=>send(b.textContent));start();
+const poleDialog=$("#pole-dialog");
+$("#pole-links-only").checked=localStorage.getItem("ippatsu.pole.linksOnly")==="true";
+$("#pole-links-only").onchange=e=>localStorage.setItem("ippatsu.pole.linksOnly",String(e.target.checked));
+$("#pole-open").onclick=()=>{if(!busy){$("#pole-notice").textContent="";poleDialog.showModal();$("#pole-query").focus();}};
+$("#pole-close").onclick=()=>poleDialog.close();
+$("#pole-form").onsubmit=e=>{e.preventDefault();const q=$("#pole-query").value.trim();
+  if(!q){$("#pole-notice").textContent="検索する名前か座標を入力してください。";return;}
+  poleDialog.close();send(q,"poleSearch");};
+$("#pole-geo").onclick=()=>{
+  if(!navigator.geolocation){$("#pole-notice").textContent="この端末では現在地を取得できません。座標を入力してください。";return;}
+  $("#pole-geo").disabled=true;$("#pole-notice").textContent="現在地を確認中…";
+  navigator.geolocation.getCurrentPosition(pos=>{
+    $("#pole-geo").disabled=false;if(!poleDialog.open)return;poleDialog.close();
+    send("現在地の周辺200mの電柱","poleSearch",pos.coords.latitude.toFixed(6)+","+pos.coords.longitude.toFixed(6));
+  },()=>{$("#pole-geo").disabled=false;$("#pole-notice").textContent="現在地を取得できません。位置情報の許可を確認するか座標を入力してください。";},
+  {enableHighAccuracy:true,timeout:15000,maximumAge:30000});
+};
+document.querySelectorAll(".suggestions button:not(#pole-open):not(#recent):not(#reset):not(#test-mode)").forEach(b=>b.onclick=()=>send(b.textContent));start();
 
