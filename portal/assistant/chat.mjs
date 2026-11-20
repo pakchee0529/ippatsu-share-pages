@@ -11,8 +11,10 @@ viewport?.addEventListener("resize", fitChat);
 window.addEventListener("pageshow", fitChat);
 const endpoint="https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/ippatsu-assistant";
 let token=sessionStorage.getItem("ippatsu.chat.session")||"",history=[],busy=false;
+function mode(on){$("#test-mode").disabled=on;$("#test-mode").textContent=on?"テスト中・保存なし":"テストモード";}
+$("#test-mode").onclick=async()=>{try{mode((await api("test")).test);}catch(e){bubble(e.message);}};
 function show(){const active=!!token;$("#welcome").hidden=active;$("#thread").hidden=!active;$("#lock").hidden=!active;}
-function clear(){token="";history=[];sessionStorage.removeItem("ippatsu.chat.session");sessionStorage.removeItem("ippatsu.chat.pending");$("#messages").replaceChildren();show();}
+function clear(){token="";history=[];sessionStorage.removeItem("ippatsu.chat.history");sessionStorage.removeItem("ippatsu.chat.session");sessionStorage.removeItem("ippatsu.chat.pending");$("#messages").replaceChildren();show();}
 async function api(action,data={}){
   let response;
   try{response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json",...(token?{"x-ippatsu-session":token}:{})},body:JSON.stringify({action,...data}),cache:"no-store"});}
@@ -23,7 +25,10 @@ async function api(action,data={}){
 }
 function bubble(text,mine=false){const row=document.createElement("div");row.className=mine?"row mine":"row";
   if(!mine){const img=document.createElement("img");img.src="ippatsu.webp";img.alt="いっぱつちゃん";row.append(img);}
-  const box=document.createElement("div");box.className="bubble";box.textContent=text;row.append(box);
+  const box=document.createElement("div");box.className="bubble";box.textContent=text;
+  const file=!mine && ({"了解っす！":"salute.webp","感謝っす！":"thanks.webp"})[text];
+  if(typeof file==="string"){const art=document.createElement("img");art.src=file;art.alt=text;art.className="sticker";box.replaceChildren(art);}
+  row.append(box);
   const messages=$("#messages");messages.append(row);messages.scrollTop=messages.scrollHeight;return box;}
 function pending(id,text){sessionStorage.setItem("ippatsu.chat.pending",JSON.stringify({id,text}));}
 function confirmation(id,text,check=false){
@@ -33,14 +38,26 @@ function confirmation(id,text,check=false){
     button.disabled=true;
     try{const r=await api(check?"status":"apply",{id});
       if(r.state==="preview"){if(check){confirmation(id,r.summary);button.remove();return;}}
-      bubble(r.message||r.summary);
+      const receipt=bubble(r.message||r.summary);
+      if(r.state==="saved"){
+        const art=document.createElement("img");
+        art.src="done.webp";art.alt="DB保存完了っす！";art.className="sticker";
+        receipt.append(document.createElement("br"),document.createTextNode("DB保存完了っす！"),art);
+      }
       if(r.state==="queued"||r.state==="running"){check=!r.awaiting_dispatch;button.textContent=check?"結果を読み直す":"クラウド処理を開始";}
       else{button.remove();sessionStorage.removeItem("ippatsu.chat.pending");}
     }catch(e){bubble(e.message);check=true;button.textContent="受付結果を確認";}finally{button.disabled=false;}
   };
 }
-function start(){show();if(!token)return;
-  bubble("どの現場のことかな？　日付や径間名、管理番号で聞いてね。");
+function start(){show();if(!token)return;api("mode").then(r=>mode(r.test)).catch(e=>bubble(e.message));
+  try {
+    const saved=JSON.parse(sessionStorage.getItem("ippatsu.chat.history") || "null");
+    if(saved?.date===new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}) && Array.isArray(saved.messages)){
+      history=saved.messages.slice(-10);
+      for(const msg of history)bubble(msg.content,msg.role==="user");
+    }
+  }catch{}
+  if(!history.length)bubble("先輩、おつかれさまっす！ 今日の予定、確認しましょうか？");
   try{const p=JSON.parse(sessionStorage.getItem("ippatsu.chat.pending"));if(p)confirmation(p.id,p.text,true);}catch{}}
 $("#login").onsubmit=async e=>{e.preventDefault();const b=$("#login button");b.disabled=true;$("#notice").textContent="";
   try{const r=await api("login",{pin:$("#pin").value});token=r.token;sessionStorage.setItem("ippatsu.chat.session",token);$("#pin").value="";start();}
@@ -49,7 +66,10 @@ $("#lock").onclick=async()=>{try{await api("logout");}finally{clear();}};
 async function send(text){if(!text||busy)return;busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;
   bubble(text,true);history.push({role:"user",content:text});$("#message").value="";
   try{const r=await api("chat",{messages:history.slice(-11)});
+    mode(r.test);
     history.push({role:"assistant",content:r.message.slice(0,1800)});
+    history=history.slice(-10);
+    try{sessionStorage.setItem("ippatsu.chat.history",JSON.stringify({date:new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}),messages:history}));}catch{}
     if(r.proposal){pending(r.proposal,r.message);confirmation(r.proposal,r.message);}else{
       const box=bubble(r.message);
       for(const item of r.links||[]){const url=new URL(item.url);
@@ -59,6 +79,17 @@ async function send(text){if(!text||busy)return;busy=true;$("#compose button").d
   }catch(e){bubble(e.message);}finally{busy=false;$("#compose button").disabled=false;$("#typing").hidden=true;}}
 $("#compose").onsubmit=e=>{e.preventDefault();send($("#message").value.trim());};
 $("#message").onkeydown=e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&!e.isComposing){e.preventDefault();send($("#message").value.trim());}};
+$("#reset").onclick=async()=>{
+  if(busy||$("#messages button:disabled")){bubble("処理中っす。応答が届いてから会話を切り替えてください。");return;}
+  if(!confirm("新しい会話にしますか？ 入力中の文と確認待ちの表示を消します。すでに受け付けた処理は受付履歴で確認できます。"))return;
+  try{const r=await api("reset");token=r.token;sessionStorage.setItem("ippatsu.chat.session",token);}catch(e){bubble(e.message);return;}
+  history=[];
+  sessionStorage.removeItem("ippatsu.chat.history");
+  sessionStorage.removeItem("ippatsu.chat.pending");
+  $("#message").value="";
+  $("#messages").replaceChildren();
+  start();
+};
 $("#recent").onclick=async()=>{try{bubble((await api("recent")).message);}catch(e){bubble(e.message);}};
-document.querySelectorAll(".suggestions button:not(#recent)").forEach(b=>b.onclick=()=>send(b.textContent));start();
+document.querySelectorAll(".suggestions button:not(#recent):not(#reset):not(#test-mode)").forEach(b=>b.onclick=()=>send(b.textContent));start();
 
