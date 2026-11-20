@@ -23,3 +23,5 @@ main {
   padding-bottom: max(8px, env(safe-area-inset-bottom));
 }
 .suggestions button { flex: none; }
+
+.row .sticker{width:min(138px,42vw);height:auto;display:block}
