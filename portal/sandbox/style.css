@@ -1,0 +1,10 @@
+/* Hallmark · field notebook · an open directory on sand-coloured paper */
+/* Critique: one index entry, generous touch area, no decorative controls. */
+:root{--paper:#f5f0e4;--ink:#24372e;--rule:#938e7c;--accent:#705322;--font:system-ui,sans-serif;--title:ui-serif,"Yu Mincho",serif}
+html,body{overflow-x:clip}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);line-height:1.7}
+main{max-width:48rem;margin:auto;padding:1.25rem clamp(1.25rem,5vw,4rem) 5rem}
+nav a{display:inline-flex;align-items:center;min-height:44px;color:var(--accent)}
+header{padding:clamp(2rem,8vw,5rem) 0 1.8rem;border-bottom:3px double var(--rule)}
+h1{font:700 clamp(3rem,9vw,5rem)/1.2 var(--title);margin:0;min-width:0;overflow-wrap:break-word}
+h2{font-size:1rem;margin:2rem 0 .7rem}.entry{display:grid;gap:.3rem;color:var(--ink);border-block:1px solid var(--rule);padding:1rem 0;text-decoration:none}.entry strong{font-size:1.45rem;text-decoration:underline;text-underline-offset:.22em}.entry span{font-size:.95rem}
+a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
