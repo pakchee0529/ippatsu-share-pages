@@ -72,6 +72,7 @@ async function send(text){if(!text||busy)return;busy=true;$("#compose button").d
     try{sessionStorage.setItem("ippatsu.chat.history",JSON.stringify({date:new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}),messages:history}));}catch{}
     if(r.proposal){pending(r.proposal,r.message);confirmation(r.proposal,r.message);}else{
       const box=bubble(r.message);
+      if(r.cancelReport)cancelButton(box,r.cancelReport);
       for(const item of r.links||[]){const url=new URL(item.url);
         if(url.origin!==location.origin||!url.pathname.startsWith("/ippatsu-share-pages/"))continue;
         const a=document.createElement("a");a.href=url.href;a.textContent=item.label;a.className="result-link";box.append(a);}
@@ -90,17 +91,20 @@ $("#reset").onclick=async()=>{
   $("#messages").replaceChildren();
   start();
 };
-$("#recent").onclick=async()=>{try{
-  const recent=await api("recent");bubble(recent.message);
-  for(const report of recent.pending||[]){
-    const box=bubble(report.summary),button=document.createElement("button");
+function cancelButton(box,report){
+    const button=document.createElement("button");
     button.textContent="この未起動の受付を取り消す";box.append(button);
     button.onclick=async()=>{
       if(!confirm(report.summary+"\nこの受付を取り消しますか？"))return;
       button.disabled=true;
       try{const result=await api("cancel",{id:report.id});bubble(result.message);}
-      catch(e){bubble(e.message);}
+      catch(e){bubble(e.message);button.disabled=false;}
     };
+}
+$("#recent").onclick=async()=>{try{
+  const recent=await api("recent");bubble(recent.message);
+  for(const report of recent.pending||[]){
+    cancelButton(bubble(report.summary),report);
   }
 }catch(e){bubble(e.message);}};
 document.querySelectorAll(".suggestions button:not(#recent):not(#reset):not(#test-mode)").forEach(b=>b.onclick=()=>send(b.textContent));start();
