@@ -82,7 +82,7 @@ function start(){show();if(!token)return;api("mode").then(r=>mode(r.test)).catch
       for(const msg of history)bubble(msg.content,msg.role==="user",msg.citations);
     }
   }catch{}
-  if(!history.length)bubble("先輩、おつかれさまっす！ 今日の予定、確認しましょうか？");
+  if(!history.length)bubble("おつかれさまっす！ 今日の予定、確認しましょうか？");
   try{const p=JSON.parse(sessionStorage.getItem("ippatsu.chat.pending"));if(p)confirmation(p.id,p.text,true);}catch{}}
 $("#login").onsubmit=async e=>{e.preventDefault();const b=$("#login button");b.disabled=true;$("#notice").textContent="";
   try{const r=await api("login",{pin:$("#pin").value});token=r.token;sessionStorage.setItem("ippatsu.chat.session",token);$("#pin").value="";start();}
