@@ -14,7 +14,7 @@ let token=sessionStorage.getItem("ippatsu.chat.session")||"",history=[],busy=fal
 function mode(on){$("#test-mode").disabled=on;$("#test-mode").textContent=on?"テスト中・保存なし":"テストモード";}
 $("#test-mode").onclick=async()=>{try{mode((await api("test")).test);}catch(e){bubble(e.message);}};
 function show(){const active=!!token;$("#welcome").hidden=active;$("#thread").hidden=!active;$("#lock").hidden=!active;}
-function clear(){token="";history=[];sessionStorage.removeItem("ippatsu.chat.history");sessionStorage.removeItem("ippatsu.chat.session");sessionStorage.removeItem("ippatsu.chat.pending");$("#messages").replaceChildren();show();}
+function clear(){token="";history=[];sessionStorage.removeItem("ippatsu.chat.lastReceipt");sessionStorage.removeItem("ippatsu.chat.history");sessionStorage.removeItem("ippatsu.chat.session");sessionStorage.removeItem("ippatsu.chat.pending");$("#messages").replaceChildren();show();}
 async function api(action,data={}){
   let response;
   try{response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json",...(token?{"x-ippatsu-session":token}:{})},body:JSON.stringify({action,...data}),cache:"no-store"});}
@@ -42,7 +42,11 @@ function bubble(text,mine=false,citations=[],sticker=null){const row=document.cr
   if(typeof file==="string"){const art=document.createElement("img");art.src=file;art.alt="";art.className="sticker";box.append(art);}
   row.append(box);
   const messages=$("#messages");messages.append(row);messages.scrollTop=messages.scrollHeight;return box;}
-function pending(id,text){sessionStorage.setItem("ippatsu.chat.pending",JSON.stringify({id,text}));}
+function saveHistory(){
+  history=history.slice(-24);
+  try{sessionStorage.setItem("ippatsu.chat.history",JSON.stringify({date:new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}),messages:history}));}catch{}
+}
+function pending(id,text){sessionStorage.setItem("ippatsu.chat.lastReceipt",id);sessionStorage.setItem("ippatsu.chat.pending",JSON.stringify({id,text}));}
 function confirmation(id,text,check=false){
   const box=bubble(text),button=document.createElement("button");button.type="button";button.className="apply";box.append(button);
   button.textContent=check?"結果を読み直す":"この内容で反映";
@@ -58,6 +62,9 @@ function confirmation(id,text,check=false){
       if(!receipt || message!==lastMessage){
         if(receipt)receipt.textContent=message;
         else receipt=bubble(message);
+        if(lastMessage && history.at(-1)?.content===lastMessage.slice(0,1800))history.pop();
+        history.push({role:"assistant",content:message.slice(0,1800)});
+        saveHistory();
         lastMessage=message;
       }
       if(r.state==="saved" && !publicationPending){
@@ -78,7 +85,7 @@ function start(){show();if(!token)return;api("mode").then(r=>mode(r.test)).catch
   try {
     const saved=JSON.parse(sessionStorage.getItem("ippatsu.chat.history") || "null");
     if(saved?.date===new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}) && Array.isArray(saved.messages)){
-      history=saved.messages.slice(-10);
+      history=saved.messages.slice(-24);
       for(const msg of history)bubble(msg.content,msg.role==="user",msg.citations,msg.sticker);
     }
   }catch{}
@@ -90,11 +97,12 @@ $("#login").onsubmit=async e=>{e.preventDefault();const b=$("#login button");b.d
 $("#lock").onclick=async()=>{try{await api("logout");}finally{clear();}};
 async function send(text){if(!text||busy)return;busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;
   bubble(text,true);history.push({role:"user",content:text});$("#message").value="";
-  try{const r=await api("chat",{messages:history.slice(-11).map(({role,content})=>({role,content}))});
+  const messages=history.slice(-25).map(({role,content})=>({role,content}));
+  while(messages.length>1 && JSON.stringify(messages).length>24000)messages.shift();
+  try{const r=await api("chat",{messages,receiptId:sessionStorage.getItem("ippatsu.chat.lastReceipt")});
     mode(r.test);
     history.push({role:"assistant",content:r.message.slice(0,1800),citations:r.citations,sticker:r.sticker});
-    history=history.slice(-10);
-    try{sessionStorage.setItem("ippatsu.chat.history",JSON.stringify({date:new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}),messages:history}));}catch{}
+    saveHistory();
     if(r.proposal){pending(r.proposal,r.message);confirmation(r.proposal,r.message);}else{
       const box=bubble(r.message,false,r.citations,r.sticker);
       if(r.cancelReport)cancelButton(box,r.cancelReport);
@@ -110,7 +118,7 @@ $("#reset").onclick=async()=>{
   if(!confirm("新しい会話にしますか？ 入力中の文と確認待ちの表示を消します。すでに受け付けた処理は受付履歴で確認できます。"))return;
   try{const r=await api("reset");token=r.token;sessionStorage.setItem("ippatsu.chat.session",token);}catch(e){bubble(e.message);return;}
   history=[];
-  sessionStorage.removeItem("ippatsu.chat.history");
+  sessionStorage.removeItem("ippatsu.chat.lastReceipt");sessionStorage.removeItem("ippatsu.chat.history");
   sessionStorage.removeItem("ippatsu.chat.pending");
   $("#message").value="";
   $("#messages").replaceChildren();
