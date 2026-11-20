@@ -90,6 +90,18 @@ $("#reset").onclick=async()=>{
   $("#messages").replaceChildren();
   start();
 };
-$("#recent").onclick=async()=>{try{bubble((await api("recent")).message);}catch(e){bubble(e.message);}};
+$("#recent").onclick=async()=>{try{
+  const recent=await api("recent");bubble(recent.message);
+  for(const report of recent.pending||[]){
+    const box=bubble(report.summary),button=document.createElement("button");
+    button.textContent="この未起動の受付を取り消す";box.append(button);
+    button.onclick=async()=>{
+      if(!confirm(report.summary+"\nこの受付を取り消しますか？"))return;
+      button.disabled=true;
+      try{const result=await api("cancel",{id:report.id});bubble(result.message);}
+      catch(e){bubble(e.message);}
+    };
+  }
+}catch(e){bubble(e.message);}};
 document.querySelectorAll(".suggestions button:not(#recent):not(#reset):not(#test-mode)").forEach(b=>b.onclick=()=>send(b.textContent));start();
 
