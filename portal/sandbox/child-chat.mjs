@@ -1,3 +1,4 @@
+import {requestedAppearance} from './appearance.mjs';
 import {call} from './api.mjs';
 import {previewPage} from './preview.mjs';
 
@@ -41,8 +42,8 @@ export function childChat(item,survey){
       try{await apply();}catch(e){say(e.message);quick();}finally{busy=false;}
     }),button('やめる',()=>{draft=null;editing=false;awaitingName=false;say('変更を取り消しました。');quick();}));
   }
-  async function save(d){
-    const result=await call('sandboxPublish',{id:item.id,revision:item.revision,draft:d});
+  async function save(d,appearance){
+    const result=await call('sandboxPublish',{id:item.id,revision:item.revision,draft:d,appearance});
     if(result.id!==item.id||result.revision!==item.revision+1)throw Error('保存結果を確認してください。');
     location.reload();
   }
@@ -50,6 +51,8 @@ export function childChat(item,survey){
     if(busy)return;const text=raw.trim();if(!text)return;
     input.value='';say(text,true);quick();busy=true;form.querySelector('button').disabled=true;
     try{
+      const look=requestedAppearance(text,item.definition);
+      if(look){confirmation('一覧の目印を「'+look.label+'」にしますか？',()=>save(item.definition,look.style));return;}
       if(!editing&&survey&&/次.*(どこ|何処|現場|径間)|次は[？?]?$/.test(text)){
         awaitingName=false;await survey.ready;const r=survey.next();
         const p=say(r?'次は「'+r.name+'」です。'+(r.corrected?'この電柱で合っていますか？ 地図で確認してください。':''):'未訪問の径間はありません。');
