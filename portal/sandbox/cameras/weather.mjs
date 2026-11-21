@@ -16,13 +16,6 @@ function node(tag,cls,content){
   if(content!==undefined)item.textContent=content;
   return item;
 }
-function sourceLink(text,url,fallback){
-  const a=node('a','',text);
-  let dest;
-  try{dest=new URL(url);}catch{}
-  a.href=dest?.protocol==='https:'?dest.href:fallback;a.target='_blank';a.rel='noopener noreferrer';
-  return a;
-}
 function describe(symbol){
   const code=String(symbol||'').toLowerCase(),night=code.endsWith('_night');
   if(code.includes('thunder'))return {label:code.includes('snow')?'雪・雷':code.includes('sleet')?'みぞれ・雷':'雨・雷',icon:'thunder'};
@@ -100,13 +93,11 @@ function paint(target,data,area){
   if(!strip.children.length)throw Error('時間別予報がありません。');
   rail.append(key,strip);
   const source=node('p','wx-source');
-  source.append(sourceLink('MET Norway',data.sources?.forecast,'https://api.met.no/weatherapi/locationforecast/2.0/documentation'),
-     '（',sourceLink('CC BY 4.0','https://creativecommons.org/licenses/by/4.0/'), '）');
   const metAt=timestamp(data.updated_at);
   if(metAt!==null)source.append('　予報更新 '+stampLabel.format(metAt));
   if(data.hours.some(h=>h.pop_source==='気象庁'&&h.pop!=null)){
     const jma=node('span','wx-jma');
-    jma.append(sourceLink('気象庁',data.sources?.probability,'https://www.jma.go.jp/bosai/forecast/'),'　'+(data.jma_area||area)+'の6時間降水確率');
+    jma.textContent=(data.jma_area||area)+'の6時間降水確率';
     const issued=timestamp(data.jma_updated_at);
     if(issued!==null)jma.append('　発表 '+stampLabel.format(issued));
     source.append(jma);
