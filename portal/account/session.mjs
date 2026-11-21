@@ -45,9 +45,6 @@ export function openAccount(onSuccess=()=>location.reload()){
 export function accountButton(button){
  const profile=account();
  button.textContent=profile?profile.name+'・ログアウト':'ログイン・登録';
- let claim=button.parentElement.querySelector('.device-claim');
- if(!claim&&profile){claim=document.createElement('button');claim.type='button';claim.className='device-claim';claim.textContent='端末から引き継ぐ';button.after(claim)}
- if(claim){claim.hidden=!profile;claim.onclick=async()=>{if(await offerClaim(profile,endpoint,true))location.reload()}}
  button.onclick=async()=>{if(!profile)return openAccount();try{await signOut();location.reload()}catch(e){alert(e.message)}};
 }
 
