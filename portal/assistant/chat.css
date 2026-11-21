@@ -43,3 +43,5 @@ main {
 #credit-form{display:grid;gap:.65rem;margin-bottom:.8rem}#credit-form label{display:grid;gap:.2rem;font-size:.85rem}#credit-form input{box-sizing:border-box;width:100%;min-width:0;padding:.45rem;font:inherit}#usage aside{max-height:65dvh;overflow:auto}
 
 #sandbox-tools{flex:1;min-height:0;overflow:auto;padding:clamp(20px,5vw,40px)}#sandbox-tools h2{margin-bottom:.25rem}#sandbox-tools p{margin-bottom:1rem}#sandbox-tools a{border-bottom:1px solid var(--line);padding-block:.85rem}.input-modes button{min-width:0;padding-inline:4px}
+
+.sandbox-preview iframe,#surface iframe{width:100%;min-height:55vh;border:0}#sandbox-tools form label{display:grid;gap:.3rem;margin-block:.7rem}#sandbox-tools textarea{min-height:4rem}
