@@ -23,9 +23,9 @@ const regions=areas.map(area=>({...area,paths:area.rings.map(ring=>ring.map(proj
 const mounted=new WeakMap();
 const css=`
 .regional-map {--rm-ink:#173e37;--rm-line:#989f88;--rm-paper:#f7f3e7;--rm-water:#deede8;--rm-green:#275b4c;--rm-white:#fffdf4;--rm-focus:#b94d17;color:var(--rm-ink)}
-.regional-map .rm-stage{position:relative;height:clamp(340px,61svh,560px);overflow:clip;border:1px solid var(--rm-line);border-radius:16px;background:var(--rm-paper)}
+.regional-map .rm-stage{position:relative;height:clamp(510px,76svh,680px);overflow:clip;border:1px solid var(--rm-line);border-radius:16px;background:var(--rm-paper)}
 .rm-stage>svg{display:block;width:100%;height:100%;touch-action:none;user-select:none}
-.rm-zoom{position:absolute;right:8px;top:8px;display:grid;gap:2px}
+.rm-zoom{display:flex;justify-content:flex-end;gap:4px;padding:4px}
 .regional-map .rm-zoom button,.regional-map .rm-picker button{color:var(--rm-ink);background:var(--rm-white);border:1px solid var(--rm-line);border-radius:8px;min-width:44px;min-height:44px;line-height:1.1;cursor:pointer;font:inherit}
 .regional-map .rm-zoom button{padding:4px 8px;font-weight:700}
 .rm-pin{cursor:pointer}.rm-pin:focus{outline:none}.rm-pin:focus-visible .rm-pin-ring{stroke:var(--rm-focus);stroke-width:4px}
@@ -44,12 +44,12 @@ export function renderMap(container,cameras,onPick){
   const stage=document.createElement('div');stage.className='rm-stage';
   const canvas=svg('svg',{tabindex:0,role:'group','aria-label':'地域のライブカメラ地図。矢印キーで移動、プラスとマイナスで拡大縮小できます。'});
   const toolbar=document.createElement('div');toolbar.className='rm-zoom';
-  const chooser=document.createElement('div');chooser.className='rm-picker';chooser.hidden=true;
+
   const credit=document.createElement('p');credit.className='rm-credit';
   const attribution=document.createElement('a');attribution.href=source;attribution.target='_blank';attribution.rel='noopener';attribution.textContent='国土交通省「国土数値情報 行政区域（2026年）」';
   const license=document.createElement('a');license.href='https://creativecommons.org/licenses/by/4.0/deed.ja';license.target='_blank';license.rel='noopener';license.textContent='CC BY 4.0';
-  credit.append('境界は',attribution,'を簡略化。',license);
-  stage.append(canvas,toolbar);container.replaceChildren(stage,chooser,credit);
+  credit.append('密集地のアイコンは、線で設置位置を示しています。境界は',attribution,'を簡略化。',license);
+  stage.append(canvas);container.replaceChildren(toolbar,stage,credit);
   const entries=[];
   for(const camera of cameras){
     if(camera.lat==null||camera.lng==null||camera.lat===''||camera.lng==='')continue;
@@ -70,33 +70,14 @@ export function renderMap(container,cameras,onPick){
   const terrain=svg('g',{'aria-hidden':true}),legend=svg('g',{'aria-hidden':true}),pins=svg('g');
   canvas.append(defs,svg('rect',{width:'100%',height:'100%',fill:'url(#'+unique+'-grain)'}),terrain,pins,legend);
   function screen(p){return [(p[0]-center[0])*scale+width/2,(p[1]-center[1])*scale+height/2];}
-  function hideChoices(){chooser.hidden=true;chooser.replaceChildren();}
-  function pick(group){
-    hideChoices();
-    if(group.items.length===1){onPick(group.items[0].camera);return;}
-    const title=document.createElement('strong');title.textContent='この付近のカメラ（'+group.items.length+'台）';
-    chooser.append(title);
-    for(const item of group.items){
-      chooser.append(button(item.camera.name,()=>onPick(item.camera)));
-    }
-    if(zoom<16)chooser.append(button('この付近を拡大',()=>{
-      center=[...group.items[0].point];changeZoom(2);canvas.focus({preventScroll:true});
-    }));
-    chooser.hidden=false;
-    chooser.querySelector('button').focus({preventScroll:true});
-    chooser.scrollIntoView({block:'nearest'});
-  }
-  function pin(group){
-    const count=group.items.length,label=count===1?group.items[0].camera.name:'この付近のカメラ '+count+'台';
-    const pin=svg('g',{class:'rm-pin',transform:'translate('+group.x+' '+group.y+')',tabindex:0,role:'button','aria-label':label});
+  function pin(item){
+    const label=item.camera.name;
+    const pin=svg('g',{class:'rm-pin',transform:'translate('+item.x+' '+item.y+')',tabindex:0,role:'button','aria-label':label});
     pin.append(svg('title',{},label),svg('circle',{r:22,fill:'transparent'}));
-    pin.append(svg('circle',{class:'rm-pin-ring',r:12.5,fill:'#235747',stroke:'#fffdf4','stroke-width':2}));
+    pin.append(svg('circle',{class:'rm-pin-ring',r:16,fill:'#235747',stroke:'#fffdf4','stroke-width':2}));
     pin.append(svg('path',{d:'M-7 -4h3l1.4-2h5L4-4h3v9H-7Z',fill:'#fffdf4','stroke-linejoin':'round'}),svg('circle',{cx:0,cy:.5,r:2.8,fill:'#235747'}));
-    if(count>1){
-      pin.append(svg('circle',{cx:10,cy:-9,r:7.7,fill:'#944c27',stroke:'#fffdf4','stroke-width':1}),svg('text',{x:10,y:-5.8,'text-anchor':'middle','font-size':9,'font-weight':700,fill:'#fffdf4'},count));
-    }
-    pin.onclick=e=>{e.stopPropagation();pick(group);};
-    pin.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();pick(group);}};
+    pin.onclick=e=>{e.stopPropagation();onPick(item.camera);};
+    pin.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onPick(item.camera);}};
     pins.append(pin);
   }
   function titleMark(name,coord,size,occupied){
@@ -121,18 +102,36 @@ export function renderMap(container,cameras,onPick){
       const d=region.paths.map(ring=>ring.map((coord,i)=>{const [x,y]=screen(coord);return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);}).join('')+'Z').join('');
       terrain.append(svg('path',{d,fill:artwork[region.name].fill,'fill-rule':'evenodd',stroke:'#73836c','stroke-width':1.4,'stroke-linejoin':'round'}),svg('path',{d,fill:'url(#'+unique+'-woods)','fill-rule':'evenodd'}));
     }
-    const groups=[];
-    for(const item of entries){
-      const [x,y]=screen(item.point);
-      if(x < -15 || x > width+15 || y < -15 || y > height+15)continue;
-      const near=groups.find(g=>Math.hypot(g.x-x,g.y-y)<44);
-      if(near)near.items.push(item);else groups.push({x,y,items:[item]});
+    // Keep isolated cameras at their coordinates. Displace crowded markers to
+    // the nearest free touch target and connect them to their geographic point.
+    const visible=entries.map(item=>{
+      const [x,y]=screen(item.point);return {...item,x,y};
+    }).filter(({x,y})=>x>=0 && x<=width && y>=0 && y<=height);
+    const clearance=47;
+    const density=item=>visible.filter(other=>Math.hypot(item.x-other.x,item.y-other.y)<clearance).length;
+    visible.sort((a,b)=>density(a)-density(b));
+    const placed=[];
+    for(const item of visible){
+      const ax=item.x, ay=item.y;
+      const valid=(x,y)=>x>=24 && x<=width-24 && y>=24 && y<=height-24 &&
+        !(x<46 && y<61) && !(x<72 && y>height-43) &&
+        placed.every(p=>Math.hypot(x-p.x,y-p.y)>=clearance);
+      if(!valid(ax,ay)){
+        let best=Infinity;
+        for(let y=24;y<=height-24;y+=5)for(let x=24;x<=width-24;x+=5){
+          const d=(x-ax)**2+(y-ay)**2;
+          if(d<best && valid(x,y)){best=d;item.x=x;item.y=y;}
+        }
+        terrain.append(svg('line',{x1:ax,y1:ay,x2:item.x,y2:item.y,stroke:'#73836c','stroke-width':1,'stroke-opacity':.65}),
+          svg('circle',{cx:ax,cy:ay,r:2,fill:'#536d61'}));
+      }
+      placed.push(item);
     }
-    const occupied=groups.map(({x,y})=>[x-15,y-20,x+19,y+16]);
-    occupied.push([width-56,0,width,146],[0,0,37,46]);
+    const occupied=placed.map(({x,y})=>[x-18,y-18,x+18,y+18]);
+    occupied.push([0,0,37,46]);
     for(const region of regions)titleMark(region.name,artwork[region.name].label,14,occupied);
     titleMark('大塔',[135.735,34.189],12,occupied);
-    groups.forEach(pin);
+    placed.forEach(pin);
     legend.append(svg('path',{d:'M22 18l-4 15 4-3 4 3Z',fill:'#365446'}),svg('text',{x:22,y:44,fill:'#365446','text-anchor':'middle','font-size':10},'北'));
     const km=[.1,.2,.5,1,2,5,10,20].filter(n=>scale*n/111.195<65).at(-1)||.1;
     const baseline=height-13, length=scale*km/111.195;
@@ -143,14 +142,14 @@ export function renderMap(container,cameras,onPick){
     const next=Math.max(1,Math.min(16,zoom*factor));if(next===zoom)return;
     const ratio=1-zoom/next;
     center[0]+=(anchor[0]-width/2)*ratio/scale;center[1]+=(anchor[1]-height/2)*ratio/scale;
-    zoom=next;hideChoices();draw();
+    zoom=next;draw();
   }
-  const plus=button('＋',()=>changeZoom(2)),minus=button('−',()=>changeZoom(.5)),reset=button('全域',()=>{zoom=1;center=[...home];hideChoices();draw();});
+  const plus=button('＋',()=>changeZoom(2)),minus=button('−',()=>changeZoom(.5)),reset=button('全域',()=>{zoom=1;center=[...home];draw();});
   plus.setAttribute('aria-label','地図を拡大');minus.setAttribute('aria-label','地図を縮小');toolbar.append(plus,minus,reset);
   let drag;
   canvas.onpointerdown=e=>{
     if(e.button!==0||e.target.closest('.rm-pin')||drag)return;
-    canvas.setPointerCapture(e.pointerId);drag={id:e.pointerId,x:e.clientX,y:e.clientY};hideChoices();
+    canvas.setPointerCapture(e.pointerId);drag={id:e.pointerId,x:e.clientX,y:e.clientY};
   };
   canvas.onpointermove=e=>{
     if(!drag||e.pointerId!==drag.id)return;
@@ -162,7 +161,7 @@ export function renderMap(container,cameras,onPick){
     if(e.key==='+'||e.key==='='){e.preventDefault();changeZoom(2);return;}
     if(e.key==='-'){e.preventDefault();changeZoom(.5);return;}
     const delta={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
-    if(delta){e.preventDefault();center=center.map((v,i)=>v+delta[i]*48/scale);hideChoices();draw();}
+    if(delta){e.preventDefault();center=center.map((v,i)=>v+delta[i]*48/scale);draw();}
   };
   draw();
   const observer=new ResizeObserver(draw);observer.observe(stage);
