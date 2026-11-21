@@ -9,17 +9,8 @@ const remove=document.querySelector('#remove');
 try{
  const item=await call('sandboxGet',{id});
  document.querySelector('#title').textContent=item.definition.title;
- const frame=previewPage(item.definition.html,"ippatsu.sandbox.inputs."+id);
- document.querySelector('#surface').append(frame);
  const surface=document.querySelector('#surface'),survey=surveyNavigation(item,surface);
- if(survey){
-   const original=new URL(location.href), alternate=document.createElement('a'),panel=document.querySelector('.survey-route');
-   const showOriginal=original.searchParams.get('layout')==='original';
-   if(showOriginal){surface.hidden=false;panel.hidden=true;original.searchParams.delete('layout');}
-   else original.searchParams.set('layout','original');
-   alternate.href=original.href;alternate.textContent=showOriginal?'訪問順で見る（地図あり）':'資料の並び順で見る（地図なし）';
-   surface.after(alternate);
- }
+ if(!survey)surface.append(previewPage(item.definition.html,"ippatsu.sandbox.inputs."+id));
  childChat(item,survey);
  const form=document.querySelector('#page-edit'), adopt=document.querySelector('#adopt'), note=document.querySelector('#edit-status');
  document.querySelector('#edit-panel').hidden=false;
