@@ -224,11 +224,13 @@ function locationNotice(text){
   $("#pole-notice").textContent=text;
   $("#pole-notice").hidden=!text;
 }
-function setInputMode(search){
+let sandboxMode=false;
+function setInputMode(search,sandbox=false){
   const field=$("#message");
-  drafts[searchMode?"search":"chat"]=field.value;
+  if(!sandboxMode)drafts[searchMode?"search":"chat"]=field.value;
+  sandboxMode=sandbox;
   searchMode=search;
-  sessionStorage.setItem("ippatsu.chat.inputMode",search?"search":"chat");
+  sessionStorage.setItem("ippatsu.chat.inputMode",sandbox?"sandbox":search?"search":"chat");
   field.value=drafts[search?"search":"chat"];
   field.placeholder=search?"電柱名・径間名・座標（複数は改行）":"メッセージを書く";
   field.setAttribute("aria-label",search?"電柱検索の入力":"メッセージ");
@@ -236,9 +238,13 @@ function setInputMode(search){
   const submit=$("#compose button");
   submit.textContent=search?"検索":"送信";
   submit.setAttribute("aria-label",submit.textContent);
-  $("#chat-mode").setAttribute("aria-pressed",String(!search));
+  $("#chat-mode").setAttribute("aria-pressed",String(!search&&!sandbox));
   $("#pole-mode").setAttribute("aria-pressed",String(search));
-  $("#chat-tools").hidden=search;
+  $("#sandbox-mode").setAttribute("aria-pressed",String(sandbox));
+  $("#sandbox-tools").hidden=!sandbox;
+  $("#messages").hidden=sandbox;
+  $("#compose").hidden=sandbox;
+  $("#chat-tools").hidden=search||sandbox;
   $("#pole-tools").hidden=!search;
   locationRequest++;
   $("#pole-geo").disabled=false;
@@ -249,6 +255,7 @@ function resetInputMode(){
   $("#message").value="";
   setInputMode(false);
 }
+$("#sandbox-mode").onclick=()=>setInputMode(false,true);
 $("#chat-mode").onclick=()=>setInputMode(false);
 $("#pole-mode").onclick=()=>setInputMode(true);
 $("#pole-links-only").checked=localStorage.getItem("ippatsu.pole.linksOnly")==="true";
@@ -271,5 +278,6 @@ $("#pole-geo").onclick=()=>{
   },{enableHighAccuracy:true,timeout:15000,maximumAge:30000});
 };
 document.querySelectorAll("[data-chat]").forEach(b=>b.onclick=()=>send(b.textContent));
-setInputMode(Boolean(token) && sessionStorage.getItem("ippatsu.chat.inputMode")==="search");
+const restoredMode=token && sessionStorage.getItem("ippatsu.chat.inputMode");
+setInputMode(restoredMode==="search",restoredMode==="sandbox");
 start();
