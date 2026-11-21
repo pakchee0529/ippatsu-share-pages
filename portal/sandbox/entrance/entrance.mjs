@@ -8,6 +8,7 @@ const text = (tag,value) => {const node=document.createElement(tag);node.textCon
 let current, searchVersion=0, photoVersion=0, fileVersion=0, uploading=false;
 const params=new URLSearchParams(location.search);
 const registerMode=params.get('mode')==='register';
+const viewMode=params.get('mode')==='view';
 let trial=false, casesLoaded=false;
 accountButton(el('account-entry'));
 
@@ -87,7 +88,27 @@ async function listPhotos() {
     }
   } catch(e){if(version===photoVersion){el('photos-status').textContent=e.message;el('retry').hidden=false;}}
 }
-el('retry').onclick=listPhotos;
+el('retry').onclick=()=>viewMode&&!current?openDailyCase():listPhotos();
+
+async function openDailyCase(){
+  const id=params.get('case_id')?.toLowerCase();
+  el('retry').hidden=true;
+  if(!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(id||'')){
+    el('photos-status').textContent='現場を特定できません。日次ページの現場カードから開いてください。';
+    return;
+  }
+  el('photos-status').textContent='この現場の進入口を確認しています…';
+  try{
+    const result=await request({action:'case',case_id:id});
+    if(result.case?.id!==id){
+      el('photos-status').textContent='この受付の進入口は現在公開されていません。';
+      return;
+    }
+    openCase(result.case);
+  }catch(error){
+    el('photos-status').textContent=error.message;el('retry').hidden=false;
+  }
+}
 function openCase(item) {
   current=item; el('selected-label').textContent=item.label;el('selected-meta').textContent=meta(item);
   el('picker').hidden=true;el('detail').hidden=false;el('selected-label').focus();
@@ -241,5 +262,14 @@ if(registerMode){
   el('picker-title').textContent='登録する現場を選ぶ';
 }
 el('query').value=(params.get('q')||'').slice(0,100);
-if(params.get('mode')==='try')showEditor(true);
+if(viewMode){
+  for(const id of ['picker','intro','try-photo','add','back','account-entry'])el(id).hidden=true;
+  el('detail').hidden=false;
+  const originPage=document.referrer ? new URL(document.referrer) : null;
+  if(originPage?.origin===location.origin && /\/share\/\d{6}\/(?:index\.html)?$/.test(originPage.pathname)){
+    const back=document.querySelector('main nav a');
+    back.href=originPage.href;back.textContent='日次ページへ戻る';
+  }
+  openDailyCase();
+}else if(params.get('mode')==='try')showEditor(true);
 else listCases(params.get('case_id'));
