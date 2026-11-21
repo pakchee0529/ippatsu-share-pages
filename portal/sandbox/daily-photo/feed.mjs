@@ -165,5 +165,6 @@ el('compose').onsubmit=async e=>{e.preventDefault();if(!selected)return;const fo
  try{const fd=new FormData();const name=el('name').value.trim();fd.set('name',name);fd.set('photo',selected,'photo.jpg');fd.set('caption',el('caption').value.trim());fd.set('id',id);await api('post',fd);selected=null;form.reset();localStorage.setItem('photo.nickname',name);el('name').value=name;el('preview').hidden=true;URL.revokeObjectURL(preview);sheet.close();message('投稿しました。');await list(true)}
  catch(err){if(err.status===401)openSheet(true);message(err.message)}finally{button.disabled=false}};
 el('more').onclick=async e=>{const button=e.currentTarget;button.disabled=true;try{await list(false)}catch(err){if(err.status===401)openSheet(true);message(err.message)}finally{button.disabled=false}};
-Promise.all([list(true),refreshInbox()]).catch(e=>message(e.message));
+list(true).then(refreshInbox).catch(e=>message(e.message));
+
 
