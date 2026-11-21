@@ -1,4 +1,4 @@
-import {surveyNavigation} from './survey-navigation.mjs';
+import {surveyNavigation} from './survey-navigation.mjs?v=field2';
 import {call} from './api.mjs';
 import {previewPage} from './preview.mjs';
 import {imageInput} from './image-input.mjs';
