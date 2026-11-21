@@ -1,3 +1,4 @@
+import {openAccount,forget,rotate} from '../account/session.mjs';
 const $=s=>document.querySelector(s);
 // Mobile keyboards and in-app browser controls can shrink only the visual viewport.
 const viewport = window.visualViewport;
@@ -14,7 +15,7 @@ let token=sessionStorage.getItem("ippatsu.chat.session")||"",history=[],busy=fal
 function mode(on){$("#test-mode").disabled=on;$("#test-mode").textContent=on?"テスト中・保存なし":"テストモード";}
 $("#test-mode").onclick=async()=>{try{mode((await api("test")).test);}catch(e){bubble(e.message);}};
 function show(){const active=!!token;$("#welcome").hidden=active;$("#thread").hidden=!active;$("#usage").hidden=!active;if(!active){$("#usage").open=false;$("#balance-label").textContent="残量 —";}}
-function clear(){resetInputMode();token="";history=[];sessionStorage.removeItem("ippatsu.chat.lastReceipt");sessionStorage.removeItem("ippatsu.chat.history");sessionStorage.removeItem("ippatsu.chat.session");sessionStorage.removeItem("ippatsu.chat.pending");$("#messages").replaceChildren();show();}
+function clear(){forget();resetInputMode();token="";history=[];sessionStorage.removeItem("ippatsu.chat.lastReceipt");sessionStorage.removeItem("ippatsu.chat.history");sessionStorage.removeItem("ippatsu.chat.session");sessionStorage.removeItem("ippatsu.chat.pending");$("#messages").replaceChildren();show();}
 async function api(action,data={}){
   let response;
   try{response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json",...(token?{"x-ippatsu-session":token}:{})},body:JSON.stringify({action,...data}),cache:"no-store"});}
@@ -165,6 +166,7 @@ function start(){show();if(!token)return;balanceTime=0;refreshBalance();api("mod
   }catch{}
   if(!history.length)bubble("おつかれさまっす！ 今日の予定、確認しましょうか？");
   try{const p=JSON.parse(sessionStorage.getItem("ippatsu.chat.pending"));if(p)confirmation(p.id,p.text,true);}catch{}}
+$("#account-entry").onclick=()=>openAccount(()=>location.reload());
 $("#login").onsubmit=async e=>{e.preventDefault();const b=$("#login button");b.disabled=true;$("#notice").textContent="";
   try{const r=await api("login",{pin:$("#pin").value});token=r.token;sessionStorage.setItem("ippatsu.chat.session",token);$("#pin").value="";start();}
   catch(e){$("#notice").textContent=e.message;}finally{b.disabled=false;}};
@@ -194,7 +196,7 @@ $("#message").onkeydown=e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&!e.isCom
 $("#reset").onclick=async()=>{
   if(busy||$("#messages button:disabled")){bubble("処理中っす。応答が届いてから会話を切り替えてください。");return;}
   if(!confirm("新しい会話にしますか？ 入力中の文と確認待ちの表示を消します。すでに受け付けた処理は受付履歴で確認できます。"))return;
-  try{const r=await api("reset");token=r.token;sessionStorage.setItem("ippatsu.chat.session",token);}catch(e){bubble(e.message);return;}
+  try{const r=await api("reset");token=r.token;rotate(token);sessionStorage.setItem("ippatsu.chat.session",token);}catch(e){bubble(e.message);return;}
   history=[];
   sessionStorage.removeItem("ippatsu.chat.lastReceipt");sessionStorage.removeItem("ippatsu.chat.history");
   sessionStorage.removeItem("ippatsu.chat.pending");
@@ -281,3 +283,4 @@ document.querySelectorAll("[data-chat]").forEach(b=>b.onclick=()=>send(b.textCon
 const restoredMode=new URLSearchParams(location.search).get("mode")==="sandbox"?"sandbox":token && sessionStorage.getItem("ippatsu.chat.inputMode");
 setInputMode(restoredMode==="search",restoredMode==="sandbox");
 start();
+

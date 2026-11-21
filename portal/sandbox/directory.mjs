@@ -1,3 +1,5 @@
+import {accountButton} from '../account/session.mjs';
+accountButton(document.getElementById('account-entry'));
 import {decorate} from './appearance.mjs';
 import {call,linkFor} from './api.mjs';
 const root=document.querySelector('#pages');
