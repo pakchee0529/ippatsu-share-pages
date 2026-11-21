@@ -1,7 +1,6 @@
 export function surveyTemplate(draft){
-  const doc=new DOMParser().parseFromString(draft.html,'text/html');
-  const names=[...doc.querySelectorAll('label')].map(e=>e.textContent.trim());
-  if(!names.length||names.some(n=>!/[〜～~]/.test(n)||n.length>100)||new Set(names).size!==names.length)throw Error('径間を確認できませんでした。径間名か、読み取りやすい写真を送ってください。');
+  const names=draft.names;
+  if(!Array.isArray(names)||!names.length||names.some(n=>!/[〜～~]/.test(n)||n.length>100)||new Set(names).size!==names.length)throw Error('径間を確認できませんでした。径間名か、読み取りやすい写真を送ってください。');
   const list=document.createElement('section');list.dataset.surveyRows='';
   for(const name of names){
     const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';

@@ -1,7 +1,7 @@
 import {imageInput} from '../sandbox/image-input.mjs';
 import {call,linkFor} from '../sandbox/api.mjs';
 import {previewPage} from '../sandbox/preview.mjs';
-import {surveyTemplate} from './survey-template.mjs';
+import {surveyTemplate} from './survey-template.mjs?v=4';
 
 const root=document.querySelector('#sandbox-tools'),form=root.querySelector('form'),field=form.elements.prompt,file=form.elements.sketch;
 const log=root.querySelector('[role=log]'),status=root.querySelector('[role=status]'),attachment=root.querySelector('output');
@@ -47,12 +47,11 @@ async function send(text){
     if(/新規で|新しく作|別の.*作|新しい.*作/.test(text)||(target&&!draft&&!/編集|修正/.test(text)&&/専用|作って|作成/.test(text)))fresh();
     if(selected)photo=await imageInput(selected);
     survey=survey||(!target&&/現調|径間/.test(text));
-    const instruction=survey?'現調テンプレートに渡す情報を抽出する。担当者が会話からわからなければquestionで名前を質問。径間がなければ写真か径間名を質問。titleは指定の担当者名を含む現調リスト名。htmlは各径間を原票順に<label><input type="checkbox">径間名</label>で返す。取消線だけを除きチェックや下線は無視。':'';
     status.textContent='いっぱつちゃんが確認中…';
-    const reply=await call('sandboxDraft',{interactive:true,prompt:text,history:[...history.slice(-8),...(instruction?[{role:'assistant',text:instruction}]:[])],previous:draft,image:photo,id:target?.id,revision:target?.revision});
+    const reply=await call('sandboxDraft',{interactive:true,prompt:text,template:survey?'survey':undefined,history:history.slice(-8),previous:draft,image:photo,id:target?.id,revision:target?.revision});
     history.push({role:'user',text});
     if(reply.question){history.push({role:'assistant',text:reply.question});bubble('assistant',reply.question);return;}
-    const candidate=survey?surveyTemplate(reply.draft):reply.draft;
+    const candidate=survey?surveyTemplate(reply.survey):reply.draft;
     draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');card.append(previewPage(candidate.html));
     const btn=document.createElement('button');btn.textContent='この内容で掲載';btn.onclick=()=>send('掲載して');card.append(btn);log.scrollTop=log.scrollHeight;
   }catch(e){bubble('assistant',e.message);}
