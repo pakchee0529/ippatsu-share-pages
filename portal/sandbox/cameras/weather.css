@@ -1,0 +1,45 @@
+/* Hallmark: field weather almanac; the hour grid carries the regional forecast. */
+/* Fixed row labels and per-hour probability windows keep values comparable when the user scrolls. */
+:root {
+  --wx-ink: #233f38; --wx-muted: #4e665d; --wx-line: #c7d5c9; --wx-panel: #edf3e9;
+  --wx-surface: #fcfcf4; --wx-rain: #245c75; --wx-sun: #ecc05e; --wx-sun-edge: #ae7829;
+  --wx-moon: #62778c; --wx-cloud: #e0e8e4; --wx-cloud-edge: #6d827d; --wx-focus: #1b6552;
+  --wx-rows: 2.7rem 2.4rem 1.8rem 2.1rem 1.55rem 1.4rem 1.8rem;
+}
+.wx-forecast {
+  color: var(--wx-ink); background: var(--wx-panel); border-radius: 12px; margin: 12px 0; padding: 12px;
+  min-width: 0;
+}
+.wx-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px }
+.wx-heading h3 { font-size: 1.125rem; margin: 0; overflow-wrap: break-word; min-width: 0 }
+.wx-forecast .wx-refresh { min-height: 44px; min-width: 44px; padding: 4px 12px; color: var(--wx-ink); background: var(--wx-surface); border: 1px solid var(--wx-line); border-radius: 10px; margin: 0; cursor: pointer }
+.wx-refresh:disabled { color: var(--wx-muted); background: var(--wx-panel); cursor: wait }
+.wx-refresh:active { background: var(--wx-line) }
+.wx-status,.wx-location,.wx-source { font-variant-numeric: tabular-nums; font-size: .8rem; color: var(--wx-muted); line-height: 1.5; margin: 4px 0 }
+.wx-status:empty { display: none }
+.wx-location { margin: 0 0 8px }
+.wx-rail { display: grid; grid-template-columns: auto minmax(0,1fr); background: var(--wx-surface); border-radius: 8px; overflow: clip }
+.wx-hours { display: flex; overflow-x: auto; overscroll-behavior-x: contain; list-style: none; scrollbar-width: thin; scrollbar-color: var(--wx-line) var(--wx-surface); margin: 0; padding: 0 }
+.wx-key,.wx-hour { display: grid; grid-template-rows: var(--wx-rows); text-align: center; align-items: center; font-variant-numeric: tabular-nums }
+.wx-key { font-size: .72rem; text-align: left; padding: 0 8px; color: var(--wx-muted); border-right: 1px solid var(--wx-line) }
+.wx-hour { width: 4.4rem; flex: 0 0 4.4rem; border-right: 1px solid var(--wx-line) }
+.wx-hour .wx-time { display: flex; flex-direction: column; justify-content: end; align-self: stretch; font-weight: 700; font-size: .9rem }
+.wx-date { display: block; font-size: .65rem; min-height: .9rem; line-height: .9rem; color: var(--wx-muted); font-weight: 500 }
+.wx-art { display: flex; justify-content: center }
+.wx-symbol { width: 36px; height: 36px; fill: none; stroke-linecap: round; stroke-linejoin: round }
+.wx-sun { fill: var(--wx-sun); stroke: var(--wx-sun-edge) }
+.wx-sun-ray { stroke: var(--wx-sun-edge); stroke-width: 1.8 }
+.wx-moon { fill: var(--wx-moon) }
+.wx-cloud { fill: var(--wx-cloud); stroke: var(--wx-cloud-edge); stroke-width: 1.4 }
+.wx-rain,.wx-muted-line { stroke: var(--wx-rain); stroke-width: 2 }
+.wx-muted-line { stroke: var(--wx-muted) }
+.wx-snow { fill: var(--wx-rain) }
+.wx-bolt { fill: var(--wx-sun); stroke: var(--wx-sun-edge) }
+.wx-hour .wx-condition { font-size: .73rem; color: var(--wx-muted) }
+.wx-hour .wx-temp { font-weight: 700; font-size: 1.08rem }
+.wx-hour .wx-pop,.wx-hour .wx-mm { color: var(--wx-rain); font-size: .92rem; font-weight: 600 }
+.wx-hour .wx-span { color: var(--wx-muted); font-size: .7rem; white-space: nowrap }
+.wx-source { margin: 8px 0 0; font-size: .72rem }
+.wx-source a { color: inherit; text-decoration: underline; text-underline-offset: 2px }
+.wx-jma { display: block }
+.wx-forecast :focus-visible { outline: 3px solid var(--wx-focus); outline-offset: -3px }

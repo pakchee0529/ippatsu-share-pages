@@ -64,8 +64,15 @@ try{
     const rain=document.createElement('a');rain.className='rain-link';rain.textContent='この地域の雨雲を見る';
     rain.href='https://www.jma.go.jp/bosai/nowc/#zoom:11/lat:'+rainCenters[area].split('/')[0]+'/lon:'+rainCenters[area].split('/')[1]+'/colordepth:normal/elements:hrpns';
     rain.target='_blank';rain.rel='noopener';rain.setAttribute('aria-label',area+'の雨雲を見る（気象庁）');
-    section.append(heading,map,rain,names);el('list').append(section);
-    function mount(){if(!map.childElementCount && members.length)renderMap(map,members,pick,area);}
+    const weather=document.createElement('div');
+    section.append(heading,weather,map,rain,names);el('list').append(section);
+    function mount(){
+      if(!weather.dataset.mounted){
+        weather.dataset.mounted='true';
+        import('./weather.mjs?v=hourly-1').then(({mountWeather})=>mountWeather(weather,area)).catch(()=>{weather.textContent='時間別予報を読み込めませんでした。';});
+      }
+      if(!map.childElementCount && members.length)renderMap(map,members,pick,area);
+    }
     if(folded)section.addEventListener('toggle',()=>{if(section.open)mount();});else mount();
   }
 }catch{el('status').textContent='カメラ一覧を取得できません。ページを開き直してください。';}
