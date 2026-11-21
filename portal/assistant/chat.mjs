@@ -14,7 +14,7 @@ let token=sessionStorage.getItem("ippatsu.chat.session")||"",history=[],busy=fal
 function mode(on){$("#test-mode").disabled=on;$("#test-mode").textContent=on?"テスト中・保存なし":"テストモード";}
 $("#test-mode").onclick=async()=>{try{mode((await api("test")).test);}catch(e){bubble(e.message);}};
 function show(){const active=!!token;$("#welcome").hidden=active;$("#thread").hidden=!active;$("#lock").hidden=!active;}
-function clear(){token="";history=[];sessionStorage.removeItem("ippatsu.chat.lastReceipt");sessionStorage.removeItem("ippatsu.chat.history");sessionStorage.removeItem("ippatsu.chat.session");sessionStorage.removeItem("ippatsu.chat.pending");$("#messages").replaceChildren();show();}
+function clear(){resetInputMode();token="";history=[];sessionStorage.removeItem("ippatsu.chat.lastReceipt");sessionStorage.removeItem("ippatsu.chat.history");sessionStorage.removeItem("ippatsu.chat.session");sessionStorage.removeItem("ippatsu.chat.pending");$("#messages").replaceChildren();show();}
 async function api(action,data={}){
   let response;
   try{response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json",...(token?{"x-ippatsu-session":token}:{})},body:JSON.stringify({action,...data}),cache:"no-store"});}
@@ -151,7 +151,7 @@ $("#login").onsubmit=async e=>{e.preventDefault();const b=$("#login button");b.d
   catch(e){$("#notice").textContent=e.message;}finally{b.disabled=false;}};
 $("#lock").onclick=async()=>{try{await api("logout");}finally{clear();}};
 async function send(text,action="chat",query=text){if(!text||busy)return;busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;
-  bubble(text,true);history.push({role:"user",content:text});$("#message").value="";
+  bubble(text,true);history.push({role:"user",content:text});
   const messages=history.slice(-25).map(({role,content})=>({role,content}));
   while(messages.length>1 && JSON.stringify(messages).length>24000)messages.shift();
   try{const r=action==="poleSearch"?await api(action,{query}):await api("chat",{messages,searchRef:history.at(-2)?.searchRef,receiptId:sessionStorage.getItem("ippatsu.chat.lastReceipt")});
@@ -164,8 +164,14 @@ async function send(text,action="chat",query=text){if(!text||busy)return;busy=tr
 
     }
   }catch(e){bubble(e.message);}finally{busy=false;$("#compose button").disabled=false;$("#typing").hidden=true;}}
-$("#compose").onsubmit=e=>{e.preventDefault();send($("#message").value.trim());};
-$("#message").onkeydown=e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&!e.isComposing){e.preventDefault();send($("#message").value.trim());}};
+$("#compose").onsubmit=e=>{
+  e.preventDefault();
+  const field=$("#message"),text=field.value.trim();
+  if(!text || busy)return;
+  field.value="";
+  send(text,searchMode?"poleSearch":"chat");
+};
+$("#message").onkeydown=e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&!e.isComposing){e.preventDefault();$("#compose").requestSubmit();}};
 $("#reset").onclick=async()=>{
   if(busy||$("#messages button:disabled")){bubble("処理中っす。応答が届いてから会話を切り替えてください。");return;}
   if(!confirm("新しい会話にしますか？ 入力中の文と確認待ちの表示を消します。すでに受け付けた処理は受付履歴で確認できます。"))return;
@@ -173,7 +179,7 @@ $("#reset").onclick=async()=>{
   history=[];
   sessionStorage.removeItem("ippatsu.chat.lastReceipt");sessionStorage.removeItem("ippatsu.chat.history");
   sessionStorage.removeItem("ippatsu.chat.pending");
-  $("#message").value="";
+  resetInputMode();
   $("#messages").replaceChildren();
   start();
 };
@@ -193,22 +199,58 @@ $("#recent").onclick=async()=>{try{
     cancelButton(bubble(report.summary),report);
   }
 }catch(e){bubble(e.message);}};
-const poleDialog=$("#pole-dialog");
+let searchMode=false,locationRequest=0;
+const drafts={chat:"",search:""};
+function locationNotice(text){
+  $("#pole-notice").textContent=text;
+  $("#pole-notice").hidden=!text;
+}
+function setInputMode(search){
+  const field=$("#message");
+  drafts[searchMode?"search":"chat"]=field.value;
+  searchMode=search;
+  sessionStorage.setItem("ippatsu.chat.inputMode",search?"search":"chat");
+  field.value=drafts[search?"search":"chat"];
+  field.placeholder=search?"電柱名・径間名・座標（複数は改行）":"メッセージを書く";
+  field.setAttribute("aria-label",search?"電柱検索の入力":"メッセージ");
+  field.rows=search?2:1;
+  const submit=$("#compose button");
+  submit.textContent=search?"検索":"送信";
+  submit.setAttribute("aria-label",submit.textContent);
+  $("#chat-mode").setAttribute("aria-pressed",String(!search));
+  $("#pole-mode").setAttribute("aria-pressed",String(search));
+  $("#chat-tools").hidden=search;
+  $("#pole-tools").hidden=!search;
+  locationRequest++;
+  $("#pole-geo").disabled=false;
+  locationNotice("");
+}
+function resetInputMode(){
+  drafts.chat=drafts.search="";
+  $("#message").value="";
+  setInputMode(false);
+}
+$("#chat-mode").onclick=()=>setInputMode(false);
+$("#pole-mode").onclick=()=>setInputMode(true);
 $("#pole-links-only").checked=localStorage.getItem("ippatsu.pole.linksOnly")==="true";
 $("#pole-links-only").onchange=e=>localStorage.setItem("ippatsu.pole.linksOnly",String(e.target.checked));
-$("#pole-open").onclick=()=>{if(!busy){$("#pole-notice").textContent="";poleDialog.showModal();$("#pole-query").focus();}};
-$("#pole-close").onclick=()=>poleDialog.close();
-$("#pole-form").onsubmit=e=>{e.preventDefault();const q=$("#pole-query").value.trim();
-  if(!q){$("#pole-notice").textContent="検索する名前か座標を入力してください。";return;}
-  poleDialog.close();send(q,"poleSearch");};
 $("#pole-geo").onclick=()=>{
-  if(!navigator.geolocation){$("#pole-notice").textContent="この端末では現在地を取得できません。座標を入力してください。";return;}
-  $("#pole-geo").disabled=true;$("#pole-notice").textContent="現在地を確認中…";
+  if(busy){locationNotice("検索結果が届いてからもう一度押してください。");return;}
+  if(!navigator.geolocation){locationNotice("この端末では現在地を取得できません。座標を入力してください。");return;}
+  const current=++locationRequest;
+  $("#pole-geo").disabled=true;locationNotice("現在地を確認中…");
   navigator.geolocation.getCurrentPosition(pos=>{
-    $("#pole-geo").disabled=false;if(!poleDialog.open)return;poleDialog.close();
+    if(current!==locationRequest)return;
+    $("#pole-geo").disabled=false;
+    if(busy){locationNotice("検索結果が届いてからもう一度押してください。");return;}
+    locationNotice("");
     send("現在地の周辺200mの電柱","poleSearch",pos.coords.latitude.toFixed(6)+","+pos.coords.longitude.toFixed(6));
-  },()=>{$("#pole-geo").disabled=false;$("#pole-notice").textContent="現在地を取得できません。位置情報の許可を確認するか座標を入力してください。";},
-  {enableHighAccuracy:true,timeout:15000,maximumAge:30000});
+  },()=>{
+    if(current!==locationRequest)return;
+    $("#pole-geo").disabled=false;
+    locationNotice("現在地を取得できません。位置情報の許可を確認するか座標を入力してください。");
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:30000});
 };
-document.querySelectorAll(".suggestions button:not(#pole-open):not(#recent):not(#reset):not(#test-mode)").forEach(b=>b.onclick=()=>send(b.textContent));start();
-
+document.querySelectorAll("[data-chat]").forEach(b=>b.onclick=()=>send(b.textContent));
+setInputMode(Boolean(token) && sessionStorage.getItem("ippatsu.chat.inputMode")==="search");
+start();
