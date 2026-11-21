@@ -69,7 +69,7 @@ try{
     function mount(){
       if(!weather.dataset.mounted){
         weather.dataset.mounted='true';
-        import('./weather.mjs?v=hourly-2').then(({mountWeather})=>mountWeather(weather,area)).catch(()=>{weather.textContent='時間別予報を読み込めませんでした。';});
+        import('./weather.mjs?v=hourly-3').then(({mountWeather})=>mountWeather(weather,area)).catch(()=>{weather.textContent='時間別予報を読み込めませんでした。';});
       }
       if(!map.childElementCount && members.length)renderMap(map,members,pick,area);
     }

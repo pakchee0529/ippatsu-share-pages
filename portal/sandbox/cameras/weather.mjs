@@ -5,7 +5,6 @@ const mounted=new WeakMap();
 const timezone='Asia/Tokyo';
 const timeLabel=new Intl.DateTimeFormat('ja-JP',{timeZone:timezone,hourCycle:'h23',hour:'numeric'});
 const dateLabel=new Intl.DateTimeFormat('ja-JP',{timeZone:timezone,month:'numeric',day:'numeric'});
-const stampLabel=new Intl.DateTimeFormat('ja-JP',{timeZone:timezone,hourCycle:'h23',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
 const numberLabel=new Intl.NumberFormat('ja-JP',{maximumFractionDigits:1});
 const timestamp=value=>typeof value==='string'&&Number.isFinite(Date.parse(value))?Date.parse(value):null;
 const hourNumber=ms=>Number(timeLabel.formatToParts(ms).find(part=>part.type==='hour').value);
@@ -92,18 +91,8 @@ function paint(target,data,area){
   }
   if(!strip.children.length)throw Error('時間別予報がありません。');
   rail.append(key,strip);
-  const source=node('p','wx-source');
-  const metAt=timestamp(data.updated_at);
-  if(metAt!==null)source.append('　予報更新 '+stampLabel.format(metAt));
-  if(data.hours.some(h=>h.pop_source==='気象庁'&&h.pop!=null)){
-    const jma=node('span','wx-jma');
-    jma.textContent=(data.jma_area||area)+'の6時間降水確率';
-    const issued=timestamp(data.jma_updated_at);
-    if(issued!==null)jma.append('　発表 '+stampLabel.format(issued));
-    source.append(jma);
-  }
   const old=target.querySelector('.wx-hours')?.scrollLeft||0;
-  target.replaceChildren(scope,rail,source);strip.scrollLeft=old;
+  target.replaceChildren(scope,rail);strip.scrollLeft=old;
 }
 
 export function mountWeather(container,area){
