@@ -1,0 +1,55 @@
+/* Hallmark: field guide, shared portal, app screen; the annotated photograph leads the case view. */
+/* Critique: keep the case chooser and photograph on separate surfaces to preserve space on phones. */
+:root {
+  --paper: #f4f1e8; --surface: #fffdf7; --ink: #203d36; --green: #235642; --muted: #51665c;
+  --line: #bfcbc0; --soft: #e8eee5; --warm: #94441f; --white: #fffef9; --overlay: #152e27a8;
+  --font: system-ui, sans-serif; --arrow: #d84b09; --photo-bg: #26332e;
+}
+* { box-sizing: border-box }
+html, body { overflow-x: clip }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 1rem/1.55 var(--font) }
+main { width: min(100%, 46rem); margin: auto; padding: 16px clamp(16px, 4vw, 32px) 72px }
+nav, .heading, .sources, #search { display: flex; align-items: center; gap: .65rem }
+nav, .heading { justify-content: space-between }
+button, nav a, .file-action { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; min-height: 44px; padding: 8px 16px; text-decoration: none; cursor: pointer }
+:focus-visible, .file-action:focus-within { outline: 3px solid var(--green); outline-offset: 2px }
+button:active, nav a:active { color: var(--ink); background: var(--soft) }
+button:disabled { color: var(--muted); background: var(--soft); border-color: var(--line); cursor: default }
+.primary { background: var(--green); color: var(--white); border-color: var(--green); font-weight: 650 }
+header { margin: 32px 0 24px }
+h1, h2, h3 { text-wrap: balance; overflow-wrap: break-word; min-width: 0; margin: 0 }
+h1 { font-size: clamp(2rem, 8vw, 3rem); line-height: 1.2 }
+h2 { font-size: 1.35rem }
+header p, #selected-meta, #editor-case, figcaption small, label span { color: var(--muted) }
+header p { margin: .5rem 0 }
+input, textarea { font: inherit; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 9px; padding: 12px; color: var(--ink) }
+#search { margin: .75rem 0 }
+#search input { flex: 1 }
+#cases { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line) }
+#cases button { width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: .8rem .5rem; display: grid; background: transparent }
+#cases button:hover { background: var(--soft) }
+#cases small { color: var(--muted) }
+#detail h2 { margin: 1rem 0 0 }
+#selected-meta { margin: .15rem 0 1rem }
+#photos h3 { margin: 1.5rem 0 .7rem }
+figure { margin: 0 0 1rem; background: var(--surface); border-radius: 14px; overflow: clip }
+.photo { display: grid; grid-template-columns: minmax(0,1fr); position: relative; background: var(--photo-bg); padding: 0; width: 100%; border: 0; border-radius: 0 }
+.photo img, .photo svg { display: block; width: 100%; height: auto; grid-area: 1/1 }
+.photo svg { pointer-events: none; height: 100%; position: absolute; inset: 0 }
+figcaption { padding: .7rem 1rem; white-space: pre-line; overflow-wrap: anywhere }
+figcaption small { display: block; margin-top: .2rem }
+dialog { width: min(calc(100% - 20px), 42rem); max-height: 94dvh; overflow: auto; overscroll-behavior: contain; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: clamp(12px, 3vw, 24px) }
+dialog::backdrop { background: var(--overlay) }
+dialog p { margin: .6rem 0 }
+.sources { margin: .8rem 0 }
+.file-action { position: relative; text-align: center; flex: 1; background: var(--soft) }
+.file-action input { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer }
+#drawing { margin: .8rem 0 }
+#canvas { display: block; width: auto; height: auto; max-width: 100%; max-height: 52dvh; margin: .6rem auto; touch-action: none; cursor: crosshair; background: var(--photo-bg) }
+label[for=note] { display: block; margin: .9rem 0 .2rem; font-weight: 650 }
+textarea { display: block; width: 100%; resize: vertical }
+#upload-status { color: var(--warm) }
+#upload .primary { width: 100% }
+#viewer { width: min(calc(100% - 12px), 63rem) }
+#viewer .heading { margin-bottom: .7rem }
+[hidden] { display: none !important }
