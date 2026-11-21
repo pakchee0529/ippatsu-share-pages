@@ -25,7 +25,7 @@ export function overview(panel) {
       if(!r.center||visited[r.key]===true)return;
       const popup=document.createElement('div'),title=document.createElement('strong');
       popup.className='survey-popup';title.textContent=(i+1)+'　'+r.name;popup.append(title);
-      for(const [label,url] of [['両端の電柱を見る',r.url],['Google マップで開く',googleMapsUrl(r.center)]]){
+      for(const [label,url] of [['Googleマップ',googleMapsUrl(r.center)],['両端の電柱を見る',r.url]]){
         const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label;popup.append(link);
       }
       L.marker(r.center,{title:r.name,icon:L.divIcon({className:'survey-pin',html:String(i+1),iconSize:[28,28],iconAnchor:[14,14]})}).addTo(markers).bindPopup(popup);
