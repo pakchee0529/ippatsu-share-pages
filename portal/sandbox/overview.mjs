@@ -1,3 +1,6 @@
+export function googleMapsUrl(center){
+  return 'https://www.google.com/maps/search/?'+new URLSearchParams({api:'1',query:center.join(',')});
+}
 export function overview(panel) {
   const box=document.createElement('section'), heading=document.createElement('h2');
   heading.textContent='全体地図';
@@ -20,8 +23,12 @@ export function overview(panel) {
     markers.clearLayers();
     rows.forEach((r,i)=>{
       if(!r.center||visited[r.key]===true)return;
-      const link=document.createElement('a');link.href=r.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=(i+1)+'　'+r.name+' の2点地図';
-      L.marker(r.center,{title:r.name,icon:L.divIcon({className:'survey-pin',html:String(i+1),iconSize:[28,28],iconAnchor:[14,14]})}).addTo(markers).bindPopup(link);
+      const popup=document.createElement('div'),title=document.createElement('strong');
+      popup.className='survey-popup';title.textContent=(i+1)+'　'+r.name;popup.append(title);
+      for(const [label,url] of [['両端の電柱を見る',r.url],['Google マップで開く',googleMapsUrl(r.center)]]){
+        const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label;popup.append(link);
+      }
+      L.marker(r.center,{title:r.name,icon:L.divIcon({className:'survey-pin',html:String(i+1),iconSize:[28,28],iconAnchor:[14,14]})}).addTo(markers).bindPopup(popup);
     });
     if(first)map.fitBounds(points.map(r=>r.center),{padding:[22,22],maxZoom:17});
     note.textContent='未訪問のピン '+markers.getLayers().length+'件 ／ 座標照合 '+points.length+'件';
