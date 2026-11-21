@@ -1,0 +1,56 @@
+[
+  {
+    "name": "吉野川・上市橋",
+    "area": "吉野",
+    "lat": 34.392972,
+    "lng": 135.851917,
+    "source": "https://www.komadori.ne.jp/livecamera/area/yoshino1.html",
+    "provider": "こまどりケーブル",
+    "kind": "河川",
+    "coordSource": "https://www.komadori.ne.jp/livecamera/area/yoshino1.html"
+  },
+  {
+    "name": "吉野山・上千本",
+    "area": "吉野",
+    "lat": 34.356059,
+    "lng": 135.87195,
+    "source": "https://www.sizenken.biodic.go.jp/view_new.php?no=122",
+    "provider": "環境省生物多様性センター",
+    "kind": "山・眺望",
+    "coordSource": "https://www.sizenken.biodic.go.jp/"
+  },
+  {
+    "name": "吉野川・宮滝",
+    "area": "吉野",
+    "lat": 34.376388889,
+    "lng": 135.896666667,
+    "source": "https://www.seishiga.kkr.mlit.go.jp/kinokawa/cctv/ootaki/miyataki/",
+    "provider": "国土交通省近畿地方整備局 紀の川ダム統合管理事務所",
+    "kind": "河川",
+    "mediaType": "image",
+    "media": "https://www.seishiga.kkr.mlit.go.jp/kinokawa/cctv/pic/C02923.jpg",
+    "coordSource": "https://www.river.go.jp/kawabou/file/gjson/scam/2901441.json"
+  },
+  {
+    "name": "吉野川・佐名伝",
+    "area": "大淀",
+    "lat": 34.380415,
+    "lng": 135.772201,
+    "source": "https://www.river.go.jp/kawabou/pc/tm?zm=16&clat=34.380415&clon=135.772201&itmkndCd=200&scamId=107425064&ownCd=7425&sysCamId=7425064",
+    "provider": "国土交通省 川の防災情報（奈良県提供）",
+    "kind": "河川",
+    "status": "調整中",
+    "coordSource": "https://www.river.go.jp/kawabou/file/gjson/scam/2901442.json"
+  },
+  {
+    "name": "吉野川・下渕",
+    "area": "大淀",
+    "lat": 34.383167,
+    "lng": 135.783111,
+    "source": "https://www.river.go.jp/kawabou/pc/tm?zm=16&clat=34.383167&clon=135.783111&itmkndCd=200&scamId=307425015&ownCd=7425&sysCamId=7425014",
+    "provider": "国土交通省 川の防災情報（奈良県提供）",
+    "kind": "河川",
+    "status": "調整中",
+    "coordSource": "https://www.river.go.jp/kawabou/file/gjson/scam/2901442.json"
+  }
+]
