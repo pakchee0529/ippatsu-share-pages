@@ -6,6 +6,9 @@ const el = id => document.getElementById(id);
 const dateFormat = new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',year:'numeric',month:'numeric',day:'numeric'});
 const text = (tag,value) => {const node=document.createElement(tag);node.textContent=value;return node;};
 let current, searchVersion=0, photoVersion=0, fileVersion=0, uploading=false, submissionId;
+const params=new URLSearchParams(location.search);
+const registerMode=params.get('mode')==='register';
+let trial=false, previewUrl='', casesLoaded=false;
 accountButton(el('account-entry'));
 
 async function request(body) {
@@ -24,10 +27,11 @@ async function request(body) {
 }
 
 function meta(item) {
-  return [item.management_no && '管理番号 '+item.management_no, item.episode_no && '受付'+item.episode_no+'回目'].filter(Boolean).join('　');
+  return [item.design_number ? '設計番号 '+item.design_number : '設計番号 未登録', item.management_no && '管理番号 '+item.management_no, item.episode_no && '受付'+item.episode_no+'回目'].filter(Boolean).join('　');
 }
 async function listCases(target) {
   const version=++searchVersion;
+  casesLoaded=true;
   const q=el('query').value.trim();
   el('search-status').textContent='現場を探しています…';
   el('cases').replaceChildren();
@@ -56,7 +60,7 @@ function figure(photo, large=false) {
   }
   const img=new Image(); img.alt=photo.note||'現場の進入口'; img.loading=large?'eager':'lazy';
   frame.append(img);addOverlay(frame,img,photo.arrows || []);img.src=photo.url;
-  img.onerror=()=>{el('photos-status').textContent='写真を読み込めません。再読み込みで写真を取得し直せます。';el('retry').hidden=false;};
+  img.onerror=()=>{if(!photo.url.startsWith('blob:')){el('photos-status').textContent='写真を読み込めません。再読み込みで写真を取得し直せます。';el('retry').hidden=false;}};
   const caption=text('figcaption',photo.note||'');
   const date=new Date(photo.created_at);
   caption.append(text('small',[photo.episode_no && '受付'+photo.episode_no+'回目',Number.isFinite(+date)&&dateFormat.format(date),photo.author].filter(Boolean).join('　')));
@@ -86,48 +90,74 @@ function openCase(item) {
   current=item; el('selected-label').textContent=item.label;el('selected-meta').textContent=meta(item);
   el('picker').hidden=true;el('detail').hidden=false;el('selected-label').focus();
   listPhotos();
+  if(registerMode && !el('editor').open) showEditor();
 }
 el('back').onclick=()=>{
   current=null;photoVersion++;el('detail').hidden=true;el('picker').hidden=false;el('query').focus();listCases();
 };
 const report=value=>{el('upload-status').textContent=value;};
 const editor=photoEditor(el('canvas'),el('undo'),report);
-function showEditor() {
-  if(!current)return;
+function showEditor(tryOnly=false) {
+  if(!tryOnly&&!current)return;
+  trial=tryOnly;
   el('upload').reset();editor.clear();fileVersion++;submissionId=crypto.randomUUID();
-  el('save').disabled=true;el('drawing').hidden=true;report('');
-  el('editor-case').textContent=current.label+'　'+meta(current);el('editor').showModal();
+  el('preview-button').disabled=true;el('drawing').hidden=true;report('');
+  el('editor-title').textContent=trial?'写真で矢印を試す':'進入路を登録';
+  el('editor-case').textContent=trial?'写真はこの端末で表示されます。保存や共有はされません。':current.label+'　'+meta(current);
+  el('editor').showModal();
 }
-el('add').onclick=()=>{if(account())showEditor();else openAccount(()=>{accountButton(el('account-entry'));showEditor();});};
+el('add').onclick=()=>showEditor();
+el('try-photo').onclick=()=>showEditor(true);
 el('close-editor').onclick=()=>el('editor').close();
 el('editor').oncancel=e=>{if(uploading)e.preventDefault();};
-el('editor').onclose=()=>{fileVersion++;editor.clear();};
+el('editor').onclose=()=>{fileVersion++;editor.clear();if(!casesLoaded)listCases();};
 async function selectFile(event) {
   const file=event.target.files[0];
   if(!file)return;
-  const version=++fileVersion;editor.clear();el('drawing').hidden=true;el('save').disabled=true;report('写真を準備しています…');
+  const version=++fileVersion;editor.clear();el('drawing').hidden=true;el('preview-button').disabled=true;report('写真を準備しています…');
   try {
     if(!await editor.load(file) || version!==fileVersion)return;
-    el('drawing').hidden=false;el('save').disabled=false;report('');
+    el('drawing').hidden=false;el('preview-button').disabled=false;report('');
   } catch{if(version===fileVersion)report('写真を開けませんでした。JPEGやPNGの画像を選び直してください。');}
   event.target.value='';
 }
 el('file').onchange=selectFile;el('camera').onchange=selectFile;
-el('upload').onsubmit=async e=>{
-  e.preventDefault();if(uploading||!current)return;
-  if(!account()){openAccount(()=>{accountButton(el('account-entry'));report('ログインしました。保存を押してください。');});return;}
+el('upload').onsubmit=e=>{
+  e.preventDefault();
+  const content=editor.snapshot();
+  if(!content)return;
+  if(previewUrl)URL.revokeObjectURL(previewUrl);
+  previewUrl=URL.createObjectURL(content.blob);
+  el('preview-output').replaceChildren(figure({url:previewUrl,arrows:content.arrows,note:el('note').value.trim(),episode_no:trial?null:current.episode_no,author:trial?null:account()?.name},true));
+  el('preview-context').textContent=trial?'試し描きです。この写真は共有されません。':current.label+'　'+meta(current);
+  el('confirm-save').hidden=trial;el('preview-finish').hidden=!trial;el('preview-status').textContent='';
+  el('preview-dialog').showModal();
+};
+el('preview-dialog').onclose=()=>{
+  el('preview-output').replaceChildren();if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl='';
+};
+el('preview-dialog').oncancel=e=>{if(uploading)e.preventDefault();};
+el('preview-back').onclick=()=>el('preview-dialog').close();
+el('preview-finish').onclick=()=>{el('preview-dialog').close();el('editor').close();};
+el('confirm-save').onclick=async ()=>{
+  if(uploading||trial||!current)return;
+  const feedback=el('preview-status');
+  if(!account()){openAccount(()=>{accountButton(el('account-entry'));feedback.textContent='ログインしました。保存を押してください。';});return;}
   const content=editor.snapshot();
   if(!content)return;
   const form=new FormData();form.set('action','upload');form.set('case_id',current.id);form.set('id',submissionId);
   form.set('image',content.blob,'entrance.jpg');form.set('arrows',JSON.stringify(content.arrows));form.set('note',el('note').value.trim());
-  const controls=[...el('upload').querySelectorAll('button,input,textarea')];
-  const disabled=controls.map(c=>c.disabled);
-  controls.forEach(c=>c.disabled=true);el('canvas').inert=true;uploading=true;report('保存しています…');
+  const controls=[el('confirm-save'),el('preview-back')];
+  controls.forEach(c=>c.disabled=true);uploading=true;feedback.textContent='保存しています…';
   try{
-    await request(form);el('editor').close();await listPhotos();
-  }catch(error){report(error.message);if(error.status===401)openAccount(()=>{accountButton(el('account-entry'));report('ログインしました。保存を押してください。');});}
-  finally{uploading=false;el('canvas').inert=false;controls.forEach((c,i)=>c.disabled=disabled[i]);}
+    await request(form);el('preview-dialog').close();el('editor').close();await listPhotos();
+  }catch(error){feedback.textContent=error.message;if(error.status===401)openAccount(()=>{accountButton(el('account-entry'));feedback.textContent='ログインしました。保存を押してください。';});}
+  finally{uploading=false;controls.forEach(c=>c.disabled=false);}
 };
-const params=new URLSearchParams(location.search);
-el('query').value=params.get('q')||'';
-listCases(params.get('case_id'));
+if(registerMode){
+  el('intro').textContent='現場を選んで写真に矢印を描き、仕上がりを確認して登録できます。';
+  el('picker-title').textContent='登録する現場を選ぶ';
+}
+el('query').value=(params.get('q')||'').slice(0,100);
+if(params.get('mode')==='try')showEditor(true);
+else listCases(params.get('case_id'));

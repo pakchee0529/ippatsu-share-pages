@@ -60,3 +60,4 @@ main {
 #sandbox-tools .attach:focus-within,#sandbox-tools :focus-visible{outline:2px solid var(--green);outline-offset:2px}
 #sandbox-tools form label.attach{min-width:44px;box-sizing:border-box;padding:0}#sandbox-tools .attach img{object-fit:contain}#sandbox-tools .suggestions{flex:none}
 #sandbox-tools form label.attach{align-content:center;gap:0;font-size:.68rem;line-height:1.15}
+#sandbox-conversation .entrance-search{display:flex;position:static;padding:8px 0;gap:6px;background:transparent}#sandbox-conversation .entrance-search input{flex:1;min-width:0;font:inherit}#sandbox-conversation .entrance-search~a,#sandbox-conversation .entrance-search~div a{display:block;padding:9px 0}

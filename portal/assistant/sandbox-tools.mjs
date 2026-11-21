@@ -47,6 +47,7 @@ async function send(text){
   try{
     text=text.trim()||(survey?'この資料から径間を取り込んで':'この資料を使いたい');
     bubble('user',text+(selected?'（'+selected.name+'）':''));
+    if(!selected&&/^(?:現場の)?進入(?:路|口)(?:写真)?を登録(?:したい|する|して)?[。！! ]*$/.test(text)){entranceGuide();return;}
     if(!selected&&/^(?:これで)?(?:掲載|公開|反映|保存)(?:して|する|お願い)?[。！! ]*$/.test(text)){await publish();return;}
     if(/^(新しい会話|最初から|やり直す)$/.test(text)){fresh();greet();return;}
     if(!selected&&/編集|修正/.test(text)&&!draft){
@@ -79,6 +80,41 @@ async function send(text){
   }catch(e){failed=true;bubble('assistant',e.message==='Failed to fetch'?'送れませんでした。書いた内容とファイルは残っています。そのまま「送信」を押してください。':e.message);}
   finally{status.textContent='';if(!failed){field.value='';file.value='';camera.value='';attachment.textContent='';}busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
 }
+function entranceGuide() {
+  const message=bubble('assistant','設計番号か径間名で現場を探してね。現場を選んだら写真を撮るか選んで、進む方向に指で矢印を引けます。');
+  const search=document.createElement('form'); search.className='entrance-search';
+  const input=document.createElement('input');
+  input.type='search'; input.placeholder='設計番号または径間名'; input.required=true;
+  input.setAttribute('aria-label','設計番号または径間名');
+  const submit=document.createElement('button');submit.textContent='探す';
+  const results=document.createElement('div');results.setAttribute('aria-live','polite');
+  const trial=document.createElement('a');trial.href='../sandbox/entrance/?mode=try';trial.textContent='写真で矢印を試す（保存なし）';
+  search.append(input,submit);message.append(search,results,trial);
+  search.onsubmit=async event=>{
+    event.preventDefault();
+    const q=input.value.trim();if(!q)return;
+    submit.disabled=true;results.textContent='検索中…';
+    try {
+      const response=await fetch('https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/field-entrance',{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'cases',q}),signal:AbortSignal.timeout(15000)
+      });
+      if(!response.ok)throw Error();
+      const {cases}=await response.json();
+      results.textContent=cases.length?'写真を登録する現場を選んでください。':'該当する現場がありません。径間名の一部でも探せます。';
+      for(const item of cases){
+        const link=document.createElement('a');
+        link.href='../sandbox/entrance/?'+new URLSearchParams({mode:'register',case_id:item.id,q});
+        link.textContent=item.label+' ／ 設計番号 '+(item.design_number||'未登録')+(item.episode_no?' ／ 受付'+item.episode_no+'回目':'');
+        results.append(link);
+      }
+    }catch{results.textContent='検索できませんでした。「探す」で再試行できます。';}
+    finally{submit.disabled=false;}
+  };
+  input.focus();
+}
+root.querySelector('#entrance-shortcut').onclick=()=>{
+  bubble('user','進入路を登録'); entranceGuide();
+};
 form.onsubmit=e=>{e.preventDefault();send(field.value);};
 
 root.querySelector('#survey-shortcut').onclick=()=>{
