@@ -17,7 +17,7 @@ function fresh(){
 function link(container,item){
   const a=document.createElement('a');a.href=linkFor(item.id);a.textContent=item.definition.title;container.append(a);
 }
-function greet(){bubble('assistant','何を作りましょう？ 現調リストなら、担当者の名前と径間名か紙の写真を送ってください。');}
+function greet(){bubble('assistant','ここは、欲しい道具やページを自由に作って試せる砂場っす。どんなことができたら便利ですか？');}
 greet();
 file.onchange=()=>{attachment.textContent=file.files[0]?.name||'';};
 async function publish(){
@@ -58,3 +58,12 @@ async function send(text){
   finally{status.textContent='';field.value='';file.value='';attachment.textContent='';busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
 }
 form.onsubmit=e=>{e.preventDefault();send(field.value);};
+
+root.querySelector('#survey-shortcut').onclick=()=>{
+  if(busy)return;
+  if(field.value.trim()||file.files.length||draft){field.value='新しく現調リストを作って。'+field.value;field.focus();return;}
+  fresh();survey=true;
+  const request='現調リストを作る',question='誰のリストにしますか？ 担当者名と、径間名か紙の写真を送ってください。';
+  history.push({role:'user',text:request},{role:'assistant',text:question});
+  bubble('user',request);bubble('assistant',question);field.focus();
+};
