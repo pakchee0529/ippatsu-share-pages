@@ -32,7 +32,16 @@
     <p id="editor-case"></p>
     <div class="sources">
       <label class="file-action">撮影する<input type="file" id="camera" accept="image/*" capture="environment"></label>
-      <label class="file-action">写真を選ぶ<input type="file" id="file" accept="image/*"></label>
+      <label class="file-action">写真を選ぶ<input type="file" id="file" accept="image/*" multiple></label>
+    </div>
+    <div id="order" hidden>
+      <h3>進む順番</h3>
+      <div id="sequence" aria-label="編集する写真を選ぶ"></div>
+      <div class="order-actions">
+        <button type="button" id="earlier">前に移す</button>
+        <button type="button" id="later">後ろに移す</button>
+        <button type="button" id="remove-photo">この写真を外す</button>
+      </div>
     </div>
     <div id="drawing" hidden>
       <p>進む方向に指で線を引くと、矢印が付きます。</p>
@@ -53,6 +62,7 @@
   <div class="preview-actions">
     <button type="button" id="preview-back">矢印やメモを直す</button>
     <button type="button" id="preview-finish" hidden>試し描きを終了</button>
+    <button type="button" id="preview-pause" hidden>あとで続ける</button>
     <button type="button" class="primary" id="confirm-save">この現場に保存</button>
   </div>
 </dialog>
