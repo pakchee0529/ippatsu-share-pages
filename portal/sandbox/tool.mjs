@@ -1,5 +1,5 @@
-import {childChat} from './child-chat.mjs';
-import {surveyNavigation} from './survey-navigation.mjs?v=regional1';
+import {childChat} from './child-chat.mjs?v=fieldcopy1';
+import {surveyNavigation} from './survey-navigation.mjs?v=fieldcopy1';
 import {call} from './api.mjs?v=child1';
 import {previewPage} from './preview.mjs';
 import {imageInput} from './image-input.mjs';
@@ -25,7 +25,7 @@ try{
  document.querySelector('#edit-panel').hidden=false;
  let draft;
  form.onsubmit=async e=>{
-   e.preventDefault();const button=form.querySelector('button');button.disabled=true;adopt.hidden=true;note.textContent='修正版を作成中…';
+   e.preventDefault();const button=form.querySelector('button');button.disabled=true;adopt.hidden=true;note.textContent='下書きを作っています…';
    try{const image=await imageInput(form.elements.sketch.files[0]);
      ({draft}=await call('sandboxDraft',{id,revision:item.revision,prompt:form.elements.prompt.value,image}));
      document.querySelector('#candidate').replaceChildren(previewPage(draft.html));adopt.hidden=false;note.textContent='下書きの動きを確認してください。';
@@ -34,7 +34,7 @@ try{
  adopt.onclick=async()=>{adopt.disabled=true;try{await call('sandboxPublish',{id,revision:item.revision,draft});location.reload();}catch(err){note.textContent=err.message;adopt.disabled=false;}};
  remove.hidden=false;
  remove.onclick=async()=>{
-   if(!confirm('「'+item.definition.title+'」を全員の砂場から撤去しますか？'))return;
+   if(!confirm('「'+item.definition.title+'」をみんなの砂場から外しますか？'))return;
    remove.disabled=true;
    try{await call('sandboxRemove',{id,revision:item.revision});location.replace('./');}
    catch(e){status.textContent=e.message;remove.disabled=false;}

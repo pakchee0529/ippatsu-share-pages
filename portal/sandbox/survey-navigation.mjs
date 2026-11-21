@@ -44,7 +44,7 @@ export function surveyNavigation(item,surface){
   const doc=new DOMParser().parseFromString(item.definition.html,'text/html');
   if(!item.definition.title.includes('現調')&&!doc.querySelector('[data-survey-rows]'))return;
   const rows=[...doc.querySelectorAll('label')].map(label=>({
-    name:label.textContent.trim(),reference:label.dataset.referenceNumber,key:label.querySelector('input[type=checkbox]')?.id
+    name:label.textContent.trim(),review:label.dataset.review,reference:label.dataset.referenceNumber,key:label.querySelector('input[type=checkbox]')?.id
   })).filter(r=>r.key&&/[~～〜]/.test(r.name));
   if((!rows.length&&!doc.querySelector('[data-survey-rows]'))||new Set(rows.map(r=>r.name)).size!==rows.length)return;
   const panel=node('section','');panel.className='survey-route';surface.before(panel);
@@ -61,9 +61,10 @@ export function surveyNavigation(item,surface){
     const li=node('li',''),label=node('label',r.name),check=document.createElement('input');
     check.type='checkbox';check.checked=visited[r.key]===true;
     check.onchange=()=>{visited[r.key]=check.checked;drawMap(current,visited);localStorage.setItem(visitKey,JSON.stringify(visited));};label.prepend(check);li.append(label);
+    if(r.review)li.append(node('p',r.review));
     if(r.reference)li.append(node('small',r.reference));
     const links=node('div','');
-    if(r.center){links.append(mapLink('2点地図',r.url),mapLink('径間周辺200m',mapAt(r.center)));if(r.corrected)li.append(node('small','電柱名に補正候補あり・地図で確認'));}
+    if(r.center){links.append(mapLink('両端の電柱を見る',r.url),mapLink('径間の中点から200mの電柱',mapAt(r.center)));if(r.corrected)li.append(node('small','この電柱で合っていますか？ 読み取り：'+r.name+'　地図の候補：'+r.mapNames));}
     else if(suggested.length)li.append(node('small','座標を確認できません'));
     for(const [delta,text] of [[-1,'↑'],[1,'↓']]){
       const b=button(text,()=>{const j=i+delta;[current[i],current[j]]=[current[j],current[i]];keep();});b.disabled=i+delta<0||i+delta>=current.length;b.setAttribute('aria-label',r.name+'を'+(delta<0?'上へ':'下へ'));b.className='move';links.append(b);
@@ -72,8 +73,8 @@ export function surveyNavigation(item,surface){
   });}
   const plan=node('details',''),summary=node('summary','巡回案を見る'),steps=node('ol','');plan.append(summary,steps);plan.hidden=true;
   const accept=button('この順番を採用',()=>{plan.open=false;plan.hidden=true;current=suggested.slice();keep();note.textContent='この端末に巡回順を保存しました。';});accept.hidden=true;
-  const match=button('座標を照合して巡回順を提案',async()=>{
-    match.disabled=true;note.textContent='電柱ナビで両端を照合中…';
+  const match=button('おすすめの訪問順を見る',async(event)=>{
+    match.disabled=true;note.textContent='地図で両端の電柱を探しています…';
     try{
       const cards=[];
       for(let i=0;i<rows.length;i+=10){
@@ -86,10 +87,10 @@ export function surveyNavigation(item,surface){
         if(!c?.primary_url)continue;
         const u=new URL(c.primary_url),a=coordinate(u.searchParams.get('p1')),b=coordinate(u.searchParams.get('p2'));
         if(u.origin!==host||u.pathname!=='/multi-map'||!a||!b)continue;
-        Object.assign(r,{center:a.map((n,i)=>(n+b[i])/2),url:u.href,corrected:c.status==='corrected'});
+        Object.assign(r,{center:a.map((n,i)=>(n+b[i])/2),url:u.href,corrected:c.status==='corrected',mapNames:[u.searchParams.get('p1n'),u.searchParams.get('p2n')].filter(Boolean).join('～')||c.title});
       }
       suggested=proposal(rows);const count=rows.filter(r=>r.center).length;
-      note.textContent=count+'／'+rows.length+'件の両端を照合。上之町の代表点から直線距離で計算。';steps.replaceChildren(...suggested.map(r=>node('li',r.name)));plan.hidden=!count;plan.open=false;
+      note.textContent=(count===rows.length?count+'件すべて':rows.length+'件のうち'+count+'件')+'で両端の電柱が見つかりました。訪問順は、会社のある上之町を仮の出発点にして、直線距離で計算しています。';steps.replaceChildren(...suggested.map(r=>node('li',r.name)));plan.hidden=!count;plan.open=!!count&&event?.isTrusted===true;
       accept.hidden=!count;render();
     }catch(e){note.textContent=e.message;}finally{match.disabled=false;}
   });

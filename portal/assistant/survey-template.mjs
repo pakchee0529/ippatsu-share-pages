@@ -6,7 +6,14 @@ export function surveyTemplate(draft,withNumbers=false){
     const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';
     input.id='span-'+Array.from(name,c=>c.codePointAt(0).toString(36)).join('-');label.append(input,name);list.append(label);
     const number=withNumbers&&draft.numbers?.find(n=>n.name===name)?.text;
-    if(number){label.dataset.referenceNumber=number;const caption=document.createElement('small');caption.textContent=number;const group=document.createElement('div');label.replaceWith(group);group.append(label,caption);}
+    const review=draft.reviews?.find(r=>r.name===name)?.message;
+    if(number||review){
+      const group=document.createElement('div');label.replaceWith(group);group.append(label);
+      for(const [key,value] of [['referenceNumber',number],['review',review]]){
+        if(!value)continue;
+        label.dataset[key]=value;const caption=document.createElement('p');caption.textContent=value;group.append(caption);
+      }
+    }
   }
   const title=draft.title.includes('現調')?draft.title:draft.title+'の現調リスト';
   const h=document.createElement('h1');h.textContent=title;

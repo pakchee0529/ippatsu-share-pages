@@ -16,7 +16,7 @@ function changeRows(item,survey,add,remove){
     check.type='checkbox';check.id='visit-'+crypto.randomUUID();name.textContent=add;
     label.append(check,name);group.append(label);
   }
-  for(const row of remove){const label=doc.getElementById(row.key)?.closest('label');if(label?.dataset.referenceNumber&&label.parentElement.parentElement===group)label.parentElement.remove();else label?.remove();}
+  for(const row of remove){const label=doc.getElementById(row.key)?.closest('label');if((label?.dataset.referenceNumber||label?.dataset.review)&&label.parentElement.parentElement===group)label.parentElement.remove();else label?.remove();}
   return {title:item.definition.title,html:'<!doctype html>'+doc.documentElement.outerHTML};
 }
 export function childChat(item,survey){
@@ -31,7 +31,7 @@ export function childChat(item,survey){
     history.push({role:mine?'user':'assistant',text});return p;
   }
   function quick(){actions.replaceChildren();
-    for(const text of [...(survey?['次どこ？','径間を追加','チェック済みを削除','巡回順を提案']:[]),'ページを編集']){
+    for(const text of [...(survey?['次どこ？','径間を追加','チェック済みを削除','おすすめの訪問順を見る']:[]),'ページを編集']){
       actions.append(button(text,()=>{editing=false;awaitingName=false;send(text);}));
     }
   }
@@ -52,8 +52,8 @@ export function childChat(item,survey){
     try{
       if(!editing&&survey&&/次.*(どこ|何処|現場|径間)|次は[？?]?$/.test(text)){
         awaitingName=false;await survey.ready;const r=survey.next();
-        const p=say(r?'次は「'+r.name+'」です。'+(r.corrected?'電柱名に補正候補があります。':''):'未訪問の径間はありません。');
-        if(r?.url){const a=document.createElement('a');a.href=r.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='2点地図を開く';p.append(document.createElement('br'),a);}
+        const p=say(r?'次は「'+r.name+'」です。'+(r.corrected?'この電柱で合っていますか？ 地図で確認してください。':''):'未訪問の径間はありません。');
+        if(r?.url){const a=document.createElement('a');a.href=r.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='両端の電柱を見る';p.append(document.createElement('br'),a);}
         else if(r)say('両端の座標を確認できていません。');return;
       }
       if(!editing&&survey&&/チェック済|訪問済/.test(text)&&/削除|消し|消す|除い/.test(text)){
@@ -67,14 +67,14 @@ export function childChat(item,survey){
         if(survey.rows.some(r=>r.name.normalize('NFKC').replace(/〜/g,'~')===name.replace(/〜/g,'~'))){say('その径間は登録済みです。');return;}
         confirmation('共有リストに「'+name+'」を追加します。',()=>save(changeRows(item,survey,name,[])));return;
       }
-      if(!editing&&survey&&/巡回順|近い順|遠い順/.test(text)){
+      if(!editing&&survey&&/訪問順|巡回順|近い順|遠い順/.test(text)){
         await survey.ready;const near=text.includes('近い順'),route=survey.route(near);if(!route.some(r=>r.center)){say('座標を照合できませんでした。');return;}
         confirmation((near?'会社のある上之町から近い順です。':'遠い現場から回る巡回案です。')+'\n'+route.map((r,i)=>(i+1)+'　'+r.name).join('\n'),()=>{survey.applyRoute(route);say('この端末の訪問順に反映しました。');quick();});return;
       }
       if(text==='ページを編集'){editing=true;awaitingName=false;say('このページのどこをどう変えたいですか？');return;}
       const reply=await call('sandboxDraft',{id:item.id,revision:item.revision,prompt:text,interactive:true,history:history.slice(-9,-1),previous:draft});
       if(reply.question){say(reply.question);return;}
-      draft=reply.draft;log.append(previewPage(draft.html));confirmation('修正版の下書きです。共有ページに反映しますか？',()=>save(draft));
+      draft=reply.draft;log.append(previewPage(draft.html));confirmation('下書きができました。共有ページに保存しますか？',()=>save(draft));
     }catch(e){say(e.message);}finally{busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
   }
   form.onsubmit=e=>{e.preventDefault();send(input.value);};quick();
