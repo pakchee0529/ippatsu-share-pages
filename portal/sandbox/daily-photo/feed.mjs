@@ -9,6 +9,7 @@ async function api(action,form){
  if(action==='list'&&cursor)url.searchParams.set('before',cursor);
  const r=await fetch(url,{method:'POST',headers:{'x-photo-device':await deviceCredential(),'x-ippatsu-session':sessionStorage.getItem(session)||''},body:form});
  if(r.status===401){sessionStorage.removeItem(session);throw Object.assign(Error('暗証番号を入力してください。'),{status:401})}
+ if(r.status===409)throw Error('投稿が更新されました。開き直して確認してください。');
  if(!r.ok)throw Error(r.status===507?'写真の保存枠がいっぱいです。':'通信結果を確認できません。ページを開き直して投稿を確認してください。');
  return r.json();
 }
@@ -95,6 +96,43 @@ function socials(card,p){
  };
 
 }
+function ownerMenu(card,p){
+ if(!p.owned)return;
+ const menu=document.createElement('details'),label=document.createElement('summary');
+ label.textContent='自分の投稿を管理';menu.append(label);
+ for(const [action,title] of [['edit','ひと言を編集'],['withdraw','取り下げる']]){
+  const button=document.createElement('button');button.textContent=title;menu.append(button);
+  button.onclick=()=>{
+   const data={id:p.id};
+   if(action==='edit'){
+    const value=prompt('ひと言を編集',p.caption)?.trim();
+    if(!value||value===p.caption)return;
+    if(value.length>140){message('ひと言は140文字までです。');return}
+    Object.assign(data,{caption:value,previous:p.caption});
+   }else if(!confirm('この写真と、付いたコメント・いいねを取り下げますか？'))return;
+   withLogin(async()=>{await api(action,JSON.stringify(data));await list(true);await refreshInbox()});
+  };
+ }
+ card.append(menu);
+}
+async function refreshInbox(){
+ const {items}=await api('unread');const box=el('inbox');box.replaceChildren();
+ for(const item of items){
+  const button=document.createElement('button');
+  button.textContent='新しいコメント '+item.unread+'件　'+item.caption;
+  button.onclick=async()=>{
+   button.disabled=true;
+   try{
+    const key='photo-'+item.id;
+    while(!el(key)&&cursor)await list(false);
+    const thread=el(key)?.querySelector('.comments');
+    if(thread){thread.tabIndex=-1;thread.focus();thread.scrollIntoView({block:'center'});await api('seen',JSON.stringify({id:item.id,latest:item.latest}));}
+    await refreshInbox();
+   }catch(err){message(err.message)}finally{button.disabled=false}
+  };
+  box.append(button);
+ }
+}
 async function list(reset){
  if(reset)cursor=null;
  const {posts,next}=await api('list');
@@ -102,7 +140,7 @@ async function list(reset){
  const strip=el('photo-strip');
  for(const p of posts){
   const card=document.createElement('article'),img=new Image(),text=document.createElement('p'),time=document.createElement('time');
-  img.src=p.url;img.decoding='async';img.alt=p.caption;text.textContent=p.caption;time.dateTime=p.created_at;time.textContent=new Date(p.created_at).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',dateStyle:'medium',timeStyle:'short'});card.append(photoButton(img,p),text,time);socials(card,p);card.id='photo-'+p.id;el('feed').append(card);
+  img.src=p.url;img.decoding='async';img.alt=p.caption;text.textContent=p.caption;time.dateTime=p.created_at;time.textContent=new Date(p.created_at).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',dateStyle:'medium',timeStyle:'short'});card.append(photoButton(img,p),text,time);socials(card,p);ownerMenu(card,p);card.id='photo-'+p.id;el('feed').append(card);
   if(strip.childElementCount<6){
    const jump=document.createElement('a'),thumb=new Image(),label=document.createElement('span');
    jump.href='#'+card.id;thumb.src=p.url;thumb.alt='';label.textContent=p.display_name||'以前の投稿';
@@ -127,5 +165,5 @@ el('compose').onsubmit=async e=>{e.preventDefault();if(!selected)return;const fo
  try{const fd=new FormData();const name=el('name').value.trim();fd.set('name',name);fd.set('photo',selected,'photo.jpg');fd.set('caption',el('caption').value.trim());fd.set('id',id);await api('post',fd);selected=null;form.reset();localStorage.setItem('photo.nickname',name);el('name').value=name;el('preview').hidden=true;URL.revokeObjectURL(preview);sheet.close();message('投稿しました。');await list(true)}
  catch(err){if(err.status===401)openSheet(true);message(err.message)}finally{button.disabled=false}};
 el('more').onclick=async e=>{const button=e.currentTarget;button.disabled=true;try{await list(false)}catch(err){if(err.status===401)openSheet(true);message(err.message)}finally{button.disabled=false}};
-list(true).catch(e=>message(e.message));
+Promise.all([list(true),refreshInbox()]).catch(e=>message(e.message));
 
