@@ -6,7 +6,7 @@ export function overview(panel) {
   note.textContent='座標を照合すると径間の位置を表示します。';
   box.append(heading,note,canvas);panel.prepend(box);
   let map,markers;
-  return rows=>{
+  return (rows,visited)=>{
     const points=rows.filter(r=>r.center);
     if(!points.length)return;
     if(!window.L){note.textContent='地図を読み込めません。各径間の2点地図を利用できます。';return;}
@@ -19,12 +19,13 @@ export function overview(panel) {
     }
     markers.clearLayers();
     rows.forEach((r,i)=>{
-      if(!r.center)return;
+      if(!r.center||visited[r.key]===true)return;
       const link=document.createElement('a');link.href=r.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=(i+1)+'　'+r.name+' の2点地図';
       L.marker(r.center,{title:r.name,icon:L.divIcon({className:'survey-pin',html:String(i+1),iconSize:[28,28],iconAnchor:[14,14]})}).addTo(markers).bindPopup(link);
     });
     if(first)map.fitBounds(points.map(r=>r.center),{padding:[22,22],maxZoom:17});
-    note.textContent=points.length+'径間。番号は訪問リストと同じ順番です。';
+    note.textContent='未訪問のピン '+markers.getLayers().length+'件 ／ 座標照合 '+points.length+'件';
   };
 }
+
 

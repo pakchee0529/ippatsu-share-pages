@@ -1,4 +1,4 @@
-import {overview} from './overview.mjs?v=map4';
+import {overview} from './overview.mjs?v=map5';
 import {call} from './api.mjs';
 
 const office = [34.379692,135.672989]; // GSI address search: 上之町 representative point.
@@ -56,10 +56,10 @@ export function surveyNavigation(item,surface){
   try{saved=JSON.parse(localStorage.getItem(orderKey))||[];visited=JSON.parse(localStorage.getItem(visitKey))||{};}catch{}
   if(Array.isArray(saved))current.sort((a,b)=>(saved.includes(a.name)?saved.indexOf(a.name):Infinity)-(saved.includes(b.name)?saved.indexOf(b.name):Infinity));
   function keep(){localStorage.setItem(orderKey,JSON.stringify(current.map(r=>r.name)));render();}
-  function render(){drawMap(current);list.replaceChildren();current.forEach((r,i)=>{
+  function render(){drawMap(current,visited);list.replaceChildren();current.forEach((r,i)=>{
     const li=node('li',''),label=node('label',r.name),check=document.createElement('input');
     check.type='checkbox';check.checked=visited[r.key]===true;
-    check.onchange=()=>{visited[r.key]=check.checked;localStorage.setItem(visitKey,JSON.stringify(visited));};label.prepend(check);li.append(label);
+    check.onchange=()=>{visited[r.key]=check.checked;drawMap(current,visited);localStorage.setItem(visitKey,JSON.stringify(visited));};label.prepend(check);li.append(label);
     const links=node('div','');
     if(r.center){links.append(mapLink('2点地図',r.url),mapLink('径間周辺200m',mapAt(r.center)));if(r.corrected)li.append(node('small','電柱名に補正候補あり・地図で確認'));}
     else if(suggested.length)li.append(node('small','座標を確認できません'));
@@ -98,5 +98,6 @@ export function surveyNavigation(item,surface){
   });
   let editing=false;const edit=button('並べ替え',()=>{editing=!editing;panel.classList.toggle('reordering',editing);edit.textContent=editing?'並べ替えを終了':'並べ替え';edit.setAttribute('aria-pressed',String(editing));});const head=node('div','');head.className='survey-head';head.append(node('h2','訪問リスト'),edit);actions.className='survey-actions';actions.append(match,locate);plan.append(accept);panel.append(actions,gps,note,plan,head,list);const drawMap=overview(panel);surface.hidden=true;render();match.click();
 }
+
 
 
