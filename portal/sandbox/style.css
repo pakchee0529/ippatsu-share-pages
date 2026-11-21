@@ -12,3 +12,4 @@ a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .sandbox-preview iframe,#surface iframe{width:100%;min-height:55vh;border:0}#sandbox-tools form label{display:grid;gap:.3rem;margin-block:.7rem}#sandbox-tools textarea{min-height:4rem}
 
 #edit-panel{margin-block:1rem;padding:1rem;border:1px solid var(--rule)}#edit-panel summary{cursor:pointer}#page-edit label{display:grid;gap:.3rem;margin-block:.75rem}#page-edit textarea{min-height:5rem}#candidate iframe{width:100%;min-height:48vh;border:0}
+.survey-route ol{padding-inline-start:1.8rem}.survey-route li{padding:.75rem .2rem;border-bottom:1px solid var(--rule)}.survey-route li label{display:block;font-weight:bold}.survey-route input{margin-right:.6rem}.survey-route a,.survey-route button{display:inline-flex;align-items:center;min-height:44px;padding:0 .6rem;margin:2px}.survey-route button[hidden]{display:none}.survey-route p{overflow-wrap:anywhere}

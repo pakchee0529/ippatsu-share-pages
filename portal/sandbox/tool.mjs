@@ -1,3 +1,4 @@
+import {surveyNavigation} from './survey-navigation.mjs';
 import {call} from './api.mjs';
 import {previewPage} from './preview.mjs';
 import {imageInput} from './image-input.mjs';
@@ -9,6 +10,7 @@ try{
  document.querySelector('#title').textContent=item.definition.title;
  const frame=previewPage(item.definition.html,"ippatsu.sandbox.inputs."+id);
  document.querySelector('#surface').append(frame);
+ surveyNavigation(item,document.querySelector('#surface'));
  const form=document.querySelector('#page-edit'), adopt=document.querySelector('#adopt'), note=document.querySelector('#edit-status');
  document.querySelector('#edit-panel').hidden=!item.mine;
  let draft;
@@ -28,3 +30,4 @@ try{
    catch(e){status.textContent=e.message;remove.disabled=false;}
  };
 }catch(e){status.textContent=e.message;}
+
