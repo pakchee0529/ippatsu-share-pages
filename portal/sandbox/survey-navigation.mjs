@@ -63,11 +63,12 @@ export function surveyNavigation(item,surface){
     if(r.center){links.append(mapLink('2点地図',r.url),mapLink('径間周辺200m',mapAt(r.center)));if(r.corrected)li.append(node('small','電柱名に補正候補あり・地図で確認'));}
     else if(suggested.length)li.append(node('small','座標を確認できません'));
     for(const [delta,text] of [[-1,'↑'],[1,'↓']]){
-      const b=button(text,()=>{const j=i+delta;[current[i],current[j]]=[current[j],current[i]];keep();});b.disabled=i+delta<0||i+delta>=current.length;b.setAttribute('aria-label',r.name+'を'+(delta<0?'上へ':'下へ'));links.append(b);
+      const b=button(text,()=>{const j=i+delta;[current[i],current[j]]=[current[j],current[i]];keep();});b.disabled=i+delta<0||i+delta>=current.length;b.setAttribute('aria-label',r.name+'を'+(delta<0?'上へ':'下へ'));b.className='move';links.append(b);
     }
     li.append(links);list.append(li);
   });}
-  const accept=button('提案順を使う',()=>{current=suggested.slice();keep();note.textContent='この端末に巡回順を保存しました。';});accept.hidden=true;
+  const plan=node('details',''),summary=node('summary','巡回案を見る'),steps=node('ol','');plan.append(summary,steps);plan.hidden=true;
+  const accept=button('この順番を採用',()=>{plan.open=false;plan.hidden=true;current=suggested.slice();keep();note.textContent='この端末に巡回順を保存しました。';});accept.hidden=true;
   const match=button('座標を照合して巡回順を提案',async()=>{
     match.disabled=true;note.textContent='電柱ナビで両端を照合中…';
     try{
@@ -85,7 +86,7 @@ export function surveyNavigation(item,surface){
         Object.assign(r,{center:a.map((n,i)=>(n+b[i])/2),url:u.href,corrected:c.status==='corrected'});
       }
       suggested=proposal(rows);const count=rows.filter(r=>r.center).length;
-      note.textContent=count+'／'+rows.length+'件に両端の座標があります。上之町の代表点を仮の起点に、直線距離で計算した巡回案：'+suggested.filter(r=>r.center).map(r=>r.name).join(' → ');
+      note.textContent=count+'／'+rows.length+'件の両端を照合。上之町の代表点から直線距離で計算。';steps.replaceChildren(...suggested.map(r=>node('li',r.name)));plan.hidden=!count;plan.open=!!count;
       accept.hidden=!count;render();
     }catch(e){note.textContent=e.message;}finally{match.disabled=false;}
   });
@@ -94,5 +95,5 @@ export function surveyNavigation(item,surface){
     locate.disabled=true;gps.textContent='位置を取得中…';
     navigator.geolocation.getCurrentPosition(p=>{locate.disabled=false;gps.replaceChildren(mapLink('現在地周辺の電柱地図を開く',mapAt([p.coords.latitude,p.coords.longitude])));},()=>{locate.disabled=false;gps.textContent='位置情報の許可と端末の設定を確認してください。';},{enableHighAccuracy:true,timeout:15000});
   });
-  actions.append(match,accept,locate);panel.append(actions,gps,note,list);surface.hidden=true;render();
+  let editing=false;const edit=button('並べ替え',()=>{editing=!editing;panel.classList.toggle('reordering',editing);edit.textContent=editing?'並べ替えを終了':'並べ替え';edit.setAttribute('aria-pressed',String(editing));});const head=node('div','');head.className='survey-head';head.append(node('h2','訪問リスト'),edit);actions.className='survey-actions';actions.append(match,locate);plan.append(accept);panel.append(actions,gps,note,plan,head,list);surface.hidden=true;render();
 }
