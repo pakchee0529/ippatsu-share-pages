@@ -43,7 +43,7 @@ async function publish(){
 async function send(text){
   if(busy)return;
   const selected=camera.files[0]||file.files[0];if(!text&&!selected)return;
-  busy=true;form.querySelector('button').disabled=true;
+  let failed=false;busy=true;form.querySelector('button').disabled=true;
   try{
     text=text.trim()||(survey?'この資料から径間を取り込んで':'この資料を使いたい');
     bubble('user',text+(selected?'（'+selected.name+'）':''));
@@ -67,10 +67,10 @@ async function send(text){
     history.push({role:'user',text});
     if(reply.question){history.push({role:'assistant',text:reply.question});bubble('assistant',reply.question);return;}
     const candidate=survey?surveyTemplate(reply.survey):reply.draft;
-    draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');card.append(previewPage(candidate.html));
+    draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='管理番号または両端の電柱を要確認：'+reply.survey.notes.join('、');card.append(note);}card.append(previewPage(candidate.html));
     const btn=document.createElement('button');btn.textContent='この内容で掲載';btn.onclick=()=>send('掲載して');card.append(btn);log.scrollTop=log.scrollHeight;
-  }catch(e){bubble('assistant',e.message);}
-  finally{status.textContent='';field.value='';file.value='';camera.value='';attachment.textContent='';busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
+  }catch(e){failed=true;bubble('assistant',e.message==='Failed to fetch'?'通信が途切れました。入力と添付は保持しています。もう一度送信してください。':e.message);}
+  finally{status.textContent='';if(!failed){field.value='';file.value='';camera.value='';attachment.textContent='';}busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
 }
 form.onsubmit=e=>{e.preventDefault();send(field.value);};
 
