@@ -1,4 +1,4 @@
-import {surveyNavigation} from './survey-navigation.mjs?v=map3';
+import {surveyNavigation} from './survey-navigation.mjs?v=map4';
 import {call} from './api.mjs';
 import {previewPage} from './preview.mjs';
 import {imageInput} from './image-input.mjs';
@@ -30,5 +30,6 @@ try{
    catch(e){status.textContent=e.message;remove.disabled=false;}
  };
 }catch(e){status.textContent=e.message;}
+
 
 
