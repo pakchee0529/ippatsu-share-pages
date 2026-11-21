@@ -136,29 +136,26 @@ function confirmation(id,text,check=false){
     }catch(e){bubble(e.message);check=true;button.textContent="受付結果を確認";}finally{button.disabled=false;}
   };
 }
-const creditKey="ippatsu.free-credit.expiry-snapshot";
-const todayJst=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
-function refreshBalance(){
-  const form=$("#credit-form");
-  form.elements.next.min=todayJst();
-  let value;
-  try{value=JSON.parse(localStorage.getItem(creditKey));}catch{}
-  if(!value || !Number.isFinite(value.amount))return;
-  const expired=value.next<=todayJst();
-  $("#balance-label").textContent=expired?"残量 要確認":"残り "+Math.floor(value.amount)+"%";
-  $("#balance-detail").textContent="無料枠 $100 のうち $"+value.amount.toFixed(2)+"（"+value.checked+" 確認）。"+(expired?"有効期限に達しました。再確認してください。":"有効期限 "+value.next);
-  form.elements.amount.value=value.amount;
-  form.elements.next.value=value.next;
+let balanceRequest=null, balanceTime=0;
+async function refreshBalance(){
+  if(!token || document.hidden || balanceRequest===token || Date.now()-balanceTime<300000)return;
+  const session=token;
+  balanceRequest=session;
+  try{
+    const r=await api("monthlyBalance");
+    if(session!==token)return;
+    if(!r.available)throw Error();
+    $("#balance-label").textContent="残り約"+r.remaining+"%";
+    const time=new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}).format(r.checked);
+    $("#balance-detail").textContent="無料枠 $100 ／ 推定残額 $"+Math.max(0,r.budget-r.used).toFixed(2)+"。有効期限 "+r.next.slice(0,10).replaceAll("-","/")+"。"+time+" 集計";
+    balanceTime=Date.now();
+  }catch{if(session===token){$("#balance-label").textContent="残量 —";$("#balance-detail").textContent="無料枠の残量を確認できませんでした。";}}
+  finally{if(balanceRequest===session)balanceRequest=null;}
 }
-$("#credit-form").onsubmit=e=>{
-  e.preventDefault();
-  const f=e.currentTarget;
-  if(!f.reportValidity())return;
-  try{localStorage.setItem(creditKey,JSON.stringify({amount:f.elements.amount.valueAsNumber,next:f.elements.next.value,checked:todayJst()}));refreshBalance();}
-  catch{$("#balance-detail").textContent="端末に記録できませんでした";}
-};
 $("#usage").addEventListener("toggle",()=>{if($("#usage").open)refreshBalance();});
-function start(){show();if(!token)return;refreshBalance();api("mode").then(r=>mode(r.test)).catch(e=>bubble(e.message));
+document.addEventListener("visibilitychange",refreshBalance);
+setInterval(refreshBalance,300000);
+function start(){show();if(!token)return;balanceTime=0;refreshBalance();api("mode").then(r=>mode(r.test)).catch(e=>bubble(e.message));
   try {
     const saved=JSON.parse(sessionStorage.getItem("ippatsu.chat.history") || "null");
     if(saved?.date===new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}) && Array.isArray(saved.messages)){
