@@ -1,3 +1,4 @@
+import {offerClaim} from './claim.mjs';
 const key='ippatsu.portal.account',session='ippatsu.chat.session';
 const endpoint='https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/portal-account';
 export {endpoint as accountEndpoint};
@@ -37,13 +38,18 @@ export function openAccount(onSuccess=()=>location.reload()){
  let busy=false;form.onsubmit=async e=>{e.preventDefault();if(busy)return;busy=true;send.disabled=true;toggle.disabled=true;form.querySelector('.close').disabled=true;
  try{const remember=fields.remember.checked,body=Object.fromEntries(new FormData(form));const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,action:group.hidden?'login':'register',remember})});const value=await r.json();
  if(!r.ok)throw Error(value.message||'ログインできませんでした。');
- forget();(remember?localStorage:sessionStorage).setItem(key,JSON.stringify({...value,remember}));sessionStorage.setItem(session,value.token);close();await onSuccess(value);
+ forget();(remember?localStorage:sessionStorage).setItem(key,JSON.stringify({...value,remember}));sessionStorage.setItem(session,value.token);close();await offerClaim(value,endpoint);await onSuccess(value);
  }catch(err){status.textContent=err.message}finally{busy=false;send.disabled=false;toggle.disabled=false;form.querySelector('.close').disabled=false}};
  dialog.oncancel=e=>{if(busy)e.preventDefault()};dialog.showModal();
 }
 export function accountButton(button){
  const profile=account();
  button.textContent=profile?profile.name+'・ログアウト':'ログイン・登録';
+ let claim=button.parentElement.querySelector('.device-claim');
+ if(!claim&&profile){claim=document.createElement('button');claim.type='button';claim.className='device-claim';claim.textContent='端末から引き継ぐ';button.after(claim)}
+ if(claim){claim.hidden=!profile;claim.onclick=async()=>{if(await offerClaim(profile,endpoint,true))location.reload()}}
  button.onclick=async()=>{if(!profile)return openAccount();try{await signOut();location.reload()}catch(e){alert(e.message)}};
 }
+
+
 
