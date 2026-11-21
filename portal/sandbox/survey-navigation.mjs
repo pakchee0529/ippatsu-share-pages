@@ -1,4 +1,4 @@
-import {overview} from './overview.mjs';
+import {overview} from './overview.mjs?v=map4';
 import {call} from './api.mjs';
 
 const office = [34.379692,135.672989]; // GSI address search: 上之町 representative point.
@@ -98,4 +98,5 @@ export function surveyNavigation(item,surface){
   });
   let editing=false;const edit=button('並べ替え',()=>{editing=!editing;panel.classList.toggle('reordering',editing);edit.textContent=editing?'並べ替えを終了':'並べ替え';edit.setAttribute('aria-pressed',String(editing));});const head=node('div','');head.className='survey-head';head.append(node('h2','訪問リスト'),edit);actions.className='survey-actions';actions.append(match,locate);plan.append(accept);panel.append(actions,gps,note,plan,head,list);const drawMap=overview(panel);surface.hidden=true;render();match.click();
 }
+
 

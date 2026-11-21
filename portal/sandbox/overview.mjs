@@ -4,7 +4,7 @@ export function overview(panel) {
   const canvas=document.createElement('div'),note=document.createElement('p');
   canvas.className='survey-map';canvas.setAttribute('aria-label','訪問順と径間の位置');
   note.textContent='座標を照合すると径間の位置を表示します。';
-  box.append(heading,note,canvas);panel.append(box);
+  box.append(heading,note,canvas);panel.prepend(box);
   let map,markers;
   return rows=>{
     const points=rows.filter(r=>r.center);
@@ -27,3 +27,4 @@ export function overview(panel) {
     note.textContent=points.length+'径間。番号は訪問リストと同じ順番です。';
   };
 }
+
