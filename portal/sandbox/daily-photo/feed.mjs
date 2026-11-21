@@ -31,7 +31,7 @@ function socials(card,p){
 }
 async function list(reset){
  if(reset)cursor=null;
- const {posts}=await api('list');
+ const {posts,next}=await api('list');
  if(reset){el('feed').replaceChildren();el('photo-strip').replaceChildren();}
  const strip=el('photo-strip');
  for(const p of posts){
@@ -43,7 +43,7 @@ async function list(reset){
    jump.setAttribute('aria-label',label.textContent+'の投稿へ：'+p.caption);jump.append(thumb,label);strip.append(jump);
   }
  }
- cursor=posts.at(-1)?.created_at;el('more').hidden=posts.length<12;
+ cursor=next;el('more').hidden=!cursor;
  if(!el('feed').children.length)el('status').textContent='最初の一枚を投稿してみよう。';
 }
 async function start(){el('join').hidden=true;el('unlock').hidden=true;el('compose').hidden=false;try{await list(true)}catch(e){el('status').textContent=e.message}}
