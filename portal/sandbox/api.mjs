@@ -3,6 +3,14 @@ import {deviceCredential} from './device.mjs';
 export async function call(action,data={}){
  const request=data.prompt;
  const token=sessionStorage.getItem('ippatsu.chat.session');
+ if(!token&&(action==='sandboxGet'||action==='sandboxList')){
+   const url=new URL('https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/daily-photo');
+   url.searchParams.set('action',action==='sandboxGet'?'page':'directory');
+   if(data.id)url.searchParams.set('id',data.id);
+   const response=await fetch(url,{method:'POST'});
+   if(!response.ok)throw Error('ページを読み込めませんでした。');
+   return response.json();
+ }
  if(!token&&action!=='login')throw Error('いっぱつちゃんで暗証番号を入力してから開いてください');
  if(action==='sandboxDraft' && !data.template && !data.id && typeof data.prompt==='string' && data.prompt.length+designBrief.length+1<=1800){
    data={...data,prompt:data.prompt+'\n'+designBrief};

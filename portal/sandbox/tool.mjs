@@ -11,6 +11,9 @@ try{
  document.querySelector('#title').textContent=item.definition.title;
  const surface=document.querySelector('#surface'),survey=surveyNavigation(item,surface);
  if(!survey)surface.append(previewPage(item.definition.html,"ippatsu.sandbox.inputs."+id));
+ if(!sessionStorage.getItem('ippatsu.chat.session')){
+   const link=document.createElement('a');link.href='../assistant/?mode=sandbox';link.textContent='いっぱつちゃんで編集する';status.replaceChildren(link);
+ }else{
  childChat(item,survey);
  const form=document.querySelector('#page-edit'), adopt=document.querySelector('#adopt'), note=document.querySelector('#edit-status');
  document.querySelector('#edit-panel').hidden=false;
@@ -30,6 +33,7 @@ try{
    try{await call('sandboxRemove',{id,revision:item.revision});location.replace('./');}
    catch(e){status.textContent=e.message;remove.disabled=false;}
  };
+ }
  }catch(e){
  status.textContent=e.message;
  if(!sessionStorage.getItem('ippatsu.chat.session')||e.status===401){
@@ -40,3 +44,4 @@ try{
    };
  }
 }
+
