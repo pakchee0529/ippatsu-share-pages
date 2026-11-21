@@ -12,9 +12,22 @@ async function api(action,form){
  if(!r.ok)throw Error(r.status===507?'写真の保存枠がいっぱいです。':'通信結果を確認できません。ページを開き直して投稿を確認してください。');
  return r.json();
 }
-el('join').onclick=()=>{lock();el('unlock').elements.pin.focus()};
-function lock(){el('join').hidden=true;el('unlock').hidden=false;el('compose').hidden=true;el('unlock').scrollIntoView({block:'center'})}
-function needLogin(){if(sessionStorage.getItem(session))return false;lock();el('unlock').elements.pin.focus();return true}
+const sheet=el('sheet');
+let writing=false,returnY=0;
+sheet.addEventListener('close',()=>window.scrollTo({top:returnY,behavior:'instant'}));
+function openSheet(post){
+ writing=post;
+ const signed=Boolean(sessionStorage.getItem(session));
+ el('sheet-title').textContent=post?'写真を投稿':'リアクションする';
+ el('unlock').hidden=signed;el('compose').hidden=!signed;
+ el('sheet-status').textContent='';
+ if(!sheet.open){returnY=window.scrollY;sheet.showModal();}
+}
+el('join').onclick=()=>openSheet(true);
+el('dismiss').onclick=()=>sheet.close();
+function lock(){openSheet(writing)}
+function needLogin(){if(sessionStorage.getItem(session))return false;openSheet(false);return true}
+function message(text){el(sheet.open?'sheet-status':'status').textContent=text}
 el('name').value=localStorage.getItem('photo.nickname')||'';
 function socials(card,p){
  const author=document.createElement('strong'),avatar=document.createElement('span'),head=document.createElement('div');
@@ -27,7 +40,7 @@ function socials(card,p){
  render();card.append(like);like.onclick=async()=>{if(needLogin())return;like.disabled=true;try{Object.assign(p,await api('like',JSON.stringify({id:p.id,liked:!p.liked})));render()}catch(e){el('status').textContent=e.message}finally{like.disabled=false}};
  const thread=document.createElement('div');thread.className='comments';for(const c of [...p.comments].reverse()){const line=document.createElement('p'),by=document.createElement('strong');by.textContent=c.display_name;line.append(by,'　'+c.body);thread.append(line)}card.append(thread);
  const form=document.createElement('form'),input=document.createElement('input'),submit=document.createElement('button');form.className='respond';input.placeholder='ひと言コメント';input.setAttribute('aria-label','コメント');input.required=true;input.maxLength=140;submit.textContent='送る';form.append(input,submit);card.append(form);
- let requestId=crypto.randomUUID();form.onsubmit=async e=>{e.preventDefault();if(needLogin())return;const name=el('name').value.trim();if(!name){el('status').textContent='最初に表示名を入力してください。';el('name').focus();return}submit.disabled=true;try{await api('comment',JSON.stringify({id:requestId,post_id:p.id,name,body:input.value}));localStorage.setItem('photo.nickname',name);requestId=crypto.randomUUID();await list(true)}catch(e){el('status').textContent=e.message}finally{submit.disabled=false}};
+ let requestId=crypto.randomUUID();form.onsubmit=async e=>{e.preventDefault();if(needLogin())return;const name=el('name').value.trim();if(!name){const nickname=prompt('コメントに使う表示名を入力してください。',localStorage.getItem('photo.nickname')||'')?.trim();if(nickname&&nickname.length<=24){el('name').value=nickname;form.requestSubmit()}return}submit.disabled=true;try{await api('comment',JSON.stringify({id:requestId,post_id:p.id,name,body:input.value}));localStorage.setItem('photo.nickname',name);requestId=crypto.randomUUID();await list(true)}catch(e){el('status').textContent=e.message}finally{submit.disabled=false}};
 }
 async function list(reset){
  if(reset)cursor=null;
@@ -46,8 +59,7 @@ async function list(reset){
  cursor=next;el('more').hidden=!cursor;
  if(!el('feed').children.length)el('status').textContent='最初の一枚を投稿してみよう。';
 }
-async function start(){el('join').hidden=true;el('unlock').hidden=true;el('compose').hidden=false;try{await list(true)}catch(e){el('status').textContent=e.message}}
-el('unlock').onsubmit=async e=>{e.preventDefault();try{const {token}=await call('login',{pin:e.target.elements.pin.value});sessionStorage.setItem(session,token);e.target.reset();el('status').textContent='';await start()}catch(err){el('status').textContent=err.message}};
+el('unlock').onsubmit=async e=>{e.preventDefault();try{const {token}=await call('login',{pin:e.target.elements.pin.value});sessionStorage.setItem(session,token);e.target.reset();if(writing)openSheet(true);else{sheet.close();message('操作できるようになりました。')}}catch(err){message(err.message)}};
 async function resize(file){
  const img=new Image(),url=URL.createObjectURL(file);
  try{img.src=url;await img.decode();let size=Math.min(1,1440/Math.max(img.width,img.height));
@@ -55,11 +67,12 @@ async function resize(file){
  throw Error();
  }finally{URL.revokeObjectURL(url)}
 }
-el('photo').onchange=async e=>{const seq=++generation;selected=null;el('preview').hidden=true;URL.revokeObjectURL(preview);const file=e.target.files[0];if(!file)return;el('status').textContent='写真を小さくしています…';
- try{const blob=await resize(file);if(seq!==generation)return;selected=blob;id=crypto.randomUUID();el('preview').src=preview=URL.createObjectURL(blob);el('preview').hidden=false;el('status').textContent='';}
- catch{if(seq===generation)el('status').textContent='写真を読み込めません。JPEGなど別の画像を選んでください。'}};
+el('photo').onchange=async e=>{const seq=++generation;selected=null;el('preview').hidden=true;URL.revokeObjectURL(preview);const file=e.target.files[0];if(!file)return;message('写真を小さくしています…');
+ try{const blob=await resize(file);if(seq!==generation)return;selected=blob;id=crypto.randomUUID();el('preview').src=preview=URL.createObjectURL(blob);el('preview').hidden=false;message('');}
+ catch{if(seq===generation)message('写真を読み込めません。JPEGなど別の画像を選んでください。')}};
 el('compose').onsubmit=async e=>{e.preventDefault();if(!selected)return;const form=e.target,button=form.querySelector('button');if(button.disabled)return;button.disabled=true;
- try{const fd=new FormData();const name=el('name').value.trim();fd.set('name',name);fd.set('photo',selected,'photo.jpg');fd.set('caption',el('caption').value.trim());fd.set('id',id);await api('post',fd);selected=null;form.reset();localStorage.setItem('photo.nickname',name);el('name').value=name;el('preview').hidden=true;URL.revokeObjectURL(preview);el('status').textContent='投稿しました。';await list(true)}
- catch(err){el('status').textContent=err.message}finally{button.disabled=false}};
-el('more').onclick=async e=>{const button=e.currentTarget;button.disabled=true;try{await list(false)}catch(err){el('status').textContent=err.message}finally{button.disabled=false}};
-if(sessionStorage.getItem(session))start();else{el('join').hidden=false;list(true).catch(e=>el('status').textContent=e.message)}
+ try{const fd=new FormData();const name=el('name').value.trim();fd.set('name',name);fd.set('photo',selected,'photo.jpg');fd.set('caption',el('caption').value.trim());fd.set('id',id);await api('post',fd);selected=null;form.reset();localStorage.setItem('photo.nickname',name);el('name').value=name;el('preview').hidden=true;URL.revokeObjectURL(preview);sheet.close();message('投稿しました。');await list(true)}
+ catch(err){message(err.message)}finally{button.disabled=false}};
+el('more').onclick=async e=>{const button=e.currentTarget;button.disabled=true;try{await list(false)}catch(err){message(err.message)}finally{button.disabled=false}};
+list(true).catch(e=>message(e.message));
+
