@@ -1,4 +1,4 @@
-import {overview} from './overview.mjs?v=map5';
+import {overview,googleMapsUrl} from './overview.mjs?v=mapslinks1';
 import {call} from './api.mjs';
 
 const office = [34.379692,135.672989]; // GSI address search: 上之町 representative point.
@@ -64,7 +64,7 @@ export function surveyNavigation(item,surface){
     if(r.review)li.append(node('p',r.review));
     if(r.reference)li.append(node('small',r.reference));
     const links=node('div','');
-    if(r.center){links.append(mapLink('両端の電柱を見る',r.url),mapLink('径間の中点から200mの電柱',mapAt(r.center)));if(r.corrected)li.append(node('small','この電柱で合っていますか？ 読み取り：'+r.name+'　地図の候補：'+r.mapNames));}
+    if(r.center){links.append(mapLink('両端の電柱を見る',r.url),mapLink('Google マップで開く',googleMapsUrl(r.center)),mapLink('径間の中点から200mの電柱',mapAt(r.center)));if(r.corrected)li.append(node('small','この電柱で合っていますか？ 読み取り：'+r.name+'　地図の候補：'+r.mapNames));}
     else if(suggested.length)li.append(node('small','座標を確認できません'));
     for(const [delta,text] of [[-1,'↑'],[1,'↓']]){
       const b=button(text,()=>{const j=i+delta;[current[i],current[j]]=[current[j],current[i]];keep();});b.disabled=i+delta<0||i+delta>=current.length;b.setAttribute('aria-label',r.name+'を'+(delta<0?'上へ':'下へ'));b.className='move';links.append(b);

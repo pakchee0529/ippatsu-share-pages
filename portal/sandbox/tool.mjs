@@ -1,5 +1,5 @@
 import {childChat} from './child-chat.mjs?v=fieldcopy1';
-import {surveyNavigation} from './survey-navigation.mjs?v=fieldcopy1';
+import {surveyNavigation} from './survey-navigation.mjs?v=mapslinks1';
 import {call} from './api.mjs?v=child1';
 import {previewPage} from './preview.mjs';
 import {imageInput} from './image-input.mjs';
@@ -17,7 +17,7 @@ try{
    const showOriginal=original.searchParams.get('layout')==='original';
    if(showOriginal){surface.hidden=false;panel.hidden=true;original.searchParams.delete('layout');}
    else original.searchParams.set('layout','original');
-   alternate.href=original.href;alternate.textContent=showOriginal?'巡回地図に戻る':'作成したページのレイアウトで開く';
+   alternate.href=original.href;alternate.textContent=showOriginal?'地図付きの訪問リストに戻る':'地図を閉じてチェックリストだけ見る';
    surface.after(alternate);
  }
  childChat(item,survey);
