@@ -3,4 +3,4 @@
 <body><main><nav><a href="../">‹　みんなの砂場</a></nav><h1>今日の一枚</h1><p>現場で見つけたひとコマを、ひと言と一緒に。写真と表示名は、URLを知っている人が90日間見られます。</p>
 <button id="join" hidden>写真を投稿する</button><form id="unlock" hidden><label>投稿・いいね・コメント用の暗証番号<input name="pin" type="password" inputmode="numeric" required></label><button>開く</button></form>
 <form id="compose" hidden><label>表示名<input id="name" maxlength="24" required placeholder="ニックネームでもOK"></label><label>写真を選ぶ<input id="photo" type="file" accept="image/*" required></label><img id="preview" alt="投稿する写真" hidden><label>ひと言<input id="caption" maxlength="140" placeholder="今日はこんな景色やったよ" required></label><button>投稿する</button></form>
-<p id="status" role="status"></p><section><h2>みんなの写真</h2><div id="feed"></div><button id="more" hidden>前の投稿を見る</button></section></main><script type="module" src="feed.mjs"></script></body></html>
+<p id="status" role="status"></p><section><h2>みんなの写真</h2><div id="photo-strip" aria-label="写真から投稿を選ぶ"></div><div id="feed"></div><button id="more" hidden>前の投稿を見る</button></section></main><script type="module" src="feed.mjs"></script></body></html>
