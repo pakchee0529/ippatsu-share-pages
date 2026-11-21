@@ -23,8 +23,8 @@ const regions=areas.map(area=>({...area,paths:area.rings.map(ring=>ring.map(proj
 const mounted=new WeakMap();
 const css=`
 .regional-map {--rm-ink:#173e37;--rm-line:#989f88;--rm-paper:#f7f3e7;--rm-water:#deede8;--rm-green:#275b4c;--rm-white:#fffdf4;--rm-focus:#b94d17;color:var(--rm-ink)}
-.regional-map .rm-stage{position:relative;height:clamp(510px,76svh,680px);overflow:clip;border:1px solid var(--rm-line);border-radius:16px;background:var(--rm-paper)}
-.rm-stage>svg{display:block;width:100%;height:100%;touch-action:none;user-select:none}
+.regional-map .rm-stage{position:relative;height:clamp(290px,52svh,460px);overflow:clip;border:1px solid var(--rm-line);border-radius:16px;background:var(--rm-paper)}
+.rm-stage>svg{display:block;width:100%;height:100%;touch-action:pan-y pinch-zoom;user-select:none}
 .rm-zoom{display:flex;justify-content:flex-end;gap:4px;padding:4px}
 .regional-map .rm-zoom button,.regional-map .rm-picker button{color:var(--rm-ink);background:var(--rm-white);border:1px solid var(--rm-line);border-radius:8px;min-width:44px;min-height:44px;line-height:1.1;cursor:pointer;font:inherit}
 .regional-map .rm-zoom button{padding:4px 8px;font-weight:700}
@@ -35,32 +35,30 @@ const css=`
 .rm-credit{margin:5px 0 0;font-size:.75rem;color:var(--rm-ink)}.rm-credit a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 `;
 
-export function renderMap(container,cameras,onPick){
+export function renderMap(container,cameras,onPick,area){
   mounted.get(container)?.();
   if(!document.getElementById('regional-camera-map-styles')){
     const style=document.createElement('style');style.id='regional-camera-map-styles';style.textContent=css;document.head.append(style);
   }
   container.classList.add('regional-map');
   const stage=document.createElement('div');stage.className='rm-stage';
-  const canvas=svg('svg',{tabindex:0,role:'group','aria-label':'地域のライブカメラ地図。矢印キーで移動、プラスとマイナスで拡大縮小できます。'});
-  const toolbar=document.createElement('div');toolbar.className='rm-zoom';
-
+  const canvas=svg('svg',{role:'group','aria-label':area+'の固定カメラ地図'});
   const credit=document.createElement('p');credit.className='rm-credit';
   const attribution=document.createElement('a');attribution.href=source;attribution.target='_blank';attribution.rel='noopener';attribution.textContent='国土交通省「国土数値情報 行政区域（2026年）」';
   const license=document.createElement('a');license.href='https://creativecommons.org/licenses/by/4.0/deed.ja';license.target='_blank';license.rel='noopener';license.textContent='CC BY 4.0';
   credit.append('密集地のアイコンは、線で設置位置を示しています。境界は',attribution,'を簡略化。',license);
-  stage.append(canvas);container.replaceChildren(toolbar,stage,credit);
+  stage.append(canvas);container.replaceChildren(stage,credit);
   const entries=[];
   for(const camera of cameras){
     if(camera.lat==null||camera.lng==null||camera.lat===''||camera.lng==='')continue;
     const lat=Number(camera.lat),lng=Number(camera.lng);
     if(Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180)entries.push({camera,point:projected([lng,lat])});
   }
-  const points=regions.flatMap(region=>region.paths.flat()).concat(entries.map(item=>item.point));
+  const points=entries.map(item=>item.point);
   const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
   const bounds=[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)];
   const home=[(bounds[0]+bounds[2])/2,(bounds[1]+bounds[3])/2];
-  let center=[...home], zoom=1, width, height, scale;
+  const center=home; let width,height,scale;
   const unique='map-'+Math.random().toString(36).slice(2);
   const paper=svg('pattern',{id:unique+'-grain',width:10,height:10,patternUnits:'userSpaceOnUse'});
   paper.append(svg('circle',{cx:2,cy:3,r:.7,fill:'#667a62',opacity:.24}));
@@ -95,7 +93,7 @@ export function renderMap(container,cameras,onPick){
   }
   function draw(){
     const box=stage.getBoundingClientRect();width=Math.max(1,box.width);height=Math.max(1,box.height);
-    scale=zoom*Math.min(Math.max(5,width-44)/(bounds[2]-bounds[0]),Math.max(5,height-44)/(bounds[3]-bounds[1]));
+    scale=Math.min((width-72)/Math.max(.001,bounds[2]-bounds[0]),(height-80)/Math.max(.001,bounds[3]-bounds[1]));
     canvas.setAttribute('viewBox',`0 0 ${width} ${height}`);
     terrain.replaceChildren();legend.replaceChildren();pins.replaceChildren();
     for(const region of regions){
@@ -136,33 +134,7 @@ export function renderMap(container,cameras,onPick){
     const km=[.1,.2,.5,1,2,5,10,20].filter(n=>scale*n/111.195<65).at(-1)||.1;
     const baseline=height-13, length=scale*km/111.195;
     legend.append(svg('path',{d:`M15 ${baseline-4}v4h${length}v-4`,stroke:'#365446',fill:'none','stroke-width':1.4}),svg('text',{x:15,y:baseline-7,'font-size':10,fill:'#365446'},km<1?Math.round(km*1000)+' m':km+' km'));
-    plus.disabled=zoom>=16;minus.disabled=zoom<=1;
   }
-  function changeZoom(factor,anchor=[width/2,height/2]){
-    const next=Math.max(1,Math.min(16,zoom*factor));if(next===zoom)return;
-    const ratio=1-zoom/next;
-    center[0]+=(anchor[0]-width/2)*ratio/scale;center[1]+=(anchor[1]-height/2)*ratio/scale;
-    zoom=next;draw();
-  }
-  const plus=button('＋',()=>changeZoom(2)),minus=button('−',()=>changeZoom(.5)),reset=button('全域',()=>{zoom=1;center=[...home];draw();});
-  plus.setAttribute('aria-label','地図を拡大');minus.setAttribute('aria-label','地図を縮小');toolbar.append(plus,minus,reset);
-  let drag;
-  canvas.onpointerdown=e=>{
-    if(e.button!==0||e.target.closest('.rm-pin')||drag)return;
-    canvas.setPointerCapture(e.pointerId);drag={id:e.pointerId,x:e.clientX,y:e.clientY};
-  };
-  canvas.onpointermove=e=>{
-    if(!drag||e.pointerId!==drag.id)return;
-    center[0]+=(drag.x-e.clientX)/scale;center[1]+=(drag.y-e.clientY)/scale;
-    drag.x=e.clientX;drag.y=e.clientY;draw();
-  };
-  canvas.onpointerup=canvas.onpointercancel=e=>{if(e.pointerId===drag?.id)drag=null;};
-  canvas.onkeydown=e=>{
-    if(e.key==='+'||e.key==='='){e.preventDefault();changeZoom(2);return;}
-    if(e.key==='-'){e.preventDefault();changeZoom(.5);return;}
-    const delta={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
-    if(delta){e.preventDefault();center=center.map((v,i)=>v+delta[i]*48/scale);draw();}
-  };
   draw();
   const observer=new ResizeObserver(draw);observer.observe(stage);
   mounted.set(container,()=>observer.disconnect());

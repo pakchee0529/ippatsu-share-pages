@@ -49,13 +49,19 @@ try{
   const cameras=(await Promise.all(['west','east'].map(async region=>{
     const response=await fetch('./'+region+'.json');if(!response.ok)throw Error();return response.json();
   }))).flat();
-  for(const area of [...new Set(cameras.map(c=>c.area))]){
-    const section=document.createElement('details'),summary=document.createElement('summary');
-    const members=cameras.filter(c=>c.area===area);
-    summary.textContent=area+'（'+members.length+'）';section.append(summary);
-    for(const camera of members){const button=document.createElement('button');button.textContent=camera.name+(camera.status?'（'+camera.status+'）':'');button.onclick=()=>pick(camera);section.append(button);}
-    el('list').append(section);
-  }
   el('status').textContent='';
-  try{await renderMap(el('map'),cameras,pick);}catch{el('status').textContent='地図を読み込めません。下の地域一覧から選べます。';}
+  for(const area of ['五條','大塔','十津川','大淀','吉野']){
+    const members=cameras.filter(c=>c.area===area);
+    const folded=['大淀','吉野'].includes(area);
+    const section=document.createElement(folded?'details':'section');
+    const heading=document.createElement(folded?'summary':'h2');
+    heading.textContent=area+'（'+members.length+'地点）';
+    const map=document.createElement('div');
+    const names=document.createElement('details'), summary=document.createElement('summary');
+    summary.textContent='カメラ名から選ぶ';names.append(summary);
+    for(const camera of members){const button=document.createElement('button');button.textContent=camera.name+(camera.status?'（'+camera.status+'）':'');button.onclick=()=>pick(camera);names.append(button);}
+    section.append(heading,map,names);el('list').append(section);
+    function mount(){if(!map.childElementCount && members.length)renderMap(map,members,pick,area);}
+    if(folded)section.addEventListener('toggle',()=>{if(section.open)mount();});else mount();
+  }
 }catch{el('status').textContent='カメラ一覧を取得できません。ページを開き直してください。';}
