@@ -10,7 +10,7 @@ export async function offerClaim(profile,endpoint,manual=false){
   return data;
  }
  let items;
- try{({items}=await request('claimPreview'))}catch{alert('引き継ぎ一覧を取得できませんでした。砂場の「端末から引き継ぐ」で再確認できます。');return}
+ try{({items}=await request('claimPreview'))}catch{alert('引き継ぎ一覧を取得できませんでした。次回ログイン時にもう一度確認します。');return}
  if(!items.length){if(manual)alert('引き継げるページや写真はありません。');return}
  const dlg=document.createElement('dialog');dlg.className='account-sheet claim-sheet';
  dlg.innerHTML='<h2>この端末から引き継ぐ</h2><p class="destination"></p><p>自分で作ったものだけ選んでください。共用端末では他の人の作品が含まれることがあります。</p><div class="choices"></div><p role="status"></p><button class="apply" disabled>選んだものを引き継ぐ</button> <button class="skip">あとで</button>';
