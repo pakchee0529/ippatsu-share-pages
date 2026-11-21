@@ -1,37 +1,61 @@
-import {imageInput} from "../sandbox/image-input.mjs";
+import {imageInput} from '../sandbox/image-input.mjs';
 import {call,linkFor} from '../sandbox/api.mjs';
 import {previewPage} from '../sandbox/preview.mjs';
-const root=document.querySelector('#sandbox-tools'), form=root.querySelector('form'), select=form.elements.target, result=root.querySelector('[role=status]'), preview=root.querySelector('.sandbox-preview'), publish=root.querySelector('.sandbox-publish');
-let items=[],draft=null,target=null;
-async function refresh(){
- try{({items}=await call('sandboxList'));select.replaceChildren(new Option('新しいページ',''));const links=root.querySelector('.sandbox-pages');links.replaceChildren();
- for(const item of items){const a=document.createElement('a');a.className='result-link';a.href=linkFor(item.id);a.textContent=item.definition.title;links.append(a);if(item.mine)select.add(new Option(item.definition.title,item.id));}}
- catch(e){result.textContent=e.message;}
+import {surveyTemplate} from './survey-template.mjs';
+
+const root=document.querySelector('#sandbox-tools'),form=root.querySelector('form'),field=form.elements.prompt,file=form.elements.sketch;
+const log=root.querySelector('[role=log]'),status=root.querySelector('[role=status]'),attachment=root.querySelector('output');
+let history=[],draft=null,target=null,photo=null,survey=false,busy=false,card=null;
+function bubble(role,text){
+  const row=document.createElement('div');row.className=role==='user'?'row mine':'row';
+  const body=document.createElement('div');body.className='bubble';body.textContent=text;
+  row.append(body);log.append(row);log.scrollTop=log.scrollHeight;return body;
 }
-document.querySelector('#sandbox-mode').addEventListener('click',refresh);
-if(!root.hidden)refresh();
-const history=[], log=root.querySelector('[role=log]');
-let photo;
-function message(role,text){
- history.push({role,text});
- const row=document.createElement('div');row.className=role==='user'?'row mine':'row';
- const bubble=document.createElement('p');bubble.className='bubble';bubble.textContent=text;row.append(bubble);log.append(row);
+function fresh(){
+  history=[];draft=null;target=null;photo=null;survey=false;card?.remove();card=null;
 }
-function resetThread(){history.length=0;photo=null;draft=null;log.replaceChildren();preview.replaceChildren();publish.hidden=true;form.elements.sketch.value='';result.textContent='';}
-select.onchange=resetThread;
-form.onsubmit=async e=>{
- e.preventDefault();const btn=form.querySelector('button'),field=form.elements.prompt;
- const prompt=field.value.trim();if(!prompt)return;
- btn.disabled=true;select.disabled=true;publish.disabled=true;
- try{
-   const file=form.elements.sketch.files[0];if(file)photo=await imageInput(file);
-   target=items.find(i=>i.id===select.value);
-   const previousMessages=history.slice(-10);message('user',prompt+(file?'（写真付き）':''));
-   result.textContent='いっぱつちゃんが確認中…';
-   const reply=await call('sandboxDraft',{interactive:true,prompt,history:previousMessages,previous:draft,image:photo,id:target?.id,revision:target?.revision});
-   if(reply.question){message('assistant',reply.question);}
-   else{draft=reply.draft;preview.replaceChildren(previewPage(draft.html));message('assistant',draft.title+'の下書きです。触ってみて、直したいところを教えてください。');publish.hidden=false;}
-   result.textContent='';field.value='';form.elements.sketch.value='';
- }catch(err){result.textContent=err.message;}finally{btn.disabled=false;select.disabled=false;publish.disabled=false;}
-};
-publish.onclick=async()=>{publish.disabled=true;try{const item=await call('sandboxPublish',{draft,id:target?.id,revision:target?.revision});publish.hidden=true;result.textContent='掲載しました。';await refresh();select.value=item.id;}catch(e){result.textContent=e.message;}finally{publish.disabled=false;}};
+function link(container,item){
+  const a=document.createElement('a');a.href=linkFor(item.id);a.textContent=item.definition.title;container.append(a);
+}
+function greet(){bubble('assistant','何を作りましょう？ 現調リストなら、担当者の名前と径間名か紙の写真を送ってください。');}
+greet();
+file.onchange=()=>{attachment.textContent=file.files[0]?.name||'';};
+async function publish(){
+  if(!draft){bubble('assistant','先に作りたいページを教えてください。');return;}
+  const item=await call('sandboxPublish',{draft,id:target?.id,revision:target?.revision});
+  fresh();target=item;link(bubble('assistant','掲載しました。'),item);
+}
+async function send(text){
+  if(busy)return;
+  const selected=file.files[0];if(!text&&!selected)return;
+  busy=true;form.querySelector('button').disabled=true;
+  try{
+    text=text.trim()||(survey?'この写真から径間を取り込んで':'この写真を使いたい');
+    bubble('user',text+(selected?'（写真付き）':''));
+    if(!selected&&/^(?:これで)?(?:掲載|公開|反映|保存)(?:して|する|お願い)?[。！! ]*$/.test(text)){await publish();return;}
+    if(/^(新しい会話|最初から|やり直す)$/.test(text)){fresh();greet();return;}
+    if(!selected&&/編集|修正/.test(text)&&!draft){
+      const {items}=await call('sandboxList');
+      const matches=items.filter(i=>text.includes(i.definition.title));
+      if(matches.length===1){fresh();target=matches[0];}
+      else if(!target){bubble('assistant','編集したいページの名前を添えてください。「一覧」で探せます。');return;}
+    }
+    if(!selected&&/一覧|開いて|を開く/.test(text)){
+      const {items}=await call('sandboxList');const found=/一覧/.test(text)?items:items.filter(i=>text.includes(i.definition.title));
+      const msg=bubble('assistant',found.length?'ページを選んでください。':'該当するページが見つかりません。「一覧」と送ってください。');found.forEach(i=>link(msg,i));return;
+    }
+    if(/新規で|新しく作|別の.*作|新しい.*作/.test(text)||(target&&!draft&&!/編集|修正/.test(text)&&/専用|作って|作成/.test(text)))fresh();
+    if(selected)photo=await imageInput(selected);
+    survey=survey||(!target&&/現調|径間/.test(text));
+    const instruction=survey?'現調テンプレートに渡す情報を抽出する。担当者が会話からわからなければquestionで名前を質問。径間がなければ写真か径間名を質問。titleは指定の担当者名を含む現調リスト名。htmlは各径間を原票順に<label><input type="checkbox">径間名</label>で返す。取消線だけを除きチェックや下線は無視。':'';
+    status.textContent='いっぱつちゃんが確認中…';
+    const reply=await call('sandboxDraft',{interactive:true,prompt:text,history:[...history.slice(-8),...(instruction?[{role:'assistant',text:instruction}]:[])],previous:draft,image:photo,id:target?.id,revision:target?.revision});
+    history.push({role:'user',text});
+    if(reply.question){history.push({role:'assistant',text:reply.question});bubble('assistant',reply.question);return;}
+    const candidate=survey?surveyTemplate(reply.draft):reply.draft;
+    draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');card.append(previewPage(candidate.html));
+    const btn=document.createElement('button');btn.textContent='この内容で掲載';btn.onclick=()=>send('掲載して');card.append(btn);log.scrollTop=log.scrollHeight;
+  }catch(e){bubble('assistant',e.message);}
+  finally{status.textContent='';field.value='';file.value='';attachment.textContent='';busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
+}
+form.onsubmit=e=>{e.preventDefault();send(field.value);};

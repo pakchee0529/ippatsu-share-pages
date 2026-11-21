@@ -278,6 +278,6 @@ $("#pole-geo").onclick=()=>{
   },{enableHighAccuracy:true,timeout:15000,maximumAge:30000});
 };
 document.querySelectorAll("[data-chat]").forEach(b=>b.onclick=()=>send(b.textContent));
-const restoredMode=token && sessionStorage.getItem("ippatsu.chat.inputMode");
+const restoredMode=new URLSearchParams(location.search).get("mode")==="sandbox"?"sandbox":token && sessionStorage.getItem("ippatsu.chat.inputMode");
 setInputMode(restoredMode==="search",restoredMode==="sandbox");
 start();
