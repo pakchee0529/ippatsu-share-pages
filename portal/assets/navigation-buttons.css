@@ -1,0 +1,8 @@
+/* Hallmark · shared portal navigation · quiet controls */
+/* Use the portal paper and ink colours for secondary actions. */
+:root{--nav-paper:oklch(99% .006 85);--nav-ink:oklch(30% .032 64);--nav-edge:oklch(82% .028 76);--nav-hover:oklch(95% .018 85)}
+@media screen{
+a.portal-nav-button{display:inline-flex;align-items:center;box-sizing:border-box;min-height:44px;max-width:100%;padding:6px 12px;border:1px solid var(--nav-edge);border-radius:12px;background:var(--nav-paper);color:var(--nav-ink);line-height:1.4;text-decoration:none;overflow-wrap:anywhere}
+a.portal-nav-button:hover,a.portal-nav-button:active{background:var(--nav-hover);border-color:var(--nav-ink)}
+a.portal-nav-button:focus-visible{outline:2px solid var(--nav-ink);outline-offset:2px}
+}

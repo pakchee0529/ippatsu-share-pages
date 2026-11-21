@@ -1,0 +1,21 @@
+/* Hallmark · Overprint · playground · a sandcastle folded from three pieces of coloured paper */
+/* Critique: one invitation to make something; a quiet shelf for returning visitors. */
+:root{--paper:oklch(96% .011 85);--ink:#153f43;--pool:#d8f3ec;--sun:#ffba50;--sand:#f2963e;--flag:#e15b49;--rule:#bad2c8;--white:#fffcf6;--font:system-ui,"Yu Gothic",Meiryo,sans-serif}
+*{box-sizing:border-box}html,body{overflow-x:clip}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font)}main{max-width:850px;margin:auto;padding:0 clamp(16px,4vw,40px) 64px}nav a{display:inline-flex;align-items:center;min-height:56px;font-size:.89rem}a{color:inherit;text-underline-offset:4px}a:focus-visible{outline:3px solid var(--ink);outline-offset:4px}
+header{position:relative;isolation:isolate;border-radius:28px 28px 56px 28px;background:var(--pool);padding:clamp(24px,5vw,48px);overflow:hidden}h1,h2,p{margin:0}h1{font-size:clamp(2rem,6vw,3.25rem);min-width:0;overflow-wrap:break-word;line-height:1.2}header p{margin:12px 0 24px;line-height:1.8}.start{display:inline-flex;gap:16px;align-items:center;background:var(--ink);color:var(--white);font-weight:700;text-decoration:none;border-radius:24px;padding:12px 16px}.start:hover{background:var(--white);color:var(--ink)}.start span{font-size:1.1rem}
+.castle{position:absolute;z-index:-1;right:7%;bottom:21%;width:134px;height:100px;transform:rotate(5deg)}.castle:before{content:"";position:absolute;inset:22% 0 0;background:var(--sun);clip-path:polygon(4% 0,17% 0,17% 17%,28% 17%,28% 0,40% 0,40% 47%,61% 47%,61% 0,73% 0,73% 17%,83% 17%,83% 0,95% 0,100% 100%,0 100%)}.castle i{position:absolute;left:67%;bottom:78%;height:44%;border-left:3px solid var(--ink)}.castle i:after{content:"";position:absolute;background:var(--flag);width:28px;height:16px;clip-path:polygon(0 0,100% 35%,0 100%)}.castle b{position:absolute;bottom:0;left:41%;width:20%;height:32%;border-radius:20px 20px 0 0;background:var(--sand)}
+section{margin-top:32px}h2{font-size:1.2rem;margin-bottom:12px}#pages>a{display:block;padding:16px 4px;border-bottom:1px solid var(--rule);overflow-wrap:anywhere}.entry{text-decoration:none;font-weight:650}.entry:hover{text-decoration:underline}
+@media(max-width:620px){.castle{position:relative;right:auto;bottom:auto;width:72px;height:52px;margin:8px 0 16px}.castle i:after{width:16px;height:12px}header p{font-size:.94rem}}
+a:active{opacity:.78}h1,h2{text-wrap:balance}
+
+
+nav{padding:12px 0}nav a{min-height:44px;padding:0 16px;border-radius:24px;background:var(--white);border:1px solid var(--rule);text-decoration:none;font-weight:650}
+#pages{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}#pages>a{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:12px;padding:16px;border:1px solid var(--rule);border-radius:14px;background:var(--white);color:var(--ink);text-decoration:none;line-height:1.45}
+#pages>a:before{content:"";width:24px;height:28px;background:linear-gradient(var(--ink),var(--ink)) 6px 10px/12px 2px no-repeat,linear-gradient(var(--ink),var(--ink)) 6px 16px/8px 2px no-repeat,var(--pool);border-radius:4px 8px 4px 4px;transform:rotate(-5deg)}
+#pages>a:nth-child(3n + 2):before{background-color:var(--sun)}#pages>a:after{content:"›";font-size:1.35rem}#pages>a:hover,nav a:hover{border-color:var(--ink)}
+#pages>a:has(svg):before{display:none}
+.entry svg{width:32px;height:32px;padding:6px;border-radius:9px;fill:none;stroke:currentColor;stroke-width:1.8;background:var(--pool)}
+.entry[data-color=yellow] svg{background:var(--sun)}
+.entry[data-color=orange] svg{background:var(--sand)}
+.entry[data-color=sky] svg{background:#c7e8fc}
+.entry[data-color=pink] svg{background:#f7d8df}
