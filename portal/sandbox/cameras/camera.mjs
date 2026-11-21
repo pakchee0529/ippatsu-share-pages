@@ -1,4 +1,4 @@
-import {renderMap} from './map.mjs';
+import {renderMap} from './map.mjs?v=fixed-regions-2';
 const el=id=>document.getElementById(id);
 const dialog=el('viewer');
 let current=null;
