@@ -1,0 +1,49 @@
+const key='ippatsu.portal.account',session='ippatsu.chat.session';
+const endpoint='https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/portal-account';
+export {endpoint as accountEndpoint};
+function read(store){
+ try{const value=JSON.parse(store.getItem(key));if(value?.token&&Date.parse(value.expires)>Date.now())return value;if(value){if(sessionStorage.getItem(session)===value.token)sessionStorage.removeItem(session);store.removeItem(key)}}catch{store.removeItem(key)}
+ return null;
+}
+export function account(){return read(sessionStorage)||read(localStorage)}
+export function forget(){
+ for(const storage of [sessionStorage,localStorage])storage.removeItem(key);
+ for(const k of Object.keys(sessionStorage))if(k.startsWith('ippatsu.chat.'))sessionStorage.removeItem(k);
+}
+export function rotate(token){
+ const a=account();if(!a)return;
+ const store=a.remember?localStorage:sessionStorage;
+ store.setItem(key,JSON.stringify({...a,token}));sessionStorage.setItem(session,token);
+}
+const initial=account();
+if(initial)sessionStorage.setItem(session,initial.token);
+window.addEventListener('storage',e=>{
+ if(e.key!==key)return;
+ if(!sessionStorage.getItem(key)){for(const k of Object.keys(sessionStorage))if(k.startsWith('ippatsu.chat.'))sessionStorage.removeItem(k);location.reload()}
+});
+export async function signOut(){
+ const token=sessionStorage.getItem(session);if(token){
+  const r=await fetch(endpoint.replace('portal-account','ippatsu-assistant'),{method:'POST',headers:{'Content-Type':'application/json','x-ippatsu-session':token},body:JSON.stringify({action:'logout'})});
+  if(!r.ok&&r.status!==401)throw Error('通信を確認して、もう一度ログアウトしてください。');
+ }
+ forget();
+}
+export function openAccount(onSuccess=()=>location.reload()){
+ const dialog=document.createElement('dialog');dialog.className='account-sheet';
+ dialog.innerHTML='<form><h2>共通アカウント</h2><p>砂場といっぱつちゃんで使えます。</p><label>利用者ID<input name="login" pattern="[A-Za-z0-9_\\-]{3,32}" autocomplete="username" required placeholder="例 tanaka01"></label><label>パスワード<input name="password" type="password" autocomplete="current-password" minlength="10" maxlength="72" required></label><div hidden><label>表示名<input name="name" maxlength="24"></label><label>会社の登録用暗証番号<input name="pin" inputmode="numeric" type="password" autocomplete="off"></label></div><label class="remember"><input name="remember" type="checkbox"> この端末で30日間ログインを維持</label><small>共用PCではチェックを外し、使い終わったらログアウトしてください。</small><p role="status"></p><button type="submit">ログイン</button> <button type="button" class="switch">初めての方は登録</button> <button type="button" class="close">閉じる</button></form>';
+ document.body.append(dialog);const form=dialog.querySelector('form'),fields=form.elements,group=form.querySelector('div'),send=form.querySelector('[type=submit]'),toggle=form.querySelector('.switch'),status=form.querySelector('[role=status]');
+ const close=()=>dialog.close();form.querySelector('.close').onclick=close;dialog.onclose=()=>dialog.remove();
+ toggle.onclick=()=>{group.hidden=!group.hidden;fields.namedItem('name').required=fields.pin.required=!group.hidden;fields.password.autocomplete=group.hidden?'current-password':'new-password';send.textContent=group.hidden?'ログイン':'登録して使う';toggle.textContent=group.hidden?'初めての方は登録':'登録済みの方はログイン';status.textContent=''};
+ let busy=false;form.onsubmit=async e=>{e.preventDefault();if(busy)return;busy=true;send.disabled=true;toggle.disabled=true;form.querySelector('.close').disabled=true;
+ try{const remember=fields.remember.checked,body=Object.fromEntries(new FormData(form));const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,action:group.hidden?'login':'register',remember})});const value=await r.json();
+ if(!r.ok)throw Error(value.message||'ログインできませんでした。');
+ forget();(remember?localStorage:sessionStorage).setItem(key,JSON.stringify({...value,remember}));sessionStorage.setItem(session,value.token);close();await onSuccess(value);
+ }catch(err){status.textContent=err.message}finally{busy=false;send.disabled=false;toggle.disabled=false;form.querySelector('.close').disabled=false}};
+ dialog.oncancel=e=>{if(busy)e.preventDefault()};dialog.showModal();
+}
+export function accountButton(button){
+ const profile=account();
+ button.textContent=profile?profile.name+'・ログアウト':'ログイン・登録';
+ button.onclick=async()=>{if(!profile)return openAccount();try{await signOut();location.reload()}catch(e){alert(e.message)}};
+}
+
