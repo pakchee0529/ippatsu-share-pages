@@ -44,7 +44,7 @@ export function surveyNavigation(item,surface){
   const doc=new DOMParser().parseFromString(item.definition.html,'text/html');
   if(!item.definition.title.includes('現調')&&!doc.querySelector('[data-survey-rows]'))return;
   const rows=[...doc.querySelectorAll('label')].map(label=>({
-    name:label.textContent.trim(),key:label.querySelector('input[type=checkbox]')?.id
+    name:label.textContent.trim(),reference:label.dataset.referenceNumber,key:label.querySelector('input[type=checkbox]')?.id
   })).filter(r=>r.key&&/[~～〜]/.test(r.name));
   if((!rows.length&&!doc.querySelector('[data-survey-rows]'))||new Set(rows.map(r=>r.name)).size!==rows.length)return;
   const panel=node('section','');panel.className='survey-route';surface.before(panel);
@@ -61,6 +61,7 @@ export function surveyNavigation(item,surface){
     const li=node('li',''),label=node('label',r.name),check=document.createElement('input');
     check.type='checkbox';check.checked=visited[r.key]===true;
     check.onchange=()=>{visited[r.key]=check.checked;drawMap(current,visited);localStorage.setItem(visitKey,JSON.stringify(visited));};label.prepend(check);li.append(label);
+    if(r.reference)li.append(node('small',r.reference));
     const links=node('div','');
     if(r.center){links.append(mapLink('2点地図',r.url),mapLink('径間周辺200m',mapAt(r.center)));if(r.corrected)li.append(node('small','電柱名に補正候補あり・地図で確認'));}
     else if(suggested.length)li.append(node('small','座標を確認できません'));
