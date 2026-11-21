@@ -17,6 +17,9 @@
     "source": "https://www.sizenken.biodic.go.jp/view_new.php?no=122",
     "provider": "環境省生物多様性センター",
     "kind": "山・眺望",
+    "mediaType": "image",
+    "media": "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/yoshino-camera",
+    "timestampUrl": "https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/yoshino-camera?format=time",
     "coordSource": "https://www.sizenken.biodic.go.jp/"
   },
   {

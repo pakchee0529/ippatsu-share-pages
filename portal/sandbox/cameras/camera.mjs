@@ -5,7 +5,12 @@ let current=null;
 function showMedia(camera){
   const screen=el('screen'), state=el('state');
   screen.replaceChildren();el('refresh').hidden=camera.mediaType!=='image';
-  if(!camera.media){state.textContent=camera.status||'映像は配信元のページで確認できます。';return;}
+  if(!camera.media){
+    state.textContent=camera.status || (camera.source.startsWith('https://www.road-info-prvs.mlit.go.jp/')
+      ? '道路カメラは配信元の案内に沿って、公式画面を別タブで開きます。'
+      : 'このカメラの映像は公式画面でご覧ください。');
+    return;
+  }
   const tag={image:'img',iframe:'iframe',video:'video'}[camera.mediaType];
   if(!tag){state.textContent=camera.status||'映像は配信元のページで確認できます。';return;}
   const media=document.createElement(tag);
