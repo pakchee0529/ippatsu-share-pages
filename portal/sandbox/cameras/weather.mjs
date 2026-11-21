@@ -129,9 +129,13 @@ export function mountWeather(container,area){
   function schedule(ms){
     clearTimeout(timer);if(shown()&&!dead)timer=setTimeout(()=>load(),ms);
   }
+  function expiry(){
+    const nextHour=(Math.floor(lastSuccess/hourMs)+1)*hourMs;
+    return Math.min(lastSuccess+cacheMs,nextHour);
+  }
   async function load(force=false){
     if(!shown()||fetching||dead)return;
-    const now=Date.now(),remaining=Math.max(lastSuccess+cacheMs-now,lastAttempt+30000-now);
+    const now=Date.now(),remaining=Math.max(expiry(),lastAttempt>lastSuccess?lastAttempt+30000:0)-now;
     if(!force&&remaining>0){schedule(remaining);return;}
     fetching=true;lastAttempt=now;refresh.disabled=true;
     if(!lastSuccess)status.textContent='予報を読み込んでいます…';
@@ -142,7 +146,7 @@ export function mountWeather(container,area){
       if(!res.ok)throw Error('予報を取得できません。');
       const data=await res.json();if(dead)return;
       if(data.area!==id||!Array.isArray(data.hours))throw Error('予報を読み取れません。');
-      paint(content,data,area);lastSuccess=Date.now();status.textContent='';schedule(cacheMs);
+      paint(content,data,area);lastSuccess=Date.now();status.textContent='';schedule(expiry()-lastSuccess);
     }catch{
       if(dead)return;
       status.textContent=lastSuccess?'更新できませんでした。前回取得した予報を表示しています。':'予報を取得できませんでした。「更新」で再試行できます。';
