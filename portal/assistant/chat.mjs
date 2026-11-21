@@ -136,7 +136,7 @@ function confirmation(id,text,check=false){
     }catch(e){bubble(e.message);check=true;button.textContent="受付結果を確認";}finally{button.disabled=false;}
   };
 }
-const creditKey="ippatsu.free-credit.snapshot";
+const creditKey="ippatsu.free-credit.expiry-snapshot";
 const todayJst=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
 function refreshBalance(){
   const form=$("#credit-form");
@@ -146,7 +146,7 @@ function refreshBalance(){
   if(!value || !Number.isFinite(value.amount))return;
   const expired=value.next<=todayJst();
   $("#balance-label").textContent=expired?"残量 要確認":"残り "+Math.floor(value.amount)+"%";
-  $("#balance-detail").textContent="無料枠 $100 のうち $"+value.amount.toFixed(2)+"（"+value.checked+" 確認）。"+(expired?"付与日を迎えました。再確認してください。":"次回付与 "+value.next);
+  $("#balance-detail").textContent="無料枠 $100 のうち $"+value.amount.toFixed(2)+"（"+value.checked+" 確認）。"+(expired?"有効期限に達しました。再確認してください。":"有効期限 "+value.next);
   form.elements.amount.value=value.amount;
   form.elements.next.value=value.next;
 }
