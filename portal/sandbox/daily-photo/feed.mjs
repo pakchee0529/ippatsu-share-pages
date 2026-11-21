@@ -8,12 +8,12 @@ async function api(action,form){
  const url=new URL(endpoint);url.searchParams.set('action',action);
  if(action==='list'&&cursor)url.searchParams.set('before',cursor);
  const r=await fetch(url,{method:'POST',headers:{'x-photo-device':await deviceCredential(),'x-ippatsu-session':sessionStorage.getItem(session)||''},body:form});
- if(r.status===401){sessionStorage.removeItem(session);lock();throw Error('暗証番号を入力してください。')}
+ if(r.status===401){sessionStorage.removeItem(session);throw Object.assign(Error('暗証番号を入力してください。'),{status:401})}
  if(!r.ok)throw Error(r.status===507?'写真の保存枠がいっぱいです。':'通信結果を確認できません。ページを開き直して投稿を確認してください。');
  return r.json();
 }
 const sheet=el('sheet');
-let writing=false,returnY=0;
+let writing=false,returnY=0,resume=null;
 sheet.addEventListener('close',()=>window.scrollTo({top:returnY,behavior:'instant'}));
 function openSheet(post){
  writing=post;
@@ -24,9 +24,22 @@ function openSheet(post){
  if(!sheet.open){returnY=window.scrollY;sheet.showModal();}
 }
 el('join').onclick=()=>openSheet(true);
-el('dismiss').onclick=()=>sheet.close();
-function lock(){openSheet(writing)}
-function needLogin(){if(sessionStorage.getItem(session))return false;openSheet(false);return true}
+el('dismiss').onclick=()=>{resume=null;sheet.close()};
+sheet.oncancel=()=>{resume=null};
+function askToResume(fn){resume=fn;openSheet(false)}
+async function withLogin(fn){
+ if(!sessionStorage.getItem(session)){askToResume(fn);return}
+ try{await fn()}catch(err){if(err.status===401)askToResume(fn);else message(err.message)}
+}
+const viewer=el('viewer');
+el('viewer-close').onclick=()=>viewer.close();
+viewer.onclick=e=>{if(e.target===viewer)viewer.close()};
+function photoButton(img,p){
+ const button=document.createElement('button');button.type='button';button.className='photo-open';
+ button.setAttribute('aria-label','写真を拡大：'+p.caption);button.setAttribute('aria-haspopup','dialog');
+ button.append(img);button.onclick=()=>{el('full-photo').src=img.currentSrc||img.src;el('full-photo').alt=p.caption;el('full-caption').textContent=p.caption;viewer.showModal()};
+ return button;
+}
 function message(text){el(sheet.open?'sheet-status':'status').textContent=text}
 el('name').value=localStorage.getItem('photo.nickname')||'';
 function socials(card,p){
@@ -37,7 +50,9 @@ function socials(card,p){
  author.textContent=name;head.className='post-head';head.append(avatar,author,card.querySelector('time'));card.prepend(head);
  const like=document.createElement('button');like.className='reaction';
  function render(){like.setAttribute('aria-pressed',String(p.liked));like.textContent=(p.liked?'♥':'♡')+' いいね '+p.likes}
- render();card.append(like);like.onclick=async()=>{if(needLogin())return;like.disabled=true;try{Object.assign(p,await api('like',JSON.stringify({id:p.id,liked:!p.liked})));render()}catch(e){el('status').textContent=e.message}finally{like.disabled=false}};
+ render();card.append(like);like.onclick=()=>{const liked=!p.liked;withLogin(async()=>{
+  like.disabled=true;try{Object.assign(p,await api('like',JSON.stringify({id:p.id,liked})));render()}finally{like.disabled=false}
+ })};
  const thread=document.createElement('div');
  thread.className='comments';
  function showComment(name,body){
@@ -62,7 +77,8 @@ function socials(card,p){
  input.onkeydown=e=>{if(e.key==='Escape'&&!e.isComposing){expand(false);toggle.focus()}};
  let requestId=crypto.randomUUID();
  form.onsubmit=async e=>{
-  e.preventDefault();if(submit.disabled||needLogin())return;
+  e.preventDefault();if(submit.disabled)return;
+  if(!sessionStorage.getItem(session)){askToResume(()=>form.requestSubmit());return}
   let name=el('name').value.trim();
   if(!name){
    name=prompt('コメントに使う表示名を入力してください。',localStorage.getItem('photo.nickname')||'')?.trim();
@@ -75,7 +91,7 @@ function socials(card,p){
    await api('comment',JSON.stringify({id:requestId,post_id:p.id,name,body}));
    localStorage.setItem('photo.nickname',name);requestId=crypto.randomUUID();
    showComment(name,body);input.value='';expand(false);toggle.focus();
-  }catch(err){message(err.message)}finally{submit.disabled=false;input.readOnly=false}
+  }catch(err){if(err.status===401)askToResume(()=>form.requestSubmit());else message(err.message)}finally{submit.disabled=false;input.readOnly=false}
  };
 
 }
@@ -86,7 +102,7 @@ async function list(reset){
  const strip=el('photo-strip');
  for(const p of posts){
   const card=document.createElement('article'),img=new Image(),text=document.createElement('p'),time=document.createElement('time');
-  img.src=p.url;img.decoding='async';img.alt=p.caption;text.textContent=p.caption;time.dateTime=p.created_at;time.textContent=new Date(p.created_at).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',dateStyle:'medium',timeStyle:'short'});card.append(img,text,time);socials(card,p);card.id='photo-'+p.id;el('feed').append(card);
+  img.src=p.url;img.decoding='async';img.alt=p.caption;text.textContent=p.caption;time.dateTime=p.created_at;time.textContent=new Date(p.created_at).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',dateStyle:'medium',timeStyle:'short'});card.append(photoButton(img,p),text,time);socials(card,p);card.id='photo-'+p.id;el('feed').append(card);
   if(strip.childElementCount<6){
    const jump=document.createElement('a'),thumb=new Image(),label=document.createElement('span');
    jump.href='#'+card.id;thumb.src=p.url;thumb.alt='';label.textContent=p.display_name||'以前の投稿';
@@ -96,7 +112,7 @@ async function list(reset){
  cursor=next;el('more').hidden=!cursor;
  if(!el('feed').children.length)el('status').textContent='最初の一枚を投稿してみよう。';
 }
-el('unlock').onsubmit=async e=>{e.preventDefault();try{const {token}=await call('login',{pin:e.target.elements.pin.value});sessionStorage.setItem(session,token);e.target.reset();if(writing)openSheet(true);else{sheet.close();message('操作できるようになりました。')}}catch(err){message(err.message)}};
+el('unlock').onsubmit=async e=>{e.preventDefault();try{const {token}=await call('login',{pin:e.target.elements.pin.value});sessionStorage.setItem(session,token);e.target.reset();if(writing)openSheet(true);else{const fn=resume;resume=null;sheet.close();if(fn)await withLogin(fn)}}catch(err){message(err.message)}};
 async function resize(file){
  const img=new Image(),url=URL.createObjectURL(file);
  try{img.src=url;await img.decode();let size=Math.min(1,1440/Math.max(img.width,img.height));
@@ -109,7 +125,7 @@ el('photo').onchange=async e=>{const seq=++generation;selected=null;el('preview'
  catch{if(seq===generation)message('写真を読み込めません。JPEGなど別の画像を選んでください。')}};
 el('compose').onsubmit=async e=>{e.preventDefault();if(!selected)return;const form=e.target,button=form.querySelector('button');if(button.disabled)return;button.disabled=true;
  try{const fd=new FormData();const name=el('name').value.trim();fd.set('name',name);fd.set('photo',selected,'photo.jpg');fd.set('caption',el('caption').value.trim());fd.set('id',id);await api('post',fd);selected=null;form.reset();localStorage.setItem('photo.nickname',name);el('name').value=name;el('preview').hidden=true;URL.revokeObjectURL(preview);sheet.close();message('投稿しました。');await list(true)}
- catch(err){message(err.message)}finally{button.disabled=false}};
-el('more').onclick=async e=>{const button=e.currentTarget;button.disabled=true;try{await list(false)}catch(err){message(err.message)}finally{button.disabled=false}};
+ catch(err){if(err.status===401)openSheet(true);message(err.message)}finally{button.disabled=false}};
+el('more').onclick=async e=>{const button=e.currentTarget;button.disabled=true;try{await list(false)}catch(err){if(err.status===401)openSheet(true);message(err.message)}finally{button.disabled=false}};
 list(true).catch(e=>message(e.message));
 

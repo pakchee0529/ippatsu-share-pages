@@ -9,3 +9,4 @@ article>strong{display:block;margin-bottom:10px}.reaction{background:var(--pool)
 .comment-toggle{margin-left:4px;padding:6px 12px;background:transparent;color:var(--ink);font-weight:600}
 .comment-toggle:hover,.comment-toggle[aria-expanded=true]{background:var(--paper)}
 .respond[hidden]{display:none}
+.photo-open{display:block;width:100%;padding:0;background:var(--paper);border-radius:12px;margin:0 0 12px;cursor:zoom-in}.photo-open img{display:block;width:100%;max-height:68vh;object-fit:contain;margin:0}#viewer{box-sizing:border-box;max-width:100%;width:min(100%,1100px);max-height:100dvh;margin:auto;padding:12px;border:0;border-radius:16px;background:#152421;color:#fff}#viewer::backdrop{background:#101d1be8}#viewer-close{display:block;margin:0 0 8px auto}#full-photo{width:auto;max-height:76dvh;object-fit:contain}#full-caption{margin:8px;overflow-wrap:anywhere}
