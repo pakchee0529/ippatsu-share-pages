@@ -1,3 +1,4 @@
+import {overview} from './overview.mjs';
 import {call} from './api.mjs';
 
 const office = [34.379692,135.672989]; // GSI address search: 上之町 representative point.
@@ -55,7 +56,7 @@ export function surveyNavigation(item,surface){
   try{saved=JSON.parse(localStorage.getItem(orderKey))||[];visited=JSON.parse(localStorage.getItem(visitKey))||{};}catch{}
   if(Array.isArray(saved))current.sort((a,b)=>(saved.includes(a.name)?saved.indexOf(a.name):Infinity)-(saved.includes(b.name)?saved.indexOf(b.name):Infinity));
   function keep(){localStorage.setItem(orderKey,JSON.stringify(current.map(r=>r.name)));render();}
-  function render(){list.replaceChildren();current.forEach((r,i)=>{
+  function render(){drawMap(current);list.replaceChildren();current.forEach((r,i)=>{
     const li=node('li',''),label=node('label',r.name),check=document.createElement('input');
     check.type='checkbox';check.checked=visited[r.key]===true;
     check.onchange=()=>{visited[r.key]=check.checked;localStorage.setItem(visitKey,JSON.stringify(visited));};label.prepend(check);li.append(label);
@@ -86,7 +87,7 @@ export function surveyNavigation(item,surface){
         Object.assign(r,{center:a.map((n,i)=>(n+b[i])/2),url:u.href,corrected:c.status==='corrected'});
       }
       suggested=proposal(rows);const count=rows.filter(r=>r.center).length;
-      note.textContent=count+'／'+rows.length+'件の両端を照合。上之町の代表点から直線距離で計算。';steps.replaceChildren(...suggested.map(r=>node('li',r.name)));plan.hidden=!count;plan.open=!!count;
+      note.textContent=count+'／'+rows.length+'件の両端を照合。上之町の代表点から直線距離で計算。';steps.replaceChildren(...suggested.map(r=>node('li',r.name)));plan.hidden=!count;plan.open=false;
       accept.hidden=!count;render();
     }catch(e){note.textContent=e.message;}finally{match.disabled=false;}
   });
@@ -95,5 +96,6 @@ export function surveyNavigation(item,surface){
     locate.disabled=true;gps.textContent='位置を取得中…';
     navigator.geolocation.getCurrentPosition(p=>{locate.disabled=false;gps.replaceChildren(mapLink('現在地周辺の電柱地図を開く',mapAt([p.coords.latitude,p.coords.longitude])));},()=>{locate.disabled=false;gps.textContent='位置情報の許可と端末の設定を確認してください。';},{enableHighAccuracy:true,timeout:15000});
   });
-  let editing=false;const edit=button('並べ替え',()=>{editing=!editing;panel.classList.toggle('reordering',editing);edit.textContent=editing?'並べ替えを終了':'並べ替え';edit.setAttribute('aria-pressed',String(editing));});const head=node('div','');head.className='survey-head';head.append(node('h2','訪問リスト'),edit);actions.className='survey-actions';actions.append(match,locate);plan.append(accept);panel.append(actions,gps,note,plan,head,list);surface.hidden=true;render();
+  let editing=false;const edit=button('並べ替え',()=>{editing=!editing;panel.classList.toggle('reordering',editing);edit.textContent=editing?'並べ替えを終了':'並べ替え';edit.setAttribute('aria-pressed',String(editing));});const head=node('div','');head.className='survey-head';head.append(node('h2','訪問リスト'),edit);actions.className='survey-actions';actions.append(match,locate);plan.append(accept);panel.append(actions,gps,note,plan,head,list);const drawMap=overview(panel);surface.hidden=true;render();match.click();
 }
+
