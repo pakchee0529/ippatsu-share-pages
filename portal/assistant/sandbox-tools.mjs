@@ -1,7 +1,7 @@
 import {imageInput} from '../sandbox/image-input.mjs';
 import {call,linkFor} from '../sandbox/api.mjs';
 import {previewPage} from '../sandbox/preview.mjs';
-import {surveyTemplate} from './survey-template.mjs?v=regional1';
+import {surveyTemplate} from './survey-template.mjs?v=fieldcopy1';
 
 const root=document.querySelector('#sandbox-tools'),form=root.querySelector('form'),field=form.elements.prompt,file=form.elements.sketch;
 const log=root.querySelector('[role=log]'),status=root.querySelector('[role=status]'),attachment=root.querySelector('output');
@@ -67,16 +67,16 @@ async function send(text){
     history.push({role:'user',text});
     if(reply.question){history.push({role:'assistant',text:reply.question});bubble('assistant',reply.question);return;}
     const candidate=survey?surveyTemplate(reply.survey):reply.draft;
-    draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='管理番号または両端の電柱を要確認：'+reply.survey.notes.join('、');card.append(note);}card.append(previewPage(candidate.html));
+    draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='送った資料と見比べてほしい径間が'+reply.survey.notes.length+'件あります。';card.append(note);}card.append(previewPage(candidate.html));
     if(reply.survey?.numbers?.length){
       const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';
-      label.append(box,'原票で検出した番号も載せる（'+reply.survey.numbers.length+'行）');
-      const examples=document.createElement('details'),heading=document.createElement('summary');heading.textContent='番号と径間を確認';examples.append(heading);
+      label.append(box,'読み取った番号をリストに載せる（'+reply.survey.numbers.length+'件）');
+      const examples=document.createElement('details'),heading=document.createElement('summary');heading.textContent='径間ごとの番号を見る';examples.append(heading);
       for(const n of reply.survey.numbers){const row=document.createElement('div');row.textContent=n.name+'　'+n.text;examples.append(row);}
       card.append(label,examples);box.onchange=()=>{draft=surveyTemplate(reply.survey,box.checked);card.querySelector('iframe').replaceWith(previewPage(draft.html));};
     }
-    const btn=document.createElement('button');btn.textContent='この内容で掲載';btn.onclick=()=>send('掲載して');card.append(btn);log.scrollTop=log.scrollHeight;
-  }catch(e){failed=true;bubble('assistant',e.message==='Failed to fetch'?'通信が途切れました。入力と添付は保持しています。もう一度送信してください。':e.message);}
+    const btn=document.createElement('button');btn.textContent=target?'共有ページに保存':'砂場にページを追加';btn.onclick=()=>send('掲載して');card.append(btn);log.scrollTop=log.scrollHeight;
+  }catch(e){failed=true;bubble('assistant',e.message==='Failed to fetch'?'送れませんでした。書いた内容とファイルは残っています。そのまま「送信」を押してください。':e.message);}
   finally{status.textContent='';if(!failed){field.value='';file.value='';camera.value='';attachment.textContent='';}busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
 }
 form.onsubmit=e=>{e.preventDefault();send(field.value);};
