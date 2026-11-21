@@ -13,7 +13,7 @@ const endpoint="https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/ippatsu-as
 let token=sessionStorage.getItem("ippatsu.chat.session")||"",history=[],busy=false;
 function mode(on){$("#test-mode").disabled=on;$("#test-mode").textContent=on?"テスト中・保存なし":"テストモード";}
 $("#test-mode").onclick=async()=>{try{mode((await api("test")).test);}catch(e){bubble(e.message);}};
-function show(){const active=!!token;$("#welcome").hidden=active;$("#thread").hidden=!active;$("#lock").hidden=!active;}
+function show(){const active=!!token;$("#welcome").hidden=active;$("#thread").hidden=!active;$("#usage").hidden=!active;if(!active){$("#usage").open=false;$("#balance-label").textContent="残量 —";}}
 function clear(){resetInputMode();token="";history=[];sessionStorage.removeItem("ippatsu.chat.lastReceipt");sessionStorage.removeItem("ippatsu.chat.history");sessionStorage.removeItem("ippatsu.chat.session");sessionStorage.removeItem("ippatsu.chat.pending");$("#messages").replaceChildren();show();}
 async function api(action,data={}){
   let response;
@@ -136,7 +136,29 @@ function confirmation(id,text,check=false){
     }catch(e){bubble(e.message);check=true;button.textContent="受付結果を確認";}finally{button.disabled=false;}
   };
 }
-function start(){show();if(!token)return;api("mode").then(r=>mode(r.test)).catch(e=>bubble(e.message));
+const creditKey="ippatsu.free-credit.snapshot";
+const todayJst=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+function refreshBalance(){
+  const form=$("#credit-form");
+  form.elements.next.min=todayJst();
+  let value;
+  try{value=JSON.parse(localStorage.getItem(creditKey));}catch{}
+  if(!value || !Number.isFinite(value.amount))return;
+  const expired=value.next<=todayJst();
+  $("#balance-label").textContent=expired?"残量 要確認":"残り "+Math.floor(value.amount)+"%";
+  $("#balance-detail").textContent="無料枠 $100 のうち $"+value.amount.toFixed(2)+"（"+value.checked+" 確認）。"+(expired?"付与日を迎えました。再確認してください。":"次回付与 "+value.next);
+  form.elements.amount.value=value.amount;
+  form.elements.next.value=value.next;
+}
+$("#credit-form").onsubmit=e=>{
+  e.preventDefault();
+  const f=e.currentTarget;
+  if(!f.reportValidity())return;
+  try{localStorage.setItem(creditKey,JSON.stringify({amount:f.elements.amount.valueAsNumber,next:f.elements.next.value,checked:todayJst()}));refreshBalance();}
+  catch{$("#balance-detail").textContent="端末に記録できませんでした";}
+};
+$("#usage").addEventListener("toggle",()=>{if($("#usage").open)refreshBalance();});
+function start(){show();if(!token)return;refreshBalance();api("mode").then(r=>mode(r.test)).catch(e=>bubble(e.message));
   try {
     const saved=JSON.parse(sessionStorage.getItem("ippatsu.chat.history") || "null");
     if(saved?.date===new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}) && Array.isArray(saved.messages)){

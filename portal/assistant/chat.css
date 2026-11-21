@@ -37,3 +37,7 @@ main {
 .pole-result p{margin:.3rem 0}
 .pole-result img{display:block;max-width:100%;width:14rem;border-radius:8px}
 .pole-result button{margin:.25rem}
+
+#usage{position:relative;margin-inline-start:auto;font-variant-numeric:tabular-nums}#usage summary{cursor:pointer;padding:.65rem .3rem;white-space:nowrap;font-size:.84rem}#usage aside{position:absolute;right:0;z-index:5;width:min(15rem,75vw);background:Canvas;color:CanvasText;padding:1rem;border:1px solid currentColor;border-radius:.6rem}#usage aside p{white-space:normal;margin:0 0 .7rem}#usage summary:focus-visible{outline:2px solid currentColor}
+
+#credit-form{display:grid;gap:.65rem;margin-bottom:.8rem}#credit-form label{display:grid;gap:.2rem;font-size:.85rem}#credit-form input{box-sizing:border-box;width:100%;min-width:0;padding:.45rem;font:inherit}#usage aside{max-height:65dvh;overflow:auto}
