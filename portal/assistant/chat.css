@@ -58,3 +58,4 @@ main {
 #sandbox-tools form button,#sandbox-tools .bubble button{min-height:44px}
 #sandbox-tools [role=status],#sandbox-tools output{margin:0;padding-inline:1rem;font-size:.9rem;overflow-wrap:anywhere}
 #sandbox-tools .attach:focus-within,#sandbox-tools :focus-visible{outline:2px solid var(--green);outline-offset:2px}
+#sandbox-tools form label.attach{min-width:44px;box-sizing:border-box;padding:0}#sandbox-tools .attach img{object-fit:contain}#sandbox-tools .suggestions{flex:none}
