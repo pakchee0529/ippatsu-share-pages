@@ -26,11 +26,12 @@ main {
 
 .row .sticker{width:min(138px,42vw);height:auto;display:block}
 
-#pole-dialog{width:min(28rem,90vw);box-sizing:border-box;border:1px solid var(--line);border-radius:12px;color:inherit}
-#pole-dialog::backdrop{background:#0006}
-#pole-dialog h2{margin-top:0}
-#pole-query{box-sizing:border-box;width:100%;margin-top:.5rem;font:inherit}
-.pole-actions{display:flex;flex-wrap:wrap;gap:.5rem}
+.input-modes{display:flex;flex:none;gap:4px;padding:4px 12px max(8px,env(safe-area-inset-bottom));background:var(--white)}
+.input-modes button{flex:1;min-height:44px;color:var(--muted)}
+.input-modes button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--white);font-weight:700}
+#thread .suggestions{padding-bottom:4px}
+#pole-tools label{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+#pole-notice{padding:4px 12px;font-size:14px;color:var(--muted)}
 .pole-result{margin:.4rem 0;overflow-wrap:anywhere}
 .pole-result+.pole-result{border-top:1px solid var(--line);padding-top:.75rem}
 .pole-result p{margin:.3rem 0}
