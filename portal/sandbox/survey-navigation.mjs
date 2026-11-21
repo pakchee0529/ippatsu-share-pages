@@ -40,12 +40,13 @@ function coordinate(value){
   if(a.every(Number.isFinite)&&Math.abs(a[0])<=90&&Math.abs(a[1])<=180)return a;
 }
 export function surveyNavigation(item,surface){
-  if(!item.definition.title.includes('現調'))return;
+  
   const doc=new DOMParser().parseFromString(item.definition.html,'text/html');
+  if(!item.definition.title.includes('現調')&&!doc.querySelector('[data-survey-rows]'))return;
   const rows=[...doc.querySelectorAll('label')].map(label=>({
     name:label.textContent.trim(),key:label.querySelector('input[type=checkbox]')?.id
   })).filter(r=>r.key&&/[~～〜]/.test(r.name));
-  if(!rows.length||new Set(rows.map(r=>r.name)).size!==rows.length)return;
+  if((!rows.length&&!doc.querySelector('[data-survey-rows]'))||new Set(rows.map(r=>r.name)).size!==rows.length)return;
   const panel=node('section','');panel.className='survey-route';surface.before(panel);
   const note=node('p','会社のある五條市上之町を起点に、遠い径間から回る順番を提案します。');
   note.setAttribute('role','status');
@@ -96,7 +97,11 @@ export function surveyNavigation(item,surface){
     locate.disabled=true;gps.textContent='位置を取得中…';
     navigator.geolocation.getCurrentPosition(p=>{locate.disabled=false;gps.replaceChildren(mapLink('現在地周辺の電柱地図を開く',mapAt([p.coords.latitude,p.coords.longitude])));},()=>{locate.disabled=false;gps.textContent='位置情報の許可と端末の設定を確認してください。';},{enableHighAccuracy:true,timeout:15000});
   });
-  let editing=false;const edit=button('並べ替え',()=>{editing=!editing;panel.classList.toggle('reordering',editing);edit.textContent=editing?'並べ替えを終了':'並べ替え';edit.setAttribute('aria-pressed',String(editing));});const head=node('div','');head.className='survey-head';head.append(node('h2','訪問リスト'),edit);actions.className='survey-actions';actions.append(match,locate);plan.append(accept);panel.append(actions,gps,note,plan,head,list);const drawMap=overview(panel);surface.hidden=true;render();match.click();
+  let editing=false;const edit=button('並べ替え',()=>{editing=!editing;panel.classList.toggle('reordering',editing);edit.textContent=editing?'並べ替えを終了':'並べ替え';edit.setAttribute('aria-pressed',String(editing));});const head=node('div','');head.className='survey-head';head.append(node('h2','訪問リスト'),edit);actions.className='survey-actions';actions.append(match,locate);plan.append(accept);panel.append(actions,gps,note,plan,head,list);const drawMap=overview(panel);surface.hidden=true;render();const ready=rows.length?match.onclick():Promise.resolve();
+  function readVisited(){try{return JSON.parse(localStorage.getItem(visitKey))||{};}catch{return visited;}}
+  return {ready, next:()=>{const state=readVisited();return current.find(r=>!state[r.key]);}, checked:()=>{const state=readVisited();return current.filter(r=>state[r.key]);}, rows,
+    route:(near=false)=>near?current.slice().sort((a,b)=>(a.center?km(office,a.center):Infinity)-(b.center?km(office,b.center):Infinity)):suggested.slice(),
+    applyRoute:route=>{current=route.slice();keep();}};
 }
 
 
