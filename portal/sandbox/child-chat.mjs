@@ -7,7 +7,7 @@ function button(text,fn){
 function changeRows(item,survey,add,remove){
   const doc=new DOMParser().parseFromString(item.definition.html,'text/html');
   const first=doc.getElementById(survey.rows[0]?.key)?.closest('label');
-  const group=first?.parentElement||doc.querySelector('[data-survey-rows]');
+  const group=doc.querySelector('[data-survey-rows]')||first?.parentElement;
   if(!group)throw Error('リストの形式を確認してください。');
   group.dataset.surveyRows='';
   if(add){
@@ -16,7 +16,7 @@ function changeRows(item,survey,add,remove){
     check.type='checkbox';check.id='visit-'+crypto.randomUUID();name.textContent=add;
     label.append(check,name);group.append(label);
   }
-  for(const row of remove)doc.getElementById(row.key)?.closest('label')?.remove();
+  for(const row of remove){const label=doc.getElementById(row.key)?.closest('label');if(label?.dataset.referenceNumber&&label.parentElement.parentElement===group)label.parentElement.remove();else label?.remove();}
   return {title:item.definition.title,html:'<!doctype html>'+doc.documentElement.outerHTML};
 }
 export function childChat(item,survey){

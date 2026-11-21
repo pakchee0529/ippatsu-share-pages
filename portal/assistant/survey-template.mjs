@@ -1,10 +1,12 @@
-export function surveyTemplate(draft){
+export function surveyTemplate(draft,withNumbers=false){
   const names=draft.names;
   if(!Array.isArray(names)||!names.length||names.some(n=>!/[〜～~]/.test(n)||n.length>100)||new Set(names).size!==names.length)throw Error('径間を確認できませんでした。径間名か、読み取りやすい写真を送ってください。');
   const list=document.createElement('section');list.dataset.surveyRows='';
   for(const name of names){
     const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';
     input.id='span-'+Array.from(name,c=>c.codePointAt(0).toString(36)).join('-');label.append(input,name);list.append(label);
+    const number=withNumbers&&draft.numbers?.find(n=>n.name===name)?.text;
+    if(number){label.dataset.referenceNumber=number;const caption=document.createElement('small');caption.textContent=number;const group=document.createElement('div');label.replaceWith(group);group.append(label,caption);}
   }
   const title=draft.title.includes('現調')?draft.title:draft.title+'の現調リスト';
   const h=document.createElement('h1');h.textContent=title;
