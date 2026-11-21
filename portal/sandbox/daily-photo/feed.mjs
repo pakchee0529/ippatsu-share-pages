@@ -38,9 +38,46 @@ function socials(card,p){
  const like=document.createElement('button');like.className='reaction';
  function render(){like.setAttribute('aria-pressed',String(p.liked));like.textContent=(p.liked?'♥':'♡')+' いいね '+p.likes}
  render();card.append(like);like.onclick=async()=>{if(needLogin())return;like.disabled=true;try{Object.assign(p,await api('like',JSON.stringify({id:p.id,liked:!p.liked})));render()}catch(e){el('status').textContent=e.message}finally{like.disabled=false}};
- const thread=document.createElement('div');thread.className='comments';for(const c of [...p.comments].reverse()){const line=document.createElement('p'),by=document.createElement('strong');by.textContent=c.display_name;line.append(by,'　'+c.body);thread.append(line)}card.append(thread);
- const form=document.createElement('form'),input=document.createElement('input'),submit=document.createElement('button');form.className='respond';input.placeholder='ひと言コメント';input.setAttribute('aria-label','コメント');input.required=true;input.maxLength=140;submit.textContent='送る';form.append(input,submit);card.append(form);
- let requestId=crypto.randomUUID();form.onsubmit=async e=>{e.preventDefault();if(needLogin())return;const name=el('name').value.trim();if(!name){const nickname=prompt('コメントに使う表示名を入力してください。',localStorage.getItem('photo.nickname')||'')?.trim();if(nickname&&nickname.length<=24){el('name').value=nickname;form.requestSubmit()}return}submit.disabled=true;try{await api('comment',JSON.stringify({id:requestId,post_id:p.id,name,body:input.value}));localStorage.setItem('photo.nickname',name);requestId=crypto.randomUUID();await list(true)}catch(e){el('status').textContent=e.message}finally{submit.disabled=false}};
+ const thread=document.createElement('div');
+ thread.className='comments';
+ function showComment(name,body){
+  const line=document.createElement('p'),by=document.createElement('strong');
+  by.textContent=name;line.append(by,'　'+body);thread.append(line);
+  if(thread.childElementCount>5)thread.firstElementChild.remove();
+ }
+ for(const c of [...p.comments].reverse())showComment(c.display_name,c.body);
+ const toggle=document.createElement('button'),form=document.createElement('form');
+ const input=document.createElement('input'),submit=document.createElement('button');
+ toggle.type='button';toggle.className='comment-toggle';
+ form.id='reply-'+p.id;form.className='respond';toggle.setAttribute('aria-controls',form.id);
+ input.placeholder='ひと言コメント';input.setAttribute('aria-label','コメント');
+ input.required=true;input.maxLength=140;submit.textContent='送る';form.append(input,submit);
+ function expand(open){
+  form.hidden=!open;toggle.setAttribute('aria-expanded',String(open));
+  toggle.textContent=open?'閉じる':'コメントする';
+  if(open)input.focus();
+ }
+ expand(false);like.after(toggle);card.append(thread,form);
+ toggle.onclick=()=>{expand(form.hidden)};
+ input.onkeydown=e=>{if(e.key==='Escape'&&!e.isComposing){expand(false);toggle.focus()}};
+ let requestId=crypto.randomUUID();
+ form.onsubmit=async e=>{
+  e.preventDefault();if(submit.disabled||needLogin())return;
+  let name=el('name').value.trim();
+  if(!name){
+   name=prompt('コメントに使う表示名を入力してください。',localStorage.getItem('photo.nickname')||'')?.trim();
+   if(!name||name.length>24)return;
+   el('name').value=name;
+  }
+  const body=input.value.trim();if(!body){input.focus();return}
+  submit.disabled=true;input.readOnly=true;
+  try{
+   await api('comment',JSON.stringify({id:requestId,post_id:p.id,name,body}));
+   localStorage.setItem('photo.nickname',name);requestId=crypto.randomUUID();
+   showComment(name,body);input.value='';expand(false);toggle.focus();
+  }catch(err){message(err.message)}finally{submit.disabled=false;input.readOnly=false}
+ };
+
 }
 async function list(reset){
  if(reset)cursor=null;
