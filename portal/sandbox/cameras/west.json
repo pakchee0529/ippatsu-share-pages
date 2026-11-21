@@ -318,5 +318,65 @@
     "provider": "国土交通省 道路情報提供システム",
     "kind": "道路",
     "coordSource": "https://www.road-info-prvs.mlit.go.jp/roadinfo/sp/spImageDetail_86C02332.html"
+  },
+  {
+    "name": "まちなみ伝承館",
+    "area": "五條",
+    "lat": 34.348528,
+    "lng": 135.693472,
+    "source": "https://www.komadori.ne.jp/livecamera/area/gojyou2.html",
+    "provider": "こまどりケーブル",
+    "kind": "地域映像",
+    "coordSource": "https://www.komadori.ne.jp/livecamera/area/gojyou2.html"
+  },
+  {
+    "name": "賀名生の里",
+    "area": "五條",
+    "lat": 34.298583,
+    "lng": 135.719306,
+    "source": "https://www.komadori.ne.jp/livecamera/area/gojyou3.html",
+    "provider": "こまどりケーブル",
+    "kind": "地域映像",
+    "coordSource": "https://www.komadori.ne.jp/livecamera/area/gojyou3.html"
+  },
+  {
+    "name": "大塔ライフハウス",
+    "area": "大塔",
+    "lat": 34.156298,
+    "lng": 135.747407,
+    "source": "https://www.komadori.ne.jp/livecamera/area/gojyou4.html",
+    "provider": "こまどりケーブル",
+    "kind": "地域映像",
+    "coordSource": "https://www.komadori.ne.jp/livecamera/area/gojyou4.html"
+  },
+  {
+    "name": "谷瀬の吊り橋",
+    "area": "十津川",
+    "lat": 34.101139,
+    "lng": 135.763083,
+    "source": "https://www.komadori.ne.jp/livecamera/area/totukawa3.html",
+    "provider": "こまどりケーブル",
+    "kind": "地域映像",
+    "coordSource": "https://www.komadori.ne.jp/livecamera/area/totukawa3.html"
+  },
+  {
+    "name": "上野地",
+    "area": "十津川",
+    "lat": 34.094417,
+    "lng": 135.756583,
+    "source": "https://www.komadori.ne.jp/livecamera/area/totukawa2.html",
+    "provider": "こまどりケーブル",
+    "kind": "地域映像",
+    "coordSource": "https://www.komadori.ne.jp/livecamera/area/totukawa2.html"
+  },
+  {
+    "name": "十津川村役場",
+    "area": "十津川",
+    "lat": 33.988639,
+    "lng": 135.792556,
+    "source": "https://www.komadori.ne.jp/livecamera/area/totukawa1.html",
+    "provider": "こまどりケーブル",
+    "kind": "地域映像",
+    "coordSource": "https://www.komadori.ne.jp/livecamera/area/totukawa1.html"
   }
 ]

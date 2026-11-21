@@ -47,9 +47,10 @@ el('refresh').onclick=()=>{if(current)showMedia(current)};
 el('close').onclick=()=>dialog.close();dialog.onclose=()=>{current=null;el('screen').replaceChildren()};
 try{
   const cameras=(await Promise.all(['west','east'].map(async region=>{
-    const response=await fetch('./'+region+'.json');if(!response.ok)throw Error();return response.json();
+    const response=await fetch('./'+region+'.json?v=regional-rain-1');if(!response.ok)throw Error();return response.json();
   }))).flat();
   el('status').textContent='';
+  const rainCenters={五條:'34.35/135.70',大塔:'34.17/135.73',十津川:'34.04/135.78',大淀:'34.39/135.79',吉野:'34.38/135.87'};
   for(const area of ['五條','大塔','十津川','大淀','吉野']){
     const members=cameras.filter(c=>c.area===area);
     const folded=['大淀','吉野'].includes(area);
@@ -60,7 +61,10 @@ try{
     const names=document.createElement('details'), summary=document.createElement('summary');
     summary.textContent='カメラ名から選ぶ';names.append(summary);
     for(const camera of members){const button=document.createElement('button');button.textContent=camera.name+(camera.status?'（'+camera.status+'）':'');button.onclick=()=>pick(camera);names.append(button);}
-    section.append(heading,map,names);el('list').append(section);
+    const rain=document.createElement('a');rain.className='rain-link';rain.textContent='この地域の雨雲を見る';
+    rain.href='https://www.jma.go.jp/bosai/nowc/#zoom:11/lat:'+rainCenters[area].split('/')[0]+'/lon:'+rainCenters[area].split('/')[1]+'/colordepth:normal/elements:hrpns';
+    rain.target='_blank';rain.rel='noopener';rain.setAttribute('aria-label',area+'の雨雲を見る（気象庁）');
+    section.append(heading,map,rain,names);el('list').append(section);
     function mount(){if(!map.childElementCount && members.length)renderMap(map,members,pick,area);}
     if(folded)section.addEventListener('toggle',()=>{if(section.open)mount();});else mount();
   }
