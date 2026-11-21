@@ -41,7 +41,7 @@ export function addOverlay(container, image, arrows) {
   if (image.complete) update();
 }
 
-async function compress(file) {
+export async function compressPhoto(file) {
   const url = URL.createObjectURL(file);
   const image = new Image();
   image.src = url;
@@ -57,7 +57,7 @@ async function compress(file) {
       ctx.fillRect(0,0,source.width,source.height);
       ctx.drawImage(image,0,0,source.width,source.height);
       const blob = await new Promise(resolve=>source.toBlob(resolve,'image/jpeg',.82));
-      if (blob && blob.size <= maxBytes) return {source, blob};
+      if (blob && blob.size <= maxBytes) return blob;
       scale *= .75;
     }
     throw Error('写真を縮小できませんでした。');
@@ -103,14 +103,14 @@ export function photoEditor(canvas, undo, notify) {
   undo.onclick=()=>{arrows.pop(); repaint();};
   return {
     clear() {version++; image=null; arrows=[]; draft=pointer=undefined; repaint();},
-    async load(file) {
+    async show(item) {
       const token=++version;
-      const processed=await compress(file);
+      const source = new Image(); source.src = item.url;
+      await source.decode();
       if (token!==version) return false;
-      image=processed; arrows=[]; draft=pointer=undefined;
-      canvas.width=image.source.width; canvas.height=image.source.height; repaint();
+      image={source}; arrows=item.arrows; draft=pointer=undefined;
+      canvas.width=source.naturalWidth; canvas.height=source.naturalHeight; repaint();
       return true;
-    },
-    snapshot() {return image && {blob:image.blob,arrows:arrows.map(arrow=>({...arrow}))};}
+    }
   };
 }

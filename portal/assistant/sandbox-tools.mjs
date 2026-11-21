@@ -81,7 +81,7 @@ async function send(text){
   finally{status.textContent='';if(!failed){field.value='';file.value='';camera.value='';attachment.textContent='';}busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
 }
 function entranceGuide() {
-  const message=bubble('assistant','設計番号か径間名で現場を探してね。現場を選んだら写真を撮るか選んで、進む方向に指で矢印を引けます。');
+  const message=bubble('assistant','設計番号か径間名で現場を探してね。写真はまとめて選べるよ。入口から歩く順に並べて、曲がり角や分岐には写真ごとに矢印を描いてね。');
   const search=document.createElement('form'); search.className='entrance-search';
   const input=document.createElement('input');
   input.type='search'; input.placeholder='設計番号または径間名'; input.required=true;
