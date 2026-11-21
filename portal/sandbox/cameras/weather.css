@@ -15,7 +15,7 @@
 .wx-forecast .wx-refresh { min-height: 44px; min-width: 44px; padding: 4px 12px; color: var(--wx-ink); background: var(--wx-surface); border: 1px solid var(--wx-line); border-radius: 10px; margin: 0; cursor: pointer }
 .wx-refresh:disabled { color: var(--wx-muted); background: var(--wx-panel); cursor: wait }
 .wx-refresh:active { background: var(--wx-line) }
-.wx-status,.wx-location,.wx-source { font-variant-numeric: tabular-nums; font-size: .8rem; color: var(--wx-muted); line-height: 1.5; margin: 4px 0 }
+.wx-status,.wx-location { font-variant-numeric: tabular-nums; font-size: .8rem; color: var(--wx-muted); line-height: 1.5; margin: 4px 0 }
 .wx-status:empty { display: none }
 .wx-location { margin: 0 0 8px }
 .wx-rail { display: grid; grid-template-columns: auto minmax(0,1fr); background: var(--wx-surface); border-radius: 8px; overflow: clip }
@@ -39,7 +39,4 @@
 .wx-hour .wx-temp { font-weight: 700; font-size: 1.08rem }
 .wx-hour .wx-pop,.wx-hour .wx-mm { color: var(--wx-rain); font-size: .92rem; font-weight: 600 }
 .wx-hour .wx-span { color: var(--wx-muted); font-size: .7rem; white-space: nowrap }
-.wx-source { margin: 8px 0 0; font-size: .72rem }
-.wx-source a { color: inherit; text-decoration: underline; text-underline-offset: 2px }
-.wx-jma { display: block }
 .wx-forecast :focus-visible { outline: 3px solid var(--wx-focus); outline-offset: -3px }
