@@ -17,7 +17,11 @@ function lock(){el('join').hidden=true;el('unlock').hidden=false;el('compose').h
 function needLogin(){if(sessionStorage.getItem(session))return false;lock();el('unlock').elements.pin.focus();return true}
 el('name').value=localStorage.getItem('photo.nickname')||'';
 function socials(card,p){
- const author=document.createElement('strong');author.textContent=p.display_name||'以前の投稿';card.prepend(author);
+ const author=document.createElement('strong'),avatar=document.createElement('span'),head=document.createElement('div');
+ const name=p.display_name||'以前の投稿';
+ avatar.className='avatar';avatar.setAttribute('aria-hidden','true');avatar.textContent=Array.from(name)[0];
+ avatar.dataset.tone=String(Array.from(name).reduce((n,c)=>n+c.codePointAt(0),0)%5);
+ author.textContent=name;head.className='post-head';head.append(avatar,author,card.querySelector('time'));card.prepend(head);
  const like=document.createElement('button');like.className='reaction';
  function render(){like.setAttribute('aria-pressed',String(p.liked));like.textContent=(p.liked?'♥':'♡')+' いいね '+p.likes}
  render();card.append(like);like.onclick=async()=>{if(needLogin())return;like.disabled=true;try{Object.assign(p,await api('like',JSON.stringify({id:p.id,liked:!p.liked})));render()}catch(e){el('status').textContent=e.message}finally{like.disabled=false}};
@@ -27,10 +31,17 @@ function socials(card,p){
 }
 async function list(reset){
  if(reset)cursor=null;
- const {posts}=await api('list');if(reset)el('feed').replaceChildren();
+ const {posts}=await api('list');
+ if(reset){el('feed').replaceChildren();el('photo-strip').replaceChildren();}
+ const strip=el('photo-strip');
  for(const p of posts){
   const card=document.createElement('article'),img=new Image(),text=document.createElement('p'),time=document.createElement('time');
-  img.src=p.url;img.decoding='async';img.alt=p.caption;text.textContent=p.caption;time.dateTime=p.created_at;time.textContent=new Date(p.created_at).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',dateStyle:'medium',timeStyle:'short'});card.append(img,text,time);socials(card,p);el('feed').append(card);
+  img.src=p.url;img.decoding='async';img.alt=p.caption;text.textContent=p.caption;time.dateTime=p.created_at;time.textContent=new Date(p.created_at).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',dateStyle:'medium',timeStyle:'short'});card.append(img,text,time);socials(card,p);card.id='photo-'+p.id;el('feed').append(card);
+  if(strip.childElementCount<6){
+   const jump=document.createElement('a'),thumb=new Image(),label=document.createElement('span');
+   jump.href='#'+card.id;thumb.src=p.url;thumb.alt='';label.textContent=p.display_name||'以前の投稿';
+   jump.setAttribute('aria-label',label.textContent+'の投稿へ：'+p.caption);jump.append(thumb,label);strip.append(jump);
+  }
  }
  cursor=posts.at(-1)?.created_at;el('more').hidden=posts.length<12;
  if(!el('feed').children.length)el('status').textContent='最初の一枚を投稿してみよう。';
