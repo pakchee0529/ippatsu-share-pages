@@ -1,0 +1,13 @@
+export function surveyTemplate(draft){
+  const doc=new DOMParser().parseFromString(draft.html,'text/html');
+  const names=[...doc.querySelectorAll('label')].map(e=>e.textContent.trim());
+  if(!names.length||names.some(n=>!/[〜～~]/.test(n)||n.length>100)||new Set(names).size!==names.length)throw Error('径間を確認できませんでした。径間名か、読み取りやすい写真を送ってください。');
+  const list=document.createElement('section');list.dataset.surveyRows='';
+  for(const name of names){
+    const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';
+    input.id='span-'+Array.from(name,c=>c.codePointAt(0).toString(36)).join('-');label.append(input,name);list.append(label);
+  }
+  const title=draft.title.includes('現調')?draft.title:draft.title+'の現調リスト';
+  const h=document.createElement('h1');h.textContent=title;
+  return {title,html:'<!doctype html><html lang="ja"><meta charset="utf-8"><style>:root{--ink:#214537;--rule:#d7ded7;font:16px system-ui}body{color:var(--ink);margin:1rem}h1{font-size:1.3rem}label{display:flex;align-items:center;gap:.6rem;min-height:46px;border-bottom:1px solid var(--rule)}</style>'+h.outerHTML+list.outerHTML+'</html>'};
+}
