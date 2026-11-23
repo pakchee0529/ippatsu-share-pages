@@ -1,6 +1,6 @@
 import {numberedChoices,resolveChoice} from './choices.mjs';
 import {basicCounter} from './basic-counter.mjs';
-import {checkStartup} from './sandbox-check.mjs?v=actions1';
+import {checkStartup,checkLabel} from './sandbox-check.mjs?v=actions2';
 import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs';
 import {call,linkFor} from '../sandbox/api.mjs?v=turn1';
@@ -196,6 +196,7 @@ async function generate(job){
         const remaining=reply.draft?.html?await checkStartup(reply.draft.html,required):'下書きがありません';
         if(remaining)throw Error('修正後も検査に通りませんでした。'+remaining);
       }
+      reply.message=[reply.message,checkLabel(required)].filter(Boolean).join('。');
     }
     step('受け取った回答を確認しています');
     if(typeof reply?.question==='string'&&reply.question.trim()){
