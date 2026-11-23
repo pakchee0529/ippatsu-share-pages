@@ -39,7 +39,7 @@ function coordinate(value){
   const a=value.split(',').map(Number);
   if(a.every(Number.isFinite)&&Math.abs(a[0])<=90&&Math.abs(a[1])<=180)return a;
 }
-export function surveyNavigation(item,surface){
+export function surveyNavigation(item,surface,shared){
   
   const doc=new DOMParser().parseFromString(item.definition.html,'text/html');
   if(!item.definition.title.includes('現調')&&!doc.querySelector('[data-survey-rows]'))return;
@@ -55,12 +55,13 @@ export function surveyNavigation(item,surface){
   let current=rows.slice(),suggested=[];
   let saved=[],visited={};
   try{saved=JSON.parse(localStorage.getItem(orderKey))||[];visited=JSON.parse(localStorage.getItem(visitKey))||{};}catch{}
+  if(shared){visited={...shared.values};if(typeof visited.__route==="string"){try{saved=JSON.parse(visited.__route)}catch{saved=[]}}}
   if(Array.isArray(saved))current.sort((a,b)=>(saved.includes(a.name)?saved.indexOf(a.name):Infinity)-(saved.includes(b.name)?saved.indexOf(b.name):Infinity));
-  function keep(){localStorage.setItem(orderKey,JSON.stringify(current.map(r=>r.name)));render();}
+  function keep(){shared?.save("__route",JSON.stringify(current.map(r=>r.name)));localStorage.setItem(orderKey,JSON.stringify(current.map(r=>r.name)));render();}
   function render(){drawMap(current,visited);list.replaceChildren();current.forEach((r,i)=>{
     const li=node('li',''),label=node('label',r.name),check=document.createElement('input');
     check.type='checkbox';check.checked=visited[r.key]===true;
-    check.onchange=()=>{visited[r.key]=check.checked;drawMap(current,visited);localStorage.setItem(visitKey,JSON.stringify(visited));};label.prepend(check);li.append(label);
+    check.onchange=()=>{visited[r.key]=check.checked;shared?.save(r.key,check.checked);drawMap(current,visited);localStorage.setItem(visitKey,JSON.stringify(visited));};label.prepend(check);li.append(label);
     if(r.review)li.append(node('p',r.review));
     if(r.reference)li.append(node('small',r.reference));
     const links=node('div','');
@@ -72,7 +73,7 @@ export function surveyNavigation(item,surface){
     li.append(links);list.append(li);
   });}
   const plan=node('details',''),summary=node('summary','巡回案を見る'),steps=node('ol','');plan.append(summary,steps);plan.hidden=true;
-  const accept=button('この順番を採用',()=>{plan.open=false;plan.hidden=true;current=suggested.slice();keep();note.textContent='この端末に巡回順を保存しました。';});accept.hidden=true;
+  const accept=button('この順番を採用',()=>{plan.open=false;plan.hidden=true;current=suggested.slice();keep();note.textContent='この巡回順を採用しました。';});accept.hidden=true;
   const match=button('おすすめの訪問順を見る',async(event)=>{
     match.disabled=true;note.textContent='地図で両端の電柱を探しています…';
     try{
@@ -100,7 +101,7 @@ export function surveyNavigation(item,surface){
     navigator.geolocation.getCurrentPosition(p=>{locate.disabled=false;gps.replaceChildren(mapLink('現在地周辺の電柱地図を開く',mapAt([p.coords.latitude,p.coords.longitude])));},()=>{locate.disabled=false;gps.textContent='位置情報の許可と端末の設定を確認してください。';},{enableHighAccuracy:true,timeout:15000});
   });
   let editing=false;const edit=button('並べ替え',()=>{editing=!editing;panel.classList.toggle('reordering',editing);edit.textContent=editing?'並べ替えを終了':'並べ替え';edit.setAttribute('aria-pressed',String(editing));});const head=node('div','');head.className='survey-head';head.append(node('h2','訪問リスト'),edit);actions.className='survey-actions';actions.append(match,locate);plan.append(accept);panel.append(actions,gps,note,plan,head,list);const drawMap=overview(panel);surface.hidden=true;render();const ready=rows.length?match.onclick():Promise.resolve();
-  function readVisited(){try{return JSON.parse(localStorage.getItem(visitKey))||{};}catch{return visited;}}
+  function readVisited(){if(shared)return visited;try{return JSON.parse(localStorage.getItem(visitKey))||{};}catch{return visited;}}
   return {ready, next:()=>{const state=readVisited();return current.find(r=>!state[r.key]);}, checked:()=>{const state=readVisited();return current.filter(r=>state[r.key]);}, rows,
     route:(near=false)=>near?current.slice().sort((a,b)=>(a.center?km(office,a.center):Infinity)-(b.center?km(office,b.center):Infinity)):suggested.slice(),
     applyRoute:route=>{current=route.slice();keep();}};

@@ -1,7 +1,7 @@
 import {childChat} from './child-chat.mjs?v=fieldcopy1';
-import {surveyNavigation} from './survey-navigation.mjs?v=mapslinks2';
+import {surveyNavigation} from './survey-navigation.mjs?v=shared1';
 import {call} from './api.mjs?v=child1';
-import {previewPage} from './preview.mjs';
+import {previewPage} from './preview.mjs?v=shared1';
 import {imageInput} from './image-input.mjs';
 const id=new URLSearchParams(location.search).get('id');
 const status=document.querySelector('#status');
@@ -9,8 +9,23 @@ const remove=document.querySelector('#remove');
 try{
  const item=await call('sandboxGet',{id});
  document.querySelector('#title').textContent=item.definition.title;
- const surface=document.querySelector('#surface'),survey=surveyNavigation(item,surface);
- if(!survey)surface.append(previewPage(item.definition.html,"ippatsu.sandbox.inputs."+id));
+ const notice=document.createElement('p');notice.setAttribute('role','status');status.after(notice);
+ let writes=Promise.resolve();
+ const queued=new Map();
+ function save(field,value){
+   if(!sessionStorage.getItem('ippatsu.chat.session')){notice.textContent='保存するにはログインしてください。';return;}
+   queued.set(field,value);
+   writes=writes.then(async()=>{
+     if(!queued.has(field))return;
+     const latest=queued.get(field);queued.delete(field);
+     notice.textContent='保存中…';
+     try{await call('sandboxSetInput',{id,revision:item.revision,field,value:latest});notice.textContent='保存しました。';}
+     catch(e){notice.textContent='保存できませんでした。'+e.message;}
+   });
+ }
+ const shared={values:item.shared_inputs||{},save};
+ const surface=document.querySelector('#surface'),survey=surveyNavigation(item,surface,shared);
+ if(!survey)surface.append(previewPage(item.definition.html,"ippatsu.sandbox.inputs."+id,shared));
  if(!sessionStorage.getItem('ippatsu.chat.session')){
    const link=document.createElement('a');link.href='../assistant/?mode=sandbox';link.textContent='いっぱつちゃんで編集する';status.replaceChildren(link);
  }else{

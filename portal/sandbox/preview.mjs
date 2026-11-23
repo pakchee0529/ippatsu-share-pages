@@ -1,4 +1,4 @@
-export function previewPage(html, inputKey=null) {
+export function previewPage(html, inputKey=null, shared=null) {
   const frame = document.createElement("iframe");
   frame.title = "砂場のページ";
   frame.setAttribute("sandbox", "allow-scripts");
@@ -6,15 +6,16 @@ export function previewPage(html, inputKey=null) {
   const policy = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; form-action 'none'; base-uri 'none'; frame-src 'none'; connect-src 'none'";
   let bridge = "";
   if(inputKey){
-    let state={};
-    try{state=JSON.parse(localStorage.getItem(inputKey)||"{}");}catch{}
+    let state=shared?.values||{};
+    try{if(!shared)state=JSON.parse(localStorage.getItem(inputKey)||"{}");}catch{}
     const initial=JSON.stringify(state).replaceAll("<","\\u003c");
-    bridge='<script>const saved='+initial+';function key(e){return e.id||e.name}function supported(e){return e.matches("textarea,select,input")&&!["password","file","hidden"].includes(e.type)&&key(e)}document.addEventListener("DOMContentLoaded",()=>{for(const e of document.querySelectorAll("input,textarea,select")){if(supported(e)&&Object.hasOwn(saved,key(e))){if(["checkbox","radio"].includes(e.type))e.checked=saved[key(e)]===true;else e.value=saved[key(e)]}}});document.addEventListener("input",({target:e})=>{if(supported(e))parent.postMessage({field:key(e),value:["checkbox","radio"].includes(e.type)?e.checked:e.value},"*")});<\/script>';
+    bridge='<script>const saved='+initial+';function key(e){return e.id||e.name}function supported(e){return e.matches("textarea,select,input")&&!["password","file","hidden","submit","button","reset"].includes(e.type)&&key(e)}document.addEventListener("DOMContentLoaded",()=>{for(const e of document.querySelectorAll("input,textarea,select")){if(supported(e)&&Object.hasOwn(saved,key(e))){if(["checkbox","radio"].includes(e.type))e.checked=saved[key(e)]===true;else e.value=saved[key(e)]}}});document.addEventListener("input",({target:e})=>{if(supported(e))parent.postMessage({field:key(e),value:["checkbox","radio"].includes(e.type)?e.checked:e.value},"*")});<\/script>';
     window.addEventListener("message",event=>{
       if(event.source!==frame.contentWindow || event.origin!=="null")return;
       const d=event.data;
       if(!d||typeof d.field!=="string"||d.field.length>120||!["string","boolean"].includes(typeof d.value)||String(d.value).length>8000)return;
       state={...state,[d.field]:d.value};
+      if(shared){shared.save(d.field,d.value);return;}
       try{localStorage.setItem(inputKey,JSON.stringify(state));}catch{}
     });
   }
