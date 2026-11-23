@@ -1,4 +1,5 @@
-import {checkStartup,checkLabel} from '../assistant/sandbox-check.mjs?v=actions2';
+import {preserveBehavior,projectHistory} from '../assistant/behavior-history.mjs';
+import {checkStartup,checkLabel} from '../assistant/sandbox-check.mjs?v=workflow3';
 import {requestedAppearance} from './appearance.mjs';
 import {call} from './api.mjs';
 import {previewPage} from './preview.mjs';
@@ -28,11 +29,21 @@ export function childChat(item,survey){
   launch.onclick=()=>dialog.showModal();el('chat-close').onclick=()=>dialog.close();
   let draft=null,awaitingName=false,editing=false,busy=false;
   const history=[];
+  const rollbackKey='ippatsu.sandbox.rollback.'+item.id;
+  function rollback(){
+    try{const old=JSON.parse(sessionStorage.getItem(rollbackKey));return old?.revision===item.revision?old:null;}catch{return null;}
+  }
+  function restore(){
+    const old=rollback();
+    if(!old){say('この端末で戻せる版はありません。');return;}
+    confirmation('ページの作りを一つ前に戻しますか？ 保存された入力値は保持します。',()=>save(old.definition));
+  }
   function say(text,mine=false){
     const p=document.createElement('p');p.textContent=text;p.className=mine?'mine':'reply';log.append(p);log.scrollTop=log.scrollHeight;
     history.push({role:mine?'user':'assistant',text});return p;
   }
   function quick(){actions.replaceChildren();
+    if(rollback())actions.append(button('前の版に戻す',restore));
     if(draft)actions.append(button('今の下書きを反映',()=>confirmation('この下書きを共有ページに保存しますか？',()=>save(draft))));
     for(const text of [...(survey?['次どこ？','径間を追加','チェック済みを削除','おすすめの訪問順を見る']:[]),'ページを編集']){
       actions.append(button(text,()=>{editing=false;awaitingName=false;send(text);}));
@@ -47,12 +58,14 @@ export function childChat(item,survey){
   async function save(d,appearance){
     const result=await call('sandboxPublish',{id:item.id,revision:item.revision,draft:d,appearance});
     if(result.id!==item.id||result.revision!==item.revision+1)throw Error('保存結果を確認してください。');
+    try{sessionStorage.setItem(rollbackKey,JSON.stringify({revision:result.revision,definition:item.definition}));}catch{}
     location.reload();
   }
   async function send(raw){
     if(busy)return;const text=raw.trim();if(!text)return;
     input.value='';say(text,true);quick();busy=true;form.querySelector('button').disabled=true;
     try{
+      if(/^(一つ前に戻して|前の版に戻して|さっきの方が(?:ええ|いい))[。！! ]*$/.test(text)){restore();return;}
       const look=requestedAppearance(text,item.definition);
       if(look){confirmation('一覧の目印を「'+look.label+'」にしますか？',()=>save(item.definition,look.style));return;}
       if(!editing&&survey&&/次.*(どこ|何処|現場|径間)|次は[？?]?$/.test(text)){
@@ -77,7 +90,7 @@ export function childChat(item,survey){
         confirmation((near?'会社のある上之町から近い順です。':'遠い現場から回る巡回案です。')+'\n'+route.map((r,i)=>(i+1)+'　'+r.name).join('\n'),()=>{survey.applyRoute(route);say('この端末の訪問順に反映しました。');quick();});return;
       }
       if(text==='ページを編集'){editing=true;awaitingName=false;say('このページのどこをどう変えたいですか？');return;}
-      const request={turnProtocol:1,id:item.id,revision:item.revision,prompt:text,interactive:true,history:history.slice(-9,-1),previous:draft};
+      const request={turnProtocol:1,id:item.id,revision:item.revision,prompt:text,interactive:true,history:projectHistory(history.slice(-9,-1),(draft||item.definition).html),previous:draft};
       let reply=await call('sandboxDraft',request);
       if(['advice','clarify'].includes(reply.kind)){
         const options=reply.choices||[];
@@ -92,6 +105,7 @@ export function childChat(item,survey){
         reply=await call('sandboxDraft',{...request,previous:reply.draft,repairSteps:checks,prompt:'検査対象のidと仕様を維持して、この動作エラーを直して：'+failure+'。元の依頼：'+text.slice(0,1200)});
         if(!reply.draft||await checkStartup(reply.draft.html,checks))throw Error('修正後も操作を確認できませんでした。');
       }
+      reply.draft.html=await preserveBehavior((draft||item.definition).html,reply.draft.html,checks);
       draft=reply.draft;log.append(previewPage(draft.html));confirmation(checkLabel(checks)+'。共有ページに保存しますか？',()=>save(draft));
     }catch(e){say(e.message);}finally{busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
   }

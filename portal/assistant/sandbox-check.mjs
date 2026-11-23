@@ -6,7 +6,22 @@ export function checkLabel(steps){
   return result?'指定した操作と結果を確認済み':operated?'操作のみ確認済み':steps.length?'初期表示を確認済み':'起動確認のみ';
 }
 
-export function checkStartup(html,steps=[]){
+export async function checkStartup(html,steps=[]){
+  const values=Object.create(null);
+  const shared={values,save(key,value){values[key]=value;}};
+  const failure=await runPreview(html,steps,shared);
+  if(failure)return failure;
+  // Reopen only values covered by explicit assertions and written via the real input bridge.
+  const saved=new Map();
+  for(const s of steps){
+    if(s.action==='expectValue' && Object.hasOwn(values,s.id))saved.set(s.id,s);
+  }
+  if(!saved.size)return '';
+  const reopened=await runPreview(html,[...saved.values()],shared);
+  return reopened?'開き直したとき：'+reopened:'';
+}
+
+function runPreview(html,steps,shared){
   return new Promise(resolve=>{
     const plan=JSON.stringify(steps.slice(0,8)).replaceAll("<","\\u003c");
     const probe = `<script>
@@ -46,11 +61,13 @@ export function checkStartup(html,steps=[]){
         setTimeout(()=>parent.postMessage({sandboxStartup:problem.slice(0,220)},'*'),200);
       },100));
     </script>`;
-    const frame=previewPage(probe+html);
+    const controller=new AbortController();
+    const frame=previewPage(probe+html,"isolated-test",{...shared,signal:controller.signal});
     frame.style.cssText='position:fixed;left:-2000px;top:0;width:390px;height:750px;opacity:0;pointer-events:none';
     frame.setAttribute('aria-hidden','true');
     frame.tabIndex=-1;
     function finish(result){
+      controller.abort();
       clearTimeout(timeout);
       window.removeEventListener('message',receive);
       frame.remove();
