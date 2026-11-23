@@ -1,3 +1,4 @@
+import {numberedChoices,resolveChoice} from './choices.mjs';
 import {basicCounter} from './basic-counter.mjs';
 import {checkStartup} from './sandbox-check.mjs';
 import {workingStatus} from './working.mjs';
@@ -192,7 +193,8 @@ async function generate(job){
       step('下書きのプレビューを組み立てています');
       previousVersion=draft&&card?{draft,card,history:history.slice(),photo,info:renderInfo}:null;
       renderCandidate(candidate,reply,job.text);
-      history.push({role:'user',text:job.text});photo=job.asset;
+      const choices=[...card.querySelectorAll('.suggestions button')].map(b=>b.textContent);
+      history.push({role:'user',text:job.text},{role:'assistant',text:candidate.title+' の下書き',choices});photo=job.asset;
     }
     pendingDraft=null;clearRecovery();checkpoint();return true;
   }catch(e){
@@ -220,10 +222,14 @@ async function send(text,fromComposer=false){
       return;
     }
     bubble('user',text+(selected?'（'+selected.name+'）':''));
+    const last=history.at(-1);
+    const choices=last?.role==='assistant'?(last.choices||numberedChoices(last.text)):[];
+    const selection=!selected&&resolveChoice(text,choices);
+    if(selection?.question){bubble('assistant',selection.question);history.push({role:'user',text},{role:'assistant',text:selection.question,choices});checkpoint();return;}
     if(!selected&&/^(?:ほか|他|別)の(?:提案|案|アイデア)(?:は|ある|を見せて)?[？?。！! ]*$/.test(text)){
       const options=[...(card?.querySelectorAll('.suggestions button')||[])].map(b=>b.textContent);
       const answer=options.length?'今の下書きなら、'+options.map((v,i)=>(i+1)+'．'+v).join('、')+' ができます。':'作りたいものや、いま面倒に感じている作業をひと言教えてください。';
-      bubble('assistant',answer);history.push({role:'user',text},{role:'assistant',text:answer});checkpoint();return;
+      bubble('assistant',answer);history.push({role:'user',text},{role:'assistant',text:answer,choices:options});checkpoint();return;
     }
     if(!selected&&/^(?:一つ前に戻して|前の版に戻して|さっきの方が(?:ええ|いい))[。！! ]*$/.test(text)){
       if(previousVersion){busy=false;card.querySelector('[data-undo]').click();busy=true;}else bubble('assistant','この会話で戻せる前の版はありません。');return;
@@ -251,7 +257,7 @@ async function send(text,fromComposer=false){
     const soloPhoto=!hadText&&selected?.type.startsWith('image/')&&!draft&&!history.length;
     survey=survey||(!target&&(/現調|径間/.test(text)||soloPhoto));
     pendingDraft=null;clearRecovery();
-    failed=!await generate({text,file:selected||null});
+    failed=!await generate({text:selection?.value||text,file:selected||null});
   }catch(e){failed=true;const msg=bubble('assistant',e.message==='Failed to fetch'?'通信できませんでした。時間をおいてもう一度試してください。':e.message);
     if(pendingPublication)recovery(msg,'掲載結果を確認','publishCheck');
   }
