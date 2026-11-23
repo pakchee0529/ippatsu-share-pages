@@ -1,3 +1,4 @@
+import {workingStatus} from './working.mjs';
 import {openAccount,forget,rotate} from '../account/session.mjs';
 const $=s=>document.querySelector(s);
 // Mobile keyboards and in-app browser controls can shrink only the visual viewport.
@@ -171,7 +172,8 @@ $("#login").onsubmit=async e=>{e.preventDefault();const b=$("#login button");b.d
   try{const r=await api("login",{pin:$("#pin").value});token=r.token;sessionStorage.setItem("ippatsu.chat.session",token);$("#pin").value="";start();}
   catch(e){$("#notice").textContent=e.message;}finally{b.disabled=false;}};
 $("#lock").onclick=async()=>{try{await api("logout");}finally{clear();}};
-async function send(text,action="chat",query=text){if(!text||busy)return;busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;
+const chatWork=workingStatus(document.querySelector('#typing'));
+async function send(text,action="chat",query=text){if(!text||busy)return;busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;chatWork.show(action==="poleSearch"?"電柱を探しています":"返事を準備しています");
   bubble(text,true);history.push({role:"user",content:text});
   const messages=history.slice(-25).map(({role,content})=>({role,content}));
   while(messages.length>1 && JSON.stringify(messages).length>24000)messages.shift();
@@ -184,7 +186,7 @@ async function send(text,action="chat",query=text){if(!text||busy)return;busy=tr
       if(r.cancelReport)cancelButton(box,r.cancelReport);
 
     }
-  }catch(e){bubble(e.message);}finally{busy=false;$("#compose button").disabled=false;$("#typing").hidden=true;}}
+  }catch(e){bubble(e.message);}finally{busy=false;$("#compose button").disabled=false;chatWork.clear();$("#typing").hidden=true;}}
 $("#compose").onsubmit=e=>{
   e.preventDefault();
   const field=$("#message"),text=field.value.trim();
