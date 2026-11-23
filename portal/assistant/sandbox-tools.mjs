@@ -1,9 +1,9 @@
 import {numberedChoices,resolveChoice} from './choices.mjs';
 import {basicCounter} from './basic-counter.mjs';
-import {checkStartup} from './sandbox-check.mjs';
+import {checkStartup} from './sandbox-check.mjs?v=actions1';
 import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs';
-import {call,linkFor} from '../sandbox/api.mjs?v=reconnect1';
+import {call,linkFor} from '../sandbox/api.mjs?v=turn1';
 import {previewPage} from '../sandbox/preview.mjs';
 import {surveyTemplate} from './survey-template.mjs?v=fieldcopy1';
 import {appearance} from '../sandbox/appearance.mjs';
@@ -133,8 +133,9 @@ function draftPreview(html){
   panel.append(toggle,previewPage(html));return panel;
 }
 function renderCandidate(candidate,reply,request){
-      renderInfo={reply:reply.survey?{survey:reply.survey}:{},request};
+      renderInfo={reply:{survey:reply.survey,choices:reply.choices,message:reply.message},request};
       draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='送った資料と見比べてほしい径間が'+reply.survey.notes.length+'件あります。';card.append(note);}card.append(draftPreview(candidate.html));
+      if(reply.message){const note=document.createElement('p');note.textContent=reply.message;card.append(note);}
       if(reply.survey?.numbers?.length){
         const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';
         label.append(box,'読み取った番号をリストに載せる（'+reply.survey.numbers.length+'件）');
@@ -149,7 +150,7 @@ function renderCandidate(candidate,reply,request){
         calculator:['入力例を見せて','単位を分かりやすくして','結果を大きくして'],
         calendar:['今日を目立たせて','日付で絞り込めるようにして','予定を追加しやすくして']
       };
-      const ideas=/ゲーム|遊び|得点/.test(request+candidate.title)?['操作の練習を付けて','難しさを選べるようにして','もう一度遊びやすくして']:options[appearance(candidate).icon]||['文字を見やすくして','入力例を付けて','よく使う操作を上にして'];
+      const ideas=reply.choices??(/ゲーム|遊び|得点/.test(request+candidate.title)?['操作の練習を付けて','難しさを選べるようにして','もう一度遊びやすくして']:options[appearance(candidate).icon]||['文字を見やすくして','入力例を付けて','よく使う操作を上にして']);
       for(const idea of ideas){const button=document.createElement('button');button.type='button';button.textContent=idea;button.onclick=()=>send(idea);choices.append(button);}
       card.append(choices);
       if(previousVersion){
@@ -166,20 +167,34 @@ async function generate(job){
       if(job.file)step('添付ファイルを読み込んでいます');
       const asset=job.file?await readAttachment(job.file):photo;
       job.asset=asset;
-      job.payload={interactive:true,prompt:job.text,template:survey?'survey':undefined,history:history.slice(-8),previous:draft,...asset,id:target?.id,revision:target?.revision};
+      job.payload={turnProtocol:1,interactive:true,prompt:job.text,template:survey?'survey':undefined,history:history.slice(-8),previous:draft,...asset,id:target?.id,revision:target?.revision};
     }
     step(job.payload.template==='survey'?'現調リストを準備しています':draft||target?'下書きを更新しています':'下書きを作っています');
     checkpoint({text:job.text,payload:job.payload,asset:job.asset});
     let reply=basicCounter(job.payload);
     if(reply)step('カウンターを組み立てています');
     else reply=await call('sandboxDraft',job.payload,step);
+    if(['advice','clarify'].includes(reply.kind)){
+      const msg=bubble('assistant',reply.message), choices=reply.choices||[];
+      const group=document.createElement('div');group.className='suggestions';
+      for(const [index,value] of choices.entries()){
+        const button=document.createElement('button');button.textContent=(index+1)+'．'+value;button.onclick=()=>send(value);group.append(button);
+      }
+      if(choices.length)msg.append(group);
+      history.push({role:'user',text:job.text},{role:'assistant',text:reply.message,choices});
+      photo=job.asset;pendingDraft=null;clearRecovery();checkpoint();return true;
+    }
+    const separate=reply.kind==='newDraft';
     if(reply.draft?.html){
       step('下書きをブラウザで開いています');
-      let error=await checkStartup(reply.draft.html);
+      if(reply.steps?.length)step('下書きで操作と結果を検査しています');
+      const required=reply.steps||[];
+      let error=await checkStartup(reply.draft.html,required);
       if(error){
         step('起動エラーを修正しています');
-        reply=await call('sandboxDraft',{...job.payload,previous:reply.draft,prompt:'元の依頼を保ち、起動時のエラーを直して。 '+error+' 元の依頼：'+job.text.slice(0,1200)},step);
-        if(!reply.draft?.html||await checkStartup(reply.draft.html))throw Error('修正後も下書きの起動を確認できませんでした。');
+        reply=await call('sandboxDraft',{...job.payload,previous:reply.draft,repairSteps:required,prompt:'元の依頼と検査対象のidを保ち、指定の検査手順がそのまま通るように直して。 '+error+' 元の依頼：'+job.text.slice(0,1200)},step);
+        const remaining=reply.draft?.html?await checkStartup(reply.draft.html,required):'下書きがありません';
+        if(remaining)throw Error('修正後も検査に通りませんでした。'+remaining);
       }
     }
     step('受け取った回答を確認しています');
@@ -191,10 +206,11 @@ async function generate(job){
       const candidate=job.payload.template==='survey'?surveyTemplate(reply.survey):reply?.draft;
       if(!candidate?.title||typeof candidate.html!=='string'||!candidate.html.trim())throw Error('下書きの内容を確認できませんでした。');
       step('下書きのプレビューを組み立てています');
+      if(separate)fresh();
       previousVersion=draft&&card?{draft,card,history:history.slice(),photo,info:renderInfo}:null;
       renderCandidate(candidate,reply,job.text);
       const choices=[...card.querySelectorAll('.suggestions button')].map(b=>b.textContent);
-      history.push({role:'user',text:job.text},{role:'assistant',text:candidate.title+' の下書き',choices});photo=job.asset;
+      history.push({role:'user',text:job.text},{role:'assistant',text:[candidate.title+' の下書き',reply.message].filter(Boolean).join('。'),choices});photo=job.asset;
     }
     pendingDraft=null;clearRecovery();checkpoint();return true;
   }catch(e){
@@ -226,11 +242,6 @@ async function send(text,fromComposer=false){
     const choices=last?.role==='assistant'?(last.choices||numberedChoices(last.text)):[];
     const selection=!selected&&resolveChoice(text,choices);
     if(selection?.question){bubble('assistant',selection.question);history.push({role:'user',text},{role:'assistant',text:selection.question,choices});checkpoint();return;}
-    if(!selected&&/^(?:ほか|他|別)の(?:提案|案|アイデア)(?:は|ある|を見せて)?[？?。！! ]*$/.test(text)){
-      const options=[...(card?.querySelectorAll('.suggestions button')||[])].map(b=>b.textContent);
-      const answer=options.length?'今の下書きなら、'+options.map((v,i)=>(i+1)+'．'+v).join('、')+' ができます。':'作りたいものや、いま面倒に感じている作業をひと言教えてください。';
-      bubble('assistant',answer);history.push({role:'user',text},{role:'assistant',text:answer,choices:options});checkpoint();return;
-    }
     if(!selected&&/^(?:一つ前に戻して|前の版に戻して|さっきの方が(?:ええ|いい))[。！! ]*$/.test(text)){
       if(previousVersion){busy=false;card.querySelector('[data-undo]').click();busy=true;}else bubble('assistant','この会話で戻せる前の版はありません。');return;
     }
@@ -241,7 +252,7 @@ async function send(text,fromComposer=false){
     }
     if(/^(新しい会話|最初から|やり直す)$/.test(text)){fresh();greet();return;}
     const createRequest=/作って|作りたい|作成|作る|つくって/.test(text);
-    if(!selected&&!createRequest&&/編集|修正/.test(text)&&!draft){
+    if(!selected&&!createRequest&&/(?:を編集|を修正)(?:して|したい|する)[。！! ]*$/.test(text)&&!draft){
       step('砂場のページを探しています');
       const {items}=await call('sandboxList');
       const matches=items.filter(i=>text.includes(i.definition.title));
@@ -253,9 +264,9 @@ async function send(text,fromComposer=false){
       const {items}=await call('sandboxList');const found=/一覧/.test(text)?items:items.filter(i=>text.includes(i.definition.title));
       const msg=bubble('assistant',found.length?'ページを選んでください。':'該当するページが見つかりません。「一覧」と送ってください。');found.forEach(i=>link(msg,i));return;
     }
-    if(/新規で|新しく作|別の.*作|新しい.*作/.test(text)||(target&&!draft&&!/編集|修正/.test(text)&&/専用|作って|作成/.test(text))||(survey&&createRequest&&/ゲーム/.test(text)&&!/現調|径間/.test(text)))fresh();
+    if(survey&&createRequest&&/ゲーム/.test(text)&&!/現調|径間/.test(text))survey=false;
     const soloPhoto=!hadText&&selected?.type.startsWith('image/')&&!draft&&!history.length;
-    survey=survey||(!target&&(/現調|径間/.test(text)||soloPhoto));
+    survey=survey||(!target&&(/現調(?:用)?リスト.{0,8}(?:作|つく)|径間.{0,5}リスト.{0,5}作/.test(text)||soloPhoto));
     pendingDraft=null;clearRecovery();
     failed=!await generate({text:selection?.value||text,file:selected||null});
   }catch(e){failed=true;const msg=bubble('assistant',e.message==='Failed to fetch'?'通信できませんでした。時間をおいてもう一度試してください。':e.message);
@@ -318,7 +329,7 @@ if(checkpointKey){
   try{saved=JSON.parse(checkpointStore.getItem(checkpointKey));}catch{}
   if(saved){
     history=saved.history||[];target=saved.target;survey=saved.survey;photo=saved.photo;
-    for(const turn of history)bubble(turn.role,turn.text);
+    for(const turn of history)bubble(turn.role,turn.text+(turn.choices?.length?'\n'+turn.choices.map((v,i)=>(i+1)+'．'+v).join('\n'):''));
     if(saved.previous){
       const old=saved.previous;
       renderCandidate(old.draft,old.info?.reply||{},old.info?.request||'');

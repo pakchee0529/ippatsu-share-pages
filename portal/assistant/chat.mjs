@@ -175,19 +175,21 @@ $("#login").onsubmit=async e=>{e.preventDefault();const b=$("#login button");b.d
 $("#lock").onclick=async()=>{try{await api("logout");}finally{clear();}};
 const chatWork=workingStatus(document.querySelector('#typing'));
 async function send(text,action="chat",query=text){if(!text||busy)return;busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;chatWork.show(action==="poleSearch"?"電柱を探しています":"返事を準備しています");
-  const last=history.at(-1);
+  const last=history.findLast(turn=>!turn.mode||turn.mode===action);
   const choices=last?.role==="assistant" && last.mode===action ? last.choices || [] : [];
   const selection=query===text && resolveChoice(text,choices);
-  bubble(text,true);history.push({role:"user",content:text});
+  bubble(text,true);history.push({role:"user",mode:action,content:text});
   if(selection?.question){
     bubble(selection.question);history.push({role:"assistant",mode:action,content:selection.question,choices});saveHistory();
     busy=false;$("#compose button").disabled=false;chatWork.clear();$("#typing").hidden=true;return;
   }
-  if(selection?.value)query=selection.value;
-  const messages=history.slice(-25).map(({role,content})=>({role,content}));
+  if(selection?.value){query=selection.value;history.at(-1).resolved=query;}
+  const turns=history.filter(turn=>!turn.mode||turn.mode===action);
+  const messages=turns.slice(-25).map(({role,content,choices,resolved})=>({role,content:resolved?content+"（選択："+resolved+"）":role==="assistant"&&choices?.length&&!numberedChoices(content).length?content+"\n"+choices.map((v,i)=>(i+1)+". "+v).join("\n"):content}));
   if(selection?.value)messages.at(-1).content=text+"（直前の候補「"+selection.value+"」）";
+  for(const message of messages)message.content=message.content.slice(0,1800);
   while(messages.length>1 && JSON.stringify(messages).length>24000)messages.shift();
-  try{const r=action==="poleSearch"?await api(action,{query}):await api("chat",{messages,searchRef:history.at(-2)?.searchRef,receiptId:sessionStorage.getItem("ippatsu.chat.lastReceipt")});
+  try{const r=action==="poleSearch"?await api(action,{query}):await api("chat",{messages,searchRef:last?.searchRef,receiptId:sessionStorage.getItem("ippatsu.chat.lastReceipt")});
     mode(r.test);
     const candidates=(r.poleCards||[]).flatMap(card=>card.candidates||[]);
     history.push({role:"assistant",mode:action,choices:candidates.length?candidates:numberedChoices(r.message),content:r.message.slice(0,1800),citations:r.citations,sticker:r.sticker,links:r.links,searchRef:r.searchRef,poleCards:r.poleCards});
