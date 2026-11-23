@@ -1,6 +1,6 @@
 import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs';
-import {call,linkFor} from '../sandbox/api.mjs';
+import {call,linkFor} from '../sandbox/api.mjs?v=activity1';
 import {previewPage} from '../sandbox/preview.mjs';
 import {surveyTemplate} from './survey-template.mjs?v=fieldcopy1';
 import {account} from '../account/session.mjs';
@@ -8,6 +8,23 @@ import {account} from '../account/session.mjs';
 const root=document.querySelector('#sandbox-tools'),form=root.querySelector('form'),field=form.elements.prompt,file=form.elements.sketch;
 const log=root.querySelector('[role=log]'),status=root.querySelector('[role=status]'),attachment=root.querySelector('output');
 const work=workingStatus(status);
+let activity;
+function step(label){
+  if(!activity){
+    activity=document.createElement('details');
+    const heading=document.createElement('summary');
+    activity.append(heading,document.createElement('ol'));
+    log.append(activity);
+    activity.style.cssText='margin:.5rem 1rem;color:var(--muted);font-size:.875rem';
+  }
+  const list=activity.lastElementChild;
+  if(list.lastElementChild?.textContent!==label){
+    const item=document.createElement('li');item.textContent=label;list.append(item);
+  }
+  activity.firstElementChild.textContent='作業履歴（'+list.children.length+'件）';
+  work.show(label);
+}
+
 let history=[],draft=null,target=null,photo=null,survey=false,busy=false,card=null;
 let pendingDraft=null,pendingPublication=null,recoveryButton=null;
 const retryWords=/^(?:結果(?:を)?(?:もう一度)?(?:読み直して|読み直す|読んで|再確認して)|(?:もう一度|もう一回)(?:試して|読み直して|お願い)?|再試行(?:して)?)[。！!？?\s]*$/;
@@ -47,7 +64,7 @@ async function publish(){
   if(!draft){bubble('assistant','先に作りたいページを教えてください。');return;}
   const prior={draft,id:target?.id,revision:target?.revision};
   try{
-    work.show('砂場に掲載しています');
+    step('砂場に掲載しています');
     const item=await call('sandboxPublish',{draft,id:target?.id,revision:target?.revision});
     if(!item?.id||!item.definition)throw Error('掲載結果を受け取れませんでした。');
     fresh();target=item;link(bubble('assistant','掲載しました。'),item);
@@ -63,7 +80,7 @@ function recovery(message,label,key){
   btn.onclick=()=>send('結果を読み直して');message.append(document.createElement('br'),btn);recoveryButton=btn;
 }
 async function checkPublication(){
-  work.show('掲載結果を照合しています');
+  step('掲載結果を照合しています');
   const prior=pendingPublication;
   const {items}=prior.id ? {items:[await call('sandboxGet',{id:prior.id})]} : await call('sandboxList');
   const content=html=>String(html??'').replace(/<!--ippatsu-style:[\w-]+:[\w-]+-->/g,'');
@@ -76,14 +93,16 @@ async function checkPublication(){
 }
 async function generate(job){
   try{
+    step('依頼内容を準備しています');
     if(!job.payload){
-      if(job.file)work.show('添付ファイルを読み込んでいます');
+      if(job.file)step('添付ファイルを読み込んでいます');
       const asset=job.file?await readAttachment(job.file):photo;
       job.asset=asset;
       job.payload={interactive:true,prompt:job.text,template:survey?'survey':undefined,history:history.slice(-8),previous:draft,...asset,id:target?.id,revision:target?.revision};
     }
-    work.show(job.payload.template==='survey'?'現調リストを準備しています':draft||target?'下書きを更新しています':'下書きを作っています');
-    const reply=await call('sandboxDraft',job.payload);
+    step(job.payload.template==='survey'?'現調リストを準備しています':draft||target?'下書きを更新しています':'下書きを作っています');
+    const reply=await call('sandboxDraft',job.payload,step);
+    step('受け取った回答を確認しています');
     if(typeof reply?.question==='string'&&reply.question.trim()){
       history.push({role:'user',text:job.text},{role:'assistant',text:reply.question});
       photo=job.asset;bubble('assistant',reply.question);
@@ -91,6 +110,7 @@ async function generate(job){
       if(job.payload.template==='survey'&&(!reply?.survey||typeof reply.survey.title!=='string'))throw Error('現調リストの下書きを受け取れませんでした。');
       const candidate=job.payload.template==='survey'?surveyTemplate(reply.survey):reply?.draft;
       if(!candidate?.title||typeof candidate.html!=='string'||!candidate.html.trim())throw Error('下書きの内容を確認できませんでした。');
+      step('下書きのプレビューを組み立てています');
       draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='送った資料と見比べてほしい径間が'+reply.survey.notes.length+'件あります。';card.append(note);}card.append(previewPage(candidate.html));
       if(reply.survey?.numbers?.length){
         const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';
@@ -135,14 +155,14 @@ async function send(text){
     if(/^(新しい会話|最初から|やり直す)$/.test(text)){fresh();greet();return;}
     const createRequest=/作って|作りたい|作成|作る|つくって/.test(text);
     if(!selected&&!createRequest&&/編集|修正/.test(text)&&!draft){
-      work.show('砂場のページを探しています');
+      step('砂場のページを探しています');
       const {items}=await call('sandboxList');
       const matches=items.filter(i=>text.includes(i.definition.title));
       if(matches.length===1){fresh();target=matches[0];}
       else if(!target){bubble('assistant','編集したいページの名前を添えてください。「一覧」で探せます。');return;}
     }
     if(!selected&&!createRequest&&(/^(?:ページの?)?一覧(?:を(?:見せて|表示して))?[。！!\s]*$/.test(text)||/(?:を開いて|を開く)[。！!\s]*$/.test(text))){
-      work.show('砂場のページを探しています');
+      step('砂場のページを探しています');
       const {items}=await call('sandboxList');const found=/一覧/.test(text)?items:items.filter(i=>text.includes(i.definition.title));
       const msg=bubble('assistant',found.length?'ページを選んでください。':'該当するページが見つかりません。「一覧」と送ってください。');found.forEach(i=>link(msg,i));return;
     }
@@ -154,7 +174,7 @@ async function send(text){
   }catch(e){failed=true;const msg=bubble('assistant',e.message==='Failed to fetch'?'通信できませんでした。時間をおいてもう一度試してください。':e.message);
     if(pendingPublication)recovery(msg,'掲載結果を確認','publishCheck');
   }
-  finally{work.clear();if(!failed){
+  finally{activity=null;work.clear();if(!failed){
     if(consumeField&&field.value===initialField)field.value='';
     if(consumeFile&&(camera.files[0]||file.files[0])===selected){file.value='';camera.value='';attachment.textContent='';}
   }busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
