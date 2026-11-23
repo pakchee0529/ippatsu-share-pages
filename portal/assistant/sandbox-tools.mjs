@@ -1,6 +1,7 @@
+import {preserveBehavior,projectHistory} from './behavior-history.mjs';
 import {numberedChoices,resolveChoice} from './choices.mjs';
 import {basicCounter} from './basic-counter.mjs';
-import {checkStartup,checkLabel} from './sandbox-check.mjs?v=actions2';
+import {checkStartup,checkLabel} from './sandbox-check.mjs?v=workflow3';
 import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs';
 import {call,linkFor} from '../sandbox/api.mjs?v=turn1';
@@ -155,7 +156,7 @@ function renderCandidate(candidate,reply,request){
       card.append(choices);
       if(previousVersion){
         const undo=document.createElement('button');undo.textContent='一つ前に戻す';card.append(undo);
-        undo.onclick=()=>{if(busy||!previousVersion)return;const old=previousVersion;previousVersion=null;card.remove();draft=old.draft;card=old.card;history=old.history;photo=old.photo;renderInfo=old.info;const row=document.createElement('div');row.className='row';row.append(card);log.append(row);card.querySelector('[data-undo]')?.remove();pendingDraft=null;clearRecovery();checkpoint();};
+        undo.onclick=()=>{if(busy||!previousVersion)return;const old=previousVersion;previousVersion=null;card.remove();draft=old.draft;card=old.card;history=[...old.history,{role:'assistant',text:'利用者が直前の変更を取り消して、この下書きに戻しました。次の依頼はこの版から続けます。'}];photo=old.photo;renderInfo=old.info;const row=document.createElement('div');row.className='row';row.append(card);log.append(row);card.querySelector('[data-undo]')?.remove();pendingDraft=null;clearRecovery();checkpoint();};
         undo.dataset.undo='';
       }
       const btn=document.createElement('button');btn.textContent=target?'共有ページに保存':'砂場にページを追加';btn.onclick=()=>send('掲載して');card.append(btn);
@@ -167,7 +168,7 @@ async function generate(job){
       if(job.file)step('添付ファイルを読み込んでいます');
       const asset=job.file?await readAttachment(job.file):photo;
       job.asset=asset;
-      job.payload={turnProtocol:1,interactive:true,prompt:job.text,template:survey?'survey':undefined,history:history.slice(-8),previous:draft,...asset,id:target?.id,revision:target?.revision};
+      job.payload={turnProtocol:1,interactive:true,prompt:job.text,template:survey?'survey':undefined,history:projectHistory(history.slice(-8),(draft||target?.definition)?.html),previous:draft,...asset,id:target?.id,revision:target?.revision};
     }
     step(job.payload.template==='survey'?'現調リストを準備しています':draft||target?'下書きを更新しています':'下書きを作っています');
     checkpoint({text:job.text,payload:job.payload,asset:job.asset});
@@ -196,6 +197,7 @@ async function generate(job){
         const remaining=reply.draft?.html?await checkStartup(reply.draft.html,required):'下書きがありません';
         if(remaining)throw Error('修正後も検査に通りませんでした。'+remaining);
       }
+      reply.draft.html=await preserveBehavior(separate?null:(draft||target?.definition)?.html,reply.draft.html,required);
       reply.message=[reply.message,checkLabel(required)].filter(Boolean).join('。');
     }
     step('受け取った回答を確認しています');

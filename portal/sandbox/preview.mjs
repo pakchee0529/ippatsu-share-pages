@@ -27,7 +27,7 @@ export function previewPage(html, inputKey=null, shared=null) {
       state={...state,[d.field]:d.value};
       if(shared){shared.save(d.field,d.value);return;}
       try{localStorage.setItem(inputKey,JSON.stringify(state));}catch{}
-    });
+    },shared?.signal?{signal:shared.signal}:undefined);
   }
   frame.srcdoc = '<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="' + policy + '">' + localForms + bridge + html;
   return frame;
