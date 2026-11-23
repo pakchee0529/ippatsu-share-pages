@@ -4,6 +4,16 @@ export function previewPage(html, inputKey=null, shared=null) {
   frame.setAttribute("sandbox", "allow-scripts");
   frame.referrerPolicy = "no-referrer";
   const policy = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; form-action 'none'; base-uri 'none'; frame-src 'none'; connect-src 'none'";
+  const localForms = `<script>
+    document.addEventListener("click", event => {
+      const button = event.target.closest?.("button,input");
+      if (event.defaultPrevented || !button?.form || !["submit","image"].includes(button.type)) return;
+      event.preventDefault();
+      const form = button.form;
+      if (form.noValidate || button.formNoValidate || form.reportValidity())
+        form.dispatchEvent(new SubmitEvent("submit",{bubbles:true,cancelable:true,submitter:button}));
+    });
+  </script>`;
   let bridge = "";
   if(inputKey){
     let state=shared?.values||{};
@@ -19,6 +29,6 @@ export function previewPage(html, inputKey=null, shared=null) {
       try{localStorage.setItem(inputKey,JSON.stringify(state));}catch{}
     });
   }
-  frame.srcdoc = '<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="' + policy + '">' + bridge + html;
+  frame.srcdoc = '<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="' + policy + '">' + localForms + bridge + html;
   return frame;
 }
