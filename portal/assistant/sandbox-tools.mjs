@@ -1,7 +1,8 @@
+import {basicCounter} from './basic-counter.mjs';
 import {checkStartup} from './sandbox-check.mjs';
 import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs';
-import {call,linkFor} from '../sandbox/api.mjs?v=activity1';
+import {call,linkFor} from '../sandbox/api.mjs?v=reconnect1';
 import {previewPage} from '../sandbox/preview.mjs';
 import {surveyTemplate} from './survey-template.mjs?v=fieldcopy1';
 import {appearance} from '../sandbox/appearance.mjs';
@@ -168,7 +169,9 @@ async function generate(job){
     }
     step(job.payload.template==='survey'?'現調リストを準備しています':draft||target?'下書きを更新しています':'下書きを作っています');
     checkpoint({text:job.text,payload:job.payload,asset:job.asset});
-    let reply=await call('sandboxDraft',job.payload,step);
+    let reply=basicCounter(job.payload);
+    if(reply)step('カウンターを組み立てています');
+    else reply=await call('sandboxDraft',job.payload,step);
     if(reply.draft?.html){
       step('下書きをブラウザで開いています');
       let error=await checkStartup(reply.draft.html);
