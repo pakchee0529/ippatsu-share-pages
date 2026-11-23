@@ -12,7 +12,7 @@ export function numberedChoices(message=''){
 
 export function resolveChoice(reply,options){
   if(!options?.length)return null;
-  const matches=reply.normalize('NFKC').trim().match(/^(前者|後者|最初|最後|[1-9]\d?(?:番目|番|つ目|個目))(?:の方)?(?:で(?:お願い|いい|ええ)?|にして|をお願い)?[。!！\s]*$/u);
+  const matches=reply.normalize('NFKC').trim().match(/^(前者|後者|最初|最後|[1-9]\d?(?:番目|番|つ目|個目)?)(?:の方)?(?:で(?:お願い|いい|ええ)?|にして|をお願い)?[。!！\s]*$/u);
   if(!matches)return null;
   const word=matches[1];
   const clarify={question:options.map((s,i)=>(i+1)+'．'+s).join('\n')+'\nどの候補にしますか？ 番号で選べます。'};

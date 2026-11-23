@@ -1,5 +1,6 @@
-import {preserveBehavior,projectHistory} from './behavior-history.mjs';
-import {numberedChoices,resolveChoice} from './choices.mjs';
+import {literalEdit} from './short-edits.mjs';
+import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=short1';
+import {numberedChoices,resolveChoice} from './choices.mjs?v=short1';
 import {basicCounter} from './basic-counter.mjs';
 import {checkStartup,checkLabel} from './sandbox-check.mjs?v=workflow3';
 import {workingStatus} from './working.mjs';
@@ -172,9 +173,11 @@ async function generate(job){
     }
     step(job.payload.template==='survey'?'現調リストを準備しています':draft||target?'下書きを更新しています':'下書きを作っています');
     checkpoint({text:job.text,payload:job.payload,asset:job.asset});
-    let reply=basicCounter(job.payload);
-    if(reply)step('カウンターを組み立てています');
-    else reply=await call('sandboxDraft',job.payload,step);
+    let reply=!job.file && literalEdit(job.text,draft||target?.definition);
+    if(reply)step('指定された文言を変更しています');
+    else reply=basicCounter(job.payload);
+    if(reply&&!reply.kind)step('カウンターを組み立てています');
+    if(!reply)reply=await call('sandboxDraft',job.payload,step);
     if(['advice','clarify'].includes(reply.kind)){
       const msg=bubble('assistant',reply.message), choices=reply.choices||[];
       const group=document.createElement('div');group.className='suggestions';
@@ -253,7 +256,7 @@ async function send(text,fromComposer=false){
       if(pendingDraft){bubble('assistant','直前の下書きがまだできていません。「同じ内容でもう一度試す」で確認してください。');return;}
       await publish();return;
     }
-    if(/^(新しい会話|最初から|やり直す)$/.test(text)){fresh();greet();return;}
+    if(/^(新しい会話|会話をリセット)$/.test(text)){fresh();greet();return;}
     const createRequest=/作って|作りたい|作成|作る|つくって/.test(text);
     if(!selected&&!createRequest&&/(?:を編集|を修正)(?:して|したい|する)[。！! ]*$/.test(text)&&!draft){
       step('砂場のページを探しています');

@@ -1,4 +1,6 @@
-import {preserveBehavior,projectHistory} from '../assistant/behavior-history.mjs';
+import {resolveChoice} from '../assistant/choices.mjs?v=short1';
+import {literalEdit} from '../assistant/short-edits.mjs';
+import {preserveBehavior,projectHistory} from '../assistant/behavior-history.mjs?v=short1';
 import {checkStartup,checkLabel} from '../assistant/sandbox-check.mjs?v=workflow3';
 import {requestedAppearance} from './appearance.mjs';
 import {call} from './api.mjs';
@@ -29,6 +31,7 @@ export function childChat(item,survey){
   launch.onclick=()=>dialog.showModal();el('chat-close').onclick=()=>dialog.close();
   let draft=null,awaitingName=false,editing=false,busy=false;
   const history=[];
+  let lastChoices=[];
   const rollbackKey='ippatsu.sandbox.rollback.'+item.id;
   function rollback(){
     try{const old=JSON.parse(sessionStorage.getItem(rollbackKey));return old?.revision===item.revision?old:null;}catch{return null;}
@@ -62,38 +65,43 @@ export function childChat(item,survey){
     location.reload();
   }
   async function send(raw){
-    if(busy)return;const text=raw.trim();if(!text)return;
+    if(busy)return;let text=raw.trim();if(!text)return;
+    const choice=resolveChoice(text,lastChoices);
+    if(choice?.question){say(choice.question);return;}
+    text=choice?.value||text;lastChoices=[];
     input.value='';say(text,true);quick();busy=true;form.querySelector('button').disabled=true;
     try{
       if(/^(一つ前に戻して|前の版に戻して|さっきの方が(?:ええ|いい))[。！! ]*$/.test(text)){restore();return;}
-      const look=requestedAppearance(text,item.definition);
+      const look=/一覧.{0,6}(?:目印|アイコン|色)|(?:ページ|砂場)のアイコン|^(?:アイコン|マーク)(?:を|は)/.test(text)&&requestedAppearance(text,item.definition);
       if(look){confirmation('一覧の目印を「'+look.label+'」にしますか？',()=>save(item.definition,look.style));return;}
-      if(!editing&&survey&&/次.*(どこ|何処|現場|径間)|次は[？?]?$/.test(text)){
+      const editInterface=/ボタン|見出し|レイアウト|フォント|ラベル|文字色|背景色|機能を|仕組みを/.test(text);
+      const surveyCommand=!editing&&survey&&!editInterface;
+      if(surveyCommand&&/次.*(どこ|何処|現場|径間)|次は[？?]?$/.test(text)){
         awaitingName=false;await survey.ready;const r=survey.next();
         const p=say(r?'次は「'+r.name+'」です。'+(r.corrected?'この電柱で合っていますか？ 地図で確認してください。':''):'未訪問の径間はありません。');
         if(r?.url){const a=document.createElement('a');a.href=r.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='両端の電柱を見る';p.append(document.createElement('br'),a);}
         else if(r)say('両端の座標を確認できていません。');return;
       }
-      if(!editing&&survey&&/チェック済|訪問済/.test(text)&&/削除|消し|消す|除い/.test(text)){
+      if(surveyCommand&&/チェック済|訪問済/.test(text)&&/削除|消し|消す|除い/.test(text)){
         awaitingName=false;const remove=survey.checked();if(!remove.length){say('チェック済みの径間はありません。');return;}
         confirmation('共有リストから次の'+remove.length+'件を削除します。\n'+remove.map(r=>r.name).join('\n'),()=>save(changeRows(item,survey,null,remove)));return;
       }
-      if(!editing&&survey&&(awaitingName||/追加/.test(text)&&/径間|[～〜~]/.test(text))){
+      if(surveyCommand&&(awaitingName||/追加/.test(text)&&/径間|[～〜~]/.test(text))){
         const name=text.normalize('NFKC').match(/[^\s「」、。]+?\d[A-Za-z\d]*[~〜][^\s「」、。]*?\d[A-Za-z\d]*/)?.[0]?.replace(/^.*?(?:追加して|追加[:：]|径間[:：])/,'').replace(/^[「『]/,'');
         if(!name){awaitingName=true;say('追加する径間名を入力してください。');return;}
         awaitingName=false;
         if(survey.rows.some(r=>r.name.normalize('NFKC').replace(/〜/g,'~')===name.replace(/〜/g,'~'))){say('その径間は登録済みです。');return;}
         confirmation('共有リストに「'+name+'」を追加します。',()=>save(changeRows(item,survey,name,[])));return;
       }
-      if(!editing&&survey&&/訪問順|巡回順|近い順|遠い順/.test(text)){
+      if(surveyCommand&&/訪問順|巡回順|近い順|遠い順/.test(text)){
         await survey.ready;const near=text.includes('近い順'),route=survey.route(near);if(!route.some(r=>r.center)){say('座標を照合できませんでした。');return;}
         confirmation((near?'会社のある上之町から近い順です。':'遠い現場から回る巡回案です。')+'\n'+route.map((r,i)=>(i+1)+'　'+r.name).join('\n'),()=>{survey.applyRoute(route);say('この端末の訪問順に反映しました。');quick();});return;
       }
       if(text==='ページを編集'){editing=true;awaitingName=false;say('このページのどこをどう変えたいですか？');return;}
       const request={turnProtocol:1,id:item.id,revision:item.revision,prompt:text,interactive:true,history:projectHistory(history.slice(-9,-1),(draft||item.definition).html),previous:draft};
-      let reply=await call('sandboxDraft',request);
+      let reply=literalEdit(text,draft||item.definition)||await call('sandboxDraft',request);
       if(['advice','clarify'].includes(reply.kind)){
-        const options=reply.choices||[];
+        const options=reply.choices||[];lastChoices=options;
         say(reply.message+(options.length?'\n'+options.map((v,i)=>(i+1)+'．'+v).join('\n'):''));
         for(const option of options)actions.append(button(option,()=>send(option)));
         return;

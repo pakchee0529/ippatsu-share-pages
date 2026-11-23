@@ -1,3 +1,4 @@
+import {editingContext} from './short-edits.mjs';
 import {checkStartup} from './sandbox-check.mjs?v=workflow3';
 
 const marker=/<!--ippatsu-checks:([A-Za-z0-9+/=]+)-->/g;
@@ -14,9 +15,11 @@ function describe(steps){
 }
 export function projectHistory(history,html){
   const cases=readCases(html);
-  if(!cases.length)return history;
+  if(!html)return history;
+  const context=editingContext(html);
+  if(!cases.length)return [{role:'assistant',text:context},...history.slice(-8)];
   const summary='この版で動作確認済みの操作です。明示された仕様変更を優先し、その他の動きと保存欄のIDは保ってください。\n'+cases.map(describe).join('\n').slice(0,2200);
-  return [{role:'assistant',text:summary},...history.slice(-7)];
+  return [{role:'assistant',text:[context,summary].join('\n').slice(0,1800)},...history.slice(-7)];
 }
 export async function preserveBehavior(before,after,steps,approve=window.confirm.bind(window)){
   const retained=[];
