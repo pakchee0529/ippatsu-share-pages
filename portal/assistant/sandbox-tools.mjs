@@ -1,10 +1,11 @@
+import {packCheckpoint,unpackCheckpoint} from './checkpoint.mjs';
 import {literalEdit} from './short-edits.mjs';
 import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=short1';
 import {numberedChoices,resolveChoice} from './choices.mjs?v=short1';
 import {basicCounter} from './basic-counter.mjs';
 import {checkStartup,checkLabel} from './sandbox-check.mjs?v=workflow3';
 import {workingStatus} from './working.mjs';
-import {imageInput} from '../sandbox/image-input.mjs';
+import {imageInput} from '../sandbox/image-input.mjs?v=bounded1';
 import {call,linkFor} from '../sandbox/api.mjs?v=turn1';
 import {previewPage} from '../sandbox/preview.mjs';
 import {surveyTemplate} from './survey-template.mjs?v=fieldcopy1';
@@ -46,7 +47,7 @@ function checkpoint(job=null){
   if(!checkpointKey)return;
   try{
     if(!draft&&!history.length&&!job&&!pendingPublication){checkpointStore.removeItem(checkpointKey);return;}
-    checkpointStore.setItem(checkpointKey,JSON.stringify({history:history.slice(-10),draft,target:target&&{id:target.id,revision:target.revision},survey,photo,job,pendingPublication,renderInfo,previous:previousVersion&&{draft:previousVersion.draft,history:previousVersion.history,photo:previousVersion.photo,info:previousVersion.info}}));
+    checkpointStore.setItem(checkpointKey,packCheckpoint({history:history.slice(-10),draft,target:target&&{id:target.id,revision:target.revision},survey,photo,job,pendingPublication,renderInfo,previous:previousVersion&&{draft:previousVersion.draft,history:previousVersion.history,photo:previousVersion.photo,info:previousVersion.info}}));
   }catch{status.textContent='この端末に続きを保存できませんでした。';}
 }
 const retryWords=/^(?:結果(?:を)?(?:もう一度)?(?:読み直して|読み直す|読んで|再確認して)|(?:もう一度|もう一回)(?:試して|読み直して|お願い)?|再試行(?:して)?)[。！!？?\s]*$/;
@@ -332,7 +333,7 @@ root.querySelector('#survey-shortcut').onclick=()=>{
 await selectCheckpoint();
 if(checkpointKey){
   let saved;
-  try{saved=JSON.parse(checkpointStore.getItem(checkpointKey));}catch{}
+  try{saved=unpackCheckpoint(checkpointStore.getItem(checkpointKey));}catch{}
   if(saved){
     history=saved.history||[];target=saved.target;survey=saved.survey;photo=saved.photo;
     for(const turn of history)bubble(turn.role,turn.text+(turn.choices?.length?'\n'+turn.choices.map((v,i)=>(i+1)+'．'+v).join('\n'):''));
