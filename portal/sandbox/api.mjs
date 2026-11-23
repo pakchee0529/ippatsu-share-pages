@@ -23,9 +23,22 @@ export async function call(action,data={},onStep){
  }
  const device=await deviceCredential();
  if(action==='sandboxDraft')onStep?.('依頼を送信して、生成結果を待っています');
- const res=await fetch(account()&&action.startsWith('sandbox')?accountEndpoint:'https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/ippatsu-assistant',{method:'POST',headers:{'Content-Type':'application/json','x-ippatsu-session':token},body:JSON.stringify({...data,action,device})});
+ const send=async()=>fetch(account()&&action.startsWith('sandbox')?accountEndpoint:'https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/ippatsu-assistant',{method:'POST',headers:{'Content-Type':'application/json','x-ippatsu-session':token},body:JSON.stringify({...data,action,device})});
+ let res;
+ try{res=await send();}
+ catch(error){
+   if(action!=='sandboxDraft'||!(error instanceof TypeError))throw error;
+   onStep?.('通信の回復を待って、下書きの依頼を送り直します');
+   await new Promise(resolve=>{
+     function ready(){clearTimeout(timer);window.removeEventListener('online',ready);resolve();}
+     const timer=setTimeout(ready,navigator.onLine?1500:15000);
+     window.addEventListener('online',ready,{once:true});
+   });
+   res=await send();
+ }
  if(action==='sandboxDraft')onStep?.('サーバーの応答を読み込んでいます');
- const result=await res.json();if(!res.ok){const error=Error(result.message||'通信に失敗しました');error.status=res.status;throw error;}
+ if(!res.ok){const detail=await res.json().catch(()=>({}));const error=Error(detail.message||'通信に失敗しました');error.status=res.status;throw error;}
+ const result=await res.json();
  if(action==='sandboxDraft' && !data.id && result.draft)result.draft=reconcilePurpose(result.draft,request);
  return result;
 }
