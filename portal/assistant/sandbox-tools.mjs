@@ -2,16 +2,21 @@ import {imageInput} from '../sandbox/image-input.mjs';
 import {call,linkFor} from '../sandbox/api.mjs';
 import {previewPage} from '../sandbox/preview.mjs';
 import {surveyTemplate} from './survey-template.mjs?v=fieldcopy1';
+import {account} from '../account/session.mjs';
 
 const root=document.querySelector('#sandbox-tools'),form=root.querySelector('form'),field=form.elements.prompt,file=form.elements.sketch;
 const log=root.querySelector('[role=log]'),status=root.querySelector('[role=status]'),attachment=root.querySelector('output');
 let history=[],draft=null,target=null,photo=null,survey=false,busy=false,card=null;
+let pendingDraft=null,pendingPublication=null,recoveryButton=null;
+const retryWords=/^(?:結果(?:を)?(?:もう一度)?(?:読み直して|読み直す|読んで|再確認して)|(?:もう一度|もう一回)(?:試して|読み直して|お願い)?|再試行(?:して)?)[。！!？?\s]*$/;
+function clearRecovery(){recoveryButton?.remove();recoveryButton=null;}
 function bubble(role,text){
   const row=document.createElement('div');row.className=role==='user'?'row mine':'row';
   const body=document.createElement('div');body.className='bubble';body.textContent=text;
   row.append(body);log.append(row);log.scrollTop=log.scrollHeight;return body;
 }
 function fresh(){
+  pendingDraft=null;pendingPublication=null;clearRecovery();
   history=[];draft=null;target=null;photo=null;survey=false;card?.remove();card=null;
 }
 function link(container,item){
@@ -36,49 +41,116 @@ async function readAttachment(f){
   throw Error('画像、PDF（700KBまで）、UTF-8のTXT・CSV・MD（100KBまで）を選んでください。');
 }
 async function publish(){
+  if(pendingPublication){await checkPublication();return;}
   if(!draft){bubble('assistant','先に作りたいページを教えてください。');return;}
-  const item=await call('sandboxPublish',{draft,id:target?.id,revision:target?.revision});
-  fresh();target=item;link(bubble('assistant','掲載しました。'),item);
+  const prior={draft,id:target?.id,revision:target?.revision};
+  try{
+    const item=await call('sandboxPublish',{draft,id:target?.id,revision:target?.revision});
+    if(!item?.id||!item.definition)throw Error('掲載結果を受け取れませんでした。');
+    fresh();target=item;link(bubble('assistant','掲載しました。'),item);
+  }catch(e){
+    if(e.status && e.status<500 && e.status!==408)throw e;
+    pendingPublication=prior;
+    const msg=bubble('assistant','掲載の返事を受け取れませんでした。掲載済みのページを確認できます。');
+    recovery(msg,'掲載結果を確認','publishCheck');
+  }
+}
+function recovery(message,label,key){
+  clearRecovery();const btn=document.createElement('button');btn.type='button';btn.dataset[key]='';btn.textContent=label;
+  btn.onclick=()=>send('結果を読み直して');message.append(document.createElement('br'),btn);recoveryButton=btn;
+}
+async function checkPublication(){
+  const prior=pendingPublication;
+  const {items}=prior.id ? {items:[await call('sandboxGet',{id:prior.id})]} : await call('sandboxList');
+  const content=html=>String(html??'').replace(/<!--ippatsu-style:[\w-]+:[\w-]+-->/g,'');
+  const matches=items.filter(item=>item?.definition?.title===prior.draft.title &&
+    content(item.definition.html)===content(prior.draft.html) &&
+    (!prior.id||item.id===prior.id&&item.revision>prior.revision));
+  if(matches.length===1){fresh();target=matches[0];link(bubble('assistant','同じ内容の掲載済みページを確認できました。'),target);return;}
+  const msg=bubble('assistant',matches.length?'同じ内容のページが複数あります。確認したいページを選んでください。':'まだ掲載結果を特定できません。時間をおいてもう一度確認できます。');
+  matches.forEach(item=>link(msg,item));recovery(msg,'掲載結果を確認','publishCheck');
+}
+async function generate(job){
+  try{
+    if(!job.payload){
+      const asset=job.file?await readAttachment(job.file):photo;
+      job.asset=asset;
+      job.payload={interactive:true,prompt:job.text,template:survey?'survey':undefined,history:history.slice(-8),previous:draft,...asset,id:target?.id,revision:target?.revision};
+    }
+    status.textContent='いっぱつちゃんが確認中…';
+    const reply=await call('sandboxDraft',job.payload);
+    if(typeof reply?.question==='string'&&reply.question.trim()){
+      history.push({role:'user',text:job.text},{role:'assistant',text:reply.question});
+      photo=job.asset;bubble('assistant',reply.question);
+    }else{
+      if(job.payload.template==='survey'&&(!reply?.survey||typeof reply.survey.title!=='string'))throw Error('現調リストの下書きを受け取れませんでした。');
+      const candidate=job.payload.template==='survey'?surveyTemplate(reply.survey):reply?.draft;
+      if(!candidate?.title||typeof candidate.html!=='string'||!candidate.html.trim())throw Error('下書きの内容を確認できませんでした。');
+      draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='送った資料と見比べてほしい径間が'+reply.survey.notes.length+'件あります。';card.append(note);}card.append(previewPage(candidate.html));
+      if(reply.survey?.numbers?.length){
+        const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';
+        label.append(box,'読み取った番号をリストに載せる（'+reply.survey.numbers.length+'件）');
+        const examples=document.createElement('details'),heading=document.createElement('summary');heading.textContent='径間ごとの番号を見る';examples.append(heading);
+        for(const n of reply.survey.numbers){const row=document.createElement('div');row.textContent=n.name+'　'+n.text;examples.append(row);}
+        card.append(label,examples);box.onchange=()=>{draft=surveyTemplate(reply.survey,box.checked);card.querySelector('iframe').replaceWith(previewPage(draft.html));};
+      }
+      const btn=document.createElement('button');btn.textContent=target?'共有ページに保存':'砂場にページを追加';btn.onclick=()=>send('掲載して');card.append(btn);
+      history.push({role:'user',text:job.text});photo=job.asset;
+    }
+    pendingDraft=null;clearRecovery();return true;
+  }catch(e){
+    pendingDraft=job;
+    const msg=bubble('assistant',(e.message==='Failed to fetch'?'通信が途中で切れました。':e.message)+' 入力と添付は残っています。');
+    recovery(msg,'同じ内容でもう一度試す','draftRetry');return false;
+  }
 }
 async function send(text){
   if(busy)return;
   const selected=camera.files[0]||file.files[0];if(!text&&!selected)return;
-  let failed=false;busy=true;form.querySelector('button').disabled=true;
+  const initialField=field.value,hadText=Boolean(text.trim());
+  let failed=false,consumeField=true,consumeFile=true;busy=true;form.querySelector('button').disabled=true;
   try{
     text=text.trim()||(survey?'この資料から径間を取り込んで':'この資料を使いたい');
+    const previousAttempt=pendingDraft?.text===text&&pendingDraft.file===(selected||null);
+    if(retryWords.test(text)||previousAttempt){
+      consumeField=!initialField.trim()||retryWords.test(initialField.trim())||initialField.trim()===pendingDraft?.text;
+      consumeFile=selected===(pendingDraft?.file||undefined);
+      if(pendingPublication)await checkPublication();
+      else if(pendingDraft)failed=!await generate(pendingDraft);
+      else if(card){card.scrollIntoView({block:'nearest'});bubble('assistant','直前の下書きを確認できます。');}
+      else bubble('assistant','ここには読み直す下書きや掲載結果がまだありません。作りたいものを送ってください。');
+      return;
+    }
     bubble('user',text+(selected?'（'+selected.name+'）':''));
     if(!selected&&/^(?:現場の)?進入(?:路|口)(?:写真)?を登録(?:したい|する|して)?[。！! ]*$/.test(text)){entranceGuide();return;}
-    if(!selected&&/^(?:これで)?(?:掲載|公開|反映|保存)(?:して|する|お願い)?[。！! ]*$/.test(text)){await publish();return;}
+    if(!selected&&/^(?:これで)?(?:掲載|公開|反映|保存)(?:して|する|お願い)?[。！! ]*$/.test(text)){
+      if(pendingDraft){bubble('assistant','直前の下書きがまだできていません。「同じ内容でもう一度試す」で確認してください。');return;}
+      await publish();return;
+    }
     if(/^(新しい会話|最初から|やり直す)$/.test(text)){fresh();greet();return;}
-    if(!selected&&/編集|修正/.test(text)&&!draft){
+    const createRequest=/作って|作りたい|作成|作る|つくって/.test(text);
+    if(!selected&&!createRequest&&/編集|修正/.test(text)&&!draft){
       const {items}=await call('sandboxList');
       const matches=items.filter(i=>text.includes(i.definition.title));
       if(matches.length===1){fresh();target=matches[0];}
       else if(!target){bubble('assistant','編集したいページの名前を添えてください。「一覧」で探せます。');return;}
     }
-    if(!selected&&/一覧|開いて|を開く/.test(text)){
+    if(!selected&&!createRequest&&(/^(?:ページの?)?一覧(?:を(?:見せて|表示して))?[。！!\s]*$/.test(text)||/(?:を開いて|を開く)[。！!\s]*$/.test(text))){
       const {items}=await call('sandboxList');const found=/一覧/.test(text)?items:items.filter(i=>text.includes(i.definition.title));
       const msg=bubble('assistant',found.length?'ページを選んでください。':'該当するページが見つかりません。「一覧」と送ってください。');found.forEach(i=>link(msg,i));return;
     }
-    if(/新規で|新しく作|別の.*作|新しい.*作/.test(text)||(target&&!draft&&!/編集|修正/.test(text)&&/専用|作って|作成/.test(text)))fresh();
-    if(selected)photo=await readAttachment(selected);
-    survey=survey||(!target&&/現調|径間/.test(text));
-    status.textContent='いっぱつちゃんが確認中…';
-    const reply=await call('sandboxDraft',{interactive:true,prompt:text,template:survey?'survey':undefined,history:history.slice(-8),previous:draft,...photo,id:target?.id,revision:target?.revision});
-    history.push({role:'user',text});
-    if(reply.question){history.push({role:'assistant',text:reply.question});bubble('assistant',reply.question);return;}
-    const candidate=survey?surveyTemplate(reply.survey):reply.draft;
-    draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='送った資料と見比べてほしい径間が'+reply.survey.notes.length+'件あります。';card.append(note);}card.append(previewPage(candidate.html));
-    if(reply.survey?.numbers?.length){
-      const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';
-      label.append(box,'読み取った番号をリストに載せる（'+reply.survey.numbers.length+'件）');
-      const examples=document.createElement('details'),heading=document.createElement('summary');heading.textContent='径間ごとの番号を見る';examples.append(heading);
-      for(const n of reply.survey.numbers){const row=document.createElement('div');row.textContent=n.name+'　'+n.text;examples.append(row);}
-      card.append(label,examples);box.onchange=()=>{draft=surveyTemplate(reply.survey,box.checked);card.querySelector('iframe').replaceWith(previewPage(draft.html));};
-    }
-    const btn=document.createElement('button');btn.textContent=target?'共有ページに保存':'砂場にページを追加';btn.onclick=()=>send('掲載して');card.append(btn);log.scrollTop=log.scrollHeight;
-  }catch(e){failed=true;bubble('assistant',e.message==='Failed to fetch'?'送れませんでした。書いた内容とファイルは残っています。そのまま「送信」を押してください。':e.message);}
-  finally{status.textContent='';if(!failed){field.value='';file.value='';camera.value='';attachment.textContent='';}busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
+    if(/新規で|新しく作|別の.*作|新しい.*作/.test(text)||(target&&!draft&&!/編集|修正/.test(text)&&/専用|作って|作成/.test(text))||(survey&&createRequest&&/ゲーム/.test(text)&&!/現調|径間/.test(text)))fresh();
+    const soloPhoto=!hadText&&selected?.type.startsWith('image/')&&!draft&&!history.length;
+    survey=survey||(!target&&(/現調|径間/.test(text)||soloPhoto));
+    pendingDraft=null;clearRecovery();
+    failed=!await generate({text,file:selected||null});
+  }catch(e){failed=true;const msg=bubble('assistant',e.message==='Failed to fetch'?'通信できませんでした。時間をおいてもう一度試してください。':e.message);
+    if(pendingPublication)recovery(msg,'掲載結果を確認','publishCheck');
+  }
+  finally{status.textContent='';if(!failed){
+    if(consumeField&&field.value===initialField)field.value='';
+    if(consumeFile&&(camera.files[0]||file.files[0])===selected){file.value='';camera.value='';attachment.textContent='';}
+  }busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
 }
 function entranceGuide() {
   const message=bubble('assistant','設計番号か径間名で現場を探してね。写真はまとめて選べるよ。入口から歩く順に並べて、曲がり角や分岐には写真ごとに矢印を描いてね。');
@@ -119,9 +191,10 @@ form.onsubmit=e=>{e.preventDefault();send(field.value);};
 
 root.querySelector('#survey-shortcut').onclick=()=>{
   if(busy)return;
-  if(field.value.trim()||camera.files.length||file.files.length||draft){field.value='新しく現調リストを作って。'+field.value;field.focus();return;}
+  if(field.value.trim()||camera.files.length||file.files.length){fresh();survey=true;send('新しく現調リストを作って。'+field.value.trim());return;}
   fresh();survey=true;
-  const request='現調リストを作る',question='誰のリストにしますか？ 担当者名と、径間名か紙の写真を送ってください。';
+  const name=account()?.name?.trim();
+  const request='現調リストを作る',question=name?name+'さんの現調リストを作ります。径間名か紙の写真を送ってください。別の方の分なら、その方の名前も添えてください。':'誰のリストにしますか？ 担当者名と、径間名か紙の写真を送ってください。';
   history.push({role:'user',text:request},{role:'assistant',text:question});
   bubble('user',request);bubble('assistant',question);field.focus();
 };
