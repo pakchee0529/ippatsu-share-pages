@@ -144,7 +144,7 @@ async function generate(job){
       const choices=document.createElement('div');choices.className='suggestions';
       const options={
         pin:['番号を見やすくして','チェック欄を大きくして','地図を上に置いて'],
-        check:['手袋でも押しやすくして','未チェックを上にして','項目を追加できるようにして'],
+        check:['行全体をタップしてチェック','未チェックを上にして','項目を追加できるようにして'],
         calculator:['入力例を見せて','単位を分かりやすくして','結果を大きくして'],
         calendar:['今日を目立たせて','日付で絞り込めるようにして','予定を追加しやすくして']
       };
