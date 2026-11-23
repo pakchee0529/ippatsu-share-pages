@@ -1,4 +1,4 @@
-import {checkStartup} from '../assistant/sandbox-check.mjs?v=actions1';
+import {checkStartup,checkLabel} from '../assistant/sandbox-check.mjs?v=actions2';
 import {requestedAppearance} from './appearance.mjs';
 import {call} from './api.mjs';
 import {previewPage} from './preview.mjs';
@@ -92,7 +92,7 @@ export function childChat(item,survey){
         reply=await call('sandboxDraft',{...request,previous:reply.draft,repairSteps:checks,prompt:'検査対象のidと仕様を維持して、この動作エラーを直して：'+failure+'。元の依頼：'+text.slice(0,1200)});
         if(!reply.draft||await checkStartup(reply.draft.html,checks))throw Error('修正後も操作を確認できませんでした。');
       }
-      draft=reply.draft;log.append(previewPage(draft.html));confirmation('下書きができました。共有ページに保存しますか？',()=>save(draft));
+      draft=reply.draft;log.append(previewPage(draft.html));confirmation(checkLabel(checks)+'。共有ページに保存しますか？',()=>save(draft));
     }catch(e){say(e.message);}finally{busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
   }
   form.onsubmit=e=>{e.preventDefault();send(input.value);};quick();
