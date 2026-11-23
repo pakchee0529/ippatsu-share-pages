@@ -91,6 +91,24 @@ async function checkPublication(){
   const msg=bubble('assistant',matches.length?'同じ内容のページが複数あります。確認したいページを選んでください。':'まだ掲載結果を特定できません。時間をおいてもう一度確認できます。');
   matches.forEach(item=>link(msg,item));recovery(msg,'掲載結果を確認','publishCheck');
 }
+function draftPreview(html){
+  const panel=document.createElement('dialog');
+  panel.className='draft-preview';
+  panel.open=true;
+  panel.setAttribute('aria-label','下書きのプレビュー');
+  const toggle=document.createElement('button');
+  toggle.type='button';toggle.textContent='大きく見る';
+  function collapse(){
+    panel.close();panel.open=true;
+    toggle.textContent='大きく見る';toggle.focus();
+  }
+  toggle.onclick=()=>{
+    if(panel.matches(':modal')){collapse();return;}
+    panel.close();panel.showModal();toggle.textContent='チャットに戻る';
+  };
+  panel.oncancel=event=>{event.preventDefault();collapse();};
+  panel.append(toggle,previewPage(html));return panel;
+}
 async function generate(job){
   try{
     step('依頼内容を準備しています');
@@ -111,7 +129,7 @@ async function generate(job){
       const candidate=job.payload.template==='survey'?surveyTemplate(reply.survey):reply?.draft;
       if(!candidate?.title||typeof candidate.html!=='string'||!candidate.html.trim())throw Error('下書きの内容を確認できませんでした。');
       step('下書きのプレビューを組み立てています');
-      draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='送った資料と見比べてほしい径間が'+reply.survey.notes.length+'件あります。';card.append(note);}card.append(previewPage(candidate.html));
+      draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='送った資料と見比べてほしい径間が'+reply.survey.notes.length+'件あります。';card.append(note);}card.append(draftPreview(candidate.html));
       if(reply.survey?.numbers?.length){
         const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';
         label.append(box,'読み取った番号をリストに載せる（'+reply.survey.numbers.length+'件）');
@@ -129,16 +147,16 @@ async function generate(job){
     recovery(msg,'同じ内容でもう一度試す','draftRetry');return false;
   }
 }
-async function send(text){
+async function send(text,fromComposer=false){
   if(busy)return;
   const selected=camera.files[0]||file.files[0];if(!text&&!selected)return;
   const initialField=field.value,hadText=Boolean(text.trim());
-  let failed=false,consumeField=true,consumeFile=true;busy=true;form.querySelector('button').disabled=true;
+  if(fromComposer)field.value='';
+  let failed=false,consumeFile=true;busy=true;form.querySelector('button').disabled=true;
   try{
     text=text.trim()||(survey?'この資料から径間を取り込んで':'この資料を使いたい');
     const previousAttempt=pendingDraft?.text===text&&pendingDraft.file===(selected||null);
     if(retryWords.test(text)||previousAttempt){
-      consumeField=!initialField.trim()||retryWords.test(initialField.trim())||initialField.trim()===pendingDraft?.text;
       consumeFile=selected===(pendingDraft?.file||undefined);
       if(pendingPublication)await checkPublication();
       else if(pendingDraft)failed=!await generate(pendingDraft);
@@ -174,8 +192,7 @@ async function send(text){
   }catch(e){failed=true;const msg=bubble('assistant',e.message==='Failed to fetch'?'通信できませんでした。時間をおいてもう一度試してください。':e.message);
     if(pendingPublication)recovery(msg,'掲載結果を確認','publishCheck');
   }
-  finally{activity=null;work.clear();if(!failed){
-    if(consumeField&&field.value===initialField)field.value='';
+  finally{if(failed&&fromComposer&&!field.value)field.value=initialField;activity=null;work.clear();if(!failed){
     if(consumeFile&&(camera.files[0]||file.files[0])===selected){file.value='';camera.value='';attachment.textContent='';}
   }busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
 }
@@ -214,11 +231,11 @@ function entranceGuide() {
 root.querySelector('#entrance-shortcut').onclick=()=>{
   bubble('user','進入路を登録'); entranceGuide();
 };
-form.onsubmit=e=>{e.preventDefault();send(field.value);};
+form.onsubmit=e=>{e.preventDefault();send(field.value,true);};
 
 root.querySelector('#survey-shortcut').onclick=()=>{
   if(busy)return;
-  if(field.value.trim()||camera.files.length||file.files.length){fresh();survey=true;send('新しく現調リストを作って。'+field.value.trim());return;}
+  if(field.value.trim()||camera.files.length||file.files.length){fresh();survey=true;send('新しく現調リストを作って。'+field.value.trim(),true);return;}
   fresh();survey=true;
   const name=account()?.name?.trim();
   const request='現調リストを作る',question=name?name+'さんの現調リストを作ります。径間名か紙の写真を送ってください。別の方の分なら、その方の名前も添えてください。':'誰のリストにしますか？ 担当者名と、径間名か紙の写真を送ってください。';
