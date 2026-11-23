@@ -1,3 +1,4 @@
+import {checkStartup} from '../assistant/sandbox-check.mjs?v=actions1';
 import {requestedAppearance} from './appearance.mjs';
 import {call} from './api.mjs';
 import {previewPage} from './preview.mjs';
@@ -32,6 +33,7 @@ export function childChat(item,survey){
     history.push({role:mine?'user':'assistant',text});return p;
   }
   function quick(){actions.replaceChildren();
+    if(draft)actions.append(button('今の下書きを反映',()=>confirmation('この下書きを共有ページに保存しますか？',()=>save(draft))));
     for(const text of [...(survey?['次どこ？','径間を追加','チェック済みを削除','おすすめの訪問順を見る']:[]),'ページを編集']){
       actions.append(button(text,()=>{editing=false;awaitingName=false;send(text);}));
     }
@@ -75,8 +77,21 @@ export function childChat(item,survey){
         confirmation((near?'会社のある上之町から近い順です。':'遠い現場から回る巡回案です。')+'\n'+route.map((r,i)=>(i+1)+'　'+r.name).join('\n'),()=>{survey.applyRoute(route);say('この端末の訪問順に反映しました。');quick();});return;
       }
       if(text==='ページを編集'){editing=true;awaitingName=false;say('このページのどこをどう変えたいですか？');return;}
-      const reply=await call('sandboxDraft',{id:item.id,revision:item.revision,prompt:text,interactive:true,history:history.slice(-9,-1),previous:draft});
+      const request={turnProtocol:1,id:item.id,revision:item.revision,prompt:text,interactive:true,history:history.slice(-9,-1),previous:draft};
+      let reply=await call('sandboxDraft',request);
+      if(['advice','clarify'].includes(reply.kind)){
+        const options=reply.choices||[];
+        say(reply.message+(options.length?'\n'+options.map((v,i)=>(i+1)+'．'+v).join('\n'):''));
+        for(const option of options)actions.append(button(option,()=>send(option)));
+        return;
+      }
       if(reply.question){say(reply.question);return;}
+      const checks=reply.steps||[];
+      const failure=await checkStartup(reply.draft.html,checks);
+      if(failure){
+        reply=await call('sandboxDraft',{...request,previous:reply.draft,repairSteps:checks,prompt:'検査対象のidと仕様を維持して、この動作エラーを直して：'+failure+'。元の依頼：'+text.slice(0,1200)});
+        if(!reply.draft||await checkStartup(reply.draft.html,checks))throw Error('修正後も操作を確認できませんでした。');
+      }
       draft=reply.draft;log.append(previewPage(draft.html));confirmation('下書きができました。共有ページに保存しますか？',()=>save(draft));
     }catch(e){say(e.message);}finally{busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
   }

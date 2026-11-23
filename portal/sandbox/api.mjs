@@ -13,7 +13,7 @@ export async function call(action,data={},onStep){
    return response.json();
  }
  if(!token&&action!=='login')throw Error('いっぱつちゃんで暗証番号を入力してから開いてください');
- if(action==='sandboxDraft' && !data.template && !data.id && typeof data.prompt==='string' && data.prompt.length+designBrief.length+1<=1800){
+ if(action==='sandboxDraft' && data.turnProtocol!==1 && !data.template && !data.id && typeof data.prompt==='string' && data.prompt.length+designBrief.length+1<=1800){
    data={...data,prompt:data.prompt+'\n'+designBrief};
  }
  if(action==='sandboxPublish'){
