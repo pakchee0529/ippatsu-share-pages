@@ -3,6 +3,7 @@ import {imageInput} from '../sandbox/image-input.mjs';
 import {call,linkFor} from '../sandbox/api.mjs?v=activity1';
 import {previewPage} from '../sandbox/preview.mjs';
 import {surveyTemplate} from './survey-template.mjs?v=fieldcopy1';
+import {appearance} from '../sandbox/appearance.mjs';
 import {account} from '../account/session.mjs';
 
 const root=document.querySelector('#sandbox-tools'),form=root.querySelector('form'),field=form.elements.prompt,file=form.elements.sketch;
@@ -26,6 +27,7 @@ function step(label){
 }
 
 let history=[],draft=null,target=null,photo=null,survey=false,busy=false,card=null;
+let previousVersion=null;
 let pendingDraft=null,pendingPublication=null,recoveryButton=null;
 const retryWords=/^(?:結果(?:を)?(?:もう一度)?(?:読み直して|読み直す|読んで|再確認して)|(?:もう一度|もう一回)(?:試して|読み直して|お願い)?|再試行(?:して)?)[。！!？?\s]*$/;
 function clearRecovery(){recoveryButton?.remove();recoveryButton=null;}
@@ -35,6 +37,7 @@ function bubble(role,text){
   row.append(body);log.append(row);log.scrollTop=log.scrollHeight;return body;
 }
 function fresh(){
+  previousVersion=null;
   pendingDraft=null;pendingPublication=null;clearRecovery();
   history=[];draft=null;target=null;photo=null;survey=false;card?.remove();card=null;
 }
@@ -129,6 +132,7 @@ async function generate(job){
       const candidate=job.payload.template==='survey'?surveyTemplate(reply.survey):reply?.draft;
       if(!candidate?.title||typeof candidate.html!=='string'||!candidate.html.trim())throw Error('下書きの内容を確認できませんでした。');
       step('下書きのプレビューを組み立てています');
+      previousVersion=draft&&card?{draft,card,history:history.slice(),photo}:null;
       draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='送った資料と見比べてほしい径間が'+reply.survey.notes.length+'件あります。';card.append(note);}card.append(draftPreview(candidate.html));
       if(reply.survey?.numbers?.length){
         const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';
@@ -136,6 +140,21 @@ async function generate(job){
         const examples=document.createElement('details'),heading=document.createElement('summary');heading.textContent='径間ごとの番号を見る';examples.append(heading);
         for(const n of reply.survey.numbers){const row=document.createElement('div');row.textContent=n.name+'　'+n.text;examples.append(row);}
         card.append(label,examples);box.onchange=()=>{draft=surveyTemplate(reply.survey,box.checked);card.querySelector('iframe').replaceWith(previewPage(draft.html));};
+      }
+      const choices=document.createElement('div');choices.className='suggestions';
+      const options={
+        pin:['番号を見やすくして','チェック欄を大きくして','地図を上に置いて'],
+        check:['手袋でも押しやすくして','未チェックを上にして','項目を追加できるようにして'],
+        calculator:['入力例を見せて','単位を分かりやすくして','結果を大きくして'],
+        calendar:['今日を目立たせて','日付で絞り込めるようにして','予定を追加しやすくして']
+      };
+      const ideas=/ゲーム|遊び|得点/.test(job.text+candidate.title)?['操作の練習を付けて','難しさを選べるようにして','もう一度遊びやすくして']:options[appearance(candidate).icon]||['文字を見やすくして','入力例を付けて','よく使う操作を上にして'];
+      for(const idea of ideas){const button=document.createElement('button');button.type='button';button.textContent=idea;button.onclick=()=>send(idea);choices.append(button);}
+      card.append(choices);
+      if(previousVersion){
+        const undo=document.createElement('button');undo.textContent='一つ前に戻す';card.append(undo);
+        undo.onclick=()=>{if(busy||!previousVersion)return;const old=previousVersion;previousVersion=null;card.remove();draft=old.draft;card=old.card;history=old.history;photo=old.photo;const row=document.createElement('div');row.className='row';row.append(card);log.append(row);card.querySelector('[data-undo]')?.remove();pendingDraft=null;clearRecovery();};
+        undo.dataset.undo='';
       }
       const btn=document.createElement('button');btn.textContent=target?'共有ページに保存':'砂場にページを追加';btn.onclick=()=>send('掲載して');card.append(btn);
       history.push({role:'user',text:job.text});photo=job.asset;
