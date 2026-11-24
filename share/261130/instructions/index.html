@@ -1,0 +1,25 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>261130 指示書</title><style>body{font-family:system-ui,sans-serif;margin:0;background:#f1f5f9;color:#172534}main,header{max-width:1050px;margin:auto;padding:16px}a{color:#0755a1}table{border-collapse:collapse;width:100%;background:white}th,td{border:1px solid #cbd5e1;padding:9px;text-align:left;overflow-wrap:anywhere}.scroll{overflow-x:auto}.saved-ledger-status{font-size:.85rem;color:#475569}.card{width:auto!important}h1{font-size:1.3rem}.view-help{font-size:.9rem}.view-nav{display:flex;gap:8px;flex-wrap:wrap}.view-nav>a{display:inline-flex;padding:10px 14px;border:1px solid #93c5fd;border-radius:8px;background:white;color:#0755a1;text-decoration:none}</style><link rel="stylesheet" href="../../../portal/shared-ledger/daily-hallmark-r2.css?v=20261110-transport-r1"><link rel="stylesheet" href="../../../portal/shared-ledger/daily-field-layout-r1.css?v=20261110-transport-r1"><link rel="stylesheet" href="../../../portal/case-note-editor/instruction-memos-r1.css"></head><body data-share-view="instructions"><header><nav class="view-nav"><a href="../">共有ページに戻る</a><a id="ledger-input-top" href="#">台帳入力</a></nav><h1>指示書</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div><div id="content"></div>
+<section aria-labelledby="permanent-note-heading">
+  <h2 id="permanent-note-heading">恒久メモ <button type="button" id="permanent-note-edit" aria-label="恒久メモを編集" hidden>✎</button></h2>
+  <p id="permanent-note-text" style="white-space:pre-wrap"></p>
+  <div id="permanent-note-draft" hidden>
+    <label for="permanent-note-value">恒久メモ</label>
+    <textarea id="permanent-note-value" rows="4" maxlength="10000"></textarea>
+    <button id="permanent-note-save" type="button">保存</button>
+    <button id="permanent-note-cancel" type="button">キャンセル</button>
+  </div>
+  <p id="permanent-note-status" role="status"></p>
+</section>
+
+<section aria-labelledby="next-note-heading">
+  <h2 id="next-note-heading">次回メモ <button type="button" id="next-note-edit" aria-label="次回メモを編集" hidden>✎</button></h2>
+  <p id="next-note-text" style="white-space:pre-wrap"></p>
+  <div id="next-note-draft" hidden>
+    <label for="next-note-value">次回メモ</label>
+    <textarea id="next-note-value" rows="4" maxlength="10000"></textarea>
+    <button id="next-note-save" type="button">保存</button>
+    <button id="next-note-cancel" type="button">キャンセル</button>
+  </div>
+  <p id="next-note-status" role="status"></p>
+</section>
+<script type="module" src="../../../portal/case-note-editor/permanent-preview.js?v=2"></script><script id="permanent-note-data" type="application/json">{"51404280": {"case_id": "71e68520-bfa3-4911-9597-5bf510335221", "body": ""}, "51404275": {"case_id": "b24ed8ed-d60a-4610-b502-db2e366d40be", "body": ""}}</script></main><script id="shared-ledger-config" type="application/json">{"date":"261130","api":"https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/photo-ledger-v2","cases":[{"cs":"51404280","label":"新樫原　60～61","base":{"E10":0,"E20":0,"E30":1,"E40":0,"E50":0,"E60":0,"N10":273,"N20":4,"N30":0,"N40":0,"N50":0,"N60":0,"SB":204,"TK":0,"TR":0}},{"cs":"51404275","label":"新樫原　56～57","base":{"E10":0,"E20":2,"E30":0,"E40":0,"E50":0,"E60":0,"N10":51,"N20":1,"N30":0,"N40":0,"N50":0,"N60":0,"SB":60,"TK":0,"TR":0}}]}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v=20261110-transport-r1"></script></body></html>
