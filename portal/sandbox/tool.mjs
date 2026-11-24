@@ -1,7 +1,7 @@
-import {childChat} from './child-chat.mjs?v=art1';
+import {childChat} from './child-chat.mjs?v=dynamicart1';
 import {surveyNavigation} from './survey-navigation.mjs?v=origin1';
-import {call} from './api.mjs?v=attached1';
-import {previewPage} from './preview.mjs?v=art1';
+import {call} from './api.mjs?v=dynamicart1';
+import {previewPage} from './preview.mjs?v=dynamicart1';
 import {imageInput} from './image-input.mjs';
 const id=new URLSearchParams(location.search).get('id');
 const status=document.querySelector('#status');
@@ -25,7 +25,7 @@ try{
  }
  const shared={values:item.shared_inputs||{},save};
  const surface=document.querySelector('#surface'),survey=surveyNavigation(item,surface,shared);
- if(!survey)surface.append(previewPage(item.definition.html,"ippatsu.sandbox.inputs."+id,shared,item.definition.photo));
+ if(!survey)surface.append(previewPage(item.definition.html,"ippatsu.sandbox.inputs."+id,shared,item.definition.photo,item.definition.generatedArt));
  if(!sessionStorage.getItem('ippatsu.chat.session')){
    const link=document.createElement('a');link.href='../assistant/?mode=sandbox';link.textContent='いっぱつちゃんで編集する';status.replaceChildren(link);
  }else{
@@ -37,7 +37,7 @@ try{
    e.preventDefault();const button=form.querySelector('button');button.disabled=true;adopt.hidden=true;note.textContent='下書きを作っています…';
    try{const image=await imageInput(form.elements.sketch.files[0]);
      ({draft}=await call('sandboxDraft',{id,revision:item.revision,prompt:form.elements.prompt.value,image}));
-     document.querySelector('#candidate').replaceChildren(previewPage(draft.html,null,null,draft.photo));adopt.hidden=false;note.textContent='下書きの動きを確認してください。';
+     document.querySelector('#candidate').replaceChildren(previewPage(draft.html,null,null,draft.photo,draft.generatedArt));adopt.hidden=false;note.textContent='下書きの動きを確認してください。';
    }catch(err){note.textContent=err.message;}finally{button.disabled=false;}
  };
  adopt.onclick=async()=>{adopt.disabled=true;try{await call('sandboxPublish',{id,revision:item.revision,draft});location.reload();}catch(err){note.textContent=err.message;adopt.disabled=false;}};

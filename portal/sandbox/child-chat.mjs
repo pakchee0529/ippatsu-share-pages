@@ -4,11 +4,11 @@ import {surveyTemplate,compactSurveyId} from '../assistant/survey-template.mjs?v
 import {resizeReference} from './reference.mjs?v=size1';
 import {resolveChoice} from '../assistant/choices.mjs?v=short1';
 import {literalEdit,targetedEdit} from '../assistant/short-edits.mjs?v=local2';
-import {preserveBehavior,projectHistory} from '../assistant/behavior-history.mjs?v=art1';
-import {checkStartup,checkLabel} from '../assistant/sandbox-check.mjs?v=art1';
+import {preserveBehavior,projectHistory} from '../assistant/behavior-history.mjs?v=dynamicart1';
+import {checkStartup,checkLabel} from '../assistant/sandbox-check.mjs?v=dynamicart1';
 import {appearance,requestedAppearance,stamp} from './appearance.mjs';
-import {call} from './api.mjs?v=attached1';
-import {previewPage} from './preview.mjs?v=art1';
+import {call} from './api.mjs?v=dynamicart1';
+import {previewPage} from './preview.mjs?v=dynamicart1';
 
 function button(text,fn){
   const el=document.createElement('button');el.type='button';el.textContent=text;el.onclick=fn;return el;
@@ -190,14 +190,14 @@ export function childChat(item,survey){
       const checks=reply.steps||[];
       const priorPhoto=(draft||item.definition).photo;
       let checkedPhoto=reply.draft.photo||priorPhoto;
-      const failure=await checkStartup(reply.draft.html,checks,false,checkedPhoto);
+      const failure=await checkStartup(reply.draft.html,checks,false,checkedPhoto,reply.draft.generatedArt);
       if(failure){
         reply=await call('sandboxDraft',{...request,previous:reply.draft,repairSteps:checks,prompt:'検査対象のidと仕様を維持して、この動作エラーを直して：'+failure+'。元の依頼：'+text.slice(0,1200)});
         checkedPhoto=reply.draft?.photo||checkedPhoto;
-        if(!reply.draft||await checkStartup(reply.draft.html,checks,false,checkedPhoto))throw Error('修正後も操作を確認できませんでした。');
+        if(!reply.draft||await checkStartup(reply.draft.html,checks,false,checkedPhoto,reply.draft.generatedArt))throw Error('修正後も操作を確認できませんでした。');
       }
-      reply.draft.html=await preserveBehavior((draft||item.definition).html,reply.draft.html,checks,undefined,checkedPhoto);
-      draft=reply.draft;log.append(previewPage(draft.html,null,null,checkedPhoto));confirmation(checkLabel(checks)+'。共有ページに保存しますか？',()=>save(draft));
+      reply.draft.html=await preserveBehavior((draft||item.definition).html,reply.draft.html,checks,undefined,checkedPhoto,reply.draft.generatedArt);
+      draft=reply.draft;log.append(previewPage(draft.html,null,null,checkedPhoto,draft.generatedArt));confirmation(checkLabel(checks)+'。共有ページに保存しますか？',()=>save(draft));
     }catch(e){say(e.message);}finally{busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
   }
   form.onsubmit=e=>{e.preventDefault();send(input.value);};quick();

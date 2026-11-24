@@ -1,5 +1,5 @@
 import {editingContext} from './short-edits.mjs';
-import {checkStartup} from './sandbox-check.mjs?v=art1';
+import {checkStartup} from './sandbox-check.mjs?v=dynamicart1';
 
 const marker=/<!--ippatsu-checks:([A-Za-z0-9+/=]+)-->/g;
 function readCases(html){
@@ -21,12 +21,12 @@ export function projectHistory(history,html){
   const summary='この版で動作確認済みの操作です。明示された仕様変更を優先し、その他の動きと保存欄のIDは保ってください。\n'+cases.map(describe).join('\n').slice(0,2200);
   return [{role:'assistant',text:[context,summary].join('\n').slice(0,1800)},...history.slice(-7)];
 }
-export async function preserveBehavior(before,after,steps,approve=window.confirm.bind(window),photo=null){
+export async function preserveBehavior(before,after,steps,approve=window.confirm.bind(window),photo=null,generatedArt=null){
   const retained=[];
   const key=seq=>JSON.stringify(seq.map(s=>[s.action,s.id,s.value||'']));
   for(const old of readCases(before)){
     if(key(old)===key(steps))continue;
-    const error=await checkStartup(after,old,false,photo);
+    const error=await checkStartup(after,old,false,photo,generatedArt);
     if(!error)retained.push(old);
     else if(!approve('前の版でできた操作が変わりました。\n'+describe(old)+'\n'+error+'\n今回の仕様変更として、この操作の検査を外しますか？'))throw Error('前の操作を保つため、変更を保留しました。元の下書きから修正を続けられます。');
   }

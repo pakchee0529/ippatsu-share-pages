@@ -1,4 +1,4 @@
-import {previewPage} from '../sandbox/preview.mjs?v=art1';
+import {previewPage} from '../sandbox/preview.mjs?v=dynamicart1';
 
 export function checkLabel(steps){
   const operated=steps.some(s=>['click','fill'].includes(s.action));
@@ -7,10 +7,10 @@ export function checkLabel(steps){
   return result?'指定した操作と結果を確認済み':inputOnly?'入力値を確認済み':operated?'操作のみ確認済み':steps.length?'初期表示を確認済み':'起動確認のみ';
 }
 
-export async function checkStartup(html,steps=[],requireOutcome=false,photo=null){
+export async function checkStartup(html,steps=[],requireOutcome=false,photo=null,generatedArt=null){
   const values=Object.create(null);
   const shared={values,initial:new Set(),save(key,value){values[key]=value;}};
-  const failure=await runPreview(html,steps,shared,requireOutcome,photo);
+  const failure=await runPreview(html,steps,shared,requireOutcome,photo,generatedArt);
   if(failure)return failure;
   // Reopen persisted inputs that were already visible at startup, plus explicit value assertions.
   const saved=new Map();
@@ -18,11 +18,11 @@ export async function checkStartup(html,steps=[],requireOutcome=false,photo=null
     if(Object.hasOwn(values,s.id)&&(s.action==='expectValue'||shared.initial.has(s.id)))saved.set(s.id,{action:'expectValue',id:s.id,value:String(values[s.id])});
   }
   if(!saved.size)return '';
-  const reopened=await runPreview(html,[...saved.values()],shared,false,photo);
+  const reopened=await runPreview(html,[...saved.values()],shared,false,photo,generatedArt);
   return reopened?'開き直したとき：'+reopened:'';
 }
 
-function runPreview(html,steps,shared,requireOutcome=false,photo=null){
+function runPreview(html,steps,shared,requireOutcome=false,photo=null,generatedArt=null){
   return new Promise(resolve=>{
     const plan=JSON.stringify(steps.slice(0,8)).replaceAll("<","\\u003c");
     const probe = `<script>
@@ -92,7 +92,7 @@ function runPreview(html,steps,shared,requireOutcome=false,photo=null){
       },100));
     </script>`;
     const controller=new AbortController();
-    const frame=previewPage(probe+html,"isolated-test",{...shared,signal:controller.signal},photo);
+    const frame=previewPage(probe+html,"isolated-test",{...shared,signal:controller.signal},photo,generatedArt);
     frame.style.cssText='position:fixed;left:-2000px;top:0;width:360px;height:750px;opacity:0;pointer-events:none';
     frame.setAttribute('aria-hidden','true');
     frame.tabIndex=-1;
