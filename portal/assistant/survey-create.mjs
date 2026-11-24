@@ -9,3 +9,12 @@ export function numberInput(text) {
   const numbers = cleaned.split(/[\s、,;；・]+/u);
   return numbers.every(value => /^\d{8}$/.test(value)) ? numbers : undefined;
 }
+export function spanInputs(text) {
+  // 横並びの番号と径間は原票の同一行として照合する。独立した入力だけを分割する。
+  const rows = text.trim().split(/[\r\n、,，;；]+/u).map(row => row.trim()).filter(Boolean);
+  const number = /^\d{8}$/u;
+  const span = /^(?=[^\s]+$)(?=.*\d)[\p{L}\d._・-]+[~〜][\p{L}\d._・-]+$/u;
+  const normalized = rows.map(row => row.normalize('NFKC'));
+  return normalized.some(row => span.test(row)) && normalized.every(row => span.test(row) || number.test(row))
+    ? rows : undefined;
+}
