@@ -9,7 +9,7 @@ import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs?v=bounded1';
 import {call,linkFor} from '../sandbox/api.mjs?v=turn1';
 import {previewPage} from '../sandbox/preview.mjs';
-import {surveyTemplate} from './survey-template.mjs?v=fieldcopy1';
+import {surveyTemplate} from './survey-template.mjs?v=numbers2';
 import {appearance} from '../sandbox/appearance.mjs';
 import {account} from '../account/session.mjs';
 
@@ -141,8 +141,8 @@ function renderCandidate(candidate,reply,request){
       draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='送った資料と見比べてほしい径間が'+reply.survey.notes.length+'件あります。';card.append(note);}card.append(draftPreview(candidate.html));
       if(reply.message){const note=document.createElement('p');note.textContent=reply.message;card.append(note);}
       if(reply.survey?.numbers?.length){
-        const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';
-        label.append(box,'読み取った番号をリストに載せる（'+reply.survey.numbers.length+'件）');
+        const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.checked=new DOMParser().parseFromString(candidate.html,'text/html').querySelector('[data-reference-number]')!==null;
+        label.append(box,'管理番号・設計番号をリストに表示（'+reply.survey.numbers.length+'件）');
         const examples=document.createElement('details'),heading=document.createElement('summary');heading.textContent='径間ごとの番号を見る';examples.append(heading);
         for(const n of reply.survey.numbers){const row=document.createElement('div');row.textContent=n.name+'　'+n.text;examples.append(row);}
         card.append(label,examples);box.onchange=()=>{draft=surveyTemplate(reply.survey,box.checked);card.querySelector('iframe').replaceWith(previewPage(draft.html));checkpoint();};
