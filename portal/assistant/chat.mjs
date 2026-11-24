@@ -114,9 +114,10 @@ function confirmation(id,text,check=false){
     button.disabled=true;
     try{const r=await api(check?"status":"apply",{id});
       if(r.state==="preview"){if(check){confirmation(id,r.summary);button.remove();return;}}
-      const message=r.message||r.summary;
+      const schedule=r.workflow_kind==="schedule";
+      const message=r.message||r.summary||"受付の状態を確認してください。";
       // Saving the completion event and publishing its archive are separate receipts.
-      const publicationPending=r.state==="saved" && text.includes("の完了報告") && !message.includes("予定を終了しました");
+      const publicationPending=!schedule && r.state==="saved" && text.includes("の完了報告") && !message.includes("予定を終了しました");
       if(!receipt || message!==lastMessage){
         if(receipt)receipt.textContent=message;
         else receipt=bubble(message);
@@ -127,15 +128,23 @@ function confirmation(id,text,check=false){
       }
       if(r.state==="saved" && !publicationPending){
         const art=document.createElement("img");
-        art.src="done.webp";art.alt="DB保存完了っす！";art.className="sticker";
-        receipt.append(document.createElement("br"),document.createTextNode("DB保存完了っす！"),art);
+        art.src="done.webp";art.alt="";art.className="sticker";
+        const done=schedule?"共有ページまで反映できたっす！":"DB保存完了っす！";
+        receipt.append(document.createElement("br"),document.createTextNode(done),art);
       }
       if(r.state==="queued"||r.state==="running"||publicationPending){
-        check=publicationPending||!r.awaiting_dispatch;
-        button.textContent=check?"進捗を確認":"クラウド処理を開始";
+        check=schedule||publicationPending||!r.awaiting_dispatch;
+        button.textContent=schedule?"共有ページの反映状況を確認":check?"進捗を確認":"クラウド処理を開始";
         if(check)timer=setTimeout(()=>{if(button.isConnected&&!button.disabled)button.click();},15000);
       }
-      else{button.remove();sessionStorage.removeItem("ippatsu.chat.pending");}
+      else if(schedule && r.state==="held"){
+        check=false;
+        button.textContent="この受付の公開処理を再開";
+      }else{
+        button.remove();
+        const active=JSON.parse(sessionStorage.getItem("ippatsu.chat.pending")||"null");
+        if(active?.id===id)sessionStorage.removeItem("ippatsu.chat.pending");
+      }
     }catch(e){bubble(e.message);check=true;button.textContent="受付結果を確認";}finally{button.disabled=false;}
   };
 }
