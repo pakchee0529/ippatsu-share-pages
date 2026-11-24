@@ -2867,6 +2867,7 @@ def _inject_share_page_summary(html: str, date_key: str) -> str:
 </section>
 <nav class="share-quick-nav" aria-label="関連ページ">
   <a href="../../portal/">ポータルTOP</a>
+  <a href="../../portal/assistant/?date={date_key}">この日の予定を相談</a>
   <a href="../../portal/cases/">案件管理</a>
   <a href="../../portal/archive/">アーカイブ</a>
 </nav>

@@ -2,6 +2,25 @@ import {numberedChoices,resolveChoice} from './choices.mjs';
 import {workingStatus} from './working.mjs';
 import {openAccount,forget,rotate} from '../account/session.mjs';
 const $=s=>document.querySelector(s);
+// Bind a day only when the user opens its dedicated chat entry.
+function selectedPageDate(search){
+  const values=new URLSearchParams(search).getAll("date");
+  if(values.length!==1 || !/^\d{6}$/.test(values[0]))return null;
+  const day=values[0],iso="20"+day.slice(0,2)+"-"+day.slice(2,4)+"-"+day.slice(4);
+  const stamp=Date.parse(iso+"T00:00:00Z");
+  return Number.isFinite(stamp) && new Date(stamp).toISOString().slice(0,10)===iso ? iso : null;
+}
+const pageDate=selectedPageDate(location.search);
+function conversationKey(name){
+  return "ippatsu.chat."+name+(pageDate?"."+pageDate:"");
+}
+if(pageDate){
+  const day=pageDate.slice(2).replaceAll("-","");
+  const back=$("header .back");
+  back.href="../../share/"+day+"/";
+  back.setAttribute("aria-label","この日の現場へ戻る");
+  $("header h1 + p").textContent=Number(day.slice(2,4))+"月"+Number(day.slice(4))+"日の現場";
+}
 // Mobile keyboards and in-app browser controls can shrink only the visual viewport.
 const viewport = window.visualViewport;
 function fitChat() {
@@ -17,7 +36,7 @@ let token=sessionStorage.getItem("ippatsu.chat.session")||"",history=[],busy=fal
 function mode(on){$("#test-mode").disabled=on;$("#test-mode").textContent=on?"テスト中・保存なし":"テストモード";}
 $("#test-mode").onclick=async()=>{try{mode((await api("test")).test);}catch(e){bubble(e.message);}};
 function show(){const active=!!token;$("#welcome").hidden=active;$("#thread").hidden=!active;$("#usage").hidden=!active;if(!active){$("#usage").open=false;$("#balance-label").textContent="残量 —";}}
-function clear(){forget();resetInputMode();token="";history=[];sessionStorage.removeItem("ippatsu.chat.lastReceipt");sessionStorage.removeItem("ippatsu.chat.history");sessionStorage.removeItem("ippatsu.chat.session");sessionStorage.removeItem("ippatsu.chat.pending");$("#messages").replaceChildren();show();}
+function clear(){forget();resetInputMode();token="";history=[];sessionStorage.removeItem(conversationKey("lastReceipt"));sessionStorage.removeItem(conversationKey("history"));sessionStorage.removeItem("ippatsu.chat.session");sessionStorage.removeItem(conversationKey("pending"));$("#messages").replaceChildren();show();}
 async function api(action,data={}){
   let response;
   try{response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json",...(token?{"x-ippatsu-session":token}:{})},body:JSON.stringify({action,...data}),cache:"no-store"});}
@@ -102,9 +121,9 @@ function poleCard(card){
 }
 function saveHistory(){
   history=history.slice(-24);
-  try{sessionStorage.setItem("ippatsu.chat.history",JSON.stringify({date:new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}),messages:history}));}catch{}
+  try{sessionStorage.setItem(conversationKey("history"),JSON.stringify({date:new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}),messages:history}));}catch{}
 }
-function pending(id,text){sessionStorage.setItem("ippatsu.chat.lastReceipt",id);sessionStorage.setItem("ippatsu.chat.pending",JSON.stringify({id,text}));}
+function pending(id,text){sessionStorage.setItem(conversationKey("lastReceipt"),id);sessionStorage.setItem(conversationKey("pending"),JSON.stringify({id,text}));}
 function confirmation(id,text,check=false){
   const box=bubble(text),button=document.createElement("button");button.type="button";button.className="apply";box.append(button);
   button.textContent=check?"結果を読み直す":"この内容で反映";
@@ -152,8 +171,8 @@ function confirmation(id,text,check=false){
         button.textContent="この受付の公開処理を再開";
       }else{
         button.remove();
-        const active=JSON.parse(sessionStorage.getItem("ippatsu.chat.pending")||"null");
-        if(active?.id===id)sessionStorage.removeItem("ippatsu.chat.pending");
+        const active=JSON.parse(sessionStorage.getItem(conversationKey("pending"))||"null");
+        if(active?.id===id)sessionStorage.removeItem(conversationKey("pending"));
       }
     }catch(e){bubble(e.message);check=true;button.textContent="受付結果を確認";}finally{button.disabled=false;}
   };
@@ -179,23 +198,27 @@ document.addEventListener("visibilitychange",refreshBalance);
 setInterval(refreshBalance,300000);
 function start(){show();if(!token)return;balanceTime=0;refreshBalance();api("mode").then(r=>mode(r.test)).catch(e=>bubble(e.message));
   try {
-    const saved=JSON.parse(sessionStorage.getItem("ippatsu.chat.history") || "null");
+    const saved=JSON.parse(sessionStorage.getItem(conversationKey("history")) || "null");
     if(saved?.date===new Date().toLocaleDateString("ja-JP",{timeZone:"Asia/Tokyo"}) && Array.isArray(saved.messages)){
       history=saved.messages.slice(-24);
       for(const msg of history)bubble(msg.content,msg.role==="user",msg.citations,msg.sticker,msg.links,msg.poleCards);
     }
   }catch{}
-  if(!history.length)bubble("おつかれさまっす！ 今日の予定、確認しましょうか？");
-  try{const p=JSON.parse(sessionStorage.getItem("ippatsu.chat.pending"));if(p)confirmation(p.id,p.text,true);}catch{}}
+  if(!history.length)bubble(pageDate?"おつかれさまっす！ この日の現場、何を確認しましょうか？":"おつかれさまっす！ 今日の予定、確認しましょうか？");
+  try{const p=JSON.parse(sessionStorage.getItem(conversationKey("pending")));if(p)confirmation(p.id,p.text,true);}catch{}}
 $("#account-entry").onclick=()=>openAccount(()=>location.reload());
 $("#login").onsubmit=async e=>{e.preventDefault();const b=$("#login button");b.disabled=true;$("#notice").textContent="";
   try{const r=await api("login",{pin:$("#pin").value});token=r.token;sessionStorage.setItem("ippatsu.chat.session",token);$("#pin").value="";start();}
   catch(e){$("#notice").textContent=e.message;}finally{b.disabled=false;}};
 $("#lock").onclick=async()=>{try{await api("logout");}finally{clear();}};
 const chatWork=workingStatus(document.querySelector('#typing'));
+// The schedule planner resolves a numbered nearby case against its own dated list.
+function nearbyCaseChoices(mode,message){
+  return mode==="chat" && message.startsWith("近くの追加候補　");
+}
 async function send(text,action="chat",query=text){if(!text||busy)return;busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;chatWork.show(action==="poleSearch"?"電柱を探しています":"返事を準備しています");
   const last=history.findLast(turn=>!turn.mode||turn.mode===action);
-  const choices=last?.role==="assistant" && last.mode===action ? last.choices || [] : [];
+  const choices=last?.role==="assistant" && last.mode===action && !nearbyCaseChoices(action,last.content) ? last.choices || [] : [];
   const selection=query===text && resolveChoice(text,choices);
   bubble(text,true);history.push({role:"user",mode:action,content:text});
   if(selection?.question){
@@ -208,10 +231,10 @@ async function send(text,action="chat",query=text){if(!text||busy)return;busy=tr
   if(selection?.value)messages.at(-1).content=text+"（直前の候補「"+selection.value+"」）";
   for(const message of messages)message.content=message.content.slice(0,1800);
   while(messages.length>1 && JSON.stringify(messages).length>24000)messages.shift();
-  try{const r=action==="poleSearch"?await api(action,{query}):await api("chat",{messages,searchRef:last?.searchRef,receiptId:sessionStorage.getItem("ippatsu.chat.lastReceipt")});
+  try{const r=action==="poleSearch"?await api(action,{query}):await api("chat",{messages,...(pageDate?{pageDate}:{}),searchRef:last?.searchRef,receiptId:sessionStorage.getItem(conversationKey("lastReceipt"))});
     mode(r.test);
     const candidates=(r.poleCards||[]).flatMap(card=>card.candidates||[]);
-    history.push({role:"assistant",mode:action,choices:candidates.length?candidates:numberedChoices(r.message),content:r.message.slice(0,1800),citations:r.citations,sticker:r.sticker,links:r.links,searchRef:r.searchRef,poleCards:r.poleCards});
+    history.push({role:"assistant",mode:action,choices:nearbyCaseChoices(action,r.message)?[]:candidates.length?candidates:numberedChoices(r.message),content:r.message.slice(0,1800),citations:r.citations,sticker:r.sticker,links:r.links,searchRef:r.searchRef,poleCards:r.poleCards});
     saveHistory();
     if(r.proposal){pending(r.proposal,r.message);confirmation(r.proposal,r.message);}else{
       const box=bubble(r.message,false,r.citations,r.sticker,r.links,r.poleCards);
@@ -232,8 +255,8 @@ $("#reset").onclick=async()=>{
   if(!confirm("新しい会話にしますか？ 入力中の文と確認待ちの表示を消します。すでに受け付けた処理は受付履歴で確認できます。"))return;
   try{const r=await api("reset");token=r.token;rotate(token);sessionStorage.setItem("ippatsu.chat.session",token);}catch(e){bubble(e.message);return;}
   history=[];
-  sessionStorage.removeItem("ippatsu.chat.lastReceipt");sessionStorage.removeItem("ippatsu.chat.history");
-  sessionStorage.removeItem("ippatsu.chat.pending");
+  sessionStorage.removeItem(conversationKey("lastReceipt"));sessionStorage.removeItem(conversationKey("history"));
+  sessionStorage.removeItem(conversationKey("pending"));
   resetInputMode();
   $("#messages").replaceChildren();
   start();
