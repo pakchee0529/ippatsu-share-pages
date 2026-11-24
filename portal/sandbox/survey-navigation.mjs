@@ -47,7 +47,7 @@ export function surveyNavigation(item,surface,shared){
   const rows=[...doc.querySelectorAll('label')].map(label=>({
     name:label.textContent.trim(),review:label.dataset.review,reference:label.dataset.referenceNumber,key:label.querySelector('input[type=checkbox]')?.id
   })).filter(r=>r.key&&/[~～〜]/.test(r.name));
-  if((!rows.length&&!doc.querySelector('[data-survey-rows]'))||new Set(rows.map(r=>r.name)).size!==rows.length)return;
+  if((!rows.length&&!doc.querySelector('[data-survey-rows]'))||new Set(rows.map(r=>r.key)).size!==rows.length)return;
   const heading=doc.querySelector('h1');
   const title=document.querySelector('#title');
   if(heading&&title){
@@ -56,6 +56,11 @@ export function surveyNavigation(item,surface,shared){
     if(scale>=.65&&scale<=3){const span=node('span',heading.textContent);span.style.fontSize=scale+'em';title.replaceChildren(span);}
   }
   const panel=node('section','');panel.className='survey-route';surface.before(panel);
+  for(const section of doc.querySelectorAll('[data-survey-notices]')){
+    const copy=node('section','');
+    for(const line of section.children)copy.append(node(line.tagName==='H2'?'h2':'p',line.textContent));
+    panel.append(copy);
+  }
   const warningSummary=surveyWarnings(rows)||doc.querySelector('[data-survey-warning]')?.textContent;
   if(warningSummary)panel.append(node('p',warningSummary));
   const note=node('p','会社のある五條市上之町を起点に、遠い径間から回る順番を提案します。');
@@ -66,8 +71,14 @@ export function surveyNavigation(item,surface,shared){
   let saved=[],visited={};
   try{saved=JSON.parse(localStorage.getItem(orderKey))||[];visited=JSON.parse(localStorage.getItem(visitKey))||{};}catch{}
   if(shared){visited={...shared.values};if(typeof visited.__route==="string"){try{saved=JSON.parse(visited.__route)}catch{saved=[]}}}
-  if(Array.isArray(saved))current.sort((a,b)=>(saved.includes(a.name)?saved.indexOf(a.name):Infinity)-(saved.includes(b.name)?saved.indexOf(b.name):Infinity));
-  function keep(){shared?.save("__route",JSON.stringify(current.map(r=>r.name)));localStorage.setItem(orderKey,JSON.stringify(current.map(r=>r.name)));render();}
+  // Older lists stored span names. Only unambiguous names can restore an old position.
+  function rank(r){
+    let i=saved.indexOf(r.key);
+    if(i<0 && rows.filter(x=>x.name===r.name).length===1)i=saved.indexOf(r.name);
+    return i<0?Infinity:i;
+  }
+  if(Array.isArray(saved))current.sort((a,b)=>rank(a)-rank(b));
+  function keep(){const order=JSON.stringify(current.map(r=>r.key));shared?.save("__route",order);localStorage.setItem(orderKey,order);render();}
   function render(){drawMap(current,visited);list.replaceChildren();current.forEach((r,i)=>{
     const li=node('li',''),label=node('label',r.name),check=document.createElement('input');
     check.type='checkbox';check.checked=visited[r.key]===true;

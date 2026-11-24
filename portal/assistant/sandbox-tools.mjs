@@ -10,7 +10,7 @@ import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs?v=bounded1';
 import {call,linkFor} from '../sandbox/api.mjs?v=turn1';
 import {previewPage} from '../sandbox/preview.mjs';
-import {surveyTemplate} from './survey-template.mjs?v=size1';
+import {surveyTemplate} from './survey-template.mjs?v=rows1';
 import {appearance} from '../sandbox/appearance.mjs';
 import {account} from '../account/session.mjs';
 
