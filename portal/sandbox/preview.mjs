@@ -1,6 +1,7 @@
 import {bundledArt} from './bundled-art.mjs';
+import {displayArt} from './generated-art.mjs';
 import {displayPhoto} from './attached-photo.mjs';
-export function previewPage(html, inputKey=null, shared=null, photo=null) {
+export function previewPage(html, inputKey=null, shared=null, photo=null, generatedArt=null) {
   const frame = document.createElement("iframe");
   frame.title = "砂場のページ";
   frame.setAttribute("sandbox", "allow-scripts");
@@ -32,7 +33,7 @@ export function previewPage(html, inputKey=null, shared=null, photo=null) {
     },shared?.signal?{signal:shared.signal}:undefined);
   }
   const head = '<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="' + policy + '">' + localForms + bridge;
-  const body=displayPhoto(html,photo);
+  const body=displayArt(displayPhoto(html,photo),generatedArt);
   const art=bundledArt(html);
   if(art)art.then(binding=>{frame.srcdoc=head+binding+body;});
   else frame.srcdoc=head+body;

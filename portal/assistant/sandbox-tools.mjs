@@ -5,14 +5,14 @@ import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=waiti
 import {attachCamera} from './camera.mjs?v=native1';
 import {packCheckpoint,unpackCheckpoint} from './checkpoint.mjs';
 import {literalEdit,targetedEdit} from './short-edits.mjs?v=local2';
-import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=art1';
+import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=dynamicart1';
 import {numberedChoices,resolveChoice} from './choices.mjs?v=short1';
 import {basicCounter} from './basic-counter.mjs';
-import {checkStartup,checkLabel} from './sandbox-check.mjs?v=art1';
+import {checkStartup,checkLabel} from './sandbox-check.mjs?v=dynamicart1';
 import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs?v=bounded1';
-import {call,linkFor} from '../sandbox/api.mjs?v=attached1';
-import {previewPage} from '../sandbox/preview.mjs?v=art1';
+import {call,linkFor} from '../sandbox/api.mjs?v=dynamicart1';
+import {previewPage} from '../sandbox/preview.mjs?v=dynamicart1';
 import {surveyTemplate} from './survey-template.mjs?v=waiting1';
 import {appearance} from '../sandbox/appearance.mjs';
 import {account} from '../account/session.mjs';
@@ -120,15 +120,15 @@ async function checkPublication(){
   let matches=items.filter(item=>item?.definition?.title===prior.draft.title &&
     content(item.definition.html)===content(prior.draft.html) &&
     (!prior.id||item.id===prior.id&&item.revision>prior.revision));
-  if(prior.draft.photo){
+  if(prior.draft.photo||prior.draft.generatedArt){
     const full=prior.id?matches:await Promise.all(matches.map(item=>call('sandboxGet',{id:item.id})));
-    matches=full.filter(item=>item.definition.photo===prior.draft.photo);
+    matches=full.filter(item=>item.definition.photo===prior.draft.photo && item.definition.generatedArt?.image===prior.draft.generatedArt?.image);
   }
   if(matches.length===1){fresh();target=matches[0];link(bubble('assistant','同じ内容の掲載済みページを確認できました。'),target);return;}
   const msg=bubble('assistant',matches.length?'同じ内容のページが複数あります。確認したいページを選んでください。':'まだ掲載結果を特定できません。時間をおいてもう一度確認できます。');
   matches.forEach(item=>link(msg,item));recovery(msg,'掲載結果を確認','publishCheck');
 }
-function draftPreview(html,photo){
+function draftPreview(html,photo,art){
   const panel=document.createElement('dialog');
   panel.className='draft-preview';
   panel.open=true;
@@ -144,7 +144,7 @@ function draftPreview(html,photo){
     panel.close();panel.showModal();toggle.textContent='チャットに戻る';
   };
   panel.oncancel=event=>{event.preventDefault();collapse();};
-  panel.append(toggle,previewPage(html,null,null,photo));return panel;
+  panel.append(toggle,previewPage(html,null,null,photo,art));return panel;
 }
 function renderCandidate(candidate,reply,request){
       renderInfo={reply:{survey:reply.survey,choices:reply.choices,message:reply.message},request};
@@ -158,7 +158,7 @@ function renderCandidate(candidate,reply,request){
         card.append(note);
       }
       if(candidate.photo){const note=document.createElement('p');note.textContent='掲載すると、この添付写真もページに表示されます。';card.append(note);}
-      card.append(draftPreview(candidate.html,candidate.photo));
+      card.append(draftPreview(candidate.html,candidate.photo,candidate.generatedArt));
       if(reply.message && reply.message.trim()!==auditNotice){const note=document.createElement('p');note.textContent=reply.message;card.append(note);}
       if(reply.survey?.numbers?.length){
         const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.checked=new DOMParser().parseFromString(candidate.html,'text/html').querySelector('[data-reference-number]')!==null;
@@ -221,19 +221,19 @@ async function generate(job){
       let required=reply.steps||[];
       const previousPhoto=separate?null:(draft||target?.definition)?.photo;
       let checkedPhoto=reply.draft.photo||previousPhoto;
-      let error=await checkStartup(reply.draft.html,required,newPage,checkedPhoto);
+      let error=await checkStartup(reply.draft.html,required,newPage,checkedPhoto,reply.draft.generatedArt);
       if(error){
         step('起動エラーを修正しています');
         reply=await call('sandboxDraft',{...job.payload,previous:reply.draft,repairSteps:required,prompt:'元の依頼と検査対象のidを保ち、指定の検査手順がそのまま通るように直して。 '+error+' 元の依頼：'+job.text.slice(0,1200)},step);
         checkedPhoto=reply.draft?.photo||checkedPhoto;
         const repaired=reply.steps?.length?reply.steps:required;
-        let remaining=reply.draft?.html?await checkStartup(reply.draft.html,repaired,newPage,checkedPhoto):'下書きがありません';
-        if(!remaining&&required.length&&JSON.stringify(required)!==JSON.stringify(repaired))remaining=await checkStartup(reply.draft.html,required,false,checkedPhoto);
+        let remaining=reply.draft?.html?await checkStartup(reply.draft.html,repaired,newPage,checkedPhoto,reply.draft.generatedArt):'下書きがありません';
+        if(!remaining&&required.length&&JSON.stringify(required)!==JSON.stringify(repaired))remaining=await checkStartup(reply.draft.html,required,false,checkedPhoto,reply.draft.generatedArt);
         required=repaired;
         if(remaining)throw Error('修正後も検査に通りませんでした。'+remaining);
       }
       if(checkedPhoto&&usesAttachedPhoto(reply.draft.html))reply.draft.photo=checkedPhoto;
-      reply.draft.html=await preserveBehavior(separate?null:(draft||target?.definition)?.html,reply.draft.html,required,undefined,checkedPhoto);
+      reply.draft.html=await preserveBehavior(separate?null:(draft||target?.definition)?.html,reply.draft.html,required,undefined,checkedPhoto,reply.draft.generatedArt);
       reply.message=[reply.message,checkLabel(required)].filter(Boolean).join('。');
     }
     step('受け取った回答を確認しています');
