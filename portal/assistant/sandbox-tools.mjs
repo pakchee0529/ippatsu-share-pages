@@ -139,8 +139,17 @@ function draftPreview(html){
 }
 function renderCandidate(candidate,reply,request){
       renderInfo={reply:{survey:reply.survey,choices:reply.choices,message:reply.message},request};
-      draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='送った資料と見比べてほしい径間が'+reply.survey.notes.length+'件あります。';card.append(note);}card.append(draftPreview(candidate.html));
-      if(reply.message){const note=document.createElement('p');note.textContent=reply.message;card.append(note);}
+      draft=candidate;card?.remove();card=bubble('assistant',candidate.title+' の下書き');
+      if(reply.survey?.notes?.length){const note=document.createElement('p');note.textContent='送った資料と見比べてほしい径間が'+reply.survey.notes.length+'件あります。';card.append(note);}
+      const auditNotice=typeof reply.survey?.auditNotice==='string'?reply.survey.auditNotice.trim():'';
+      if(auditNotice){
+        const note=document.createElement('p');
+        note.dataset.surveyAudit='';
+        note.textContent='参考：'+auditNotice;
+        card.append(note);
+      }
+      card.append(draftPreview(candidate.html));
+      if(reply.message && reply.message.trim()!==auditNotice){const note=document.createElement('p');note.textContent=reply.message;card.append(note);}
       if(reply.survey?.numbers?.length){
         const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.checked=new DOMParser().parseFromString(candidate.html,'text/html').querySelector('[data-reference-number]')!==null;
         label.append(box,'管理番号・設計番号をリストに表示（'+reply.survey.numbers.length+'件）');
