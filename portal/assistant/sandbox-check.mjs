@@ -1,4 +1,4 @@
-import {previewPage} from '../sandbox/preview.mjs';
+import {previewPage} from '../sandbox/preview.mjs?v=attached1';
 
 export function checkLabel(steps){
   const operated=steps.some(s=>['click','fill'].includes(s.action));
@@ -7,10 +7,10 @@ export function checkLabel(steps){
   return result?'指定した操作と結果を確認済み':inputOnly?'入力値を確認済み':operated?'操作のみ確認済み':steps.length?'初期表示を確認済み':'起動確認のみ';
 }
 
-export async function checkStartup(html,steps=[],requireOutcome=false){
+export async function checkStartup(html,steps=[],requireOutcome=false,photo=null){
   const values=Object.create(null);
   const shared={values,initial:new Set(),save(key,value){values[key]=value;}};
-  const failure=await runPreview(html,steps,shared,requireOutcome);
+  const failure=await runPreview(html,steps,shared,requireOutcome,photo);
   if(failure)return failure;
   // Reopen persisted inputs that were already visible at startup, plus explicit value assertions.
   const saved=new Map();
@@ -18,11 +18,11 @@ export async function checkStartup(html,steps=[],requireOutcome=false){
     if(Object.hasOwn(values,s.id)&&(s.action==='expectValue'||shared.initial.has(s.id)))saved.set(s.id,{action:'expectValue',id:s.id,value:String(values[s.id])});
   }
   if(!saved.size)return '';
-  const reopened=await runPreview(html,[...saved.values()],shared);
+  const reopened=await runPreview(html,[...saved.values()],shared,false,photo);
   return reopened?'開き直したとき：'+reopened:'';
 }
 
-function runPreview(html,steps,shared,requireOutcome=false){
+function runPreview(html,steps,shared,requireOutcome=false,photo=null){
   return new Promise(resolve=>{
     const plan=JSON.stringify(steps.slice(0,8)).replaceAll("<","\\u003c");
     const probe = `<script>
@@ -32,7 +32,13 @@ function runPreview(html,steps,shared,requireOutcome=false){
       addEventListener('load',()=>setTimeout(async()=>{
         try{
         const steps=${plan};
-        const checkWidth=()=>{
+        const checkWidth=async()=>{
+          const photos=[...document.querySelectorAll('img[data-sandbox-photo="attached"]')];
+          if(photos.length){
+            await Promise.resolve();
+            try{await Promise.all(photos.map(img=>img.decode()));}
+            catch{throw Error('掲載写真を読み込めません。写真の指定を確認してください。');}
+          }
           const root=document.documentElement, width=root.clientWidth;
           if(root.scrollWidth>width+4)throw Error('スマホ幅'+width+'pxでページが横にはみ出します（'+root.scrollWidth+'px）。表や画像の横幅を調整してください。');
         };
@@ -43,7 +49,7 @@ function runPreview(html,steps,shared,requireOutcome=false){
           throw Error('操作ボタンのあるページです。主要操作と、その結果を確かめる検査手順を返してください。');
         }
         initial=steps.filter(s=>visible(document.getElementById(s.id))).map(s=>s.id);
-        checkWidth();
+        await checkWidth();
         let beforeActions=null;
         for(const s of steps){
           if(${requireOutcome?'true':'false'}&&!beforeActions&&['fill','click'].includes(s.action)){
@@ -80,13 +86,13 @@ function runPreview(html,steps,shared,requireOutcome=false){
             await new Promise(resolve=>setTimeout(resolve,50));
           }
         }
-        checkWidth();
+        await checkWidth();
         }catch(e){problem=e.message;}
         setTimeout(()=>parent.postMessage({sandboxStartup:problem.slice(0,220),initial},'*'),200);
       },100));
     </script>`;
     const controller=new AbortController();
-    const frame=previewPage(probe+html,"isolated-test",{...shared,signal:controller.signal});
+    const frame=previewPage(probe+html,"isolated-test",{...shared,signal:controller.signal},photo);
     frame.style.cssText='position:fixed;left:-2000px;top:0;width:360px;height:750px;opacity:0;pointer-events:none';
     frame.setAttribute('aria-hidden','true');
     frame.tabIndex=-1;
