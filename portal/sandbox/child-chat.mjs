@@ -1,4 +1,4 @@
-import {addition,surveyFile} from './child-add.mjs';
+import {addition,surveyFile} from './child-add.mjs?v=mixed1';
 import {surveyTemplate,compactSurveyId} from '../assistant/survey-template.mjs?v=childwaiting1';
 import {resizeReference} from './reference.mjs?v=size1';
 import {resolveChoice} from '../assistant/choices.mjs?v=short1';
@@ -38,7 +38,7 @@ function appendWaiting(item,survey,found){
   const ids=new Set(survey.rows.map(r=>r.key));
   let skipped=found.duplicates?.length||0;
   for(const row of found.rows){
-    if(found.manual && row.name){
+    if(found.manualNames?.has(spanIdentity(row.name||'')) && !row.case_id && !row.management_no && row.name){
       if([...survey.rows,...add].some(r=>spanIdentity(r.name)===spanIdentity(row.name)))skipped++;
       else add.push(row);
       continue;
@@ -136,16 +136,12 @@ export function childChat(item,survey){
       if(survey&&(file||selection||surveyCommand&&(awaitingName||/径間を追加/.test(text)))){
         if(!file&&!selection){awaitingName=true;say('径間名・管理番号・冠称を入力するか、紙の写真やPDFを選んでください。複数の径間名や番号は改行で指定できます。');return;}
         let found,scope;
-        if(!file&&selection.spans){
-          found={manual:true,rows:selection.spans.map(name=>({name}))};
-          scope='指定の径間';
-        }else{
-          const params=file?await surveyFile(file):selection;
-          const reply=await call('sandboxDraft',{turnProtocol:1,interactive:true,template:'survey',prompt:text,...params});
-          found=reply.survey;
-          if(!Array.isArray(found?.rows)||params.waiting&&found.source!=='db-survey-wait')throw Error(reply.question||reply.message||'追加する案件を照合できませんでした。');
-          scope=file?file.name:params.waiting?(params.waiting.scope==='all'?'現調待ち全件':params.waiting.crown+'の現調待ち'):'指定の管理番号';
-        }
+        const params=file?{...await surveyFile(file),surveyTitle:item.definition.title}:selection;
+        const reply=await call('sandboxDraft',{turnProtocol:1,interactive:true,template:'survey',prompt:text,...params});
+        found=reply.survey;
+        if(!Array.isArray(found?.rows)||params.waiting&&found.source!=='db-survey-wait')throw Error(reply.question||reply.message||'追加する案件を照合できませんでした。');
+        if(params.identifiers)found.manualNames=new Set(params.identifiers.map(spanIdentity));
+        scope=file?file.name:params.waiting?(params.waiting.scope==='all'?'現調待ち全件':params.waiting.crown+'の現調待ち'):params.identifiers?'指定の径間・管理番号':'指定の管理番号';
         const {add,skipped,held,definition}=appendWaiting(item,survey,found);
         const summary=scope+'：追加 '+add.length+'件、登録済み・重複 '+skipped+'件、要確認 '+held.length+'件。';
         const notes=[held.length?'照合を保留：'+held.join('、'):'',found.auditNotice].filter(Boolean).map(s=>'\n'+s).join('');
