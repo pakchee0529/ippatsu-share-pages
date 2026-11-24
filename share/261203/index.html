@@ -465,14 +465,17 @@ body {
     <p class="item-mgmt">51406033</p>
     
     <div class="card-actions">
-      <button type="button" class="btn btn-map btn-map-single btn-map-disabled" disabled aria-disabled="true" title="若番・老番の座標がありません">地図を開く</button>
-      <button type="button" class="btn btn-map btn-map-two btn-map-disabled" disabled aria-disabled="true" title="若番・老番の両方の座標が必要です">2点地図を開く</button>
+      <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=33.92852,135.71401" target="_blank" rel="noopener noreferrer">地図を開く</a>
+      <button type="button" class="btn btn-map btn-map-two" data-two-open data-two-wrap="two-wrap-0" data-two-map="share-two-map-0" data-two-json="two-geo-0" aria-expanded="false" aria-controls="two-wrap-0">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-0" data-note-toggle>現場指示</button>
     </div>
   </div>
+  <script type="application/json" id="two-geo-0">{"a":{"name":"七ツ森4G9","lat":33.92817,"lng":135.71405},"b":{"name":"七ツ森5G9","lat":33.92852,"lng":135.71401}}</script>
   
-  
+  <div class="two-map-wrap" id="two-wrap-0" hidden>
+    <div id="share-two-map-0" class="share-two-map-canvas" role="application" aria-label="2点地図"></div>
+  </div>
   <div class="note-panel" id="note-0" hidden><div class="instr-scroll"><table class="instr-table instr-summary"><tbody><tr><th>管理番号</th><td>51406033</td></tr><tr><th>処理方法</th><td>—</td></tr><tr><th>B車</th><td>未設定</td></tr><tr><th>道幅</th><td>未設定</td></tr><tr><th>傾斜</th><td>—</td></tr></tbody></table><p class="instr-cut-caption">枝切り・根切り（本数）</p><table class="instr-table instr-cut"><thead><tr><th scope="col">区分</th><th scope="col">枝切り</th><th scope="col">根切り</th></tr></thead><tbody><tr><th>〜10未満</th><td data-quantity-field="branch_cut_under_10" data-quantity-state="unknown">0</td><td data-quantity-field="root_cut_under_10" data-quantity-state="unknown">0</td></tr><tr><th>〜20未満</th><td data-quantity-field="branch_cut_10_20" data-quantity-state="unknown">0</td><td data-quantity-field="root_cut_10_20" data-quantity-state="unknown">0</td></tr><tr><th>〜30未満</th><td data-quantity-field="branch_cut_20_30" data-quantity-state="unknown">0</td><td data-quantity-field="root_cut_20_30" data-quantity-state="unknown">0</td></tr><tr><th>〜40未満</th><td data-quantity-field="branch_cut_30_40" data-quantity-state="unknown">0</td><td data-quantity-field="root_cut_30_40" data-quantity-state="unknown">0</td></tr><tr><th>〜50未満</th><td data-quantity-field="branch_cut_40_50" data-quantity-state="unknown">0</td><td data-quantity-field="root_cut_40_50" data-quantity-state="unknown">0</td></tr><tr><th>50以上</th><td data-quantity-field="branch_cut_over_50" data-quantity-state="unknown">0</td><td data-quantity-field="root_cut_over_50" data-quantity-state="unknown">0</td></tr><tr class="instr-cut-total"><th scope="row">合計</th><td>0</td><td>0</td></tr></tbody></table><p class="instr-cut-caption">その他伐採</p><table class="instr-table instr-other"><tbody><tr><th>柴伐採面積</th><td data-quantity-field="brush_area_m2" data-quantity-state="unknown">0</td></tr><tr><th>竹伐採本数</th><td data-quantity-field="bamboo_count" data-quantity-state="unknown">0</td></tr><tr><th>つる伐採箇所数</th><td data-quantity-field="vine_locations" data-quantity-state="unknown">0</td></tr></tbody></table></div><div class="photo-ledger-input-footer"><a class="btn btn-photo-ledger-input" href="instructions/?management_no=51406033">指示書</a><a class="btn btn-photo-ledger-input" href="../../portal/shared-ledger/input.html?date=261203&amp;management_no=51406033&amp;ui=20261110-transport-r1" style="margin-top:6px">台帳入力</a></div></div>
 </article>
 <article class="card" data-card-index="1" data-date="261203" data-management-no-key="51402153" data-management-no="51402153" id="case-51402153">
@@ -534,7 +537,7 @@ body {
 </article>
   <section class="map-section" aria-labelledby="map-heading">
     <h2 id="map-heading">全体地図</h2>
-    <!-- share-multipin-debug: points=3 markers=3 duplicate_coordinate_groups=0 stacked_point_count=0 -->
+    <!-- share-multipin-debug: points=4 markers=4 duplicate_coordinate_groups=0 stacked_point_count=0 -->
     <div id="share-map" role="application" aria-label="全径間の位置" data-point-count="3"></div>
   </section>
 </main>
@@ -544,7 +547,7 @@ body {
 <script>
 (function() {
   function initShareMultipinMap() {
-    var POINTS = [{"name":"上湯川88～89","lat":33.92668,"lng":135.72277,"management_no":"51402153"},{"name":"上湯川76～77","lat":33.93119,"lng":135.72362,"management_no":"51402142"},{"name":"上湯川58N1～58N2","lat":33.93296,"lng":135.73022,"management_no":"51402328"}];
+    var POINTS = [{"name":"七ツ森4～5G9","lat":33.92817,"lng":135.71405,"management_no":"51406033"},{"name":"上湯川88～89","lat":33.92668,"lng":135.72277,"management_no":"51402153"},{"name":"上湯川76～77","lat":33.93119,"lng":135.72362,"management_no":"51402142"},{"name":"上湯川58N1～58N2","lat":33.93296,"lng":135.73022,"management_no":"51402328"}];
     document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
       var id = btn.getAttribute("aria-controls");
       var panel = id && document.getElementById(id);
@@ -702,6 +705,7 @@ body {
         if (b.length === 1) {
           mmap.setView(b[0], 15);
         } else if (b.length > 1) {
+          if (geo.a.name === "七ツ森4G9" && geo.b.name === "七ツ森5G9" && btn.closest("article").querySelector(".item-mgmt").textContent === "51406033") L.polyline(b, {color:"#27744d",weight:4,interactive:false}).addTo(mmap);
           mmap.fitBounds(b, { padding: [24, 24], maxZoom: 16 });
         }
       }
