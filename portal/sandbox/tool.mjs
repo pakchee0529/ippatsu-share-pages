@@ -1,7 +1,7 @@
-import {childChat} from './child-chat.mjs?v=dynamicart1';
+import {childChat} from './child-chat.mjs?v=multiart1';
 import {surveyNavigation} from './survey-navigation.mjs?v=origin1';
-import {call} from './api.mjs?v=dynamicart1';
-import {previewPage} from './preview.mjs?v=dynamicart1';
+import {call} from './api.mjs?v=multiart1';
+import {previewPage} from './preview.mjs?v=multiart1';
 import {imageInput} from './image-input.mjs';
 const id=new URLSearchParams(location.search).get('id');
 const status=document.querySelector('#status');

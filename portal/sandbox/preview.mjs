@@ -1,5 +1,5 @@
 import {bundledArt} from './bundled-art.mjs';
-import {displayArt} from './generated-art.mjs';
+import {displayArt} from './generated-art.mjs?v=multiart1';
 import {displayPhoto} from './attached-photo.mjs';
 export function previewPage(html, inputKey=null, shared=null, photo=null, generatedArt=null) {
   const frame = document.createElement("iframe");

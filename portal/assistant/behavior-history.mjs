@@ -1,5 +1,5 @@
 import {editingContext} from './short-edits.mjs';
-import {checkStartup} from './sandbox-check.mjs?v=dynamicart1';
+import {checkStartup} from './sandbox-check.mjs?v=multiart1';
 
 const marker=/<!--ippatsu-checks:([A-Za-z0-9+/=]+)-->/g;
 function readCases(html){
