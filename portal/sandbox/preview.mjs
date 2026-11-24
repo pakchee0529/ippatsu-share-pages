@@ -1,3 +1,4 @@
+import {bundledArt} from './bundled-art.mjs';
 import {displayPhoto} from './attached-photo.mjs';
 export function previewPage(html, inputKey=null, shared=null, photo=null) {
   const frame = document.createElement("iframe");
@@ -30,6 +31,10 @@ export function previewPage(html, inputKey=null, shared=null, photo=null) {
       try{localStorage.setItem(inputKey,JSON.stringify(state));}catch{}
     },shared?.signal?{signal:shared.signal}:undefined);
   }
-  frame.srcdoc = '<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="' + policy + '">' + localForms + bridge + displayPhoto(html,photo);
+  const head = '<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="' + policy + '">' + localForms + bridge;
+  const body=displayPhoto(html,photo);
+  const art=bundledArt(html);
+  if(art)art.then(binding=>{frame.srcdoc=head+binding+body;});
+  else frame.srcdoc=head+body;
   return frame;
 }

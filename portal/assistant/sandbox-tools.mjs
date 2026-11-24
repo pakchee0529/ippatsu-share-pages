@@ -5,14 +5,14 @@ import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=waiti
 import {attachCamera} from './camera.mjs?v=native1';
 import {packCheckpoint,unpackCheckpoint} from './checkpoint.mjs';
 import {literalEdit,targetedEdit} from './short-edits.mjs?v=local2';
-import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=photo5';
+import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=art1';
 import {numberedChoices,resolveChoice} from './choices.mjs?v=short1';
 import {basicCounter} from './basic-counter.mjs';
-import {checkStartup,checkLabel} from './sandbox-check.mjs?v=photo5';
+import {checkStartup,checkLabel} from './sandbox-check.mjs?v=art1';
 import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs?v=bounded1';
 import {call,linkFor} from '../sandbox/api.mjs?v=attached1';
-import {previewPage} from '../sandbox/preview.mjs?v=attached1';
+import {previewPage} from '../sandbox/preview.mjs?v=art1';
 import {surveyTemplate} from './survey-template.mjs?v=waiting1';
 import {appearance} from '../sandbox/appearance.mjs';
 import {account} from '../account/session.mjs';
