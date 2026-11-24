@@ -1,4 +1,4 @@
-import {attachEntranceLinks} from './daily-entrance.mjs';
+import {attachEntranceLinks} from './daily-entrance.mjs?v=20261110-transport-r1';
 import {attachCorrectionEditor} from './correction-editor.mjs?v=20261110-transport-r1';
 const assetVersion=new URL(import.meta.url).searchParams.get('v')||'';
 import {config} from './config.mjs?v=20261110-transport-r1';
