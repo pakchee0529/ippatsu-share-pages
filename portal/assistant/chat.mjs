@@ -212,9 +212,13 @@ $("#login").onsubmit=async e=>{e.preventDefault();const b=$("#login button");b.d
   catch(e){$("#notice").textContent=e.message;}finally{b.disabled=false;}};
 $("#lock").onclick=async()=>{try{await api("logout");}finally{clear();}};
 const chatWork=workingStatus(document.querySelector('#typing'));
+// The schedule planner resolves a numbered nearby case against its own dated list.
+function nearbyCaseChoices(mode,message){
+  return mode==="chat" && message.startsWith("近くの追加候補　");
+}
 async function send(text,action="chat",query=text){if(!text||busy)return;busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;chatWork.show(action==="poleSearch"?"電柱を探しています":"返事を準備しています");
   const last=history.findLast(turn=>!turn.mode||turn.mode===action);
-  const choices=last?.role==="assistant" && last.mode===action ? last.choices || [] : [];
+  const choices=last?.role==="assistant" && last.mode===action && !nearbyCaseChoices(action,last.content) ? last.choices || [] : [];
   const selection=query===text && resolveChoice(text,choices);
   bubble(text,true);history.push({role:"user",mode:action,content:text});
   if(selection?.question){
@@ -230,7 +234,7 @@ async function send(text,action="chat",query=text){if(!text||busy)return;busy=tr
   try{const r=action==="poleSearch"?await api(action,{query}):await api("chat",{messages,...(pageDate?{pageDate}:{}),searchRef:last?.searchRef,receiptId:sessionStorage.getItem(conversationKey("lastReceipt"))});
     mode(r.test);
     const candidates=(r.poleCards||[]).flatMap(card=>card.candidates||[]);
-    history.push({role:"assistant",mode:action,choices:candidates.length?candidates:numberedChoices(r.message),content:r.message.slice(0,1800),citations:r.citations,sticker:r.sticker,links:r.links,searchRef:r.searchRef,poleCards:r.poleCards});
+    history.push({role:"assistant",mode:action,choices:nearbyCaseChoices(action,r.message)?[]:candidates.length?candidates:numberedChoices(r.message),content:r.message.slice(0,1800),citations:r.citations,sticker:r.sticker,links:r.links,searchRef:r.searchRef,poleCards:r.poleCards});
     saveHistory();
     if(r.proposal){pending(r.proposal,r.message);confirmation(r.proposal,r.message);}else{
       const box=bubble(r.message,false,r.citations,r.sticker,r.links,r.poleCards);
