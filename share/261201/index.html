@@ -579,7 +579,7 @@ body {
     <p class="item-mgmt">51410334</p>
     
     <div class="card-actions">
-      <button type="button" class="btn btn-map btn-map-single btn-map-disabled" disabled aria-disabled="true" title="若番・老番の座標がありません">地図を開く</button>
+      <a class="btn btn-map btn-map-single" href="https://www.google.com/maps?q=33.93299,135.65721" target="_blank" rel="noopener noreferrer">地図を開く</a>
       <button type="button" class="btn btn-map btn-map-two btn-map-disabled" disabled aria-disabled="true" title="若番・老番の両方の座標が必要です">2点地図を開く</button>
       <button type="button" class="btn btn-note" aria-expanded="false"
         aria-controls="note-6" data-note-toggle>現場指示</button>
@@ -601,7 +601,50 @@ body {
 <script>
 (function() {
   function initShareMultipinMap() {
-    var POINTS = [{"name":"寺垣内3～4","lat":33.93431,"lng":135.64805,"management_no":"51405448"},{"name":"寺垣内1～2","lat":33.93438,"lng":135.6486,"management_no":"51405446"},{"name":"上湯川211W1S1～211W1S2","lat":33.93182,"lng":135.65089,"management_no":"51402365"},{"name":"上湯川211W2E1～211W2E2","lat":33.93175,"lng":135.64971,"management_no":"51402368"},{"name":"上湯川203～204","lat":33.93153,"lng":135.65529,"management_no":"51402267"},{"name":"上湯川200～199E1","lat":33.93177,"lng":135.6572,"management_no":"51402264"}];
+    var POINTS = [
+      {
+            "name": "寺垣内3～4",
+            "lat": 33.93431,
+            "lng": 135.64805,
+            "management_no": "51405448"
+      },
+      {
+            "name": "寺垣内1～2",
+            "lat": 33.93438,
+            "lng": 135.6486,
+            "management_no": "51405446"
+      },
+      {
+            "name": "上湯川211W1S1～211W1S2",
+            "lat": 33.93182,
+            "lng": 135.65089,
+            "management_no": "51402365"
+      },
+      {
+            "name": "上湯川211W2E1～211W2E2",
+            "lat": 33.93175,
+            "lng": 135.64971,
+            "management_no": "51402368"
+      },
+      {
+            "name": "上湯川203～204",
+            "lat": 33.93153,
+            "lng": 135.65529,
+            "management_no": "51402267"
+      },
+      {
+            "name": "上湯川200～199E1",
+            "lat": 33.93177,
+            "lng": 135.6572,
+            "management_no": "51402264"
+      },
+      {
+            "name": "上湯川199E～引込",
+            "lat": 33.93299,
+            "lng": 135.65721,
+            "management_no": "51410334"
+      }
+];
     document.querySelectorAll("[data-note-toggle]").forEach(function(btn) {
       var id = btn.getAttribute("aria-controls");
       var panel = id && document.getElementById(id);
