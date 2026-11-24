@@ -1,4 +1,4 @@
-import {addition,surveyFile} from './child-add.mjs?v=mixed1';
+import {addition,surveyFile} from './child-add.mjs?v=crown-request2';
 import {surveyTemplate,compactSurveyId} from '../assistant/survey-template.mjs?v=childwaiting1';
 import {resizeReference} from './reference.mjs?v=size1';
 import {resolveChoice} from '../assistant/choices.mjs?v=short1';
