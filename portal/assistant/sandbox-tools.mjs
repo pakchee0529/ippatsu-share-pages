@@ -1,4 +1,4 @@
-import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=size1';
+import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=waiting1';
 import {attachCamera} from './camera.mjs?v=native1';
 import {packCheckpoint,unpackCheckpoint} from './checkpoint.mjs';
 import {literalEdit,targetedEdit} from './short-edits.mjs?v=local2';
@@ -10,7 +10,7 @@ import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs?v=bounded1';
 import {call,linkFor} from '../sandbox/api.mjs?v=turn1';
 import {previewPage} from '../sandbox/preview.mjs';
-import {surveyTemplate} from './survey-template.mjs?v=rows1';
+import {surveyTemplate} from './survey-template.mjs?v=waiting1';
 import {appearance} from '../sandbox/appearance.mjs';
 import {account} from '../account/session.mjs';
 
@@ -179,9 +179,9 @@ async function generate(job){
     step('依頼内容を準備しています');
     if(!job.payload){
       if(job.file)step('添付ファイルを読み込んでいます');
-      const asset=job.file?await readAttachment(job.file):photo;
+      const asset=job.waiting?null:job.file?await readAttachment(job.file):photo;
       job.asset=asset;
-      job.payload={turnProtocol:1,interactive:true,prompt:job.text,template:survey?'survey':undefined,history:projectHistory(history.slice(-8),(draft||target?.definition)?.html),previous:draft,...asset,id:target?.id,revision:target?.revision};
+      job.payload={turnProtocol:1,interactive:true,prompt:job.text,template:survey?'survey':undefined,history:projectHistory(history.slice(-8),(draft||target?.definition)?.html),previous:job.waiting?undefined:draft,...asset,...(job.waiting?{waiting:job.waiting}:{}),id:target?.id,revision:target?.revision};
     }
     step(job.payload.template==='survey'?'現調リストを準備しています':draft||target?'下書きを更新しています':'下書きを作っています');
     checkpoint({text:job.text,payload:job.payload,asset:job.asset});
@@ -217,6 +217,11 @@ async function generate(job){
       reply.message=[reply.message,checkLabel(required)].filter(Boolean).join('。');
     }
     step('受け取った回答を確認しています');
+    if(reply?.survey?.source==='db-survey-wait' && Array.isArray(reply.survey.rows) && reply.survey.rows.length===0 && !reply.survey.held?.length){
+      card?.remove();card=null;draft=null;renderInfo={};photo=null;pendingDraft=null;clearRecovery();
+      const message=reply.message||'該当する現調待ち案件は0件でした。冠称を確認するか、径間名や紙の写真を送ってください。';
+      history.push({role:'user',text:job.text},{role:'assistant',text:message});bubble('assistant',message);checkpoint();return true;
+    }
     if(typeof reply?.question==='string'&&reply.question.trim()){
       history.push({role:'user',text:job.text},{role:'assistant',text:reply.question});
       photo=job.asset;bubble('assistant',reply.question);
@@ -238,9 +243,17 @@ async function generate(job){
     recovery(msg,'同じ内容でもう一度試す','draftRetry');return false;
   }
 }
+const allWaiting=/^(?:現調|現場調査)待ち(?:の(?:案件|現場|径間))?(?:を|の)?(?:全件|全部)(?:で|を)?(?:お願い|表示|作成|出して|見せて)?[。！!]?$/u;
+function requestedWaiting(text){
+  if(allWaiting.test(text))return {scope:'all'};
+  if(/^[A-Za-zＡ-Ｚａ-ｚ]?[\p{Script=Han}々ヶケぁ-んァ-ヶー]{1,32}$/u.test(text) && /[\p{Script=Han}ァ-ヶ]/u.test(text)
+     && !/担当|お願い|全部|全件|現調|リスト|径間|管理番号|設計番号|して|したい|ほしい|さん$/u.test(text)){
+    return {scope:'crown',crown:text};
+  }
+}
 async function send(text,fromComposer=false){
   if(busy)return;
-  const selected=captured||file.files[0];if(!text&&!selected)return;
+  const selected=captured||file.files[0];if(!text.trim()&&!selected)return;
   const initialField=field.value,hadText=Boolean(text.trim());
   if(fromComposer)field.value='';
   let failed=false,consumeFile=true;busy=true;form.querySelector('button:not([type=button])').disabled=true;
@@ -284,10 +297,12 @@ async function send(text,fromComposer=false){
       const msg=bubble('assistant',found.length?'ページを選んでください。':'該当するページが見つかりません。「一覧」と送ってください。');found.forEach(i=>link(msg,i));return;
     }
     if(survey&&createRequest&&/ゲーム/.test(text)&&!/現調|径間/.test(text))survey=false;
+    const explicitAll=!selected&&allWaiting.test(text);
     const soloPhoto=!hadText&&selected?.type.startsWith('image/')&&!draft&&!history.length;
-    survey=survey||(!target&&(/現調(?:用)?リスト.{0,8}(?:作|つく)|径間.{0,5}リスト.{0,5}作/.test(text)||soloPhoto));
+    survey=survey||explicitAll||(!target&&(/現調(?:用)?リスト.{0,8}(?:作|つく)|径間.{0,5}リスト.{0,5}作/.test(text)||soloPhoto));
     pendingDraft=null;clearRecovery();
-    failed=!await generate({text:selection?.value||text,file:selected||null});
+    const waiting=survey&&!selected&&!selection&&(explicitAll||(!draft&&!target&&!photo))?requestedWaiting(text):undefined;
+    failed=!await generate({text:selection?.value||text,file:selected||null,waiting});
   }catch(e){failed=true;const msg=bubble('assistant',e.message==='Failed to fetch'?'通信できませんでした。時間をおいてもう一度試してください。':e.message);
     if(pendingPublication)recovery(msg,'掲載結果を確認','publishCheck');
   }
@@ -334,12 +349,12 @@ form.onsubmit=e=>{e.preventDefault();send(field.value,true);};
 
 root.querySelector('#survey-shortcut').onclick=()=>{
   if(busy)return;
-  if(field.value.trim()||captured||file.files.length){fresh();survey=true;send('新しく現調リストを作って。'+field.value.trim(),true);return;}
+  if(field.value.trim()||captured||file.files.length){fresh();survey=true;send(field.value.trim(),true);return;}
   fresh();survey=true;
   const name=account()?.name?.trim();
-  const request='現調リストを作る',question=name?name+'さんの現調リストを作ります。径間名か紙の写真を送ってください。別の方の分なら、その方の名前も添えてください。':'誰のリストにしますか？ 担当者名と、径間名か紙の写真を送ってください。';
+  const request='現調リストを作る',question=(name?name+'さんの':'')+'現調リストを作ります。現調待ちは冠称だけで探せます。全件なら「現調待ち全部」と送ってください。径間名・管理番号・紙の写真でも作れます。';
   history.push({role:'user',text:request},{role:'assistant',text:question});
-  bubble('user',request);bubble('assistant',question);field.focus();
+  bubble('user',request);bubble('assistant',question);field.focus();checkpoint();
 };
 
 await selectCheckpoint();
