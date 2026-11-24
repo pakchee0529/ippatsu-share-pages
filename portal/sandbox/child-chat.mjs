@@ -7,8 +7,8 @@ import {literalEdit,targetedEdit} from '../assistant/short-edits.mjs?v=local2';
 import {preserveBehavior,projectHistory} from '../assistant/behavior-history.mjs?v=mobile4';
 import {checkStartup,checkLabel} from '../assistant/sandbox-check.mjs?v=mobile4';
 import {appearance,requestedAppearance,stamp} from './appearance.mjs';
-import {call} from './api.mjs';
-import {previewPage} from './preview.mjs';
+import {call} from './api.mjs?v=attached1';
+import {previewPage} from './preview.mjs?v=attached1';
 
 function button(text,fn){
   const el=document.createElement('button');el.type='button';el.textContent=text;el.onclick=fn;return el;
@@ -194,7 +194,7 @@ export function childChat(item,survey){
         if(!reply.draft||await checkStartup(reply.draft.html,checks))throw Error('修正後も操作を確認できませんでした。');
       }
       reply.draft.html=await preserveBehavior((draft||item.definition).html,reply.draft.html,checks);
-      draft=reply.draft;log.append(previewPage(draft.html));confirmation(checkLabel(checks)+'。共有ページに保存しますか？',()=>save(draft));
+      draft=reply.draft;log.append(previewPage(draft.html,null,null,draft.photo||item.definition.photo));confirmation(checkLabel(checks)+'。共有ページに保存しますか？',()=>save(draft));
     }catch(e){say(e.message);}finally{busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
   }
   form.onsubmit=e=>{e.preventDefault();send(input.value);};quick();

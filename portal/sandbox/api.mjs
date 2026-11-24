@@ -1,8 +1,14 @@
 import {account,accountEndpoint} from '../account/session.mjs';
 import {appearance,stamp,designBrief,reconcilePurpose} from './appearance.mjs';
+import {preparePhoto,usesAttachedPhoto} from './attached-photo.mjs';
 import {deviceCredential} from './device.mjs';
 export async function call(action,data={},onStep){
  const request=data.prompt;
+ const previousPhoto=data.previous?.photo;
+ if(action==='sandboxDraft' && data.previous?.photo){
+   const {photo,...previous}=data.previous;
+   data={...data,previous};
+ }
  const token=sessionStorage.getItem('ippatsu.chat.session');
  if(!token&&(action==='sandboxGet'||action==='sandboxList')){
    const url=new URL('https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/daily-photo');
@@ -39,6 +45,11 @@ export async function call(action,data={},onStep){
  if(action==='sandboxDraft')onStep?.('サーバーの応答を読み込んでいます');
  if(!res.ok){const detail=await res.json().catch(()=>({}));const error=Error(detail.message||'通信に失敗しました');error.status=res.status;throw error;}
  const result=await res.json();
+ if(action==='sandboxDraft' && result.draft && usesAttachedPhoto(result.draft.html)){
+   const source=data.image||previousPhoto||(data.id && (await call('sandboxGet',{id:data.id})).definition.photo);
+   if(!source)throw Error('このページに表示する写真を添付してください。');
+   result.draft.photo=await preparePhoto(source);
+ }
  if(action==='sandboxDraft' && !data.id && result.draft)result.draft=reconcilePurpose(result.draft,request);
  return result;
 }
