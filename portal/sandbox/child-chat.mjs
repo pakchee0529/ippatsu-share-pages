@@ -1,4 +1,4 @@
-import {requestedWaiting} from '../assistant/survey-waiting.mjs';
+import {addition,surveyFile} from './child-add.mjs';
 import {surveyTemplate,compactSurveyId} from '../assistant/survey-template.mjs?v=childwaiting1';
 import {resizeReference} from './reference.mjs?v=size1';
 import {resolveChoice} from '../assistant/choices.mjs?v=short1';
@@ -34,12 +34,17 @@ function appendWaiting(item,survey,found){
   const first=doc.getElementById(survey.rows[0]?.key)?.closest('label');
   const group=doc.querySelector('[data-survey-rows]')||first?.parentElement;
   if(!group)throw Error('リストの形式を確認してください。');
-  const add=[],held=(found.held||[]).map(row=>row.name||row.number||'原票行');
+  const add=[],held=(found.held||[]).map(row=>[row.number,row.name,row.message].filter(Boolean).join(' ')||'原票行');
   const ids=new Set(survey.rows.map(r=>r.key));
-  let skipped=0;
+  let skipped=found.duplicates?.length||0;
   for(const row of found.rows){
+    if(found.manual && row.name){
+      if([...survey.rows,...add].some(r=>spanIdentity(r.name)===spanIdentity(row.name)))skipped++;
+      else add.push(row);
+      continue;
+    }
     if(typeof row.name!=='string'||!/[〜～~]/.test(row.name)||!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(row.case_id)){
-      held.push(row.name||row.management_no||'案件未確定');continue;
+      held.push([row.management_no,row.name,row.review||'案件未確定'].filter(Boolean).join(' '));continue;
     }
     const full='span-case-'+row.case_id.toLowerCase(),short=compactSurveyId(row.case_id);
     if(ids.has(full)||ids.has(short)){skipped++;continue;}
@@ -66,6 +71,8 @@ function appendWaiting(item,survey,found){
 export function childChat(item,survey){
   const el=id=>document.getElementById(id);
   const dialog=el('child-chat'),launch=el('chat-launch'),log=el('child-log'),actions=el('child-actions'),form=el('child-form'),input=el('child-input');
+  const fileInput=el('child-file');
+  el('child-file-label').hidden=!survey;
   el('chat-context').textContent=item.definition.title;launch.hidden=false;
   launch.onclick=()=>dialog.showModal();el('chat-close').onclick=()=>dialog.close();
   let draft=null,awaitingName=false,editing=false,busy=false;
@@ -104,7 +111,7 @@ export function childChat(item,survey){
     location.reload();
   }
   async function send(raw){
-    if(busy)return;let text=raw.trim();if(!text)return;
+    if(busy)return;const file=survey&&fileInput.files[0];let text=raw.trim()||(file?'この資料の径間を追加':'');if(!text)return;
     const choice=resolveChoice(text,lastChoices);
     if(choice?.question){say(choice.question);return;}
     text=choice?.value||text;lastChoices=[];
@@ -125,31 +132,30 @@ export function childChat(item,survey){
         awaitingName=false;const remove=survey.checked();if(!remove.length){say('チェック済みの径間はありません。');return;}
         confirmation('共有リストから次の'+remove.length+'件を削除します。\n'+remove.map(r=>r.name).join('\n'),()=>save(changeRows(item,survey,null,remove)));return;
       }
-      if(surveyCommand&&(awaitingName||/追加/.test(text)&&/径間|[～〜~]/.test(text))){
-        const name=text.normalize('NFKC').match(/[^\s「」、。]+?\d[A-Za-z\d]*[~〜][^\s「」、。]*?\d[A-Za-z\d]*/)?.[0]?.replace(/^.*?(?:追加して|追加[:：]|径間[:：])/,'').replace(/^[「『]/,'');
-        if(!name){
-          const requested=awaitingName && requestedWaiting(text);
-          if(requested){
-            const reply=await call('sandboxDraft',{turnProtocol:1,interactive:true,template:'survey',waiting:requested,prompt:text});
-            if(reply.survey?.source!=='db-survey-wait'||!Array.isArray(reply.survey.rows))throw Error('現調待ちの案件を照合できませんでした。');
-            const {add,skipped,held,definition}=appendWaiting(item,survey,reply.survey);
-            const scope=requested.scope==='all'?'現調待ち全件':requested.crown+'の現調待ち';
-            const summary=scope+'：追加 '+add.length+'件、登録済み '+skipped+'件、要確認 '+held.length+'件。';
-            const notes=held.length?'\n照合を保留：'+held.join('、'):'';
-            if(!add.length){say(summary+notes);return;}
-            const stored=stamp(definition,appearance(item.definition));
-            const requestSize=JSON.stringify({action:'sandboxPublish',id:item.id,revision:item.revision,draft:stored,device:'0'.repeat(64)}).length;
-            if(stored.html.length>25000||requestSize>32000){
-              say(summary+'\nまとめて追加するとこのリストの保存上限を超えます。別の現調リストを作るか、径間名を指定して追加してください。');return;
-            }
-            awaitingName=false;
-            confirmation(summary+'\n「'+item.definition.title+'」の末尾に追加します。\n'+add.map(row=>row.management_no+'　'+row.name).join('\n')+notes,()=>save(definition));return;
-          }
-          awaitingName=true;say('追加する径間名か冠称を入力してください。冠称だけなら、その冠称の現調待ちをまとめて探します。');return;
+      const selection=surveyCommand&&addition(text,awaitingName);
+      if(survey&&(file||selection||surveyCommand&&(awaitingName||/径間を追加/.test(text)))){
+        if(!file&&!selection){awaitingName=true;say('径間名・管理番号・冠称を入力するか、紙の写真やPDFを選んでください。複数の径間名や番号は改行で指定できます。');return;}
+        let found,scope;
+        if(!file&&selection.spans){
+          found={manual:true,rows:selection.spans.map(name=>({name}))};
+          scope='指定の径間';
+        }else{
+          const params=file?await surveyFile(file):selection;
+          const reply=await call('sandboxDraft',{turnProtocol:1,interactive:true,template:'survey',prompt:text,...params});
+          found=reply.survey;
+          if(!Array.isArray(found?.rows)||params.waiting&&found.source!=='db-survey-wait')throw Error(reply.question||reply.message||'追加する案件を照合できませんでした。');
+          scope=file?file.name:params.waiting?(params.waiting.scope==='all'?'現調待ち全件':params.waiting.crown+'の現調待ち'):'指定の管理番号';
         }
+        const {add,skipped,held,definition}=appendWaiting(item,survey,found);
+        const summary=scope+'：追加 '+add.length+'件、登録済み・重複 '+skipped+'件、要確認 '+held.length+'件。';
+        const notes=[held.length?'照合を保留：'+held.join('、'):'',found.auditNotice].filter(Boolean).map(s=>'\n'+s).join('');
+        fileInput.value='';
+        if(!add.length){say(summary+notes);return;}
+        const stored=stamp(definition,appearance(item.definition));
+        const size=JSON.stringify({action:'sandboxPublish',id:item.id,revision:item.revision,draft:stored,device:'0'.repeat(64)}).length;
+        if(stored.html.length>25000||size>32000){say(summary+'\nまとめて追加するとこのリストの保存上限を超えます。別の現調リストを作るか、径間名を指定して追加してください。');return;}
         awaitingName=false;
-        if(survey.rows.some(r=>r.name.normalize('NFKC').replace(/〜/g,'~')===name.replace(/〜/g,'~'))){say('その径間は登録済みです。');return;}
-        confirmation('共有リストに「'+name+'」を追加します。',()=>save(changeRows(item,survey,name,[])));return;
+        confirmation(summary+'\n「'+item.definition.title+'」の末尾に追加します。\n'+add.map(row=>[row.management_no,row.name,row.review].filter(Boolean).join('　')).join('\n')+notes,()=>save(definition));return;
       }
       if(surveyCommand&&/訪問順|巡回順|近い順|遠い順/.test(text)){
         await survey.ready;const near=text.includes('近い順'),route=survey.route(near);if(!route.some(r=>r.center)){say('座標を照合できませんでした。');return;}
