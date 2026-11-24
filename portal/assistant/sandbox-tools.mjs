@@ -1,4 +1,4 @@
-import {surveyRequest,numberInput} from './survey-create.mjs';
+import {surveyRequest,numberInput,spanInputs} from './survey-create.mjs?v=ids1';
 import {allWaiting,requestedWaiting} from './survey-waiting.mjs';
 import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=waiting1';
 import {attachCamera} from './camera.mjs?v=native1';
@@ -186,7 +186,8 @@ async function generate(job){
       const asset=job.waiting?null:job.file?await readAttachment(job.file):photo;
       job.asset=asset;
       const managementNumbers=survey&&!asset&&!job.waiting?numberInput(job.text):undefined;
-      job.payload={managementNumbers,turnProtocol:1,interactive:true,prompt:job.text,template:survey?'survey':undefined,history:projectHistory(history.slice(-8),(draft||target?.definition)?.html),previous:job.waiting?undefined:draft,...asset,...(job.waiting?{waiting:job.waiting}:{}),id:target?.id,revision:target?.revision};
+      const identifiers=survey&&!asset&&!job.waiting&&!managementNumbers?spanInputs(job.text):undefined;
+      job.payload={managementNumbers,identifiers,turnProtocol:1,interactive:true,prompt:job.text,template:survey?'survey':undefined,history:projectHistory(history.slice(-8),(draft||target?.definition)?.html),previous:job.waiting?undefined:draft,...asset,...(job.waiting?{waiting:job.waiting}:{}),id:target?.id,revision:target?.revision};
     }
     step(job.payload.template==='survey'?'現調リストを準備しています':draft||target?'下書きを更新しています':'下書きを作っています');
     checkpoint({text:job.text,payload:job.payload,asset:job.asset});
