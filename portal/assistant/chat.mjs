@@ -1,3 +1,4 @@
+import {surveyRequest} from './survey-create.mjs';
 import {numberedChoices,resolveChoice} from './choices.mjs';
 import {workingStatus} from './working.mjs';
 import {openAccount,forget,rotate} from '../account/session.mjs';
@@ -208,7 +209,7 @@ function start(){show();if(!token)return;balanceTime=0;refreshBalance();api("mod
   try{const p=JSON.parse(sessionStorage.getItem(conversationKey("pending")));if(p)confirmation(p.id,p.text,true);}catch{}}
 $("#account-entry").onclick=()=>openAccount(()=>location.reload());
 $("#login").onsubmit=async e=>{e.preventDefault();const b=$("#login button");b.disabled=true;$("#notice").textContent="";
-  try{const r=await api("login",{pin:$("#pin").value});token=r.token;sessionStorage.setItem("ippatsu.chat.session",token);$("#pin").value="";start();}
+  try{const r=await api("login",{pin:$("#pin").value});token=r.token;sessionStorage.setItem("ippatsu.chat.session",token);$("#pin").value="";start();if(new URLSearchParams(location.search).get("create")==="survey"){setInputMode(false,true);window.dispatchEvent(new Event("survey-unlocked"));}}
   catch(e){$("#notice").textContent=e.message;}finally{b.disabled=false;}};
 $("#lock").onclick=async()=>{try{await api("logout");}finally{clear();}};
 const chatWork=workingStatus(document.querySelector('#typing'));
@@ -216,7 +217,12 @@ const chatWork=workingStatus(document.querySelector('#typing'));
 function nearbyCaseChoices(mode,message){
   return mode==="chat" && message.startsWith("近くの追加候補　");
 }
-async function send(text,action="chat",query=text){if(!text||busy)return;busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;chatWork.show(action==="poleSearch"?"電柱を探しています":"返事を準備しています");
+async function send(text,action="chat",query=text){if(!text||busy)return;
+  if(action==="chat"&&surveyRequest(text)!==null){
+    sessionStorage.setItem("ippatsu.survey.createPrompt",text);
+    location.assign(new URL("./?create=survey",location.href));return;
+  }
+  busy=true;$("#compose button").disabled=true;$("#typing").hidden=false;chatWork.show(action==="poleSearch"?"電柱を探しています":"返事を準備しています");
   const last=history.findLast(turn=>!turn.mode||turn.mode===action);
   const choices=last?.role==="assistant" && last.mode===action && !nearbyCaseChoices(action,last.content) ? last.choices || [] : [];
   const selection=query===text && resolveChoice(text,choices);
@@ -337,7 +343,8 @@ $("#pole-geo").onclick=()=>{
   },{enableHighAccuracy:true,timeout:15000,maximumAge:30000});
 };
 document.querySelectorAll("[data-chat]").forEach(b=>b.onclick=()=>send(b.textContent));
-const restoredMode=new URLSearchParams(location.search).get("mode")==="sandbox"?"sandbox":token && sessionStorage.getItem("ippatsu.chat.inputMode");
+const params=new URLSearchParams(location.search);
+const restoredMode=(params.get("create")==="survey"||params.get("mode")==="sandbox")?"sandbox":token && sessionStorage.getItem("ippatsu.chat.inputMode");
 setInputMode(restoredMode==="search",restoredMode==="sandbox");
 start();
 
