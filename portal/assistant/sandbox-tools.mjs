@@ -4,10 +4,10 @@ import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=waiti
 import {attachCamera} from './camera.mjs?v=native1';
 import {packCheckpoint,unpackCheckpoint} from './checkpoint.mjs';
 import {literalEdit,targetedEdit} from './short-edits.mjs?v=local2';
-import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=short1';
+import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=mobile4';
 import {numberedChoices,resolveChoice} from './choices.mjs?v=short1';
 import {basicCounter} from './basic-counter.mjs';
-import {checkStartup,checkLabel} from './sandbox-check.mjs?v=workflow3';
+import {checkStartup,checkLabel} from './sandbox-check.mjs?v=mobile4';
 import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs?v=bounded1';
 import {call,linkFor} from '../sandbox/api.mjs?v=turn1';
@@ -208,15 +208,19 @@ async function generate(job){
       photo=job.asset;pendingDraft=null;clearRecovery();checkpoint();return true;
     }
     const separate=reply.kind==='newDraft';
+    const newPage=separate||(!draft&&!target);
     if(reply.draft?.html){
       step('下書きをブラウザで開いています');
       if(reply.steps?.length)step('下書きで操作と結果を検査しています');
-      const required=reply.steps||[];
-      let error=await checkStartup(reply.draft.html,required);
+      let required=reply.steps||[];
+      let error=await checkStartup(reply.draft.html,required,newPage);
       if(error){
         step('起動エラーを修正しています');
         reply=await call('sandboxDraft',{...job.payload,previous:reply.draft,repairSteps:required,prompt:'元の依頼と検査対象のidを保ち、指定の検査手順がそのまま通るように直して。 '+error+' 元の依頼：'+job.text.slice(0,1200)},step);
-        const remaining=reply.draft?.html?await checkStartup(reply.draft.html,required):'下書きがありません';
+        const repaired=reply.steps?.length?reply.steps:required;
+        let remaining=reply.draft?.html?await checkStartup(reply.draft.html,repaired,newPage):'下書きがありません';
+        if(!remaining&&required.length&&JSON.stringify(required)!==JSON.stringify(repaired))remaining=await checkStartup(reply.draft.html,required);
+        required=repaired;
         if(remaining)throw Error('修正後も検査に通りませんでした。'+remaining);
       }
       reply.draft.html=await preserveBehavior(separate?null:(draft||target?.definition)?.html,reply.draft.html,required);
