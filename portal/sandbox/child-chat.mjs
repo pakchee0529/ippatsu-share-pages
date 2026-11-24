@@ -4,11 +4,11 @@ import {surveyTemplate,compactSurveyId} from '../assistant/survey-template.mjs?v
 import {resizeReference} from './reference.mjs?v=size1';
 import {resolveChoice} from '../assistant/choices.mjs?v=short1';
 import {literalEdit,targetedEdit} from '../assistant/short-edits.mjs?v=local2';
-import {preserveBehavior,projectHistory} from '../assistant/behavior-history.mjs?v=dynamicart1';
-import {checkStartup,checkLabel} from '../assistant/sandbox-check.mjs?v=dynamicart1';
+import {preserveBehavior,projectHistory} from '../assistant/behavior-history.mjs?v=multiart1';
+import {checkStartup,checkLabel} from '../assistant/sandbox-check.mjs?v=multiart1';
 import {appearance,requestedAppearance,stamp} from './appearance.mjs';
-import {call} from './api.mjs?v=dynamicart1';
-import {previewPage} from './preview.mjs?v=dynamicart1';
+import {call} from './api.mjs?v=multiart1';
+import {previewPage} from './preview.mjs?v=multiart1';
 
 function button(text,fn){
   const el=document.createElement('button');el.type='button';el.textContent=text;el.onclick=fn;return el;

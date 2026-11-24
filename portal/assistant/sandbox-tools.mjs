@@ -1,3 +1,4 @@
+import {sameArt} from '../sandbox/generated-art.mjs?v=multiart1';
 import {usesAttachedPhoto} from '../sandbox/attached-photo.mjs';
 import {surveyRequest,numberInput,spanInputs} from './survey-create.mjs?v=ids1';
 import {allWaiting,requestedWaiting} from './survey-waiting.mjs';
@@ -5,14 +6,14 @@ import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=waiti
 import {attachCamera} from './camera.mjs?v=native1';
 import {packCheckpoint,unpackCheckpoint} from './checkpoint.mjs';
 import {literalEdit,targetedEdit} from './short-edits.mjs?v=local2';
-import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=dynamicart1';
+import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=multiart1';
 import {numberedChoices,resolveChoice} from './choices.mjs?v=short1';
 import {basicCounter} from './basic-counter.mjs';
-import {checkStartup,checkLabel} from './sandbox-check.mjs?v=dynamicart1';
+import {checkStartup,checkLabel} from './sandbox-check.mjs?v=multiart1';
 import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs?v=bounded1';
-import {call,linkFor} from '../sandbox/api.mjs?v=dynamicart1';
-import {previewPage} from '../sandbox/preview.mjs?v=dynamicart1';
+import {call,linkFor} from '../sandbox/api.mjs?v=multiart1';
+import {previewPage} from '../sandbox/preview.mjs?v=multiart1';
 import {surveyTemplate} from './survey-template.mjs?v=waiting1';
 import {appearance} from '../sandbox/appearance.mjs';
 import {account} from '../account/session.mjs';
@@ -122,7 +123,7 @@ async function checkPublication(){
     (!prior.id||item.id===prior.id&&item.revision>prior.revision));
   if(prior.draft.photo||prior.draft.generatedArt){
     const full=prior.id?matches:await Promise.all(matches.map(item=>call('sandboxGet',{id:item.id})));
-    matches=full.filter(item=>item.definition.photo===prior.draft.photo && item.definition.generatedArt?.image===prior.draft.generatedArt?.image);
+    matches=full.filter(item=>item.definition.photo===prior.draft.photo && sameArt(item.definition.generatedArt,prior.draft.generatedArt));
   }
   if(matches.length===1){fresh();target=matches[0];link(bubble('assistant','同じ内容の掲載済みページを確認できました。'),target);return;}
   const msg=bubble('assistant',matches.length?'同じ内容のページが複数あります。確認したいページを選んでください。':'まだ掲載結果を特定できません。時間をおいてもう一度確認できます。');

@@ -1,4 +1,4 @@
-import {previewPage} from '../sandbox/preview.mjs?v=dynamicart1';
+import {previewPage} from '../sandbox/preview.mjs?v=multiart1';
 
 export function checkLabel(steps){
   const operated=steps.some(s=>['click','fill'].includes(s.action));

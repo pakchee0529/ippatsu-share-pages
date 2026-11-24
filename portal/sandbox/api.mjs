@@ -2,7 +2,7 @@ import {account,accountEndpoint} from '../account/session.mjs';
 import {appearance,stamp,designBrief,reconcilePurpose} from './appearance.mjs';
 import {preparePhoto,usesAttachedPhoto} from './attached-photo.mjs';
 import {deviceCredential} from './device.mjs';
-import {artBrief,matchesArt} from './generated-art.mjs';
+import {artPlan,artEntries,matchingArt,packArt} from './generated-art.mjs?v=multiart1';
 
 // Retry only the illustration when the HTML generation already succeeded.
 let imageRetry=null;
@@ -32,8 +32,8 @@ export async function call(action,data={},onStep){
    data={...data,prompt:data.prompt+'\n'+designBrief};
  }
  if(action==='sandboxPublish'){
-   const brief=artBrief(data.draft?.html);
-   if(brief&&!matchesArt(data.draft.generatedArt,brief))throw Error('挿絵を準備してから掲載してください。');
+   const plan=artPlan(data.draft?.html);
+   if(plan.some(slot=>!matchingArt(artEntries(data.draft.generatedArt),slot)))throw Error('挿絵を準備してから掲載してください。');
    const prior=data.id?(await call('sandboxGet',{id:data.id})).definition:data.draft;
    const draft=stamp(data.draft,data.appearance||appearance(prior));
    data={...data,draft};
@@ -67,23 +67,29 @@ export async function call(action,data={},onStep){
    result.draft.photo=await preparePhoto(source);
  }
  if(action==='sandboxDraft' && result.draft){
-   const brief=artBrief(result.draft.html);
-   if(brief){
+   const plan=artPlan(result.draft.html);
+   if(plan.length){
      let prior=result.kind==='newDraft'?null:previousArt;
      if(!prior&&data.id&&result.kind!=='newDraft')prior=(await call('sandboxGet',{id:data.id})).definition.generatedArt;
-     if(matchesArt(prior,brief))result.draft.generatedArt=prior;
-     else {
-       imageRetry={key,result};
-       onStep?.('このページに合う挿絵を描いています');
-       try{
-         const {image}=await call('sandboxGenerateArt',{brief});
-         if(!matchesArt({brief,image},brief))throw Error('生成画像を読み込めませんでした。');
-         result.draft.generatedArt={brief,image};
-       }catch(error){
-         throw Error('ページの下書きはできました。挿絵の生成をもう一度試せます。 '+error.message);
+     const available=[...artEntries(result.draft.generatedArt),...artEntries(prior)];
+     const ready=[];
+     imageRetry={key,result};
+     for(const slot of plan){
+       let entry=matchingArt(available,slot);
+       if(!entry){
+         onStep?.('挿絵を描いています（'+(ready.length+1)+' / '+plan.length+'枚）');
+         try{
+           const {image}=await call('sandboxGenerateArt',{brief:slot.brief});
+           entry=matchingArt([{...slot,image}],slot);
+           if(!entry)throw Error('生成画像を読み込めませんでした。');
+         }catch(error){
+           throw Error('下書きと完成した挿絵を保持しています。残りの挿絵をもう一度試せます。 '+error.message);
+         }
        }
+       ready.push(entry);
+       result.draft.generatedArt=packArt([...ready]);
      }
-   }
+   }else delete result.draft.generatedArt;
    if(imageRetry?.key===key)imageRetry=null;
  }
  if(action==='sandboxDraft' && !data.id && result.draft)result.draft=reconcilePurpose(result.draft,request);
