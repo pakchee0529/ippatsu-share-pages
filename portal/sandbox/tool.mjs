@@ -1,5 +1,5 @@
 import {childChat} from './child-chat.mjs?v=short1';
-import {surveyNavigation} from './survey-navigation.mjs?v=shared1';
+import {surveyNavigation} from './survey-navigation.mjs?v=numbers3';
 import {call} from './api.mjs?v=child1';
 import {previewPage} from './preview.mjs?v=shared1';
 import {imageInput} from './image-input.mjs';

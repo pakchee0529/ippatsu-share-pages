@@ -1,3 +1,4 @@
+import {displayReference} from '../sandbox/reference.mjs';
 export function surveyTemplate(draft,withNumbers=true){
   const names=draft.names;
   if(!Array.isArray(names)||!names.length||names.some(n=>!/[〜～~]/.test(n)||n.length>100)||new Set(names).size!==names.length)throw Error('径間を確認できませんでした。径間名か、読み取りやすい写真を送ってください。');
@@ -11,7 +12,7 @@ export function surveyTemplate(draft,withNumbers=true){
       const group=document.createElement('div');label.replaceWith(group);group.append(label);
       for(const [key,value] of [['referenceNumber',number],['review',review]]){
         if(!value)continue;
-        label.dataset[key]=value;const caption=document.createElement('p');caption.textContent=value;group.append(caption);
+        label.dataset[key]=value;const caption=document.createElement('p');caption.textContent=key==='referenceNumber'?displayReference(value):value;group.append(caption);
       }
     }
   }

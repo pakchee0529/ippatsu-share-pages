@@ -1,3 +1,4 @@
+import {displayReference} from '../sandbox/reference.mjs';
 import {attachCamera} from './camera.mjs';
 import {packCheckpoint,unpackCheckpoint} from './checkpoint.mjs';
 import {literalEdit} from './short-edits.mjs';
@@ -9,7 +10,7 @@ import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs?v=bounded1';
 import {call,linkFor} from '../sandbox/api.mjs?v=turn1';
 import {previewPage} from '../sandbox/preview.mjs';
-import {surveyTemplate} from './survey-template.mjs?v=numbers2';
+import {surveyTemplate} from './survey-template.mjs?v=numbers3';
 import {appearance} from '../sandbox/appearance.mjs';
 import {account} from '../account/session.mjs';
 
@@ -144,7 +145,7 @@ function renderCandidate(candidate,reply,request){
         const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.checked=new DOMParser().parseFromString(candidate.html,'text/html').querySelector('[data-reference-number]')!==null;
         label.append(box,'管理番号・設計番号をリストに表示（'+reply.survey.numbers.length+'件）');
         const examples=document.createElement('details'),heading=document.createElement('summary');heading.textContent='径間ごとの番号を見る';examples.append(heading);
-        for(const n of reply.survey.numbers){const row=document.createElement('div');row.textContent=n.name+'　'+n.text;examples.append(row);}
+        for(const n of reply.survey.numbers){const row=document.createElement('div');row.textContent=n.name+'　'+displayReference(n.text);examples.append(row);}
         card.append(label,examples);box.onchange=()=>{draft=surveyTemplate(reply.survey,box.checked);card.querySelector('iframe').replaceWith(previewPage(draft.html));checkpoint();};
       }
       const choices=document.createElement('div');choices.className='suggestions';
