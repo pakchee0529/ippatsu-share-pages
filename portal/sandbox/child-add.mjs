@@ -9,8 +9,10 @@ export function addition(text,awaiting){
   if(waiting&&(awaiting||crown||waiting.scope==='all'))return {waiting};
   const parts=query.replace(/^管理番号[：:\s]*/u,'').split(/[、,\s]+/u).filter(Boolean);
   if(parts.length&&parts.every(n=>/^\d{8}$/.test(n)))return {managementNumbers:parts};
-  const spans=query.replace(/^(?:径間|追加)[:：]\s*/u,'').split(/[、,\n]+/u).map(s=>s.trim());
-  if(spans.every(s=>/^[\p{L}\dー・]+[~〜][\p{L}\dー・]+$/u.test(s)))return {spans:spans.map(s=>s.replace(/[~〜]/g,'～'))};
+  const identifiers=query.replace(/^(?:径間|追加)[:：]\s*/u,'').split(/[、,\s]+/u).filter(Boolean);
+  if(identifiers.length&&identifiers.every(s=>/^\d{8}$/.test(s)||/^[\p{L}\dー・]+[~〜][\p{L}\dー・]+$/u.test(s))){
+    return {identifiers:identifiers.map(s=>s.replace(/[~〜]/g,'～'))};
+  }
 }
 export async function surveyFile(file){
   if(file.type.startsWith('image/'))return {image:await imageInput(file)};
