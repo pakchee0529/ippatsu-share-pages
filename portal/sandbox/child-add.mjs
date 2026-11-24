@@ -2,11 +2,13 @@ import {requestedWaiting} from '../assistant/survey-waiting.mjs';
 import {imageInput} from './image-input.mjs?v=bounded1';
 
 export function addition(text,awaiting){
-  const query=text.normalize('NFKC').trim().replace(/[。!！]+$/u,'')
-    .replace(/(?:を)?追加(?:してください|してほしい|したい|して|する|で)?$/u,'').trim();
+  const input=text.normalize('NFKC').trim().replace(/[。.!！?？]+$/u,'').trim();
+  const request=/(?:を\s*)?(?:追加(?:\s*(?:して(?:ください|ほしい|くれる|くれますか|もらえる|もらえますか)?|したい|お願い(?:します)?|する|で))?|入れて(?:ください|ほしい|くれる|もらえる)?)(?:よね|よ|ね|な|や)?$/u;
+  const explicit=request.test(input);
+  const query=input.replace(request,'').trim();
   const crown=query.match(/^(.+?)の(?:現調|現場調査)待ち(?:の(?:案件|現場|径間))?(?:を?(?:全部|全件))?$/u);
   const waiting=crown?requestedWaiting(crown[1]):requestedWaiting(query);
-  if(waiting&&(awaiting||crown||waiting.scope==='all'))return {waiting};
+  if(waiting&&(awaiting||explicit||crown||waiting.scope==='all'))return {waiting};
   const parts=query.replace(/^管理番号[：:\s]*/u,'').split(/[、,\s]+/u).filter(Boolean);
   if(parts.length&&parts.every(n=>/^\d{8}$/.test(n)))return {managementNumbers:parts};
   const identifiers=query.replace(/^(?:径間|追加)[:：]\s*/u,'').split(/[、,\s]+/u).filter(Boolean);

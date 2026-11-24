@@ -1,4 +1,4 @@
-import {childChat} from './child-chat.mjs?v=material2';
+import {childChat} from './child-chat.mjs?v=crown-request2';
 import {surveyNavigation} from './survey-navigation.mjs?v=rows1';
 import {call} from './api.mjs?v=child1';
 import {previewPage} from './preview.mjs?v=shared1';
