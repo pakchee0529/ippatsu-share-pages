@@ -240,3 +240,7 @@ docs/work_logs/YYYY-MM-DD_HHMM_<agent>_<task-slug>.md
 - `docs/worktree_prod_operations.md` — 業務 worktree・P1a 許可リスト・generate モード
 - `docs/git_sync_workflow.md` — 家PC / 会社PC 同期
 - `docs/survey_portal_update_request_mvp_design.md` — 現調更新依頼 MVP
+
+## 共有ポータルのTOP
+
+予定の追加・移動・取消・完了報告でTOPを更新するときは、既存の日別カード一覧の内容だけを更新する。TOPのレイアウト、表示欄、メニュー、スタイル、読み込むスクリプトを変更するときは、利用者からTOP変更の明示依頼を受けること。この扱いは生成テンプレートや共通資材からTOPに変更を加える場合にも適用する。
