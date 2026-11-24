@@ -23,6 +23,7 @@ export function resizeReference(request,page){
   const prior=Number(list.dataset.referenceSize)||16;
   const size=match[1]==='大き'?Math.min(48,prior+6):Math.max(12,prior-4);
   list.dataset.referenceSize=String(size);
+  if(list.hasAttribute('data-waiting-list'))list.style.setProperty('--reference-size',size+'px');
   for(const el of labels){
     const caption=el.nextElementSibling;
     if(caption?.tagName==='P')caption.replaceChildren(referenceContent(el.dataset.referenceNumber,size));

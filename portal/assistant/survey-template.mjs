@@ -1,4 +1,4 @@
-import {displayReference,surveyWarnings} from '../sandbox/reference.mjs?v=size1';
+import {displayReference,surveyWarnings} from '../sandbox/reference.mjs?v=waiting1';
 
 const norm=name=>name.normalize('NFKC').replace(/\s/g,'').replace(/[〜～]/g,'~');
 const validSpan=name=>typeof name==='string' && /[〜～~]/.test(name) && name.length<=100;
@@ -18,6 +18,7 @@ function reviewText(r){
   return [r.row?'原票'+r.row+'行目':'原票行',r.name||'径間名未確認',r.management_no||r.number||'',r.design||'',r.message||r.review||'原票を確認してください。'].filter(Boolean).join('　');
 }
 export function surveyTemplate(draft,withNumbers=true){
+  const compact=draft.source==='db-survey-wait';
   const input=Array.isArray(draft.rows)?draft.rows:legacyRows(draft);
   const held=[...(draft.held||[])],duplicates=[...(draft.duplicates||[])],cases=new Map(),rows=[];
   for(const [i,r] of input.entries()){
@@ -36,6 +37,7 @@ export function surveyTemplate(draft,withNumbers=true){
   }
   if(!rows.length&&!held.length)throw Error('径間を確認できませんでした。径間名か、読み取りやすい写真を送ってください。');
   const list=document.createElement('section');list.dataset.surveyRows='';
+  if(compact)list.dataset.waitingList='';
   const names=rows.map(row=>norm(row.name));
   for(const [i,row] of rows.entries()){
     if(names.indexOf(names[i])!==names.lastIndexOf(names[i])){
@@ -50,8 +52,16 @@ export function surveyTemplate(draft,withNumbers=true){
     const oldKey='span-'+Array.from(name,c=>c.codePointAt(0).toString(36)).join('-');
     input.id=uuid.test(row.case_id)?'span-case-'+row.case_id.toLowerCase():
       names.indexOf(names[i])===names.lastIndexOf(names[i]) && oldKey.length<=120?oldKey:'span-row-'+(i+1);
+    if(compact && uuid.test(row.case_id)){
+      const bytes=row.case_id.replaceAll('-','').match(/../g).map(x=>parseInt(x,16));
+      input.id='c-'+btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
+    }
     label.append(input,name);list.append(label);
     const number=withNumbers&&(row.reference||row.management_no);
+    if(compact && !review){
+      if(number)label.dataset.referenceNumber=displayReference(number);
+      continue;
+    }
     if(number||review){
       const group=document.createElement('div');label.replaceWith(group);group.append(label);
       for(const [key,value] of [['referenceNumber',number],['review',review]]){
@@ -69,5 +79,5 @@ export function surveyTemplate(draft,withNumbers=true){
   }
   const title=draft.title.includes('現調')?draft.title:draft.title+'の現調リスト';
   const h=document.createElement('h1');h.textContent=title;
-  return {title,html:'<!doctype html><html lang="ja"><meta charset="utf-8"><style>:root{--ink:#214537;--rule:#d7ded7;font:16px system-ui}body{color:var(--ink);margin:1rem}h1{font-size:1.3rem}label{display:flex;align-items:center;gap:.6rem;min-height:46px;border-bottom:1px solid var(--rule)}</style>'+h.outerHTML+list.outerHTML+'</html>'};
+  return {title,html:'<!doctype html><html lang="ja"><meta charset="utf-8"><style>:root{--ink:#214537;--rule:#d7ded7;font:16px system-ui}body{color:var(--ink);margin:1rem}h1{font-size:1.3rem}label{display:flex;align-items:center;gap:.6rem;min-height:46px;border-bottom:1px solid var(--rule)}[data-waiting-list]>label[data-reference-number]::after{content:attr(data-reference-number);margin-left:auto;font-size:var(--reference-size,.88em)}</style>'+h.outerHTML+list.outerHTML+'</html>'};
 }
