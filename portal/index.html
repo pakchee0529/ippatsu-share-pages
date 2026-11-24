@@ -415,13 +415,8 @@ body { max-width: 54rem; padding-block: 24px 48px; font-family: var(--top-font);
     <p class="today-schedule-more"><a href="./calendar/">社内カレンダーで詳細を見る</a></p>
   </section>
 
-  <section id="assistant-schedule" class="today-schedule" aria-label="変更した施工予定" hidden>
-    <h2 class="today-schedule-heading">変更した施工予定</h2>
-    <div id="assistant-schedule-days"></div>
-  </section>
-  <script type="module" src="./assistant/schedule-display.mjs"></script>
-
   <div class="card-list" role="list">
+    <!-- scheduled-days:start -->
     <article class="card" role="listitem">
       <h2 class="card-title">2026年11月25日　樫辻・賀名生　4件</h2>
       <a class="btn" href="../share/261125/">共有ページを開く</a>
@@ -434,6 +429,7 @@ body { max-width: 54rem; padding-block: 24px 48px; font-family: var(--top-font);
       <h2 class="card-title">2026年11月27日　上之・五条　2件</h2>
       <a class="btn" href="../share/261127/">共有ページを開く</a>
     </article>
+    <!-- scheduled-days:end -->
   </div>
 
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>

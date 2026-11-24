@@ -8821,14 +8821,10 @@ body {{ max-width: 54rem; padding-block: 24px 48px; font-family: var(--top-font)
     <p class="today-schedule-more"><a href="./calendar/">社内カレンダーで詳細を見る</a></p>
   </section>
 
-  <section id="assistant-schedule" class="today-schedule" aria-label="変更した施工予定" hidden>
-    <h2 class="today-schedule-heading">変更した施工予定</h2>
-    <div id="assistant-schedule-days"></div>
-  </section>
-  <script type="module" src="./assistant/schedule-display.mjs"></script>
-
   <div class="card-list" role="list">
+    <!-- scheduled-days:start -->
 {cards_str}
+    <!-- scheduled-days:end -->
   </div>
 
   <p class="footer-note">このページは <code>scripts/generate_portal.py</code> で再生成できます。</p>
@@ -9896,6 +9892,22 @@ def _build_archive_index_parts(
 def _write_portal_html(repo_root: Path, rel: str, html: str) -> Path:
     out_path = repo_root / rel
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    if rel == "portal/index.html" and out_path.exists():
+        # Routine publication owns the dated cards only. Preserve the live TOP shell byte for byte.
+        start = b"<!-- scheduled-days:start -->"
+        end = b"<!-- scheduled-days:end -->"
+        existing = out_path.read_bytes()
+        generated = strip_trailing_whitespace(html).encode("utf-8")
+        for content in (existing, generated):
+            if content.count(start) != 1 or content.count(end) != 1 or content.index(start) >= content.index(end):
+                raise ValueError("TOPの日別カード更新範囲を特定できません。")
+        before, _, tail = existing.partition(start)
+        _, _, after = tail.partition(end)
+        cards = generated.partition(start)[2].partition(end)[0]
+        updated = before + start + cards + end + after
+        if updated != existing:
+            out_path.write_bytes(updated)
+        return out_path
     if rel == "portal/index.html":
         html = inject_site_icon_links(html, _portal_icon_base_href(rel))
     else:
