@@ -1,3 +1,4 @@
+import {usesAttachedPhoto} from '../sandbox/attached-photo.mjs';
 import {surveyRequest,numberInput,spanInputs} from './survey-create.mjs?v=ids1';
 import {allWaiting,requestedWaiting} from './survey-waiting.mjs';
 import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=waiting1';
@@ -10,8 +11,8 @@ import {basicCounter} from './basic-counter.mjs';
 import {checkStartup,checkLabel} from './sandbox-check.mjs?v=mobile4';
 import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs?v=bounded1';
-import {call,linkFor} from '../sandbox/api.mjs?v=turn1';
-import {previewPage} from '../sandbox/preview.mjs';
+import {call,linkFor} from '../sandbox/api.mjs?v=attached1';
+import {previewPage} from '../sandbox/preview.mjs?v=attached1';
 import {surveyTemplate} from './survey-template.mjs?v=waiting1';
 import {appearance} from '../sandbox/appearance.mjs';
 import {account} from '../account/session.mjs';
@@ -116,14 +117,18 @@ async function checkPublication(){
   const prior=pendingPublication;
   const {items}=prior.id ? {items:[await call('sandboxGet',{id:prior.id})]} : await call('sandboxList');
   const content=html=>String(html??'').replace(/<!--ippatsu-style:[\w-]+:[\w-]+-->/g,'');
-  const matches=items.filter(item=>item?.definition?.title===prior.draft.title &&
+  let matches=items.filter(item=>item?.definition?.title===prior.draft.title &&
     content(item.definition.html)===content(prior.draft.html) &&
     (!prior.id||item.id===prior.id&&item.revision>prior.revision));
+  if(prior.draft.photo){
+    const full=prior.id?matches:await Promise.all(matches.map(item=>call('sandboxGet',{id:item.id})));
+    matches=full.filter(item=>item.definition.photo===prior.draft.photo);
+  }
   if(matches.length===1){fresh();target=matches[0];link(bubble('assistant','同じ内容の掲載済みページを確認できました。'),target);return;}
   const msg=bubble('assistant',matches.length?'同じ内容のページが複数あります。確認したいページを選んでください。':'まだ掲載結果を特定できません。時間をおいてもう一度確認できます。');
   matches.forEach(item=>link(msg,item));recovery(msg,'掲載結果を確認','publishCheck');
 }
-function draftPreview(html){
+function draftPreview(html,photo){
   const panel=document.createElement('dialog');
   panel.className='draft-preview';
   panel.open=true;
@@ -139,7 +144,7 @@ function draftPreview(html){
     panel.close();panel.showModal();toggle.textContent='チャットに戻る';
   };
   panel.oncancel=event=>{event.preventDefault();collapse();};
-  panel.append(toggle,previewPage(html));return panel;
+  panel.append(toggle,previewPage(html,null,null,photo));return panel;
 }
 function renderCandidate(candidate,reply,request){
       renderInfo={reply:{survey:reply.survey,choices:reply.choices,message:reply.message},request};
@@ -152,7 +157,8 @@ function renderCandidate(candidate,reply,request){
         note.textContent='参考：'+auditNotice;
         card.append(note);
       }
-      card.append(draftPreview(candidate.html));
+      if(candidate.photo){const note=document.createElement('p');note.textContent='掲載すると、この添付写真もページに表示されます。';card.append(note);}
+      card.append(draftPreview(candidate.html,candidate.photo));
       if(reply.message && reply.message.trim()!==auditNotice){const note=document.createElement('p');note.textContent=reply.message;card.append(note);}
       if(reply.survey?.numbers?.length){
         const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.checked=new DOMParser().parseFromString(candidate.html,'text/html').querySelector('[data-reference-number]')!==null;
@@ -239,6 +245,10 @@ async function generate(job){
       if(!resized&&job.payload.template==='survey'&&(!reply?.survey||typeof reply.survey.title!=='string'))throw Error('現調リストの下書きを受け取れませんでした。');
       const candidate=!resized&&job.payload.template==='survey'?surveyTemplate(reply.survey):reply?.draft;
       if(!candidate?.title||typeof candidate.html!=='string'||!candidate.html.trim())throw Error('下書きの内容を確認できませんでした。');
+      if(!candidate.photo&&!separate&&usesAttachedPhoto(candidate.html)){
+        const previousPhoto=(draft||target?.definition)?.photo;
+        if(previousPhoto)candidate.photo=previousPhoto;
+      }
       step('下書きのプレビューを組み立てています');
       if(separate)fresh();
       previousVersion=draft&&card?{draft,card,history:history.slice(),photo,info:renderInfo}:null;

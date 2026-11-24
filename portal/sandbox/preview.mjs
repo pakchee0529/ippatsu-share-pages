@@ -1,4 +1,5 @@
-export function previewPage(html, inputKey=null, shared=null) {
+import {displayPhoto} from './attached-photo.mjs';
+export function previewPage(html, inputKey=null, shared=null, photo=null) {
   const frame = document.createElement("iframe");
   frame.title = "砂場のページ";
   frame.setAttribute("sandbox", "allow-scripts");
@@ -29,6 +30,6 @@ export function previewPage(html, inputKey=null, shared=null) {
       try{localStorage.setItem(inputKey,JSON.stringify(state));}catch{}
     },shared?.signal?{signal:shared.signal}:undefined);
   }
-  frame.srcdoc = '<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="' + policy + '">' + localForms + bridge + html;
+  frame.srcdoc = '<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="' + policy + '">' + localForms + bridge + displayPhoto(html,photo);
   return frame;
 }
