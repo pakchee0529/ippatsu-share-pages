@@ -1,3 +1,4 @@
+import {nearbyIntent,nearbyChoice,listCase} from './child-near.mjs';
 import {addition,surveyFile} from './child-add.mjs?v=crown-request2';
 import {surveyTemplate,compactSurveyId} from '../assistant/survey-template.mjs?v=childwaiting1';
 import {resizeReference} from './reference.mjs?v=size1';
@@ -77,7 +78,7 @@ export function childChat(item,survey){
   launch.onclick=()=>dialog.showModal();el('chat-close').onclick=()=>dialog.close();
   let draft=null,awaitingName=false,editing=false,busy=false;
   const history=[];
-  let lastChoices=[];
+  let lastChoices=[],nearbyRows=[];
   const rollbackKey='ippatsu.sandbox.rollback.'+item.id;
   function rollback(){
     try{const old=JSON.parse(sessionStorage.getItem(rollbackKey));return old?.revision===item.revision?old:null;}catch{return null;}
@@ -122,6 +123,25 @@ export function childChat(item,survey){
       if(look){confirmation('一覧の目印を「'+look.label+'」にしますか？',()=>save(item.definition,look.style));return;}
       const editInterface=/ボタン|見出し|レイアウト|フォント|ラベル|文字色|背景色|機能を|仕組みを/.test(text);
       const surveyCommand=!editing&&survey&&!editInterface;
+      const pick=surveyCommand&&!file&&nearbyRows.length?nearbyChoice(text):null;
+      const picked=pick?nearbyRows[pick-1]:null;
+      if(pick&&!picked){say('表示した候補の番号を選んでください。');return;}
+      nearbyRows=[];
+      if(surveyCommand&&!file&&nearbyIntent(text)){
+        awaitingName=false;await survey.ready;
+        const origin=/現在地|今いる|今の位置/.test(text)?await survey.currentOrigin():
+          /起点を選|起点を変/.test(text)?await survey.chooseOrigin():survey.lastCheckedOrigin()||await survey.chooseOrigin();
+        if(!origin){say('起点の選択を取り消しました。');return;}
+        const reply=await call('sandboxDraft',{turnProtocol:1,interactive:true,template:'survey',prompt:text,
+          nearbySurvey:{origin:{name:origin.name,point:origin.point},existing:survey.rows.map(listCase)}});
+        if(reply.survey?.source!=='nearby-survey-wait'||!Array.isArray(reply.survey.rows))throw Error('近くの現調待ちを照合できませんでした。');
+        nearbyRows=reply.survey.rows.slice(0,3).filter(r=>Number.isFinite(r.distance_km)&&r.distance_km>=0&&r.case_id);
+        if(!nearbyRows.length){say(reply.survey.message||'位置を確認できた未登録の現調待ちはありません。');return;}
+        const omitted=reply.survey.unlocated?'\n座標を確認できない'+reply.survey.unlocated+'件は除いています。':'';
+        say(origin.name+'から近い現調待ちです（直線距離）。\n'+nearbyRows.map((r,i)=>(i+1)+'．'+r.name+'　'+r.management_no+'　'+r.distance_km.toFixed(2)+' km').join('\n')+omitted+'\n追加する番号を選んでください。');
+        actions.replaceChildren(...nearbyRows.map((r,i)=>button((i+1)+'番　'+r.name,()=>send((i+1)+'番で'))),
+          button('起点を変える',()=>send('起点を変えて近くの候補を探して')));return;
+      }
       if(surveyCommand&&/次.*(どこ|何処|現場|径間)|次は[？?]?$/.test(text)){
         awaitingName=false;await survey.ready;const r=survey.next();
         const p=say(r?'次は「'+r.name+'」です。'+(r.corrected?'この電柱で合っていますか？ 地図で確認してください。':''):'未訪問の径間はありません。');
@@ -133,15 +153,15 @@ export function childChat(item,survey){
         confirmation('共有リストから次の'+remove.length+'件を削除します。\n'+remove.map(r=>r.name).join('\n'),()=>save(changeRows(item,survey,null,remove)));return;
       }
       const selection=surveyCommand&&addition(text,awaitingName);
-      if(survey&&(file||selection||surveyCommand&&(awaitingName||/径間を追加/.test(text)))){
-        if(!file&&!selection){awaitingName=true;say('径間名・管理番号・冠称を入力するか、紙の写真やPDFを選んでください。複数の径間名や番号は改行で指定できます。');return;}
+      if(survey&&(picked||file||selection||surveyCommand&&(awaitingName||/径間を追加/.test(text)))){
+        if(!picked&&!file&&!selection){awaitingName=true;say('径間名・管理番号・冠称を入力するか、紙の写真やPDFを選んでください。複数の径間名や番号は改行で指定できます。');return;}
         let found,scope;
-        const params=file?{...await surveyFile(file),surveyTitle:item.definition.title}:selection;
-        const reply=await call('sandboxDraft',{turnProtocol:1,interactive:true,template:'survey',prompt:text,...params});
+        const params=picked?{}:file?{...await surveyFile(file),surveyTitle:item.definition.title}:selection;
+        const reply=picked?{survey:{rows:[picked]}}:await call('sandboxDraft',{turnProtocol:1,interactive:true,template:'survey',prompt:text,...params});
         found=reply.survey;
         if(!Array.isArray(found?.rows)||params.waiting&&found.source!=='db-survey-wait')throw Error(reply.question||reply.message||'追加する案件を照合できませんでした。');
         if(params.identifiers)found.manualNames=new Set(params.identifiers.map(spanIdentity));
-        scope=file?file.name:params.waiting?(params.waiting.scope==='all'?'現調待ち全件':params.waiting.crown+'の現調待ち'):params.identifiers?'指定の径間・管理番号':'指定の管理番号';
+        scope=picked?'選んだ候補':file?file.name:params.waiting?(params.waiting.scope==='all'?'現調待ち全件':params.waiting.crown+'の現調待ち'):params.identifiers?'指定の径間・管理番号':'指定の管理番号';
         const {add,skipped,held,definition}=appendWaiting(item,survey,found);
         const summary=scope+'：追加 '+add.length+'件、登録済み・重複 '+skipped+'件、要確認 '+held.length+'件。';
         const notes=[held.length?'照合を保留：'+held.join('、'):'',found.auditNotice].filter(Boolean).map(s=>'\n'+s).join('');
@@ -154,8 +174,8 @@ export function childChat(item,survey){
         confirmation(summary+'\n「'+item.definition.title+'」の末尾に追加します。\n'+add.map(row=>[row.management_no,row.name,row.review].filter(Boolean).join('　')).join('\n')+notes,()=>save(definition));return;
       }
       if(surveyCommand&&/訪問順|巡回順|近い順|遠い順/.test(text)){
-        await survey.ready;const near=text.includes('近い順'),route=survey.route(near);if(!route.some(r=>r.center)){say('座標を照合できませんでした。');return;}
-        confirmation((near?'会社のある上之町から近い順です。':'遠い現場から回る巡回案です。')+'\n'+route.map((r,i)=>(i+1)+'　'+r.name).join('\n'),()=>{survey.applyRoute(route);say('この端末の訪問順に反映しました。');quick();});return;
+        await survey.ready;const near=text.includes('近い順'),origin=await survey.chooseOrigin();if(!origin)return;const route=survey.route(near,origin.point);if(!route.some(r=>r.center)){say('座標を照合できませんでした。');return;}
+        confirmation((origin.name+'から'+(near?'近い現場':'遠い現場')+'から回る巡回案です。')+'\n'+route.map((r,i)=>(i+1)+'　'+r.name).join('\n'),()=>{survey.applyRoute(route);say('この端末の訪問順に反映しました。');quick();});return;
       }
       if(text==='ページを編集'){editing=true;awaitingName=false;say('このページのどこをどう変えたいですか？');return;}
       const request={turnProtocol:1,id:item.id,revision:item.revision,prompt:text,interactive:true,history:projectHistory(history.slice(-9,-1),(draft||item.definition).html),previous:draft};
