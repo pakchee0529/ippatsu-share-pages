@@ -1,3 +1,4 @@
+import {displayReference} from './reference.mjs';
 import {overview,googleMapsUrl} from './overview.mjs?v=mapslinks2';
 import {call} from './api.mjs';
 
@@ -63,7 +64,7 @@ export function surveyNavigation(item,surface,shared){
     check.type='checkbox';check.checked=visited[r.key]===true;
     check.onchange=()=>{visited[r.key]=check.checked;shared?.save(r.key,check.checked);drawMap(current,visited);localStorage.setItem(visitKey,JSON.stringify(visited));};label.prepend(check);li.append(label);
     if(r.review)li.append(node('p',r.review));
-    if(r.reference)li.append(node('small',r.reference));
+    if(r.reference)li.append(node('small',displayReference(r.reference)));
     const links=node('div','');
     if(r.center){links.append(mapLink('Googleマップ',googleMapsUrl(r.center)),mapLink('両端の電柱を見る',r.url),mapLink('200mの電柱',mapAt(r.center)));if(r.corrected)li.append(node('small','この電柱で合っていますか？ 読み取り：'+r.name+'　地図の候補：'+r.mapNames));}
     else if(suggested.length)li.append(node('small','座標を確認できません'));
