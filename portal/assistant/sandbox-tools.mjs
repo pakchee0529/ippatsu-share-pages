@@ -254,7 +254,7 @@ async function send(text,fromComposer=false){
   const selected=captured||file.files[0];if(!text.trim()&&!selected)return;
   const initialField=field.value,hadText=Boolean(text.trim());
   if(fromComposer)field.value='';
-  let failed=false,consumeFile=true;busy=true;form.querySelector('button:not([type=button])').disabled=true;
+  let failed=false,consumeFile=true;busy=true;newChat.disabled=true;form.querySelector('button:not([type=button])').disabled=true;
   try{
     await selectCheckpoint();
     text=text.trim()||(survey?'この資料から径間を取り込んで':'この資料を使いたい');
@@ -311,7 +311,7 @@ async function send(text,fromComposer=false){
   }
   finally{if(failed&&fromComposer&&!field.value)field.value=initialField;activity=null;work.clear();if(!failed){
     if(consumeFile&&(captured||file.files[0])===selected){file.value='';captured=null;attachment.textContent='';}
-  }busy=false;form.querySelector('button:not([type=button])').disabled=false;log.scrollTop=log.scrollHeight;}
+  }busy=false;newChat.disabled=false;form.querySelector('button:not([type=button])').disabled=false;log.scrollTop=log.scrollHeight;}
 }
 function entranceGuide() {
   const message=bubble('assistant','設計番号か径間名で現場を探してね。写真はまとめて選べるよ。入口から歩く順に並べて、曲がり角や分岐には写真ごとに矢印を描いてね。');
@@ -361,11 +361,32 @@ function beginSurvey(showRequest=true){
 }
 
 root.querySelector('#survey-shortcut').onclick=()=>{if(!busy)beginSurvey();};
+const newChat=root.querySelector('#sandbox-new-chat');
+newChat.onclick=async()=>{
+  if(busy)return;
+  if(pendingPublication){
+    status.textContent='掲載結果を確認してから、新しい会話を始めてください。';
+    return;
+  }
+  if((draft||pendingDraft||captured||file.files.length||field.value.trim()) &&
+     !window.confirm('編集中の下書き・入力・添付を閉じて、新しい会話を始めますか？'))return;
+  busy=true;
+  try{
+    await selectCheckpoint();
+    fresh();
+    form.reset();captured=null;attachment.textContent='';
+    activity=null;renderInfo={};work.clear();status.textContent='';
+    log.replaceChildren();
+    if(createSurvey)window.history.replaceState({...window.history.state,sandboxBlank:true,surveyEntry:true},'');
+    greet();field.focus();
+  }finally{busy=false;}
+};
 async function restore(){
   await selectCheckpoint();
   if(checkpointKey){
     let saved;
     try{saved=unpackCheckpoint(checkpointStore.getItem(checkpointKey));}catch{}
+    if(createSurvey && !saved && window.history.state?.sandboxBlank){log.replaceChildren();greet();return;}
     if(createSurvey && (!window.history.state?.surveyEntry || !saved)){
       window.history.replaceState({...window.history.state,surveyEntry:true},'');
       const request=sessionStorage.getItem('ippatsu.survey.createPrompt');
