@@ -1,4 +1,4 @@
-import {previewPage} from '../sandbox/preview.mjs?v=attached1';
+import {previewPage} from '../sandbox/preview.mjs?v=art1';
 
 export function checkLabel(steps){
   const operated=steps.some(s=>['click','fill'].includes(s.action));
