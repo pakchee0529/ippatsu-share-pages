@@ -1,13 +1,16 @@
-import {displayReference} from '../sandbox/reference.mjs';
+import {displayReference,surveyWarnings} from '../sandbox/reference.mjs?v=size1';
 export function surveyTemplate(draft,withNumbers=true){
   const names=draft.names;
   if(!Array.isArray(names)||!names.length||names.some(n=>!/[〜～~]/.test(n)||n.length>100)||new Set(names).size!==names.length)throw Error('径間を確認できませんでした。径間名か、読み取りやすい写真を送ってください。');
   const list=document.createElement('section');list.dataset.surveyRows='';
-  for(const name of names){
+  const warnings=names.map(name=>({name,review:draft.reviews?.find(r=>r.name===name)?.message}));
+  const summary=surveyWarnings(warnings);
+  if(summary){const note=document.createElement('p');note.dataset.surveyWarning='';note.textContent=summary;list.append(note);}
+  for(const {name,review} of warnings){
     const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';
     input.id='span-'+Array.from(name,c=>c.codePointAt(0).toString(36)).join('-');label.append(input,name);list.append(label);
     const number=withNumbers&&draft.numbers?.find(n=>n.name===name)?.text;
-    const review=draft.reviews?.find(r=>r.name===name)?.message;
+
     if(number||review){
       const group=document.createElement('div');label.replaceWith(group);group.append(label);
       for(const [key,value] of [['referenceNumber',number],['review',review]]){

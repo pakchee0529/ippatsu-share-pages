@@ -1,4 +1,4 @@
-import {displayReference} from '../sandbox/reference.mjs';
+import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=size1';
 import {attachCamera} from './camera.mjs';
 import {packCheckpoint,unpackCheckpoint} from './checkpoint.mjs';
 import {literalEdit} from './short-edits.mjs';
@@ -10,7 +10,7 @@ import {workingStatus} from './working.mjs';
 import {imageInput} from '../sandbox/image-input.mjs?v=bounded1';
 import {call,linkFor} from '../sandbox/api.mjs?v=turn1';
 import {previewPage} from '../sandbox/preview.mjs';
-import {surveyTemplate} from './survey-template.mjs?v=numbers3';
+import {surveyTemplate} from './survey-template.mjs?v=size1';
 import {appearance} from '../sandbox/appearance.mjs';
 import {account} from '../account/session.mjs';
 
@@ -176,7 +176,8 @@ async function generate(job){
     }
     step(job.payload.template==='survey'?'現調リストを準備しています':draft||target?'下書きを更新しています':'下書きを作っています');
     checkpoint({text:job.text,payload:job.payload,asset:job.asset});
-    let reply=!job.file && literalEdit(job.text,draft||target?.definition);
+    const resized=!job.file&&resizeReference(job.text,draft||target?.definition);
+    let reply=resized||!job.file && literalEdit(job.text,draft||target?.definition);
     if(reply)step('指定された文言を変更しています');
     else reply=basicCounter(job.payload);
     if(reply&&!reply.kind)step('カウンターを組み立てています');
@@ -211,8 +212,8 @@ async function generate(job){
       history.push({role:'user',text:job.text},{role:'assistant',text:reply.question});
       photo=job.asset;bubble('assistant',reply.question);
     }else{
-      if(job.payload.template==='survey'&&(!reply?.survey||typeof reply.survey.title!=='string'))throw Error('現調リストの下書きを受け取れませんでした。');
-      const candidate=job.payload.template==='survey'?surveyTemplate(reply.survey):reply?.draft;
+      if(!resized&&job.payload.template==='survey'&&(!reply?.survey||typeof reply.survey.title!=='string'))throw Error('現調リストの下書きを受け取れませんでした。');
+      const candidate=!resized&&job.payload.template==='survey'?surveyTemplate(reply.survey):reply?.draft;
       if(!candidate?.title||typeof candidate.html!=='string'||!candidate.html.trim())throw Error('下書きの内容を確認できませんでした。');
       step('下書きのプレビューを組み立てています');
       if(separate)fresh();
