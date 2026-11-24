@@ -131,6 +131,16 @@ function confirmation(id,text,check=false){
         art.src="done.webp";art.alt="";art.className="sticker";
         const done=schedule?"共有ページまで反映できたっす！":"DB保存完了っす！";
         receipt.append(document.createElement("br"),document.createTextNode(done),art);
+        if(schedule && r.publication==="published" && Array.isArray(r.published_days)){
+          for(const day of new Set(r.published_days)){
+            if(typeof day!=="string" || !/^\d{6}$/.test(day))continue;
+            const link=document.createElement("a");
+            link.href="../../share/"+day+"/";
+            link.className="result-link";
+            link.textContent=Number(day.slice(2,4))+"月"+Number(day.slice(4))+"日の現場を開く";
+            receipt.append(link);
+          }
+        }
       }
       if(r.state==="queued"||r.state==="running"||publicationPending){
         check=schedule||publicationPending||!r.awaiting_dispatch;
