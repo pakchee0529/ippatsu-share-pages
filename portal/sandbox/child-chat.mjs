@@ -1,9 +1,11 @@
+import {requestedWaiting} from '../assistant/survey-waiting.mjs';
+import {surveyTemplate,compactSurveyId} from '../assistant/survey-template.mjs?v=childwaiting1';
 import {resizeReference} from './reference.mjs?v=size1';
 import {resolveChoice} from '../assistant/choices.mjs?v=short1';
 import {literalEdit,targetedEdit} from '../assistant/short-edits.mjs?v=local2';
 import {preserveBehavior,projectHistory} from '../assistant/behavior-history.mjs?v=short1';
 import {checkStartup,checkLabel} from '../assistant/sandbox-check.mjs?v=workflow3';
-import {requestedAppearance} from './appearance.mjs';
+import {appearance,requestedAppearance,stamp} from './appearance.mjs';
 import {call} from './api.mjs';
 import {previewPage} from './preview.mjs';
 
@@ -24,6 +26,42 @@ function changeRows(item,survey,add,remove){
   }
   for(const row of remove){const label=doc.getElementById(row.key)?.closest('label');if((label?.dataset.referenceNumber||label?.dataset.review)&&label.parentElement.parentElement===group)label.parentElement.remove();else label?.remove();}
   return {title:item.definition.title,html:'<!doctype html>'+doc.documentElement.outerHTML};
+}
+const spanIdentity=name=>name.normalize('NFKC').replace(/[〜～]/g,'~').replace(/\s/g,'');
+const caseNumber=text=>String(text||'').normalize('NFKC').match(/(?:^|管理番号\s*)(\d{8})(?=\s*(?:[／/]|$))/)?.[1];
+function appendWaiting(item,survey,found){
+  const doc=new DOMParser().parseFromString(item.definition.html,'text/html');
+  const first=doc.getElementById(survey.rows[0]?.key)?.closest('label');
+  const group=doc.querySelector('[data-survey-rows]')||first?.parentElement;
+  if(!group)throw Error('リストの形式を確認してください。');
+  const add=[],held=(found.held||[]).map(row=>row.name||row.number||'原票行');
+  const ids=new Set(survey.rows.map(r=>r.key));
+  let skipped=0;
+  for(const row of found.rows){
+    if(typeof row.name!=='string'||!/[〜～~]/.test(row.name)||!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(row.case_id)){
+      held.push(row.name||row.management_no||'案件未確定');continue;
+    }
+    const full='span-case-'+row.case_id.toLowerCase(),short=compactSurveyId(row.case_id);
+    if(ids.has(full)||ids.has(short)){skipped++;continue;}
+    // A manually entered row may lack a case UUID. Keep both its check and its position intact.
+    if(survey.rows.some(r=>{
+      if(r.key.startsWith('span-case-')||r.key.startsWith('c-'))return false;
+      const number=caseNumber(r.reference);
+      return number ? number===row.management_no : spanIdentity(r.name)===spanIdentity(row.name);
+    })){
+      held.push(row.management_no+' '+row.name);continue;
+    }
+    ids.add(full);ids.add(short);add.push(row);
+  }
+  if(add.length){
+    group.dataset.surveyRows='';
+    const source=group.hasAttribute('data-waiting-list')?'db-survey-wait':undefined;
+    const generated=surveyTemplate({title:item.definition.title,rows:add,source});
+    const block=new DOMParser().parseFromString(generated.html,'text/html').querySelector('[data-survey-rows]');
+    const before=group.querySelector(':scope > [data-survey-notices]');
+    for(const node of [...block.children])group.insertBefore(doc.importNode(node,true),before);
+  }
+  return {add,held,skipped,definition:{title:item.definition.title,html:'<!doctype html>'+doc.documentElement.outerHTML}};
 }
 export function childChat(item,survey){
   const el=id=>document.getElementById(id);
@@ -89,7 +127,26 @@ export function childChat(item,survey){
       }
       if(surveyCommand&&(awaitingName||/追加/.test(text)&&/径間|[～〜~]/.test(text))){
         const name=text.normalize('NFKC').match(/[^\s「」、。]+?\d[A-Za-z\d]*[~〜][^\s「」、。]*?\d[A-Za-z\d]*/)?.[0]?.replace(/^.*?(?:追加して|追加[:：]|径間[:：])/,'').replace(/^[「『]/,'');
-        if(!name){awaitingName=true;say('追加する径間名を入力してください。');return;}
+        if(!name){
+          const requested=awaitingName && requestedWaiting(text);
+          if(requested){
+            const reply=await call('sandboxDraft',{turnProtocol:1,interactive:true,template:'survey',waiting:requested,prompt:text});
+            if(reply.survey?.source!=='db-survey-wait'||!Array.isArray(reply.survey.rows))throw Error('現調待ちの案件を照合できませんでした。');
+            const {add,skipped,held,definition}=appendWaiting(item,survey,reply.survey);
+            const scope=requested.scope==='all'?'現調待ち全件':requested.crown+'の現調待ち';
+            const summary=scope+'：追加 '+add.length+'件、登録済み '+skipped+'件、要確認 '+held.length+'件。';
+            const notes=held.length?'\n照合を保留：'+held.join('、'):'';
+            if(!add.length){say(summary+notes);return;}
+            const stored=stamp(definition,appearance(item.definition));
+            const requestSize=JSON.stringify({action:'sandboxPublish',id:item.id,revision:item.revision,draft:stored,device:'0'.repeat(64)}).length;
+            if(stored.html.length>25000||requestSize>32000){
+              say(summary+'\nまとめて追加するとこのリストの保存上限を超えます。別の現調リストを作るか、径間名を指定して追加してください。');return;
+            }
+            awaitingName=false;
+            confirmation(summary+'\n「'+item.definition.title+'」の末尾に追加します。\n'+add.map(row=>row.management_no+'　'+row.name).join('\n')+notes,()=>save(definition));return;
+          }
+          awaitingName=true;say('追加する径間名か冠称を入力してください。冠称だけなら、その冠称の現調待ちをまとめて探します。');return;
+        }
         awaitingName=false;
         if(survey.rows.some(r=>r.name.normalize('NFKC').replace(/〜/g,'~')===name.replace(/〜/g,'~'))){say('その径間は登録済みです。');return;}
         confirmation('共有リストに「'+name+'」を追加します。',()=>save(changeRows(item,survey,name,[])));return;
