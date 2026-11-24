@@ -4,6 +4,10 @@ const norm=name=>name.normalize('NFKC').replace(/\s/g,'').replace(/[〜～]/g,'~
 const validSpan=name=>typeof name==='string' && /[〜～~]/.test(name) && name.length<=100;
 const uuid=/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 
+export function compactSurveyId(id){
+  const bytes=id.replaceAll('-','').match(/../g).map(x=>parseInt(x,16));
+  return 'c-'+btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
+}
 function legacyRows(draft){
   const names=Array.isArray(draft.names)?draft.names:[];
   return names.map((name,i)=>{
@@ -53,8 +57,7 @@ export function surveyTemplate(draft,withNumbers=true){
     input.id=uuid.test(row.case_id)?'span-case-'+row.case_id.toLowerCase():
       names.indexOf(names[i])===names.lastIndexOf(names[i]) && oldKey.length<=120?oldKey:'span-row-'+(i+1);
     if(compact && uuid.test(row.case_id)){
-      const bytes=row.case_id.replaceAll('-','').match(/../g).map(x=>parseInt(x,16));
-      input.id='c-'+btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
+      input.id=compactSurveyId(row.case_id);
     }
     label.append(input,name);list.append(label);
     const number=withNumbers&&(row.reference||row.management_no);
