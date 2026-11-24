@@ -48,6 +48,13 @@ export function surveyNavigation(item,surface,shared){
     name:label.textContent.trim(),review:label.dataset.review,reference:label.dataset.referenceNumber,key:label.querySelector('input[type=checkbox]')?.id
   })).filter(r=>r.key&&/[~～〜]/.test(r.name));
   if((!rows.length&&!doc.querySelector('[data-survey-rows]'))||new Set(rows.map(r=>r.name)).size!==rows.length)return;
+  const heading=doc.querySelector('h1');
+  const title=document.querySelector('#title');
+  if(heading&&title){
+    title.textContent=heading.textContent;
+    const scale=Number(heading.querySelector('[data-edit-caption]')?.dataset.scale);
+    if(scale>=.65&&scale<=3){const span=node('span',heading.textContent);span.style.fontSize=scale+'em';title.replaceChildren(span);}
+  }
   const panel=node('section','');panel.className='survey-route';surface.before(panel);
   const warningSummary=surveyWarnings(rows)||doc.querySelector('[data-survey-warning]')?.textContent;
   if(warningSummary)panel.append(node('p',warningSummary));
