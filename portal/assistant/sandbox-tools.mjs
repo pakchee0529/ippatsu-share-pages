@@ -1,3 +1,4 @@
+import {attachCamera} from './camera.mjs';
 import {packCheckpoint,unpackCheckpoint} from './checkpoint.mjs';
 import {literalEdit} from './short-edits.mjs';
 import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=short1';
@@ -68,11 +69,11 @@ function link(container,item){
 }
 function greet(){bubble('assistant','ここは、欲しい道具やページを自由に作って試せる砂場っす。どんなことができたら便利ですか？');}
 greet();
-const camera=form.elements.camera;
-for(const picker of [camera,file])picker.onchange=()=>{
-  const selected=picker.files[0];if(!selected)return;
-  (picker===camera?file:camera).value='';attachment.textContent=selected.name;
-};
+let captured=null;
+attachCamera(root.querySelector('#sandbox-camera'),picture=>{
+  captured=picture;file.value='';attachment.textContent=picture.name;
+},message=>{status.textContent=message;});
+file.onchange=()=>{if(file.files[0]){captured=null;attachment.textContent=file.files[0].name;}};
 async function readAttachment(f){
   if(f.type.startsWith('image/'))return {image:await imageInput(f)};
   if(/\.pdf$/i.test(f.name)){
@@ -228,10 +229,10 @@ async function generate(job){
 }
 async function send(text,fromComposer=false){
   if(busy)return;
-  const selected=camera.files[0]||file.files[0];if(!text&&!selected)return;
+  const selected=captured||file.files[0];if(!text&&!selected)return;
   const initialField=field.value,hadText=Boolean(text.trim());
   if(fromComposer)field.value='';
-  let failed=false,consumeFile=true;busy=true;form.querySelector('button').disabled=true;
+  let failed=false,consumeFile=true;busy=true;form.querySelector('button:not([type=button])').disabled=true;
   try{
     await selectCheckpoint();
     text=text.trim()||(survey?'この資料から径間を取り込んで':'この資料を使いたい');
@@ -280,8 +281,8 @@ async function send(text,fromComposer=false){
     if(pendingPublication)recovery(msg,'掲載結果を確認','publishCheck');
   }
   finally{if(failed&&fromComposer&&!field.value)field.value=initialField;activity=null;work.clear();if(!failed){
-    if(consumeFile&&(camera.files[0]||file.files[0])===selected){file.value='';camera.value='';attachment.textContent='';}
-  }busy=false;form.querySelector('button').disabled=false;log.scrollTop=log.scrollHeight;}
+    if(consumeFile&&(captured||file.files[0])===selected){file.value='';captured=null;attachment.textContent='';}
+  }busy=false;form.querySelector('button:not([type=button])').disabled=false;log.scrollTop=log.scrollHeight;}
 }
 function entranceGuide() {
   const message=bubble('assistant','設計番号か径間名で現場を探してね。写真はまとめて選べるよ。入口から歩く順に並べて、曲がり角や分岐には写真ごとに矢印を描いてね。');
@@ -322,7 +323,7 @@ form.onsubmit=e=>{e.preventDefault();send(field.value,true);};
 
 root.querySelector('#survey-shortcut').onclick=()=>{
   if(busy)return;
-  if(field.value.trim()||camera.files.length||file.files.length){fresh();survey=true;send('新しく現調リストを作って。'+field.value.trim(),true);return;}
+  if(field.value.trim()||captured||file.files.length){fresh();survey=true;send('新しく現調リストを作って。'+field.value.trim(),true);return;}
   fresh();survey=true;
   const name=account()?.name?.trim();
   const request='現調リストを作る',question=name?name+'さんの現調リストを作ります。径間名か紙の写真を送ってください。別の方の分なら、その方の名前も添えてください。':'誰のリストにしますか？ 担当者名と、径間名か紙の写真を送ってください。';
