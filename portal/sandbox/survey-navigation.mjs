@@ -1,4 +1,4 @@
-import {displayReference} from './reference.mjs';
+import {referenceContent,surveyWarnings} from './reference.mjs?v=size1';
 import {overview,googleMapsUrl} from './overview.mjs?v=mapslinks2';
 import {call} from './api.mjs';
 
@@ -49,6 +49,8 @@ export function surveyNavigation(item,surface,shared){
   })).filter(r=>r.key&&/[~～〜]/.test(r.name));
   if((!rows.length&&!doc.querySelector('[data-survey-rows]'))||new Set(rows.map(r=>r.name)).size!==rows.length)return;
   const panel=node('section','');panel.className='survey-route';surface.before(panel);
+  const warningSummary=surveyWarnings(rows)||doc.querySelector('[data-survey-warning]')?.textContent;
+  if(warningSummary)panel.append(node('p',warningSummary));
   const note=node('p','会社のある五條市上之町を起点に、遠い径間から回る順番を提案します。');
   note.setAttribute('role','status');
   const list=node('ol',''),actions=node('div',''),gps=node('p','');
@@ -64,7 +66,7 @@ export function surveyNavigation(item,surface,shared){
     check.type='checkbox';check.checked=visited[r.key]===true;
     check.onchange=()=>{visited[r.key]=check.checked;shared?.save(r.key,check.checked);drawMap(current,visited);localStorage.setItem(visitKey,JSON.stringify(visited));};label.prepend(check);li.append(label);
     if(r.review)li.append(node('p',r.review));
-    if(r.reference)li.append(node('small',displayReference(r.reference)));
+    if(r.reference){const caption=node('small','');const size=Number(doc.querySelector('[data-survey-rows]')?.dataset.referenceSize);caption.append(referenceContent(r.reference,size>=12&&size<=48?size:null));li.append(caption);}
     const links=node('div','');
     if(r.center){links.append(mapLink('Googleマップ',googleMapsUrl(r.center)),mapLink('両端の電柱を見る',r.url),mapLink('200mの電柱',mapAt(r.center)));if(r.corrected)li.append(node('small','この電柱で合っていますか？ 読み取り：'+r.name+'　地図の候補：'+r.mapNames));}
     else if(suggested.length)li.append(node('small','座標を確認できません'));
