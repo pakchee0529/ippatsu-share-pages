@@ -1,3 +1,4 @@
+import {surveyRequest,numberInput} from './survey-create.mjs';
 import {allWaiting,requestedWaiting} from './survey-waiting.mjs';
 import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=waiting1';
 import {attachCamera} from './camera.mjs?v=native1';
@@ -38,12 +39,14 @@ function step(label){
 let history=[],draft=null,target=null,photo=null,survey=false,busy=false,card=null;
 let previousVersion=null;
 let pendingDraft=null,pendingPublication=null,recoveryButton=null;
+const createSurvey=new URLSearchParams(location.search).get("create")==="survey";
 let checkpointKey, checkpointStore,renderInfo={};
 async function selectCheckpoint(){
   const user=account(), token=user?.token||sessionStorage.getItem('ippatsu.chat.session');
   if(!token){checkpointKey=null;return;}
   const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));
   checkpointKey='ippatsu.chat.work.'+Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');
+  if(createSurvey)checkpointKey+='.create-survey';
   checkpointStore=user?.remember?localStorage:sessionStorage;
 }
 function checkpoint(job=null){
@@ -70,7 +73,7 @@ function link(container,item){
   const a=document.createElement('a');a.href=linkFor(item.id);a.textContent=item.definition.title;container.append(a);
 }
 function greet(){bubble('assistant','ここは、欲しい道具やページを自由に作って試せる砂場っす。どんなことができたら便利ですか？');}
-greet();
+if(!createSurvey)greet();
 let captured=null;
 attachCamera(root.querySelector('#sandbox-camera'),picture=>{
   captured=picture;file.value='';attachment.textContent=picture.name;
@@ -182,7 +185,8 @@ async function generate(job){
       if(job.file)step('添付ファイルを読み込んでいます');
       const asset=job.waiting?null:job.file?await readAttachment(job.file):photo;
       job.asset=asset;
-      job.payload={turnProtocol:1,interactive:true,prompt:job.text,template:survey?'survey':undefined,history:projectHistory(history.slice(-8),(draft||target?.definition)?.html),previous:job.waiting?undefined:draft,...asset,...(job.waiting?{waiting:job.waiting}:{}),id:target?.id,revision:target?.revision};
+      const managementNumbers=survey&&!asset&&!job.waiting?numberInput(job.text):undefined;
+      job.payload={managementNumbers,turnProtocol:1,interactive:true,prompt:job.text,template:survey?'survey':undefined,history:projectHistory(history.slice(-8),(draft||target?.definition)?.html),previous:job.waiting?undefined:draft,...asset,...(job.waiting?{waiting:job.waiting}:{}),id:target?.id,revision:target?.revision};
     }
     step(job.payload.template==='survey'?'現調リストを準備しています':draft||target?'下書きを更新しています':'下書きを作っています');
     checkpoint({text:job.text,payload:job.payload,asset:job.asset});
@@ -290,6 +294,11 @@ async function send(text,fromComposer=false){
       const msg=bubble('assistant',found.length?'ページを選んでください。':'該当するページが見つかりません。「一覧」と送ってください。');found.forEach(i=>link(msg,i));return;
     }
     if(survey&&createRequest&&/ゲーム/.test(text)&&!/現調|径間/.test(text))survey=false;
+    const requested=surveyRequest(text);
+    if(requested!==null&&!target){
+      if(!selected&&!requested){beginSurvey(false);return;}
+      survey=true;text=requested||'この資料から径間を取り込んで';
+    }
     const explicitAll=!selected&&allWaiting.test(text);
     const soloPhoto=!hadText&&selected?.type.startsWith('image/')&&!draft&&!history.length;
     survey=survey||explicitAll||(!target&&(/現調(?:用)?リスト.{0,8}(?:作|つく)|径間.{0,5}リスト.{0,5}作/.test(text)||soloPhoto));
@@ -340,30 +349,44 @@ root.querySelector('#entrance-shortcut').onclick=()=>{
 };
 form.onsubmit=e=>{e.preventDefault();send(field.value,true);};
 
-root.querySelector('#survey-shortcut').onclick=()=>{
-  if(busy)return;
+function beginSurvey(showRequest=true){
   if(field.value.trim()||captured||file.files.length){fresh();survey=true;send(field.value.trim(),true);return;}
   fresh();survey=true;
   const name=account()?.name?.trim();
-  const request='現調リストを作る',question=(name?name+'さんの':'')+'現調リストを作ります。現調待ちは冠称だけで探せます。全件なら「現調待ち全部」と送ってください。径間名・管理番号・紙の写真でも作れます。';
+  const request='現調リストを作る',question=(name?name+'さんの':'')+'現調リストを作ります。径間名か管理番号を送ってください。まとめて入力でき、紙の写真やPDFも使えます。現調待ちから選ぶときは冠称か「現調待ち全部」を送ってください。';
   history.push({role:'user',text:request},{role:'assistant',text:question});
-  bubble('user',request);bubble('assistant',question);field.focus();checkpoint();
-};
+  if(showRequest)bubble('user',request);
+  bubble('assistant',question);field.focus();checkpoint();
+}
 
-await selectCheckpoint();
-if(checkpointKey){
-  let saved;
-  try{saved=unpackCheckpoint(checkpointStore.getItem(checkpointKey));}catch{}
-  if(saved){
-    history=saved.history||[];target=saved.target;survey=saved.survey;photo=saved.photo;
-    for(const turn of history)bubble(turn.role,turn.text+(turn.choices?.length?'\n'+turn.choices.map((v,i)=>(i+1)+'．'+v).join('\n'):''));
-    if(saved.previous){
-      const old=saved.previous;
-      renderCandidate(old.draft,old.info?.reply||{},old.info?.request||'');
-      previousVersion={...old,card};
+root.querySelector('#survey-shortcut').onclick=()=>{if(!busy)beginSurvey();};
+async function restore(){
+  await selectCheckpoint();
+  if(checkpointKey){
+    let saved;
+    try{saved=unpackCheckpoint(checkpointStore.getItem(checkpointKey));}catch{}
+    if(createSurvey && (!window.history.state?.surveyEntry || !saved)){
+      window.history.replaceState({...window.history.state,surveyEntry:true},'');
+      const request=sessionStorage.getItem('ippatsu.survey.createPrompt');
+      sessionStorage.removeItem('ippatsu.survey.createPrompt');
+      log.replaceChildren();beginSurvey();
+      const input=request && surveyRequest(request);
+      if(input)await send(input);
+      return;
     }
-    if(saved.draft)renderCandidate(saved.draft,saved.renderInfo?.reply||{},saved.renderInfo?.request||'');
-    if(saved.pendingPublication){pendingPublication=saved.pendingPublication;recovery(bubble('assistant','前回の掲載結果を照合できます。'),'掲載結果を確認','publishCheck');}
-    else if(saved.job){pendingDraft=saved.job;recovery(bubble('assistant','前回の生成結果を受け取る前に画面が閉じられました。'),'同じ依頼で再開','draftRetry');}
+    if(saved){
+      history=saved.history||[];target=saved.target;survey=saved.survey;photo=saved.photo;
+      for(const turn of history)bubble(turn.role,turn.text+(turn.choices?.length?'\n'+turn.choices.map((v,i)=>(i+1)+'．'+v).join('\n'):''));
+      if(saved.previous){
+        const old=saved.previous;
+        renderCandidate(old.draft,old.info?.reply||{},old.info?.request||'');
+        previousVersion={...old,card};
+      }
+      if(saved.draft)renderCandidate(saved.draft,saved.renderInfo?.reply||{},saved.renderInfo?.request||'');
+      if(saved.pendingPublication){pendingPublication=saved.pendingPublication;recovery(bubble('assistant','前回の掲載結果を照合できます。'),'掲載結果を確認','publishCheck');}
+      else if(saved.job){pendingDraft=saved.job;recovery(bubble('assistant','前回の生成結果を受け取る前に画面が閉じられました。'),'同じ依頼で再開','draftRetry');}
+    }
   }
 }
+await restore();
+window.addEventListener("survey-unlocked",restore);
