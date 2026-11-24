@@ -1,7 +1,7 @@
 import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=size1';
 import {attachCamera} from './camera.mjs';
 import {packCheckpoint,unpackCheckpoint} from './checkpoint.mjs';
-import {literalEdit} from './short-edits.mjs';
+import {literalEdit,targetedEdit} from './short-edits.mjs?v=local2';
 import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=short1';
 import {numberedChoices,resolveChoice} from './choices.mjs?v=short1';
 import {basicCounter} from './basic-counter.mjs';
@@ -176,7 +176,7 @@ async function generate(job){
     }
     step(job.payload.template==='survey'?'現調リストを準備しています':draft||target?'下書きを更新しています':'下書きを作っています');
     checkpoint({text:job.text,payload:job.payload,asset:job.asset});
-    const resized=!job.file&&resizeReference(job.text,draft||target?.definition);
+    const resized=!job.file&&(resizeReference(job.text,draft||target?.definition)||targetedEdit(job.text,draft||target?.definition));
     let reply=resized||!job.file && literalEdit(job.text,draft||target?.definition);
     if(reply)step('指定された文言を変更しています');
     else reply=basicCounter(job.payload);

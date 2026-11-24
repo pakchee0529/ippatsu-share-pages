@@ -11,24 +11,24 @@
 <body>
 <main>
   <nav aria-label="ページ操作"><a href="../">みんなの砂場へ</a><button id="account-entry">ログイン・登録</button></nav>
-  <header><h1>現場の進入口</h1><p id="intro">集合場所から歩く道や車を置く場所を、写真で共有。</p><button type="button" id="try-photo">自分の写真で矢印を試す</button></header>
+  <header><h1 data-edit-part="part-1">現場の進入口</h1><p id="intro">集合場所から歩く道や車を置く場所を、写真で共有。</p><button data-edit-part="part-2" type="button" id="try-photo">自分の写真で矢印を試す</button></header>
   <section id="picker" aria-labelledby="picker-title">
-    <h2 id="picker-title">現場を探す</h2>
-    <form id="search" role="search"><input id="query" type="search" aria-label="設計番号・径間名・管理番号で検索" placeholder="設計番号・径間名・管理番号" maxlength="100"><button>検索</button></form>
+    <h2 data-edit-part="part-3" id="picker-title">現場を探す</h2>
+    <form id="search" role="search"><input id="query" type="search" aria-label="設計番号・径間名・管理番号で検索" placeholder="設計番号・径間名・管理番号" maxlength="100"><button data-edit-part="part-4">検索</button></form>
     <p id="search-status" role="status"></p>
     <ul id="cases"></ul>
   </section>
   <section id="detail" aria-labelledby="selected-label" hidden>
-    <button type="button" id="back">現場を選び直す</button>
+    <button data-edit-part="part-5" type="button" id="back">現場を選び直す</button>
     <h2 id="selected-label" tabindex="-1"></h2><p id="selected-meta"></p>
-    <button type="button" class="primary" id="add">進入口の写真を追加</button>
-    <p id="photos-status" role="status"></p><button id="retry" hidden>写真を再読み込み</button>
+    <button data-edit-part="part-6" type="button" class="primary" id="add">進入口の写真を追加</button>
+    <p id="photos-status" role="status"></p><button data-edit-part="part-7" id="retry" hidden>写真を再読み込み</button>
     <div id="photos"></div>
   </section>
 </main>
 <dialog id="editor" aria-labelledby="editor-title">
   <form id="upload">
-    <div class="heading"><h2 id="editor-title">写真を追加</h2><button id="close-editor" type="button">閉じる</button></div>
+    <div class="heading"><h2 data-edit-part="part-8" id="editor-title">写真を追加</h2><button id="close-editor" type="button">閉じる</button></div>
     <p id="editor-case"></p>
     <div class="sources">
       <label class="file-action">撮影する<input type="file" id="camera" accept="image/*" capture="environment"></label>
@@ -38,39 +38,39 @@
       <h3>進む順番</h3>
       <div id="sequence" aria-label="編集する写真を選ぶ"></div>
       <div class="order-actions">
-        <button type="button" id="earlier">前に移す</button>
-        <button type="button" id="later">後ろに移す</button>
+        <button data-edit-part="part-9" type="button" id="earlier">前に移す</button>
+        <button data-edit-part="part-10" type="button" id="later">後ろに移す</button>
         <button type="button" id="remove-photo">この写真を外す</button>
       </div>
     </div>
     <div id="drawing" hidden>
       <p>進む方向に指で線を引くと、矢印が付きます。</p>
       <canvas id="canvas" aria-label="選んだ写真。写真上で矢印を描けます"></canvas>
-      <button type="button" id="undo">矢印をひとつ戻す</button>
+      <button data-edit-part="part-11" type="button" id="undo">矢印をひとつ戻す</button>
     </div>
     <label for="note">道順・目印<span>（任意）</span></label>
     <textarea id="note" rows="2" maxlength="300" placeholder="橋を渡ってすぐ左の坂道へ"></textarea>
     <p id="upload-status" role="status"></p>
-    <button type="submit" id="preview-button" class="primary" disabled>仕上がりを見る</button>
+    <button data-edit-part="part-12" type="submit" id="preview-button" class="primary" disabled>仕上がりを見る</button>
   </form>
 </dialog>
 <dialog id="preview-dialog" aria-labelledby="preview-title">
-  <h2 id="preview-title">仕上がり</h2>
+  <h2 data-edit-part="part-13" id="preview-title">仕上がり</h2>
   <p id="preview-context"></p>
   <div id="preview-output"></div>
   <p id="preview-status" role="status"></p>
   <div class="preview-actions">
-    <button type="button" id="preview-back">矢印やメモを直す</button>
-    <button type="button" id="preview-finish" hidden>試し描きを終了</button>
-    <button type="button" id="preview-pause" hidden>あとで続ける</button>
-    <button type="button" class="primary" id="confirm-save">この現場に保存</button>
+    <button data-edit-part="part-14" type="button" id="preview-back">矢印やメモを直す</button>
+    <button data-edit-part="part-15" type="button" id="preview-finish" hidden>試し描きを終了</button>
+    <button data-edit-part="part-16" type="button" id="preview-pause" hidden>あとで続ける</button>
+    <button data-edit-part="part-17" type="button" class="primary" id="confirm-save">この現場に保存</button>
   </div>
 </dialog>
 <dialog id="viewer" aria-labelledby="viewer-title">
-  <div class="heading"><h2 id="viewer-title">進入口の写真</h2><button id="close-viewer">閉じる</button></div>
+  <div class="heading"><h2 data-edit-part="part-18" id="viewer-title">進入口の写真</h2><button id="close-viewer">閉じる</button></div>
   <div id="large-photo"></div>
 </dialog>
 <noscript>進入口の写真を見るには、ブラウザのJavaScriptを有効にしてください。</noscript>
 <script type="module" src="./entrance.mjs"></script>
-</body>
+<script type="module" src="../fixed-edit.mjs"></script></body>
 </html>

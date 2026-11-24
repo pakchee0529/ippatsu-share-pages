@@ -1,6 +1,6 @@
 import {resizeReference} from './reference.mjs?v=size1';
 import {resolveChoice} from '../assistant/choices.mjs?v=short1';
-import {literalEdit} from '../assistant/short-edits.mjs';
+import {literalEdit,targetedEdit} from '../assistant/short-edits.mjs?v=local2';
 import {preserveBehavior,projectHistory} from '../assistant/behavior-history.mjs?v=short1';
 import {checkStartup,checkLabel} from '../assistant/sandbox-check.mjs?v=workflow3';
 import {requestedAppearance} from './appearance.mjs';
@@ -100,7 +100,7 @@ export function childChat(item,survey){
       }
       if(text==='ページを編集'){editing=true;awaitingName=false;say('このページのどこをどう変えたいですか？');return;}
       const request={turnProtocol:1,id:item.id,revision:item.revision,prompt:text,interactive:true,history:projectHistory(history.slice(-9,-1),(draft||item.definition).html),previous:draft};
-      let reply=resizeReference(text,draft||item.definition)||literalEdit(text,draft||item.definition)||await call('sandboxDraft',request);
+      let reply=resizeReference(text,draft||item.definition)||targetedEdit(text,draft||item.definition)||literalEdit(text,draft||item.definition)||await call('sandboxDraft',request);
       if(['advice','clarify'].includes(reply.kind)){
         const options=reply.choices||[];lastChoices=options;
         say(reply.message+(options.length?'\n'+options.map((v,i)=>(i+1)+'．'+v).join('\n'):''));
