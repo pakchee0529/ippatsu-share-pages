@@ -1,5 +1,5 @@
 import {displayReference,resizeReference} from '../sandbox/reference.mjs?v=size1';
-import {attachCamera} from './camera.mjs';
+import {attachCamera} from './camera.mjs?v=native1';
 import {packCheckpoint,unpackCheckpoint} from './checkpoint.mjs';
 import {literalEdit,targetedEdit} from './short-edits.mjs?v=local2';
 import {preserveBehavior,projectHistory} from './behavior-history.mjs?v=short1';
@@ -73,7 +73,7 @@ greet();
 let captured=null;
 attachCamera(root.querySelector('#sandbox-camera'),picture=>{
   captured=picture;file.value='';attachment.textContent=picture.name;
-},message=>{status.textContent=message;});
+});
 file.onchange=()=>{if(file.files[0]){captured=null;attachment.textContent=file.files[0].name;}};
 async function readAttachment(f){
   if(f.type.startsWith('image/'))return {image:await imageInput(f)};
