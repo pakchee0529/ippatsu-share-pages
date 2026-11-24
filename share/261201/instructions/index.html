@@ -1,0 +1,25 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>261201 指示書</title><style>body{font-family:system-ui,sans-serif;margin:0;background:#f1f5f9;color:#172534}main,header{max-width:1050px;margin:auto;padding:16px}a{color:#0755a1}table{border-collapse:collapse;width:100%;background:white}th,td{border:1px solid #cbd5e1;padding:9px;text-align:left;overflow-wrap:anywhere}.scroll{overflow-x:auto}.saved-ledger-status{font-size:.85rem;color:#475569}.card{width:auto!important}h1{font-size:1.3rem}.view-help{font-size:.9rem}.view-nav{display:flex;gap:8px;flex-wrap:wrap}.view-nav>a{display:inline-flex;padding:10px 14px;border:1px solid #93c5fd;border-radius:8px;background:white;color:#0755a1;text-decoration:none}</style><link rel="stylesheet" href="../../../portal/shared-ledger/daily-hallmark-r2.css?v=20261110-transport-r1"><link rel="stylesheet" href="../../../portal/shared-ledger/daily-field-layout-r1.css?v=20261110-transport-r1"><link rel="stylesheet" href="../../../portal/case-note-editor/instruction-memos-r1.css"></head><body data-share-view="instructions"><header><nav class="view-nav"><a href="../">共有ページに戻る</a><a id="ledger-input-top" href="#">台帳入力</a></nav><h1>指示書</h1><p>閲覧用。変更・追加は新版台帳で入力し、ポータル保存後に反映します。</p></header><main><div id="error" role="alert"></div><div id="content"></div>
+<section aria-labelledby="permanent-note-heading">
+  <h2 id="permanent-note-heading">恒久メモ <button type="button" id="permanent-note-edit" aria-label="恒久メモを編集" hidden>✎</button></h2>
+  <p id="permanent-note-text" style="white-space:pre-wrap"></p>
+  <div id="permanent-note-draft" hidden>
+    <label for="permanent-note-value">恒久メモ</label>
+    <textarea id="permanent-note-value" rows="4" maxlength="10000"></textarea>
+    <button id="permanent-note-save" type="button">保存</button>
+    <button id="permanent-note-cancel" type="button">キャンセル</button>
+  </div>
+  <p id="permanent-note-status" role="status"></p>
+</section>
+
+<section aria-labelledby="next-note-heading">
+  <h2 id="next-note-heading">次回メモ <button type="button" id="next-note-edit" aria-label="次回メモを編集" hidden>✎</button></h2>
+  <p id="next-note-text" style="white-space:pre-wrap"></p>
+  <div id="next-note-draft" hidden>
+    <label for="next-note-value">次回メモ</label>
+    <textarea id="next-note-value" rows="4" maxlength="10000"></textarea>
+    <button id="next-note-save" type="button">保存</button>
+    <button id="next-note-cancel" type="button">キャンセル</button>
+  </div>
+  <p id="next-note-status" role="status"></p>
+</section>
+<script type="module" src="../../../portal/case-note-editor/permanent-preview.js?v=2"></script><script id="permanent-note-data" type="application/json">{"51405448": {"case_id": "1a8182cf-d7a9-41cb-881a-7172431426b0", "body": ""}, "51405446": {"case_id": "b112c0fe-485d-463f-a644-6e5b9578b9fb", "body": ""}, "51402365": {"case_id": "36d5fe00-17ef-438d-810c-115504b9ad6a", "body": ""}, "51402368": {"case_id": "230819db-f234-4b1a-8956-6dc43ccf311b", "body": ""}, "51402267": {"case_id": "2be6a094-a244-4fc2-aca6-69c43b0ef09e", "body": ""}, "51402264": {"case_id": "0590c9b9-9324-4c03-8762-c5b0fa406707", "body": ""}, "51410334": {"case_id": "2b70f099-2ad3-489f-8ad7-ac578ef47f67", "body": ""}}</script></main><script id="shared-ledger-config" type="application/json">{"date":"261201","api":"https://evmgsqdrojxppxknrzfk.supabase.co/functions/v1/photo-ledger-v2","cases":[{"cs":"51405448","label":"寺垣内3～4","base":{"E10":0,"E20":1,"E30":2,"E40":0,"E50":1,"E60":0,"N10":4,"N20":0,"N30":0,"N40":0,"N50":0,"N60":0,"SB":6,"TK":0,"TR":0}},{"cs":"51405446","label":"寺垣内1～2","base":{"E10":4,"E20":1,"E30":0,"E40":0,"E50":0,"E60":0,"N10":0,"N20":0,"N30":0,"N40":0,"N50":0,"N60":0,"SB":24,"TK":0,"TR":0}},{"cs":"51402365","label":"上湯川211W1S1～211W1S2","base":{"E10":1,"E20":2,"E30":1,"E40":0,"E50":0,"E60":0,"N10":3,"N20":0,"N30":0,"N40":0,"N50":0,"N60":0,"SB":10,"TK":0,"TR":0}},{"cs":"51402368","label":"上湯川211W2E1～211W2E2","base":{"E10":0,"E20":1,"E30":3,"E40":1,"E50":0,"E60":0,"N10":0,"N20":0,"N30":0,"N40":0,"N50":0,"N60":0,"SB":0,"TK":0,"TR":0}},{"cs":"51402267","label":"上湯川203～204","base":{"E10":6,"E20":1,"E30":0,"E40":0,"E50":1,"E60":0,"N10":0,"N20":1,"N30":1,"N40":0,"N50":0,"N60":0,"SB":0,"TK":0,"TR":0}},{"cs":"51402264","label":"上湯川200～199E1","base":{"E10":0,"E20":0,"E30":1,"E40":0,"E50":0,"E60":0,"N10":0,"N20":0,"N30":0,"N40":0,"N50":0,"N60":0,"SB":0,"TK":0,"TR":0}},{"cs":"51410334","label":"上湯川199E～引込","base":{"E10":1,"E20":2,"E30":0,"E40":0,"E50":0,"E60":0,"N10":0,"N20":0,"N30":0,"N40":0,"N50":0,"N60":0,"SB":0,"TK":0,"TR":0}}]}</script><script type="module" src="../../../portal/shared-ledger/views.mjs?v=20261110-transport-r1"></script></body></html>
